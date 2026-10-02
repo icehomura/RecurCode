@@ -5169,6 +5169,52 @@ fn build_resume_session_request(
 /// `models` is `None` when the reply carries none. Other agents can send one too
 /// (codex-acp reports its model state there), but only grok's is ever read:
 /// every caller checks the agent before parsing it.
+// RecurAgent-specific hardening (port of `fix(acp): survive a non-conforming
+// modes value`). Some agents put a bare array of modes where the schema expects
+// a `SessionModeState` object; because `SessionModeState` has no catch-all, the
+// WHOLE session response fails to deserialize and the agent never connects.
+// Stripping a malformed `modes` before the typed parse downgrades "this agent
+// is completely unusable" to "no mode selector" — the correct failure mode for a
+// selector. It runs at the single `send_capturing_models` choke point, so
+// session/new, session/resume and session/fork are all covered. (`configOptions`
+// unknown kinds are NOT stripped here: upstream's serde now skips them one entry
+// at a time, which is finer-grained than dropping the whole array.)
+pub(crate) fn strip_malformed_modes(raw: &mut serde_json::Value, method: &str) {
+    let Some(object) = raw.as_object_mut() else {
+        return;
+    };
+    match object.get("modes") {
+        None => return,
+        // A well-formed state — or the `null` an absent one serializes to —
+        // decodes cleanly; only a wrong SHAPE reaches the drop below.
+        Some(modes)
+            if serde_json::from_value::<Option<SessionModeState>>(modes.clone()).is_ok() =>
+        {
+            return;
+        }
+        Some(modes) => {
+            tracing::warn!(
+                "[ACP] {method}: dropping `modes` — the ACP schema expects a SessionModeState \
+                 object (`currentModeId` + `availableModes`) and the agent sent {}; the mode \
+                 selector will not be shown.",
+                json_type_name(modes),
+            );
+        }
+    }
+    object.remove("modes");
+}
+
+fn json_type_name(value: &serde_json::Value) -> &'static str {
+    match value {
+        serde_json::Value::Null => "null",
+        serde_json::Value::Bool(_) => "a boolean",
+        serde_json::Value::Number(_) => "a number",
+        serde_json::Value::String(_) => "a string",
+        serde_json::Value::Array(_) => "an array",
+        serde_json::Value::Object(_) => "an object",
+    }
+}
+
 pub(crate) async fn send_capturing_models<Resp: serde::de::DeserializeOwned>(
     cx: &ConnectionTo<Agent>,
     method: &str,
@@ -5179,8 +5225,9 @@ pub(crate) async fn send_capturing_models<Resp: serde::de::DeserializeOwned>(
             "Failed to build {method} request: {e}"
         ))
     })?;
-    let raw_response = cx.send_request_to(Agent, request).block_task().await?;
+    let mut raw_response = cx.send_request_to(Agent, request).block_task().await?;
     let models = raw_response.get("models").cloned();
+    strip_malformed_modes(&mut raw_response, method);
     let response = serde_json::from_value(raw_response).map_err(|e| {
         agent_client_protocol::util::internal_error(format!(
             "Failed to parse {method} response: {e}"
