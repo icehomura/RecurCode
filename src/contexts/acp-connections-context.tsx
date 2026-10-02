@@ -44,6 +44,8 @@ import {
   getConversationIdByExternalIdFromStore,
   useConversationRuntimeStore,
 } from "@/stores/conversation-runtime-store"
+import { extractDagMessage } from "@/components/dag-view/dag-meta-parser"
+import { useDagStore } from "@/components/dag-view/dag-model"
 import type {
   AgentType,
   AcpAgentStatus,
@@ -4784,6 +4786,17 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
           break
         case "tool_call_update":
           flushStreamingQueue(contextKey)
+          // `ra.dev/dag`: RecurCode 前端 DAG 视图的三态消息（topology /
+          // node_state / node_output）。meta 是多命名空间开放字典，这里只取
+          // 本命名空间的一条并丢进 dag store —— store 自己按
+          // toolCallId+graphId 索引、按 seq 去重，不进 reducer（reducer 每帧
+          // 合并会把高频 node_output delta 放大成全量状态 churn）。
+          {
+            const dagMessage = extractDagMessage(e.meta)
+            if (dagMessage) {
+              useDagStore.getState().ingest(e.tool_call_id, dagMessage)
+            }
+          }
           pendingToolCallUpdates.current.push({
             contextKey,
             tool_call_id: e.tool_call_id,

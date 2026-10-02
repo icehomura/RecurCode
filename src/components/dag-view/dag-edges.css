@@ -1,0 +1,75 @@
+/* DAG 视图动画：节点状态脉冲 + running 节点入边的流动。
+   纯 CSS keyframes，不引入动画库。 */
+
+/* running 节点：呼吸式蓝光晕。只动 box-shadow，不触发重排。 */
+@keyframes dag-node-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-blue-500, #3b82f6) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--color-blue-500, #3b82f6) 0%, transparent);
+  }
+}
+
+.dag-node--running {
+  animation: dag-node-pulse 1.4s ease-in-out infinite;
+}
+
+/* cancelled：斜纹底 + 降透明度，灰色本身区分不出「已取消」与「排队中」。 */
+.dag-node--cancelled {
+  opacity: 0.6;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    color-mix(in oklab, var(--muted-foreground, #737373) 18%, transparent) 5px,
+    color-mix(in oklab, var(--muted-foreground, #737373) 18%, transparent) 6px
+  );
+}
+
+/* ── 入边流动 ──
+   仅目标（入边接收方）为 running 时挂 `dag-edge--flow`；出边不带该类，
+   保持静态。stroke-dashoffset 从 0 走到 -dashLen，视觉上是「数据流入」。 */
+@keyframes dag-edge-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.dag-edge {
+  stroke-width: 1.75;
+}
+
+.dag-edge--flow {
+  stroke-dasharray: 8 6;
+  animation: dag-edge-flow 0.7s linear infinite;
+}
+
+/* 边按【源节点】状态着色；failed 源额外虚线化。 */
+.dag-edge--succeeded {
+  stroke: var(--color-emerald-500, #10b981);
+}
+
+.dag-edge--failed {
+  stroke: var(--color-red-500, #ef4444);
+  stroke-dasharray: 5 4;
+}
+
+.dag-edge--running {
+  stroke: var(--color-blue-500, #3b82f6);
+}
+
+.dag-edge--pending,
+.dag-edge--skipped,
+.dag-edge--cancelled,
+.dag-edge--unknown {
+  stroke: color-mix(in oklab, var(--muted-foreground, #737373) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dag-node--running,
+  .dag-edge--flow {
+    animation: none;
+  }
+}

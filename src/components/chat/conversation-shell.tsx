@@ -33,6 +33,7 @@ import { PermissionDialog } from "@/components/chat/permission-dialog"
 import { QuestionDialog } from "@/components/chat/question-dialog"
 import { AskQuestionCard } from "@/components/chat/ask-question-card"
 import { PlanApprovalCard } from "@/components/chat/plan-approval-card"
+import { DagPanel } from "@/components/dag-view/dag-panel"
 
 interface ConversationShellProps {
   status: ConnectionStatus | null
@@ -226,6 +227,10 @@ export function ConversationShell({
       style={resizableWidth ? chatGutterStyle : undefined}
     >
       {topBanner}
+
+      {/* DAG 浮层：`ra.dev/dag` topology 到达时才渲染（store 空则返回 null）。
+          放在会话外壳而非转录区内部 —— 会话详情与 canvas 两个宿主都走这里。 */}
+      <DagPanel />
 
       {/* Above the transcript, not down in the composer dock: this is the state
           of work running RIGHT NOW, and pinning it here keeps it still while the
