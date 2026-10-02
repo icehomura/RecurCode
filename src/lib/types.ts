@@ -1,4 +1,4 @@
-/** The fifteen agents codeg ships hand-written support for. */
+/** The sixteen agents codeg ships hand-written support for. */
 export type BuiltinAgentType =
   | "claude_code"
   | "codex"
@@ -15,6 +15,7 @@ export type BuiltinAgentType =
   | "deepseek"
   | "qoder"
   | "antigravity"
+  | "recur_agent"
 
 /**
  * Which agent backs a conversation.
@@ -1099,6 +1100,7 @@ export const AGENT_DISPLAY_ORDER: BuiltinAgentType[] = [
   "deepseek",
   "qoder",
   "antigravity",
+  "recur_agent",
 ]
 
 const AGENT_DISPLAY_ORDER_INDEX = new Map<AgentType, number>(
@@ -1133,6 +1135,7 @@ export const ALL_AGENT_TYPES: BuiltinAgentType[] = [
   "deepseek",
   "qoder",
   "antigravity",
+  "recur_agent",
 ]
 
 export const MODEL_PROVIDER_AGENT_TYPES: BuiltinAgentType[] = [
@@ -1444,6 +1447,7 @@ export const AGENT_LABELS: Record<BuiltinAgentType, string> = {
   deepseek: "DeepSeek Harness",
   qoder: "Qoder",
   antigravity: "Google Antigravity",
+  recur_agent: "Recur Agent",
 }
 
 export const AGENT_COLORS: Record<BuiltinAgentType, string> = {
@@ -1462,6 +1466,7 @@ export const AGENT_COLORS: Record<BuiltinAgentType, string> = {
   deepseek: "bg-[#4D6BFE]",
   qoder: "bg-[#6C4CF1]",
   antigravity: "bg-[#1A73E8]",
+  recur_agent: "bg-[#2563EB]",
 }
 
 // ACP connection status (matches Rust ConnectionStatus)
