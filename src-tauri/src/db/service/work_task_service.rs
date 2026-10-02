@@ -23,11 +23,12 @@ use sea_orm::{
 };
 
 use crate::db::entities::work_task::WorkTaskStatus;
-use crate::db::entities::{folder, work_task, work_task_event, work_task_settings, work_task_template};
+use crate::db::entities::{folder, task_tree_document, task_tree_goal, work_task, work_task_event, work_task_settings, work_task_template};
 use crate::db::error::DbError;
 use crate::models::{
-    WorkTaskConfig, WorkTaskDraft, WorkTaskEventInfo, WorkTaskFolderSettings, WorkTaskInfo,
-    WorkTaskMergeState, WorkTaskQueuedMerge,
+    TaskTreeDocumentDraft, TaskTreeDocumentInfo, TaskTreeGoalDraft, TaskTreeGoalInfo,
+    TaskTreeNodeInfo, WorkTaskConfig, WorkTaskDraft, WorkTaskEventInfo, WorkTaskFolderSettings,
+    WorkTaskInfo, WorkTaskMergeState, WorkTaskQueuedMerge,
 };
 
 // `WorkTaskPreflight` is referenced via `crate::models::` in its fns to keep
@@ -102,6 +103,8 @@ fn to_info(m: work_task::Model) -> WorkTaskInfo {
         started_at: m.started_at,
         settled_at: m.settled_at,
         finished_at: m.finished_at,
+        parent_id: m.parent_id,
+        tree_description: m.tree_description,
     }
 }
 
@@ -715,6 +718,8 @@ async fn insert_todo_row<C: ConnectionTrait>(
         settled_at: Set(None),
         finished_at: Set(None),
         deleted_at: Set(None),
+        parent_id: Set(None),
+        tree_description: Set(None),
     };
     Ok(active.insert(txn).await?)
 }
@@ -2832,6 +2837,384 @@ pub async fn template_save(
 
 pub async fn template_delete(conn: &DatabaseConnection, id: i32) -> Result<(), DbError> {
     work_task_template::Entity::delete_by_id(id).exec(conn).await?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Task tree board helpers
+// ---------------------------------------------------------------------------
+
+/// Helper: convert a task_tree_goal entity to its wire DTO.
+fn goal_to_info(m: task_tree_goal::Model) -> TaskTreeGoalInfo {
+    TaskTreeGoalInfo {
+        id: m.id,
+        task_id: m.task_id,
+        title: m.title,
+        sort_order: m.sort_order,
+    }
+}
+
+/// Helper: convert a task_tree_document entity to its wire DTO.
+fn document_to_info(m: task_tree_document::Model) -> TaskTreeDocumentInfo {
+    TaskTreeDocumentInfo {
+        id: m.id,
+        task_id: m.task_id,
+        title: m.title,
+        content: m.content,
+        document_type: m.document_type,
+        created_at: m.created_at,
+        updated_at: m.updated_at,
+    }
+}
+
+/// Fetch every tree node for a project (by folder_id) that has `parent_id` set
+/// (tree nodes only — flat kanban tasks keep parent_id NULL). Returns the full
+/// set including goals and documents so the frontend can render the tree in one
+/// round-trip.
+pub async fn tree_list(
+    conn: &DatabaseConnection,
+    folder_id: i32,
+) -> Result<Vec<TaskTreeNodeInfo>, DbError> {
+    let tasks = work_task::Entity::find()
+        .filter(
+            Expr::col(work_task::Column::FolderId)
+                .eq(folder_id)
+                .and(Expr::col(work_task::Column::ParentId).is_not_null()),
+        )
+        .order_by_asc(work_task::Column::SortOrder)
+        .all(conn)
+        .await?;
+
+    let task_ids: Vec<i32> = tasks.iter().map(|t| t.id).collect();
+
+    // Batch-fetch goals for all tasks in this folder's tree.
+    let goals = if task_ids.is_empty() {
+        Vec::new()
+    } else {
+        task_tree_goal::Entity::find()
+            .filter(task_tree_goal::Column::TaskId.is_in(task_ids.clone()))
+            .order_by_asc(task_tree_goal::Column::SortOrder)
+            .all(conn)
+            .await?
+    };
+
+    // Batch-fetch documents.
+    let documents = if task_ids.is_empty() {
+        Vec::new()
+    } else {
+        task_tree_document::Entity::find()
+            .filter(task_tree_document::Column::TaskId.is_in(task_ids))
+            .order_by_asc(task_tree_document::Column::CreatedAt)
+            .all(conn)
+            .await?
+    };
+
+    // Group by task_id.
+    let mut goals_by_task: std::collections::HashMap<i32, Vec<TaskTreeGoalInfo>> =
+        std::collections::HashMap::new();
+    for g in goals {
+        goals_by_task.entry(g.task_id).or_default().push(goal_to_info(g));
+    }
+    let mut docs_by_task: std::collections::HashMap<i32, Vec<TaskTreeDocumentInfo>> =
+        std::collections::HashMap::new();
+    for d in documents {
+        docs_by_task.entry(d.task_id).or_default().push(document_to_info(d));
+    }
+
+    let nodes = tasks
+        .into_iter()
+        .map(|m| {
+            let id = m.id;
+            TaskTreeNodeInfo {
+                id: m.id,
+                folder_id: m.folder_id,
+                title: m.title,
+                tree_description: m.tree_description,
+                parent_id: m.parent_id,
+                sort_order: m.sort_order,
+                status: m.status,
+                conversation_id: m.conversation_id,
+                goals: goals_by_task.remove(&id).unwrap_or_default(),
+                documents: docs_by_task.remove(&id).unwrap_or_default(),
+                created_at: m.created_at,
+                updated_at: m.updated_at,
+            }
+        })
+        .collect();
+
+    Ok(nodes)
+}
+
+/// Create a new tree node (a work_task with parent_id set).
+pub async fn tree_create_node(
+    conn: &DatabaseConnection,
+    folder_id: i32,
+    parent_id: Option<i32>,
+    title: String,
+    description: Option<String>,
+) -> Result<TaskTreeNodeInfo, DbError> {
+    let now = Utc::now();
+    let active = work_task::ActiveModel {
+        id: NotSet,
+        folder_id: Set(folder_id),
+        title: Set(title),
+        config: Set("{}".to_string()),
+        status: Set(WorkTaskStatus::Todo),
+        failure_reason: Set(None),
+        last_error: Set(None),
+        run_seq: Set(0),
+        sort_order: Set(0),
+        worktree_folder_id: Set(None),
+        conversation_id: Set(None),
+        connection_id: Set(None),
+        base_branch: Set(None),
+        base_sha: Set(None),
+        work_branch: Set(None),
+        merge_state: Set(None),
+        pending_merge: Set(None),
+        cleanup_state: Set(None),
+        verdict: Set(None),
+        result_summary: Set(None),
+        files_changed: Set(None),
+        additions: Set(None),
+        deletions: Set(None),
+        merge_commit: Set(None),
+        completion_kind: Set(None),
+        preflight: Set(None),
+        archived_at: Set(None),
+        scheduled_at: Set(None),
+        source_kind: Set(None),
+        source_key: Set(None),
+        source_meta: Set(None),
+        created_at: Set(now),
+        updated_at: Set(now),
+        started_at: Set(None),
+        settled_at: Set(None),
+        finished_at: Set(None),
+        deleted_at: Set(None),
+        parent_id: Set(parent_id),
+        tree_description: Set(description),
+    };
+    let model = active.insert(conn).await?;
+
+    Ok(TaskTreeNodeInfo {
+        id: model.id,
+        folder_id: model.folder_id,
+        title: model.title,
+        tree_description: model.tree_description,
+        parent_id: model.parent_id,
+        sort_order: model.sort_order,
+        status: model.status,
+        conversation_id: model.conversation_id,
+        goals: Vec::new(),
+        documents: Vec::new(),
+        created_at: model.created_at,
+        updated_at: model.updated_at,
+    })
+}
+
+/// Update a tree node's title and/or description.
+pub async fn tree_update_node(
+    conn: &DatabaseConnection,
+    task_id: i32,
+    title: Option<String>,
+    description: Option<String>,
+) -> Result<(), DbError> {
+    let mut model = work_task::Entity::find_by_id(task_id)
+        .one(conn)
+        .await?
+        .ok_or_else(|| DbError::NotFound(format!("work task {task_id}")))?;
+    let mut am = model.into_active_model();
+    if let Some(t) = title {
+        am.title = Set(t);
+    }
+    if let Some(d) = description {
+        am.tree_description = Set(Some(d));
+    }
+    am.updated_at = Set(Utc::now());
+    am.update(conn).await?;
+    Ok(())
+}
+
+/// Recursively delete a tree node and all its descendants.
+pub async fn tree_delete_node(
+    conn: &DatabaseConnection,
+    task_id: i32,
+) -> Result<(), DbError> {
+    // Collect all descendant ids via iterative BFS (SQLite doesn't support
+    // recursive CTEs through SeaORM's query builder, so we walk in Rust).
+    let mut to_delete = vec![task_id];
+    let mut frontier = vec![task_id];
+    loop {
+        let children = work_task::Entity::find()
+            .filter(
+                Expr::col(work_task::Column::ParentId).is_in(frontier.clone()),
+            )
+            .all(conn)
+            .await?;
+        if children.is_empty() {
+            break;
+        }
+        frontier.clear();
+        for child in children {
+            to_delete.push(child.id);
+            frontier.push(child.id);
+        }
+    }
+
+    // Delete goals, documents, then tasks (FK cascade would also handle this,
+    // but explicit ordering makes intent clear).
+    if !to_delete.is_empty() {
+        task_tree_goal::Entity::delete_many()
+            .filter(task_tree_goal::Column::TaskId.is_in(to_delete.clone()))
+            .exec(conn)
+            .await?;
+        task_tree_document::Entity::delete_many()
+            .filter(task_tree_document::Column::TaskId.is_in(to_delete.clone()))
+            .exec(conn)
+            .await?;
+        work_task::Entity::delete_many()
+            .filter(work_task::Column::Id.is_in(to_delete))
+            .exec(conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// Reorder sibling nodes by setting sort_order for each id in order.
+pub async fn tree_reorder(
+    conn: &DatabaseConnection,
+    ordered_ids: &[i32],
+) -> Result<(), DbError> {
+    for (idx, id) in ordered_ids.iter().enumerate() {
+        work_task::Entity::update(work_task::ActiveModel {
+            id: Set(*id),
+            sort_order: Set(idx as i32),
+            updated_at: Set(Utc::now()),
+            ..Default::default()
+        })
+        .exec(conn)
+        .await?;
+    }
+    Ok(())
+}
+
+/// Add a goal to a tree node.
+pub async fn tree_add_goal(
+    conn: &DatabaseConnection,
+    task_id: i32,
+    draft: TaskTreeGoalDraft,
+) -> Result<TaskTreeGoalInfo, DbError> {
+    let now = Utc::now();
+    // Determine next sort_order.
+    let max_order = task_tree_goal::Entity::find()
+        .filter(task_tree_goal::Column::TaskId.eq(task_id))
+        .order_by_desc(task_tree_goal::Column::SortOrder)
+        .one(conn)
+        .await?
+        .map(|m| m.sort_order + 1)
+        .unwrap_or(0);
+
+    let active = task_tree_goal::ActiveModel {
+        id: NotSet,
+        task_id: Set(task_id),
+        title: Set(draft.title),
+        sort_order: Set(max_order),
+        created_at: Set(now),
+        updated_at: Set(now),
+    };
+    let model = active.insert(conn).await?;
+    Ok(goal_to_info(model))
+}
+
+/// Remove a goal by its id.
+pub async fn tree_remove_goal(
+    conn: &DatabaseConnection,
+    goal_id: i32,
+) -> Result<(), DbError> {
+    task_tree_goal::Entity::delete_by_id(goal_id).exec(conn).await?;
+    Ok(())
+}
+
+/// Reorder goals within a task.
+pub async fn tree_reorder_goals(
+    conn: &DatabaseConnection,
+    task_id: i32,
+    ordered_ids: &[i32],
+) -> Result<(), DbError> {
+    for (idx, id) in ordered_ids.iter().enumerate() {
+        task_tree_goal::Entity::update(task_tree_goal::ActiveModel {
+            id: Set(*id),
+            task_id: Set(task_id),
+            sort_order: Set(idx as i32),
+            updated_at: Set(Utc::now()),
+            ..Default::default()
+        })
+        .exec(conn)
+        .await?;
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Task tree document helpers
+// ---------------------------------------------------------------------------
+
+/// Add a document to a tree node.
+pub async fn tree_add_document(
+    conn: &DatabaseConnection,
+    task_id: i32,
+    draft: TaskTreeDocumentDraft,
+) -> Result<TaskTreeDocumentInfo, DbError> {
+    let now = Utc::now();
+    let active = task_tree_document::ActiveModel {
+        id: NotSet,
+        task_id: Set(task_id),
+        title: Set(draft.title),
+        content: Set(draft.content),
+        document_type: Set(draft.document_type),
+        created_at: Set(now),
+        updated_at: Set(now),
+    };
+    let model = active.insert(conn).await?;
+    Ok(document_to_info(model))
+}
+
+/// Update a document's title, content, or type.
+pub async fn tree_update_document(
+    conn: &DatabaseConnection,
+    document_id: i32,
+    title: Option<String>,
+    content: Option<String>,
+    document_type: Option<String>,
+) -> Result<(), DbError> {
+    let mut am = task_tree_document::Entity::find_by_id(document_id)
+        .one(conn)
+        .await?
+        .ok_or_else(|| DbError::NotFound(format!("task tree document {document_id}")))?
+        .into_active_model();
+    if let Some(t) = title {
+        am.title = Set(t);
+    }
+    if let Some(c) = content {
+        am.content = Set(c);
+    }
+    if let Some(dt) = document_type {
+        am.document_type = Set(dt);
+    }
+    am.updated_at = Set(Utc::now());
+    am.update(conn).await?;
+    Ok(())
+}
+
+/// Remove a document by its id.
+pub async fn tree_remove_document(
+    conn: &DatabaseConnection,
+    document_id: i32,
+) -> Result<(), DbError> {
+    task_tree_document::Entity::delete_by_id(document_id)
+        .exec(conn)
+        .await?;
     Ok(())
 }
 
