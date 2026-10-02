@@ -25,6 +25,8 @@ export type WorkbenchRouteId =
   | "forge"
   | "tokenUsage"
   | "canvas"
+  | "taskTree"
+  | "projectView"
 
 interface WorkbenchRouteContextValue {
   routeId: WorkbenchRouteId
