@@ -5311,3 +5311,19 @@ export interface DeepSeekModelCatalog {
    *  fixed, sessions run on the agent's built-in catalog instead. */
   invalid: string | null
 }
+
+/** 用户定义的角色（类似 Claude agent 定义） */
+export interface AgentRole {
+  id: number
+  name: string
+  description: string
+  systemPrompt: string
+  agentType?: string | null
+  modelId?: string | null
+  toolsJson?: string | null
+  temperature?: number | null
+  isBuiltin: boolean
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
