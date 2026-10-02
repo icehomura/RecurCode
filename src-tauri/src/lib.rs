@@ -40,6 +40,7 @@ pub mod intern;
 pub mod keyring_store;
 pub mod logging;
 pub mod models;
+pub mod mcp;
 mod network;
 pub mod office_watch;
 pub mod parsers;
