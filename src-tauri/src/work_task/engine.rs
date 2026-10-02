@@ -7974,6 +7974,8 @@ mod tests {
             settled_at: None,
             finished_at: None,
             deleted_at: None,
+            parent_id: None,
+            tree_description: None,
         }
     }
 

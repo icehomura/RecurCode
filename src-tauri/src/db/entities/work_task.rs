@@ -136,6 +136,10 @@ pub struct Model {
     /// Entered done / canceled.
     pub finished_at: Option<DateTimeUtc>,
     pub deleted_at: Option<DateTimeUtc>,
+    /// Tree board: parent node id (NULL = root / project-level node).
+    pub parent_id: Option<i32>,
+    /// Tree board: introduction/description text shown on tree cards.
+    pub tree_description: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -148,6 +152,17 @@ pub enum Relation {
         to = "super::folder::Column::Id"
     )]
     Folder,
+    /// Self-referential parent for the tree board hierarchy.
+    #[sea_orm(
+        belongs_to = "super::work_task::Entity",
+        from = "Column::ParentId",
+        to = "Column::Id"
+    )]
+    Parent,
+    #[sea_orm(has_many = "super::task_tree_goal::Entity")]
+    TreeGoals,
+    #[sea_orm(has_many = "super::task_tree_document::Entity")]
+    TreeDocuments,
 }
 
 impl Related<super::work_task_event::Entity> for Entity {
@@ -159,6 +174,24 @@ impl Related<super::work_task_event::Entity> for Entity {
 impl Related<super::folder::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Folder.def()
+    }
+}
+
+impl Related<super::work_task::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Parent.def()
+    }
+}
+
+impl Related<super::task_tree_goal::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TreeGoals.def()
+    }
+}
+
+impl Related<super::task_tree_document::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::TreeDocuments.def()
     }
 }
 

@@ -93,6 +93,12 @@ pub struct WorkTaskInfo {
     pub started_at: Option<DateTime<Utc>>,
     pub settled_at: Option<DateTime<Utc>>,
     pub finished_at: Option<DateTime<Utc>>,
+    /// Tree board: parent node id (NULL = root / project-level).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_id: Option<i32>,
+    /// Tree board: introduction/description text.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tree_description: Option<String>,
 }
 
 /// One timeline entry of a task (append-only; see `work_task_event`).
@@ -488,6 +494,65 @@ pub struct WorkTaskChangedFile {
     pub file: String,
     pub additions: i32,
     pub deletions: i32,
+}
+
+/// A task tree goal displayed on tree node cards.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskTreeGoalInfo {
+    pub id: i32,
+    pub task_id: i32,
+    pub title: String,
+    pub sort_order: i32,
+}
+
+/// Create payload for a new task tree goal.
+#[derive(Debug, Clone, Deserialize)]
+pub struct TaskTreeGoalDraft {
+    pub title: String,
+}
+
+/// A task tree document (PRD, plan, notes) attached to a node.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskTreeDocumentInfo {
+    pub id: i32,
+    pub task_id: i32,
+    pub title: String,
+    pub content: String,
+    pub document_type: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Create/update payload for a task tree document.
+#[derive(Debug, Clone, Deserialize)]
+pub struct TaskTreeDocumentDraft {
+    pub title: String,
+    #[serde(default)]
+    pub content: String,
+    #[serde(default = "default_document_type")]
+    pub document_type: String,
+}
+
+/// A tree node for the task tree board view — a work_task enriched with goals
+/// and documents, suitable for rendering in ReactFlow.
+#[derive(Debug, Clone, Serialize)]
+pub struct TaskTreeNodeInfo {
+    pub id: i32,
+    pub folder_id: i32,
+    pub title: String,
+    pub tree_description: Option<String>,
+    pub parent_id: Option<i32>,
+    pub sort_order: i32,
+    pub status: WorkTaskStatus,
+    pub conversation_id: Option<i32>,
+    pub goals: Vec<TaskTreeGoalInfo>,
+    pub documents: Vec<TaskTreeDocumentInfo>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+fn default_document_type() -> String {
+    "note".to_string()
 }
 
 #[cfg(test)]

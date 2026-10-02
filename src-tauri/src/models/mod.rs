@@ -52,10 +52,11 @@ pub use token_usage::{
     TokenUsageSyncStatus, TokenUsageTotals,
 };
 pub use work_task::{
-    FollowUpIntent, WorkTaskChangedFile, WorkTaskConfig, WorkTaskDraft, WorkTaskEventInfo,
-    WorkTaskFolderSettings, WorkTaskInfo, WorkTaskMergeOp, WorkTaskMergeState, WorkTaskPreflight,
-    WorkTaskQueuedMerge, WorkTaskSource, WorkTaskStatus, WorkTaskTemplateDraft,
-    WorkTaskTemplateInfo, DELIVERABLE_REPORT, STAGE_PROMPT_ALL,
+    FollowUpIntent, TaskTreeDocumentDraft, TaskTreeDocumentInfo, TaskTreeGoalDraft,
+    TaskTreeGoalInfo, TaskTreeNodeInfo, WorkTaskChangedFile, WorkTaskConfig, WorkTaskDraft,
+    WorkTaskEventInfo, WorkTaskFolderSettings, WorkTaskInfo, WorkTaskMergeOp, WorkTaskMergeState,
+    WorkTaskPreflight, WorkTaskQueuedMerge, WorkTaskSource, WorkTaskStatus,
+    WorkTaskTemplateDraft, WorkTaskTemplateInfo, DELIVERABLE_REPORT, STAGE_PROMPT_ALL,
 };
 #[cfg(feature = "tauri-runtime")]
 pub use system::{
