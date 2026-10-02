@@ -4688,6 +4688,52 @@
       "deleted": "Quick message deleted"
     }
   },
+  "AgentRolesSettings": {
+    "title": "Agent Roles",
+    "description": "Define reusable roles for agents. Drag to reorder.",
+    "loading": "Loading agent roles…",
+    "emptyList": "No agent roles yet. Click \"New\" to create one.",
+    "emptySelection": "Select an agent role to edit.",
+    "untitled": "Untitled",
+    "actions": {
+      "new": "New",
+      "save": "Save",
+      "delete": "Delete",
+      "dragSort": "Drag to reorder",
+      "dragSortMessage": "Drag to reorder agent role: {name}"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Give this role a short name",
+      "description": "Description",
+      "descriptionPlaceholder": "What does this role do?",
+      "systemPrompt": "System Prompt",
+      "systemPromptPlaceholder": "Write the system prompt for this role",
+      "targetAgent": "Target Agent",
+      "anyAgent": "Any Agent",
+      "model": "Model",
+      "modelPlaceholder": "e.g. claude-sonnet-4-20250514",
+      "temperature": "Temperature",
+      "toolRestrictions": "Tool Restrictions",
+      "toolRestrictionsPlaceholder": "e.g. no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "Delete agent role?",
+      "message": "This will permanently delete \"{name}\". Are you sure?",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load agent roles",
+      "createFailed": "Failed to create agent role",
+      "saveFailed": "Failed to save agent role",
+      "deleteFailed": "Failed to delete agent role",
+      "saveOrderFailed": "Failed to save order",
+      "created": "Agent role created",
+      "saved": "Agent role saved",
+      "deleted": "Agent role deleted"
+    }
+  },
   "ConversationTags": {
     "tags": "Tags",
     "moreTags": "{count, plural, one {# more tag} other {# more tags}}",

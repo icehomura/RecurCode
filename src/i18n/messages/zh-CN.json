@@ -4688,6 +4688,52 @@
       "deleted": "已删除快捷消息"
     }
   },
+  "AgentRolesSettings": {
+    "title": "角色定义",
+    "description": "为智能体定义可复用的角色。拖拽以排序。",
+    "loading": "加载角色列表中…",
+    "emptyList": "暂无角色定义，点击「新建」创建一个。",
+    "emptySelection": "请选择一个角色进行编辑。",
+    "untitled": "未命名",
+    "actions": {
+      "new": "新建",
+      "save": "保存",
+      "delete": "删除",
+      "dragSort": "拖拽排序",
+      "dragSortMessage": "拖拽以排序角色：{name}"
+    },
+    "fields": {
+      "name": "名称",
+      "namePlaceholder": "给角色起一个简短的名字",
+      "description": "描述",
+      "descriptionPlaceholder": "这个角色的职责是什么？",
+      "systemPrompt": "系统提示词",
+      "systemPromptPlaceholder": "为该角色编写系统提示词",
+      "targetAgent": "目标代理",
+      "anyAgent": "任意代理",
+      "model": "模型",
+      "modelPlaceholder": "例如 claude-sonnet-4-20250514",
+      "temperature": "温度",
+      "toolRestrictions": "工具限制",
+      "toolRestrictionsPlaceholder": "例如 no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "删除角色？",
+      "message": "将永久删除「{name}」，确认继续？",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
+    "toasts": {
+      "loadFailed": "加载角色列表失败",
+      "createFailed": "创建角色失败",
+      "saveFailed": "保存角色失败",
+      "deleteFailed": "删除角色失败",
+      "saveOrderFailed": "保存排序失败",
+      "created": "角色已创建",
+      "saved": "角色已保存",
+      "deleted": "角色已删除"
+    }
+  },
   "ConversationTags": {
     "tags": "标签",
     "moreTags": "另有 {count} 个标签",
