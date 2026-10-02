@@ -694,6 +694,21 @@ fn agent_root_slots(agent_type: AgentType) -> &'static [RootSlot] {
                 default_rel: &[".pi", "agent", "sessions"],
             },
         ],
+        AgentType::RecurAgent => &[
+            RootSlot {
+                candidates: &[("RECUR_AGENT_DIR", "", VERBATIM)],
+                trims: false,
+                default_rel: &[".ra", "agent"],
+            },
+            RootSlot {
+                candidates: &[
+                    ("RECUR_AGENT_SESSIONS_DIR", "", VERBATIM),
+                    ("RECUR_AGENT_DIR", "sessions", VERBATIM),
+                ],
+                trims: false,
+                default_rel: &[".ra", "agent", "sessions"],
+            },
+        ],
         // A custom ACP agent has no codeg-known private directory layout —
         // codeg never reads its store (history comes from codeg's own ACP
         // transcript), so there is nothing to widen the sandbox roots for.

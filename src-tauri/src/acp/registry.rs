@@ -246,6 +246,7 @@ pub fn builtin_acp_agents() -> Vec<AgentType> {
         AgentType::DeepSeek,
         AgentType::Qoder,
         AgentType::Antigravity,
+        AgentType::RecurAgent,
     ]
 }
 
@@ -274,6 +275,8 @@ pub fn registry_id_for(agent_type: AgentType) -> &'static str {
         AgentType::DeepSeek => "deepseek-acp",
         AgentType::Qoder => "qoder-cli",
         AgentType::Antigravity => "antigravity-acp",
+        // No adapter process: RecurAgent is launched directly as `recur --acp`.
+        AgentType::RecurAgent => "recur-agent",
         // A custom agent's registry id IS its identity.
         AgentType::Custom(id) => id,
     }
@@ -296,6 +299,9 @@ pub fn from_registry_id(id: &str) -> Option<AgentType> {
         "deepseek-acp" => Some(AgentType::DeepSeek),
         "qoder-cli" => Some(AgentType::Qoder),
         "antigravity-acp" => Some(AgentType::Antigravity),
+        // RecurAgent has no adapter process, so its registry id is a plain
+        // identity string rather than a wrapped-vendor-CLI id.
+        "recur-agent" => Some(AgentType::RecurAgent),
         // Only ids the user has actually registered resolve. An unregistered
         // id must stay `None` so the ACP-registry picker still offers it as
         // "addable" rather than treating it as already supported.
@@ -4287,6 +4293,83 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                         windows: &["localharness_external.exe"],
                     },
                 }),
+            },
+        },
+        AgentType::RecurAgent => AcpAgentMeta {
+            agent_type,
+            // RecurAgent's ACP server IGNORES `session/new`'s `mcpServers`: its
+            // ACP entry point never builds an MCP client, so neither the built-in
+            // codeg-mcp companion nor a user's own servers ever reach its model
+            // (probed: a server handed to `session/new` is never spawned).
+            // Declaring `false` is what keeps codeg from injecting a companion
+            // whose `delegate_to_agent` / live-feedback tools the agent can never
+            // call — and from steering a prompt at tools that do not exist. Same
+            // posture as OpenClaw, and stricter than pi's `agent_delivers_wire_mcp`
+            // gate, because RecurAgent does not even consume the field.
+            supports_mcp: false,
+            name: "Recur Agent",
+            description: "Rust-native headless coding agent speaking ACP directly (ra-headless --acp)",
+            // RecurAgent ships two independent binaries: `ra` keeps the full
+            // terminal UI, while `ra-headless` is the RecurCode ACP binary.
+            // RecurCode must launch the latter so the TUI dependency graph is
+            // absent from the process it starts.
+            distribution: AgentDistribution::Binary {
+                version: "0.6.1",
+                cmd: "ra-headless",
+                args: &["--acp"],
+                env: &[],
+                // RecurAgent publishes one headless archive per target at the
+                // release tag. The names follow this crate's platform keys
+                // (`darwin-aarch64`, `linux-x86_64`, ...) and the arch spelling
+                // used there (`x86_64`/`aarch64`, not `amd64`/`arm64`).
+                //
+                // Compression is `.tar.gz` on Unix and `.zip` on Windows because
+                // that is exactly what `binary_cache`'s extractor accepts — it
+                // handles `.tar.gz`/`.tgz`, `.tar.bz2`/`.tbz2` and `.zip` only,
+                // with no xz/lzma backend, so a `.tar.xz` asset would fail as an
+                // "unsupported archive format" rather than install.
+                //
+                // The Windows ARM64 entry has no published archive today
+                // (RecurAgent's matrix builds x86_64-pc-windows-msvc only). It
+                // stays listed because the `Binary` arm resolves
+                // `current_platform()` against this table before it probes
+                // cache/PATH; dropping it would break that match on such a host.
+                // An absent archive surfaces as a 404 on the Install button,
+                // which is the intended failure — never a silent wrong-platform
+                // install.
+                platforms: &[
+                    PlatformBinary {
+                        platform: "darwin-aarch64",
+                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-darwin-aarch64.tar.gz",
+                        sha256: None,
+                    },
+                    PlatformBinary {
+                        platform: "darwin-x86_64",
+                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-darwin-x86_64.tar.gz",
+                        sha256: None,
+                    },
+                    PlatformBinary {
+                        platform: "linux-aarch64",
+                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-linux-aarch64.tar.gz",
+                        sha256: None,
+                    },
+                    PlatformBinary {
+                        platform: "linux-x86_64",
+                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-linux-x86_64.tar.gz",
+                        sha256: None,
+                    },
+                    PlatformBinary {
+                        platform: "windows-aarch64",
+                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-windows-aarch64.zip",
+                        sha256: None,
+                    },
+                    PlatformBinary {
+                        platform: "windows-x86_64",
+                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-windows-x86_64.zip",
+                        sha256: None,
+                    },
+                ],
+                dir_entry: None,
             },
         },
         // Handled by the early return above; kept so the match stays

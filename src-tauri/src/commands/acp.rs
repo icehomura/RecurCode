@@ -5882,6 +5882,21 @@ pub(crate) async fn acp_fetch_kimi_models_core(
 /// Resolve pi's coding-agent dir from codeg's own environment:
 /// `PI_CODING_AGENT_DIR` through pi's tilde rule, else `~/.pi/agent`. The same
 /// resolver the history parser uses, so the two cannot drift.
+/// Resolve RecurAgent's coding-agent dir: `RECUR_AGENT_DIR` if set (trimmed,
+/// non-empty), else `~/.ra/agent`. Mirrors [`pi_agent_dir`] so the two agents
+/// keep independent stores — RecurAgent must never fall back to `~/.pi`, or
+/// its history would interleave with pi's.
+pub(crate) fn recur_agent_dir() -> PathBuf {
+    match std::env::var("RECUR_AGENT_DIR")
+        .ok()
+        .map(|raw| raw.trim().to_string())
+        .filter(|s| !s.is_empty())
+    {
+        Some(value) => PathBuf::from(value),
+        None => home_dir_or_default().join(".ra").join("agent"),
+    }
+}
+
 pub(crate) fn pi_agent_dir() -> PathBuf {
     crate::parsers::pi::resolve_pi_agent_dir()
 }
@@ -9042,6 +9057,16 @@ pub(crate) fn skill_storage_spec(agent_type: AgentType) -> Option<SkillStorageSp
             ],
             project_rel_dirs: vec![".pi/skills", ".agents/skills"],
         }),
+        // RecurAgent mirrors pi's skill layout under its OWN agent dir so the
+        // two stores stay independent (`~/.ra/agent/skills` vs `~/.pi/agent/skills`).
+        AgentType::RecurAgent => Some(SkillStorageSpec {
+            kind: SkillStorageKind::SkillDirectoryOrMarkdownFile,
+            global_dirs: vec![
+                recur_agent_dir().join("skills"),
+                home_dir_or_default().join(".agents").join("skills"),
+            ],
+            project_rel_dirs: vec![".ra/skills", ".agents/skills"],
+        }),
         // Grok reads skills from `<GROK_HOME>/skills/` (default
         // `~/.grok/skills/`, one `SKILL.md`-bearing directory per skill) and
         // project-local `<root>/.grok/skills/`.
@@ -10848,6 +10873,11 @@ fn cascade_update_agent_config(
             // selection in `~/.pi/agent/settings.json`, managed by the dedicated
             // Pi settings panel (`acp_update_pi_config`); it does not participate
             // in the model-provider credential cascade.
+        }
+        AgentType::RecurAgent => {
+            // RecurAgent authenticates via its own `~/.ra/agent/auth.json` +
+            // model selection in `~/.ra/agent/settings.json`; like pi it does
+            // not participate in the model-provider credential cascade.
         }
         AgentType::Grok => {
             // Grok authenticates via `XAI_API_KEY` (or an interactive

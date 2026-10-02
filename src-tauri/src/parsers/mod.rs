@@ -17,6 +17,7 @@ pub mod opencode;
 mod opencode_context_window;
 pub mod pi;
 pub mod qoder;
+pub mod recur;
 mod summary_cache;
 
 use std::collections::{HashMap, HashSet};
@@ -390,6 +391,10 @@ pub fn build_agent_parser(agent_type: AgentType) -> Box<dyn AgentParser> {
         AgentType::DeepSeek => Box::new(deepseek::DeepSeekParser::new()),
         AgentType::Qoder => Box::new(qoder::QoderParser::new()),
         AgentType::Antigravity => Box::new(antigravity::AntigravityParser::new()),
+        // RecurAgent speaks ACP directly (`recur --acp`); its history still lives
+        // in its own session JSONL store, so it gets the copied pi-shaped parser
+        // pointed at `~/.ra/agent/sessions`.
+        AgentType::RecurAgent => Box::new(recur::RecurParser::new()),
         // Custom ACP agents have no native store to reverse-engineer; their
         // history is codeg's own ACP transcript.
         AgentType::Custom(_) => Box::new(acp_native::AcpNativeParser::new(agent_type)),

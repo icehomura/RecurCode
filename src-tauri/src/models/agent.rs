@@ -36,6 +36,10 @@ pub enum AgentType {
     DeepSeek,
     Qoder,
     Antigravity,
+    /// RecurAgent — the Rust-native `recur` CLI spoken over ACP directly (no
+    /// `pi-acp`-style adapter), so its transcript and launch metadata mirror
+    /// [`AgentType::Pi`]'s shape but its own store.
+    RecurAgent,
     /// A user-registered ACP agent, identified by its ACP-registry id
     /// (interned). Ordered last so built-ins keep their relative order.
     Custom(&'static str),
@@ -60,6 +64,7 @@ pub const BUILTIN_AGENT_TYPES: &[AgentType] = &[
     AgentType::DeepSeek,
     AgentType::Qoder,
     AgentType::Antigravity,
+    AgentType::RecurAgent,
 ];
 
 impl AgentType {
@@ -107,6 +112,7 @@ impl AgentType {
             AgentType::DeepSeek => Cow::Borrowed("deepseek"),
             AgentType::Qoder => Cow::Borrowed("qoder"),
             AgentType::Antigravity => Cow::Borrowed("antigravity"),
+            AgentType::RecurAgent => Cow::Borrowed("recur_agent"),
             AgentType::Custom(id) => Cow::Owned(format!("{CUSTOM_AGENT_WIRE_PREFIX}{id}")),
         }
     }
@@ -130,6 +136,7 @@ impl AgentType {
             "deepseek" => Some(AgentType::DeepSeek),
             "qoder" => Some(AgentType::Qoder),
             "antigravity" => Some(AgentType::Antigravity),
+            "recur_agent" => Some(AgentType::RecurAgent),
             other => other
                 .strip_prefix(CUSTOM_AGENT_WIRE_PREFIX)
                 .and_then(AgentType::custom),
@@ -172,6 +179,7 @@ pub fn is_valid_custom_agent_id(id: &str) -> bool {
                 | "deepseek"
                 | "qoder"
                 | "antigravity"
+                | "recur_agent"
         )
 }
 
@@ -207,6 +215,7 @@ impl fmt::Display for AgentType {
             AgentType::DeepSeek => write!(f, "DeepSeek Harness"),
             AgentType::Qoder => write!(f, "Qoder"),
             AgentType::Antigravity => write!(f, "Google Antigravity"),
+            AgentType::RecurAgent => write!(f, "Recur Agent"),
             // Prefer the registered display name; fall back to the raw id when
             // the registry has not been hydrated (or the agent was deleted
             // while conversations still reference it).
