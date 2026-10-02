@@ -7,8 +7,9 @@ use crate::app_error::AppCommandError;
 use crate::app_state::AppState;
 use crate::commands::work_task as core;
 use crate::models::{
-    WorkTaskChangedFile, WorkTaskDraft, WorkTaskEventInfo, WorkTaskFolderSettings, WorkTaskInfo,
-    WorkTaskTemplateDraft, WorkTaskTemplateInfo,
+    TaskTreeDocumentDraft, TaskTreeDocumentInfo, TaskTreeGoalDraft, TaskTreeGoalInfo,
+    TaskTreeNodeInfo, WorkTaskChangedFile, WorkTaskDraft, WorkTaskEventInfo,
+    WorkTaskFolderSettings, WorkTaskInfo, WorkTaskTemplateDraft, WorkTaskTemplateInfo,
 };
 
 fn default_event_limit() -> u64 {
@@ -525,6 +526,200 @@ pub async fn work_task_template_delete(
     Json(params): Json<IdParams>,
 ) -> Result<Json<()>, AppCommandError> {
     core::work_task_template_delete_core(&state.db, params.id)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(()))
+}
+
+// ---------------------------------------------------------------------------
+// Task tree board handlers
+// ---------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeListParams {
+    pub folder_id: i32,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeCreateParams {
+    pub folder_id: i32,
+    pub parent_id: Option<i32>,
+    pub title: String,
+    pub description: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeUpdateParams {
+    pub task_id: i32,
+    pub title: Option<String>,
+    pub description: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeDeleteParams {
+    pub task_id: i32,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeAddGoalParams {
+    pub task_id: i32,
+    pub draft: TaskTreeGoalDraft,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeRemoveGoalParams {
+    pub goal_id: i32,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeReorderGoalsParams {
+    pub task_id: i32,
+    pub ordered_ids: Vec<i32>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeAddDocumentParams {
+    pub task_id: i32,
+    pub draft: TaskTreeDocumentDraft,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeUpdateDocumentParams {
+    pub document_id: i32,
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub document_type: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeRemoveDocumentParams {
+    pub document_id: i32,
+}
+
+pub async fn work_task_tree_list(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeListParams>,
+) -> Result<Json<Vec<TaskTreeNodeInfo>>, AppCommandError> {
+    let result = core::work_task_tree_list_core(&state.db, params.folder_id)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(result))
+}
+
+pub async fn work_task_tree_create(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeCreateParams>,
+) -> Result<Json<TaskTreeNodeInfo>, AppCommandError> {
+    let result = core::work_task_tree_create_core(
+        &state.emitter,
+        &state.db,
+        params.folder_id,
+        params.parent_id,
+        params.title,
+        params.description,
+    )
+    .await
+    .map_err(AppCommandError::from)?;
+    Ok(Json(result))
+}
+
+pub async fn work_task_tree_update(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeUpdateParams>,
+) -> Result<Json<()>, AppCommandError> {
+    core::work_task_tree_update_core(
+        &state.emitter,
+        &state.db,
+        params.task_id,
+        params.title,
+        params.description,
+    )
+    .await
+    .map_err(AppCommandError::from)?;
+    Ok(Json(()))
+}
+
+pub async fn work_task_tree_delete(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeDeleteParams>,
+) -> Result<Json<()>, AppCommandError> {
+    core::work_task_tree_delete_core(&state.emitter, &state.db, params.task_id)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(()))
+}
+
+pub async fn work_task_tree_add_goal(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeAddGoalParams>,
+) -> Result<Json<TaskTreeGoalInfo>, AppCommandError> {
+    let result = core::work_task_tree_add_goal_core(&state.db, params.task_id, params.draft)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(result))
+}
+
+pub async fn work_task_tree_remove_goal(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeRemoveGoalParams>,
+) -> Result<Json<()>, AppCommandError> {
+    core::work_task_tree_remove_goal_core(&state.db, params.goal_id)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(()))
+}
+
+pub async fn work_task_tree_reorder_goals(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeReorderGoalsParams>,
+) -> Result<Json<()>, AppCommandError> {
+    core::work_task_tree_reorder_goals_core(&state.db, params.task_id, params.ordered_ids)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(()))
+}
+
+pub async fn work_task_tree_add_document(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeAddDocumentParams>,
+) -> Result<Json<TaskTreeDocumentInfo>, AppCommandError> {
+    let result = core::work_task_tree_add_document_core(&state.db, params.task_id, params.draft)
+        .await
+        .map_err(AppCommandError::from)?;
+    Ok(Json(result))
+}
+
+pub async fn work_task_tree_update_document(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeUpdateDocumentParams>,
+) -> Result<Json<()>, AppCommandError> {
+    core::work_task_tree_update_document_core(
+        &state.db,
+        params.document_id,
+        params.title,
+        params.content,
+        params.document_type,
+    )
+    .await
+    .map_err(AppCommandError::from)?;
+    Ok(Json(()))
+}
+
+pub async fn work_task_tree_remove_document(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<TreeRemoveDocumentParams>,
+) -> Result<Json<()>, AppCommandError> {
+    core::work_task_tree_remove_document_core(&state.db, params.document_id)
         .await
         .map_err(AppCommandError::from)?;
     Ok(Json(()))

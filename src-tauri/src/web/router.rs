@@ -1876,7 +1876,47 @@ pub fn build_router(
             "/work_task_template_delete",
             post(handlers::work_task::work_task_template_delete),
         )
-        // ─── Workspace background ───
+        // ─── Task tree board ───
+        .route(
+            "/work_task_tree_list",
+            post(handlers::work_task::work_task_tree_list),
+        )
+        .route(
+            "/work_task_tree_create",
+            post(handlers::work_task::work_task_tree_create),
+        )
+        .route(
+            "/work_task_tree_update",
+            post(handlers::work_task::work_task_tree_update),
+        )
+        .route(
+            "/work_task_tree_delete",
+            post(handlers::work_task::work_task_tree_delete),
+        )
+        .route(
+            "/work_task_tree_add_goal",
+            post(handlers::work_task::work_task_tree_add_goal),
+        )
+        .route(
+            "/work_task_tree_remove_goal",
+            post(handlers::work_task::work_task_tree_remove_goal),
+        )
+        .route(
+            "/work_task_tree_reorder_goals",
+            post(handlers::work_task::work_task_tree_reorder_goals),
+        )
+        .route(
+            "/work_task_tree_add_document",
+            post(handlers::work_task::work_task_tree_add_document),
+        )
+        .route(
+            "/work_task_tree_update_document",
+            post(handlers::work_task::work_task_tree_update_document),
+        )
+        .route(
+            "/work_task_tree_remove_document",
+            post(handlers::work_task::work_task_tree_remove_document),
+        )
         .route(
             "/background_read",
             post(handlers::background::background_read),

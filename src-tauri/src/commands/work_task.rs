@@ -12,8 +12,9 @@ use crate::db::error::DbError;
 use crate::db::service::work_task_service;
 use crate::db::AppDatabase;
 use crate::models::{
-    FollowUpIntent, WorkTaskChangedFile, WorkTaskDraft, WorkTaskEventInfo, WorkTaskFolderSettings,
-    WorkTaskInfo, WorkTaskTemplateDraft, WorkTaskTemplateInfo,
+    FollowUpIntent, TaskTreeDocumentDraft, TaskTreeDocumentInfo, TaskTreeGoalDraft,
+    TaskTreeGoalInfo, TaskTreeNodeInfo, WorkTaskChangedFile, WorkTaskDraft, WorkTaskEventInfo,
+    WorkTaskFolderSettings, WorkTaskInfo, WorkTaskTemplateDraft, WorkTaskTemplateInfo,
 };
 use crate::web::event_bridge::{
     emit_event, EventEmitter, WorkTaskChange, WORK_TASK_CHANGED_EVENT,
@@ -1156,6 +1157,214 @@ pub async fn work_task_template_delete(
     id: i32,
 ) -> Result<(), DbError> {
     work_task_template_delete_core(&db, id).await
+}
+
+// ---------------------------------------------------------------------------
+// Task tree board commands
+// ---------------------------------------------------------------------------
+
+// -- Core (mode-agnostic) functions --
+
+pub async fn work_task_tree_list_core(
+    db: &AppDatabase,
+    folder_id: i32,
+) -> Result<Vec<TaskTreeNodeInfo>, DbError> {
+    work_task_service::tree_list(&db.conn, folder_id).await
+}
+
+pub async fn work_task_tree_create_core(
+    emitter: &EventEmitter,
+    db: &AppDatabase,
+    folder_id: i32,
+    parent_id: Option<i32>,
+    title: String,
+    description: Option<String>,
+) -> Result<TaskTreeNodeInfo, DbError> {
+    let node =
+        work_task_service::tree_create_node(&db.conn, folder_id, parent_id, title, description)
+            .await?;
+    emit_event(emitter, WORK_TASK_CHANGED_EVENT, WorkTaskChange::Upsert { id: node.id });
+    Ok(node)
+}
+
+pub async fn work_task_tree_update_core(
+    emitter: &EventEmitter,
+    db: &AppDatabase,
+    task_id: i32,
+    title: Option<String>,
+    description: Option<String>,
+) -> Result<(), DbError> {
+    work_task_service::tree_update_node(&db.conn, task_id, title, description).await?;
+    emit_event(emitter, WORK_TASK_CHANGED_EVENT, WorkTaskChange::Upsert { id: task_id });
+    Ok(())
+}
+
+pub async fn work_task_tree_delete_core(
+    emitter: &EventEmitter,
+    db: &AppDatabase,
+    task_id: i32,
+) -> Result<(), DbError> {
+    work_task_service::tree_delete_node(&db.conn, task_id).await?;
+    emit_event(emitter, WORK_TASK_CHANGED_EVENT, WorkTaskChange::Deleted { id: task_id });
+    Ok(())
+}
+
+pub async fn work_task_tree_add_goal_core(
+    db: &AppDatabase,
+    task_id: i32,
+    draft: TaskTreeGoalDraft,
+) -> Result<TaskTreeGoalInfo, DbError> {
+    work_task_service::tree_add_goal(&db.conn, task_id, draft).await
+}
+
+pub async fn work_task_tree_remove_goal_core(
+    db: &AppDatabase,
+    goal_id: i32,
+) -> Result<(), DbError> {
+    work_task_service::tree_remove_goal(&db.conn, goal_id).await
+}
+
+pub async fn work_task_tree_reorder_goals_core(
+    db: &AppDatabase,
+    task_id: i32,
+    ordered_ids: Vec<i32>,
+) -> Result<(), DbError> {
+    work_task_service::tree_reorder_goals(&db.conn, task_id, &ordered_ids).await
+}
+
+pub async fn work_task_tree_add_document_core(
+    db: &AppDatabase,
+    task_id: i32,
+    draft: TaskTreeDocumentDraft,
+) -> Result<TaskTreeDocumentInfo, DbError> {
+    work_task_service::tree_add_document(&db.conn, task_id, draft).await
+}
+
+pub async fn work_task_tree_update_document_core(
+    db: &AppDatabase,
+    document_id: i32,
+    title: Option<String>,
+    content: Option<String>,
+    document_type: Option<String>,
+) -> Result<(), DbError> {
+    work_task_service::tree_update_document(&db.conn, document_id, title, content, document_type)
+        .await
+}
+
+pub async fn work_task_tree_remove_document_core(
+    db: &AppDatabase,
+    document_id: i32,
+) -> Result<(), DbError> {
+    work_task_service::tree_remove_document(&db.conn, document_id).await
+}
+
+// -- Tauri command wrappers (desktop only) --
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_list(
+    db: tauri::State<'_, AppDatabase>,
+    folder_id: i32,
+) -> Result<Vec<TaskTreeNodeInfo>, DbError> {
+    work_task_tree_list_core(&db, folder_id).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_create(
+    app: tauri::AppHandle,
+    db: tauri::State<'_, AppDatabase>,
+    folder_id: i32,
+    parent_id: Option<i32>,
+    title: String,
+    description: Option<String>,
+) -> Result<TaskTreeNodeInfo, DbError> {
+    let emitter = EventEmitter::Tauri(app);
+    work_task_tree_create_core(&emitter, &db, folder_id, parent_id, title, description).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_update(
+    app: tauri::AppHandle,
+    db: tauri::State<'_, AppDatabase>,
+    task_id: i32,
+    title: Option<String>,
+    description: Option<String>,
+) -> Result<(), DbError> {
+    let emitter = EventEmitter::Tauri(app);
+    work_task_tree_update_core(&emitter, &db, task_id, title, description).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_delete(
+    app: tauri::AppHandle,
+    db: tauri::State<'_, AppDatabase>,
+    task_id: i32,
+) -> Result<(), DbError> {
+    let emitter = EventEmitter::Tauri(app);
+    work_task_tree_delete_core(&emitter, &db, task_id).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_add_goal(
+    db: tauri::State<'_, AppDatabase>,
+    task_id: i32,
+    draft: TaskTreeGoalDraft,
+) -> Result<TaskTreeGoalInfo, DbError> {
+    work_task_tree_add_goal_core(&db, task_id, draft).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_remove_goal(
+    db: tauri::State<'_, AppDatabase>,
+    goal_id: i32,
+) -> Result<(), DbError> {
+    work_task_tree_remove_goal_core(&db, goal_id).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_reorder_goals(
+    db: tauri::State<'_, AppDatabase>,
+    task_id: i32,
+    ordered_ids: Vec<i32>,
+) -> Result<(), DbError> {
+    work_task_tree_reorder_goals_core(&db, task_id, ordered_ids).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_add_document(
+    db: tauri::State<'_, AppDatabase>,
+    task_id: i32,
+    draft: TaskTreeDocumentDraft,
+) -> Result<TaskTreeDocumentInfo, DbError> {
+    work_task_tree_add_document_core(&db, task_id, draft).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_update_document(
+    db: tauri::State<'_, AppDatabase>,
+    document_id: i32,
+    title: Option<String>,
+    content: Option<String>,
+    document_type: Option<String>,
+) -> Result<(), DbError> {
+    work_task_tree_update_document_core(&db, document_id, title, content, document_type).await
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn work_task_tree_remove_document(
+    db: tauri::State<'_, AppDatabase>,
+    document_id: i32,
+) -> Result<(), DbError> {
+    work_task_tree_remove_document_core(&db, document_id).await
 }
 
 #[cfg(test)]
