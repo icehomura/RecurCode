@@ -6371,3 +6371,39 @@ export async function agentRoleDelete(id: number): Promise<void> {
 export async function agentRoleReorder(ids: number[]): Promise<void> {
   return getTransport().call("agent_role_reorder", { ids })
 }
+
+// ─── Project Structure ───
+
+export async function projectStructureList(
+  folderId: number
+): Promise<import("./types").ProjectStructureNode[]> {
+  return getTransport().call("project_structure_list", { folderId })
+}
+
+export async function projectStructureScan(
+  folderId: number
+): Promise<import("./types").ProjectStructureNode[]> {
+  return getTransport().call("project_structure_scan", { folderId })
+}
+
+export async function projectStructureUpdateNode(
+  nodeId: number,
+  patch: {
+    name?: string | null
+    summary?: string | null
+    call_relations?: string | null
+    metadata?: string | null
+    kind?: string | null
+  }
+): Promise<import("./types").ProjectStructureNode> {
+  return getTransport().call("project_structure_update_node", {
+    nodeId,
+    ...patch,
+  })
+}
+
+export async function projectStructureDeleteAll(
+  folderId: number
+): Promise<void> {
+  return getTransport().call("project_structure_delete_all", { folderId })
+}

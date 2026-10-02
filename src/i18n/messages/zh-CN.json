@@ -4734,6 +4734,42 @@
       "deleted": "角色已删除"
     }
   },
+  "ProjectView": {
+    "title": "项目视图",
+    "description": "以交互式思维导图可视化项目结构",
+    "scanButton": "扫描项目",
+    "scanning": "扫描中...",
+    "expandAll": "全部展开",
+    "collapseAll": "全部折叠",
+    "clear": "清除",
+    "clearConfirm": "确定删除此文件夹的所有项目结构数据？",
+    "selectFolder": "选择项目文件夹以查看其结构",
+    "nodeCount": "{count} 个节点",
+    "toasts": {
+      "scanComplete": "已扫描 {count} 个节点",
+      "scanFailed": "扫描失败",
+      "cleared": "项目结构已清除",
+      "clearFailed": "清除失败"
+    }
+  },
+  "StorageSettings": {
+    "title": "存储",
+    "description": "管理已存储的项目结构数据",
+    "loading": "加载中...",
+    "emptyHint": "暂无项目结构数据。",
+    "emptyDetail": "使用项目视图扫描项目以生成结构数据。",
+    "nodeCount": "{count} 个节点",
+    "toasts": {
+      "cleared": "项目结构数据已清除",
+      "clearFailed": "清除失败"
+    },
+    "confirmDelete": {
+      "title": "清除项目结构？",
+      "message": "此操作将永久删除此文件夹的所有结构数据。您可以随时重新扫描。",
+      "cancel": "取消",
+      "confirm": "清除"
+    }
+  },
   "ConversationTags": {
     "tags": "标签",
     "moreTags": "另有 {count} 个标签",

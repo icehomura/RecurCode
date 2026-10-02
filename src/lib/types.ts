@@ -5367,3 +5367,53 @@ export interface TaskTreeNode {
   created_at: string
   updated_at: string
 }
+
+// ---------------------------------------------------------------------------
+// Project Structure Visualization
+// ---------------------------------------------------------------------------
+
+/** Mirrors Rust `ProjectStructureNodeInfo` */
+export interface ProjectStructureNode {
+  id: number
+  folder_id: number
+  /** Relative path from project root, e.g. "src/commands/mod.rs" */
+  path: string
+  /** 'folder' | 'file' | 'module' | 'class' | 'function' | 'method' | 'interface' | 'trait' | 'struct' | 'enum' | 'config' | 'doc' */
+  kind: ProjectNodeKind
+  /** Display name (basename or symbol name) */
+  name: string
+  /** Null for root; id of parent node */
+  parent_id: number | null
+  /** Language / file extension hint, e.g. "rust", "typescript", "python" */
+  language: string | null
+  /** For source files: first line of the symbol. For folders: project description */
+  summary: string | null
+  /** JSON-encoded call/callee relationships between node paths */
+  call_relations: string | null
+  /** JSON-encoded extra metadata (line numbers, signatures, etc.) */
+  metadata: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type ProjectNodeKind =
+  | "folder"
+  | "file"
+  | "module"
+  | "class"
+  | "function"
+  | "method"
+  | "interface"
+  | "trait"
+  | "struct"
+  | "enum"
+  | "config"
+  | "doc"
+
+/** Parsed call relationship edge */
+export interface ProjectCallEdge {
+  from_path: string
+  to_path: string
+  kind: "calls" | "imports" | "extends" | "implements"
+}

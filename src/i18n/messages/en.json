@@ -4734,6 +4734,42 @@
       "deleted": "Agent role deleted"
     }
   },
+  "ProjectView": {
+    "title": "Project View",
+    "description": "Visualize project structure as an interactive mind map",
+    "scanButton": "Scan Project",
+    "scanning": "Scanning...",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "clear": "Clear",
+    "clearConfirm": "Delete all project structure data for this folder?",
+    "selectFolder": "Select a project folder to view its structure",
+    "nodeCount": "{count} nodes",
+    "toasts": {
+      "scanComplete": "Scanned {count} nodes",
+      "scanFailed": "Scan failed",
+      "cleared": "Project structure cleared",
+      "clearFailed": "Clear failed"
+    }
+  },
+  "StorageSettings": {
+    "title": "Storage",
+    "description": "Manage stored project structure data",
+    "loading": "Loading...",
+    "emptyHint": "No project structure data stored yet.",
+    "emptyDetail": "Use the Project View to scan a project and generate structure data.",
+    "nodeCount": "{count} nodes",
+    "toasts": {
+      "cleared": "Project structure data cleared",
+      "clearFailed": "Failed to clear data"
+    },
+    "confirmDelete": {
+      "title": "Clear project structure?",
+      "message": "This will permanently delete all stored structure data for this folder. You can re-scan at any time.",
+      "cancel": "Cancel",
+      "confirm": "Clear"
+    }
+  },
   "ConversationTags": {
     "tags": "Tags",
     "moreTags": "{count, plural, one {# more tag} other {# more tags}}",
