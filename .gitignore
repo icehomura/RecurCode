@@ -45,6 +45,7 @@ certificate-base64.txt
 
 # Agent
 .claude
+.omc
 .docs
 docs/superpowers
 
