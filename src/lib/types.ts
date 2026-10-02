@@ -1864,6 +1864,10 @@ export interface WorkTask {
   started_at: string | null
   settled_at: string | null
   finished_at: string | null
+  /** Tree board: parent node id (NULL = root / project-level). */
+  parent_id?: number | null
+  /** Tree board: introduction/description text. */
+  tree_description?: string | null
 }
 
 /** Provenance snapshot of a forge-triggered task (mirrors Rust ForgeSourceMeta). */
@@ -5326,4 +5330,40 @@ export interface AgentRole {
   sortOrder: number
   createdAt: string
   updatedAt: string
+}
+
+// ---------------------------------------------------------------------------
+// Task tree board types
+// ---------------------------------------------------------------------------
+
+export interface TaskTreeGoal {
+  id: number
+  task_id: number
+  title: string
+  sort_order: number
+}
+
+export interface TaskTreeDocument {
+  id: number
+  task_id: number
+  title: string
+  content: string
+  document_type: string
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskTreeNode {
+  id: number
+  folder_id: number
+  title: string
+  tree_description: string | null
+  parent_id: number | null
+  sort_order: number
+  status: WorkTaskStatus
+  conversation_id: number | null
+  goals: TaskTreeGoal[]
+  documents: TaskTreeDocument[]
+  created_at: string
+  updated_at: string
 }

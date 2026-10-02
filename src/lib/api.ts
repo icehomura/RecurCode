@@ -4063,6 +4063,102 @@ export async function workTaskTemplateDelete(id: number): Promise<void> {
   return getTransport().call("work_task_template_delete", { id })
 }
 
+// ---------------------------------------------------------------------------
+// Task tree board API
+// ---------------------------------------------------------------------------
+
+export async function workTaskTreeList(
+  folderId: number
+): Promise<import("./types").TaskTreeNode[]> {
+  return getTransport().call("work_task_tree_list", { folderId })
+}
+
+export async function workTaskTreeCreate(
+  folderId: number,
+  parentId: number | null,
+  title: string,
+  description?: string | null
+): Promise<import("./types").TaskTreeNode> {
+  return getTransport().call("work_task_tree_create", {
+    folderId,
+    parentId,
+    title,
+    description,
+  })
+}
+
+export async function workTaskTreeUpdate(
+  taskId: number,
+  title?: string | null,
+  description?: string | null
+): Promise<void> {
+  return getTransport().call("work_task_tree_update", {
+    taskId,
+    title,
+    description,
+  })
+}
+
+export async function workTaskTreeDelete(taskId: number): Promise<void> {
+  return getTransport().call("work_task_tree_delete", { taskId })
+}
+
+export async function workTaskTreeAddGoal(
+  taskId: number,
+  title: string
+): Promise<import("./types").TaskTreeGoal> {
+  return getTransport().call("work_task_tree_add_goal", {
+    taskId,
+    draft: { title },
+  })
+}
+
+export async function workTaskTreeRemoveGoal(goalId: number): Promise<void> {
+  return getTransport().call("work_task_tree_remove_goal", { goalId })
+}
+
+export async function workTaskTreeReorderGoals(
+  taskId: number,
+  orderedIds: number[]
+): Promise<void> {
+  return getTransport().call("work_task_tree_reorder_goals", {
+    taskId,
+    orderedIds,
+  })
+}
+
+export async function workTaskTreeAddDocument(
+  taskId: number,
+  title: string,
+  content: string,
+  documentType: string
+): Promise<import("./types").TaskTreeDocument> {
+  return getTransport().call("work_task_tree_add_document", {
+    taskId,
+    draft: { title, content, documentType },
+  })
+}
+
+export async function workTaskTreeUpdateDocument(
+  documentId: number,
+  title?: string | null,
+  content?: string | null,
+  documentType?: string | null
+): Promise<void> {
+  return getTransport().call("work_task_tree_update_document", {
+    documentId,
+    title,
+    content,
+    documentType,
+  })
+}
+
+export async function workTaskTreeRemoveDocument(
+  documentId: number
+): Promise<void> {
+  return getTransport().call("work_task_tree_remove_document", { documentId })
+}
+
 // Directory browser (for web/server mode)
 
 export async function getHomeDirectory(): Promise<string> {
