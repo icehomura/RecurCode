@@ -327,6 +327,7 @@ pub async fn save_rollback(conn: &DatabaseConnection, dir: &Path) -> Option<Stri
 mod tests {
     use super::super::snapshot::SCHEMA_VERSION;
     use super::*;
+    use crate::db::entities::agent_role;
     use crate::db::entities::quick_message;
     use crate::db::test_helpers::fresh_in_memory_db;
     use sea_orm::{ActiveModelTrait, ActiveValue::NotSet, EntityTrait, Set};
@@ -344,6 +345,27 @@ mod tests {
         .insert(conn)
         .await
         .expect("seed");
+    }
+
+    async fn seed_role(conn: &DatabaseConnection, name: &str) {
+        let now = chrono::Utc::now();
+        agent_role::ActiveModel {
+            id: NotSet,
+            name: Set(name.to_string()),
+            description: Set("desc".to_string()),
+            system_prompt: Set("system".to_string()),
+            agent_type: Set(None),
+            model_id: Set(None),
+            tools_json: Set(None),
+            temperature: Set(None),
+            is_builtin: Set(false),
+            sort_order: Set(0),
+            created_at: Set(now),
+            updated_at: Set(now),
+        }
+        .insert(conn)
+        .await
+        .expect("seed role");
     }
 
     #[tokio::test]
@@ -607,5 +629,35 @@ mod tests {
             err.i18n_key.as_deref(),
             Some(CONFIG_SYNC_I18N_KEY_INVALID_SNAPSHOT)
         );
+    }
+
+    #[tokio::test]
+    async fn agent_roles_travel_through_export_and_import() {
+        let source = fresh_in_memory_db().await;
+        seed_role(&source.conn, "Reviewer").await;
+
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("codeg-config.json");
+        let summary = export_to_file_core(&source.conn, "9.9.9", &path)
+            .await
+            .expect("export");
+        assert_eq!(summary.counts.get("agentRoles"), Some(&1));
+
+        let target = fresh_in_memory_db().await;
+        let rollbacks = tempfile::tempdir().expect("tempdir");
+        let result = import_from_file_core(&target.conn, &path, rollbacks.path())
+            .await
+            .expect("import");
+        assert!(result.applied.total >= 1);
+
+        let roles = agent_role::Entity::find()
+            .all(&target.conn)
+            .await
+            .expect("roles");
+        assert_eq!(roles.len(), 1);
+        assert_eq!(roles[0].name, "Reviewer");
+        assert_eq!(roles[0].description, "desc");
+        assert_eq!(roles[0].system_prompt, "system");
+        assert!(!roles[0].is_builtin);
     }
 }

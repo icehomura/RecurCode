@@ -33,7 +33,8 @@ use serde_json::{Map, Value};
 use super::portable_keys::{is_portable_key, PORTABLE_PREFERENCE_KEYS};
 use crate::app_error::AppCommandError;
 use crate::db::entities::{
-    agent_setting, app_metadata, custom_agent, model_provider, quick_message, work_task_template,
+    agent_role, agent_setting, app_metadata, custom_agent, model_provider, quick_message,
+    work_task_template,
 };
 use crate::db::service::app_metadata_service;
 
@@ -42,6 +43,7 @@ pub const DOMAIN_AGENT_SETTINGS: &str = "agentSettings";
 pub const DOMAIN_CUSTOM_AGENTS: &str = "customAgents";
 pub const DOMAIN_QUICK_MESSAGES: &str = "quickMessages";
 pub const DOMAIN_TASK_TEMPLATES: &str = "taskTemplates";
+pub const DOMAIN_AGENT_ROLES: &str = "agentRoles";
 pub const DOMAIN_PREFERENCES: &str = "preferences";
 
 type CollectFn =
@@ -117,6 +119,13 @@ pub const CONFIG_DOMAINS: &[ConfigDomain] = &[
         validate: validate_task_templates,
         count: count_rows,
         apply: apply_task_templates,
+    },
+    ConfigDomain {
+        id: DOMAIN_AGENT_ROLES,
+        collect: collect_agent_roles,
+        validate: validate_agent_roles,
+        count: count_rows,
+        apply: apply_agent_roles,
     },
     ConfigDomain {
         id: DOMAIN_PREFERENCES,
@@ -699,6 +708,110 @@ fn apply_task_templates<'a>(
                         name: Set(dto.name),
                         title: Set(dto.title),
                         config: Set(dto.config),
+                        created_at: Set(now),
+                        updated_at: Set(now),
+                    }
+                    .insert(tx)
+                    .await
+                    .map_err(db_err)?;
+                }
+            }
+            applied += 1;
+        }
+        Ok(applied)
+    })
+}
+
+// ─── agentRoles ────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AgentRoleDto {
+    pub name: String,
+    pub description: String,
+    pub system_prompt: String,
+    #[serde(default)]
+    pub agent_type: Option<String>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub tools_json: Option<String>,
+    #[serde(default)]
+    pub temperature: Option<f64>,
+    #[serde(default)]
+    pub sort_order: i32,
+}
+
+fn validate_agent_roles(value: &Value) -> Result<(), AppCommandError> {
+    decode_rows::<AgentRoleDto>(DOMAIN_AGENT_ROLES, value).map(drop)
+}
+
+fn collect_agent_roles(
+    conn: &DatabaseConnection,
+) -> BoxFuture<'_, Result<Value, AppCommandError>> {
+    Box::pin(async move {
+        let rows = agent_role::Entity::find()
+            .order_by_asc(agent_role::Column::Id)
+            .all(conn)
+            .await
+            .map_err(db_err)?;
+        encode(
+            rows.into_iter()
+                .map(|m| AgentRoleDto {
+                    name: m.name,
+                    description: m.description,
+                    system_prompt: m.system_prompt,
+                    agent_type: m.agent_type,
+                    model_id: m.model_id,
+                    tools_json: m.tools_json,
+                    temperature: m.temperature,
+                    sort_order: m.sort_order,
+                })
+                .collect::<Vec<_>>(),
+        )
+    })
+}
+
+fn apply_agent_roles<'a>(
+    tx: &'a DatabaseTransaction,
+    value: &'a Value,
+) -> BoxFuture<'a, Result<usize, AppCommandError>> {
+    Box::pin(async move {
+        let rows: Vec<AgentRoleDto> = decode_rows(DOMAIN_AGENT_ROLES, value)?;
+        let now = Utc::now();
+        let mut applied = 0usize;
+        for dto in rows {
+            let existing = agent_role::Entity::find()
+                .filter(agent_role::Column::Name.eq(dto.name.clone()))
+                .order_by_asc(agent_role::Column::Id)
+                .one(tx)
+                .await
+                .map_err(db_err)?;
+            match existing {
+                Some(existing) => {
+                    let mut active = existing.into_active_model();
+                    active.description = Set(dto.description);
+                    active.system_prompt = Set(dto.system_prompt);
+                    active.agent_type = Set(dto.agent_type);
+                    active.model_id = Set(dto.model_id);
+                    active.tools_json = Set(dto.tools_json);
+                    active.temperature = Set(dto.temperature);
+                    active.sort_order = Set(dto.sort_order);
+                    active.updated_at = Set(now);
+                    active.update(tx).await.map_err(db_err)?;
+                }
+                None => {
+                    agent_role::ActiveModel {
+                        id: NotSet,
+                        name: Set(dto.name),
+                        description: Set(dto.description),
+                        system_prompt: Set(dto.system_prompt),
+                        agent_type: Set(dto.agent_type),
+                        model_id: Set(dto.model_id),
+                        tools_json: Set(dto.tools_json),
+                        temperature: Set(dto.temperature),
+                        is_builtin: Set(false),
+                        sort_order: Set(dto.sort_order),
                         created_at: Set(now),
                         updated_at: Set(now),
                     }
