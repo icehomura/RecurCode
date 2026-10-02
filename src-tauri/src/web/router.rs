@@ -1594,6 +1594,31 @@ pub fn build_router(
             "/quick_messages_reorder",
             post(handlers::quick_messages::quick_messages_reorder),
         )
+        // ─── Agent Roles ───
+        .route(
+            "/agent_role_list",
+            post(handlers::agent_roles::agent_role_list),
+        )
+        .route(
+            "/agent_role_get",
+            post(handlers::agent_roles::agent_role_get),
+        )
+        .route(
+            "/agent_role_create",
+            post(handlers::agent_roles::agent_role_create),
+        )
+        .route(
+            "/agent_role_update",
+            post(handlers::agent_roles::agent_role_update),
+        )
+        .route(
+            "/agent_role_delete",
+            post(handlers::agent_roles::agent_role_delete),
+        )
+        .route(
+            "/agent_role_reorder",
+            post(handlers::agent_roles::agent_role_reorder),
+        )
         // ─── Project Structure ───
         .route(
             "/project_structure_list",
