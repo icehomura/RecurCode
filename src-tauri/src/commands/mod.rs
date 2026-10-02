@@ -52,6 +52,7 @@ pub mod notification;
 pub mod pet;
 pub mod project_boot;
 pub mod question;
+pub mod project_structure;
 pub mod quick_messages;
 #[cfg(feature = "tauri-runtime")]
 pub mod remote_proxy;

@@ -1594,6 +1594,23 @@ pub fn build_router(
             "/quick_messages_reorder",
             post(handlers::quick_messages::quick_messages_reorder),
         )
+        // ─── Project Structure ───
+        .route(
+            "/project_structure_list",
+            post(handlers::project_structure::project_structure_list),
+        )
+        .route(
+            "/project_structure_scan",
+            post(handlers::project_structure::project_structure_scan),
+        )
+        .route(
+            "/project_structure_update_node",
+            post(handlers::project_structure::project_structure_update_node),
+        )
+        .route(
+            "/project_structure_delete_all",
+            post(handlers::project_structure::project_structure_delete_all),
+        )
         // ─── Automations ───
         .route(
             "/automation_list",
