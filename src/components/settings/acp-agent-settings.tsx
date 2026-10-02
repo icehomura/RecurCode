@@ -168,6 +168,7 @@ import {
 import { DeepSeekModelListEditor } from "./deepseek-model-list-editor"
 import { KimiCodeConfigPanel } from "./kimi-code-config-panel"
 import { PiConfigPanel } from "./pi-config-panel"
+import { RecurConfigPanel } from "./recur-config-panel"
 import { QoderConfigPanel } from "./qoder-config-panel"
 
 interface AgentCheckState {
@@ -10977,6 +10978,20 @@ supports_websockets = true`}
                   />
                 ) : selectedAgent.agent_type === "pi" ? (
                   <PiConfigPanel
+                    agent={selectedAgent}
+                    saving={Boolean(savingEnv[selectedAgent.agent_type])}
+                    onSaveEnv={(env, enabled) =>
+                      persistEnv(
+                        selectedAgent.agent_type,
+                        enabled,
+                        envMapToText(env),
+                        selectedAgent.model_provider_id
+                      )
+                    }
+                    onSaved={refreshAgents}
+                  />
+                ) : selectedAgent.agent_type === "recur_agent" ? (
+                  <RecurConfigPanel
                     agent={selectedAgent}
                     saving={Boolean(savingEnv[selectedAgent.agent_type])}
                     onSaveEnv={(env, enabled) =>
