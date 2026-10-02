@@ -56,7 +56,9 @@
       "browser": "Browser Use",
       "computer_use": "Computer Use",
       "quick_messages": "Quick Messages",
-      "logs": "Runtime Logs"
+      "logs": "Runtime Logs",
+      "roles": "Roles",
+      "storage": "Storage"
     }
   },
   "AppearanceSettings": {
@@ -2081,7 +2083,9 @@
       "tasks": "To-dos",
       "loadingSubsessions": "Loading sub-conversations…",
       "forge": "Repository panel",
-      "canvas": "Infinite Canvas",
+      "canvas": "Infinite Conversations",
+      "taskTree": "Task Tree",
+      "projectView": "Project View",
       "folderGroup": {
         "newGroup": "New group",
         "newGroupTitle": "New folder group",

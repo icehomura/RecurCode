@@ -18,6 +18,14 @@ import {
   TokenUsagePage,
   TokenUsagePageTitle,
 } from "@/components/token-usage/token-usage-page"
+import {
+  TaskTreePage,
+  TaskTreePageTitle,
+} from "@/components/task-tree/task-tree-page"
+import {
+  ProjectViewPage,
+  ProjectViewPageTitle,
+} from "@/components/project-view/project-view-page"
 
 /**
  * Registry of full-page routes that take over the main content region. The
@@ -32,6 +40,8 @@ const WORKBENCH_ROUTES: Partial<Record<WorkbenchRouteId, ComponentType>> = {
   forge: ForgePage,
   tokenUsage: TokenUsagePage,
   canvas: CanvasPage,
+  taskTree: TaskTreePage,
+  projectView: ProjectViewPage,
 }
 
 /** Optional per-route content for the window-chrome strip above the page
@@ -43,6 +53,8 @@ const WORKBENCH_ROUTE_STRIPS: Partial<Record<WorkbenchRouteId, ComponentType>> =
     forge: ForgePageTitle,
     tokenUsage: TokenUsagePageTitle,
     canvas: CanvasPageTitle,
+    taskTree: TaskTreePageTitle,
+    projectView: ProjectViewPageTitle,
   }
 
 /** What a chrome cluster hands its route's buttons: the host's own button

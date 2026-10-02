@@ -56,7 +56,9 @@
       "browser": "浏览器操作",
       "computer_use": "电脑操作",
       "quick_messages": "快捷消息",
-      "logs": "运行日志"
+      "logs": "运行日志",
+      "roles": "角色定义",
+      "storage": "存储"
     }
   },
   "AppearanceSettings": {
@@ -2081,7 +2083,9 @@
       "tasks": "待办任务",
       "loadingSubsessions": "正在加载子会话…",
       "forge": "仓库面板",
-      "canvas": "无限画布",
+      "canvas": "无限会话",
+      "taskTree": "任务树",
+      "projectView": "项目视图",
       "folderGroup": {
         "newGroup": "新建分组",
         "newGroupTitle": "新建文件夹分组",

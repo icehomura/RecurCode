@@ -11,11 +11,13 @@ import {
 import {
   Crosshair,
   Eye,
+  GitBranch,
   ListChevronsDownUp,
   ListChevronsUpDown,
   LayoutTemplate,
   ListTodo,
   Map as MapIcon,
+  FolderTree,
   Menu,
   MessagesSquare,
   SquarePen,
@@ -124,6 +126,8 @@ const NAV_ITEM_ICONS: Record<SidebarNavItemId, LucideIcon> = {
   tasks: ListTodo,
   forge: LayoutTemplate,
   canvas: MapIcon,
+  taskTree: GitBranch,
+  projectView: FolderTree,
 }
 
 /**
@@ -625,6 +629,28 @@ export function Sidebar() {
                 useCanvasBoardsStore.getState().closeBoard()
               }
               setRoute("canvas")
+            }}
+          />
+        )}
+        {isNavItemVisible(navItems, "taskTree") && (
+          <SidebarNavButton
+            icon={GitBranch}
+            label={t("taskTree")}
+            active={routeId === "taskTree"}
+            onClick={() => {
+              if (isMobile) toggle()
+              setRoute("taskTree")
+            }}
+          />
+        )}
+        {isNavItemVisible(navItems, "projectView") && (
+          <SidebarNavButton
+            icon={FolderTree}
+            label={t("projectView")}
+            active={routeId === "projectView"}
+            onClick={() => {
+              if (isMobile) toggle()
+              setRoute("projectView")
             }}
           />
         )}
