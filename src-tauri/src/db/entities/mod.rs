@@ -30,3 +30,4 @@ pub mod work_task_settings;
 pub mod work_task_template;
 pub mod task_tree_goal;
 pub mod task_tree_document;
+pub mod project_structure;

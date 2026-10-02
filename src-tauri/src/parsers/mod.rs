@@ -16,6 +16,7 @@ pub mod openclaw;
 pub mod opencode;
 mod opencode_context_window;
 pub mod pi;
+pub mod project_structure;
 pub mod qoder;
 pub mod recur;
 mod summary_cache;
