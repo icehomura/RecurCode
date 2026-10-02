@@ -8261,6 +8261,36 @@ async fn handle_elicitation_request(
     }
 }
 
+/// Tool kinds that mutate nothing, so a permission request for one of them can
+/// be answered without a human. `fetch` is deliberately absent — it reaches the
+/// network, which is a side effect the user may still want to see — and `other`
+/// is the unknown bucket: an agent codeg cannot classify does not get a free
+/// pass.
+fn is_read_only_tool_kind(kind: Option<&ToolKind>) -> bool {
+    matches!(
+        kind,
+        Some(ToolKind::Read | ToolKind::Search | ToolKind::Think)
+    )
+}
+
+/// The option id to answer a permission request with when it needs no human: a
+/// read-only `kind` AND an allow option to answer with. An agent that offers
+/// only `reject_*` is never silently approved, and `allow_once` is preferred
+/// over `allow_always` because it grants the least.
+fn read_only_auto_allow(
+    kind: Option<&ToolKind>,
+    options: &[PermissionOptionInfo],
+) -> Option<String> {
+    if !is_read_only_tool_kind(kind) {
+        return None;
+    }
+    options
+        .iter()
+        .find(|opt| opt.kind == "allow_once")
+        .or_else(|| options.iter().find(|opt| opt.kind == "allow_always"))
+        .map(|opt| opt.option_id.clone())
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn handle_permission_request(
     cx: &ConnectionTo<Agent>,
@@ -8326,6 +8356,27 @@ async fn handle_permission_request(
             meta: crate::acp::air_contract::normalize_permission_option_meta(opt.meta.as_ref()),
         })
         .collect();
+
+    // Read-only requests are answered here, without ever becoming a card: a
+    // `read` / `search` / `think` tool call mutates nothing, and an agent that
+    // asks about every one of them turns a single turn into a stack of cards the
+    // user clicks through without ever declining. RecurAgent is the extreme case
+    // — its ACP server asks for read, ls, grep and find alike, and its own
+    // `--yolo` has no effect under ACP at all. Mutating kinds (edit, delete,
+    // move, execute, fetch) and the `other` bucket still get a card, as does any
+    // request that offers no allow option.
+    if let Some(option_id) = read_only_auto_allow(req.tool_call.fields.kind.as_ref(), &options) {
+        tracing::debug!(
+            "[ACP][{}] auto-approving read-only permission request '{}' (kind={:?}) with '{}'",
+            agent_type,
+            req.tool_call.fields.title.as_deref().unwrap_or_default(),
+            req.tool_call.fields.kind,
+            option_id,
+        );
+        let outcome = RequestPermissionOutcome::Selected(SelectedPermissionOutcome::new(option_id));
+        let _ = responder.respond(RequestPermissionResponse::new(outcome));
+        return;
+    }
 
     let mut tool_call_value = serde_json::to_value(&req.tool_call).unwrap_or_default();
 
@@ -35189,5 +35240,59 @@ mod tests {
             .await;
             assert_eq!(raw_output.as_deref(), Some(text), "{agent_type:?} {status}");
         }
+    }
+
+    #[test]
+    fn read_only_permission_requests_are_auto_approved_and_mutating_ones_are_not() {
+        let opts = |kinds: &[&str]| -> Vec<PermissionOptionInfo> {
+            kinds
+                .iter()
+                .map(|k| PermissionOptionInfo {
+                    option_id: format!("{k}-id"),
+                    name: (*k).to_string(),
+                    kind: (*k).to_string(),
+                    meta: None,
+                })
+                .collect()
+        };
+        let allow = opts(&["allow_once", "reject_once"]);
+
+        for kind in [ToolKind::Read, ToolKind::Search, ToolKind::Think] {
+            assert_eq!(
+                read_only_auto_allow(Some(&kind), &allow).as_deref(),
+                Some("allow_once-id"),
+                "{kind:?} mutates nothing, so it must not reach a card"
+            );
+        }
+        for kind in [
+            ToolKind::Edit,
+            ToolKind::Delete,
+            ToolKind::Move,
+            ToolKind::Execute,
+            ToolKind::Fetch,
+            ToolKind::Other,
+        ] {
+            assert_eq!(
+                read_only_auto_allow(Some(&kind), &allow),
+                None,
+                "{kind:?} must still ask the user"
+            );
+        }
+        assert_eq!(
+            read_only_auto_allow(None, &allow),
+            None,
+            "an unclassified kind must still ask the user"
+        );
+
+        // An agent offering no allow option leaves nothing to answer with, so
+        // the card stands; `allow_always` alone is still an allow.
+        assert_eq!(
+            read_only_auto_allow(Some(&ToolKind::Read), &opts(&["reject_once"])),
+            None
+        );
+        assert_eq!(
+            read_only_auto_allow(Some(&ToolKind::Read), &opts(&["allow_always"])).as_deref(),
+            Some("allow_always-id")
+        );
     }
 }
