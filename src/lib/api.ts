@@ -188,6 +188,7 @@ import type {
   OfficecliInfo,
   OfficecliSkill,
   SkillSyncReport,
+  AgentRole,
   TokenUsageFacets,
   TokenUsageFilter,
   TokenUsageReport,
@@ -6309,4 +6310,64 @@ export async function forgeSettingsSet(
   settings: ForgePanelSettings | null
 ): Promise<ForgeSettingsStore> {
   return getTransport().call("forge_settings_set", { folderId, settings })
+}
+
+// ── Agent Role Management ──────────────────────────────────────
+
+export async function agentRoleList(): Promise<AgentRole[]> {
+  return getTransport().call("agent_role_list")
+}
+
+export async function agentRoleGet(id: number): Promise<AgentRole | null> {
+  return getTransport().call("agent_role_get", { id })
+}
+
+export async function agentRoleCreate(params: {
+  name: string
+  description: string
+  systemPrompt: string
+  agentType?: string | null
+  modelId?: string | null
+  toolsJson?: string | null
+  temperature?: number | null
+}): Promise<AgentRole> {
+  return getTransport().call("agent_role_create", {
+    name: params.name,
+    description: params.description,
+    system_prompt: params.systemPrompt,
+    agent_type: params.agentType ?? null,
+    model_id: params.modelId ?? null,
+    tools_json: params.toolsJson ?? null,
+    temperature: params.temperature ?? null,
+  })
+}
+
+export async function agentRoleUpdate(params: {
+  id: number
+  name?: string | null
+  description?: string | null
+  systemPrompt?: string | null
+  agentType?: string | null
+  modelId?: string | null
+  toolsJson?: string | null
+  temperature?: number | null
+}): Promise<AgentRole> {
+  return getTransport().call("agent_role_update", {
+    id: params.id,
+    name: params.name ?? null,
+    description: params.description ?? null,
+    system_prompt: params.systemPrompt ?? null,
+    agent_type: params.agentType ?? null,
+    model_id: params.modelId ?? null,
+    tools_json: params.toolsJson ?? null,
+    temperature: params.temperature ?? null,
+  })
+}
+
+export async function agentRoleDelete(id: number): Promise<void> {
+  return getTransport().call("agent_role_delete", { id })
+}
+
+export async function agentRoleReorder(ids: number[]): Promise<void> {
+  return getTransport().call("agent_role_reorder", { ids })
 }
