@@ -1,3 +1,4 @@
+pub mod agent_role;
 pub mod agent;
 pub mod automation;
 pub mod background;
@@ -14,6 +15,7 @@ pub mod system;
 pub mod token_usage;
 pub mod work_task;
 
+pub use agent_role::AgentRoleInfo;
 pub use agent::AgentType;
 pub use automation::{
     AutomationAction, AutomationConfig, AutomationDraft, AutomationInfo, AutomationRunInfo,

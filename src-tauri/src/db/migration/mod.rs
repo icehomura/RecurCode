@@ -46,6 +46,7 @@ mod m20260830_000001_canvas_node;
 mod m20260831_000001_canvas_node_group_grid;
 mod m20260907_000001_canvas_node_path;
 mod m20260922_000001_task_tree;
+mod m20260922_000002_agent_role;
 mod m20260929_000001_canvas_board;
 mod m20260930_000001_agent_setting_drop_adapter_channel;
 mod m20261006_000001_conversation_tag;
@@ -101,6 +102,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260831_000001_canvas_node_group_grid::Migration),
             Box::new(m20260907_000001_canvas_node_path::Migration),
             Box::new(m20260922_000001_task_tree::Migration),
+            Box::new(m20260922_000002_agent_role::Migration),
             Box::new(m20260929_000001_canvas_board::Migration),
             Box::new(m20260930_000001_agent_setting_drop_adapter_channel::Migration),
             Box::new(m20261006_000001_conversation_tag::Migration),

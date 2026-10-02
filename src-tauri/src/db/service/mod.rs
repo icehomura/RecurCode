@@ -1,3 +1,4 @@
+pub mod agent_role_service;
 pub mod agent_setting_service;
 pub mod app_metadata_service;
 pub mod automation_service;
