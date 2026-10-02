@@ -16,6 +16,7 @@ import {
   FileSpreadsheet,
   GitBranch,
   Globe,
+  HardDrive,
   Keyboard,
   Menu,
   MessageSquareText,
@@ -26,6 +27,7 @@ import {
   Server,
   Settings,
   SlidersHorizontal,
+  UserCog,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { usePathname } from "next/navigation"
@@ -48,6 +50,7 @@ interface SettingsNavItem {
     | "general"
     | "appearance"
     | "agents"
+    | "roles"
     | "model_providers"
     | "mcp"
     | "skills"
@@ -61,6 +64,7 @@ interface SettingsNavItem {
     | "chat_channels"
     | "system"
     | "web_service"
+    | "storage"
     | "logs"
   icon: ComponentType<{ className?: string }>
 }
@@ -102,6 +106,11 @@ const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     icon: Bot,
   },
   {
+    href: "/settings/roles",
+    labelKey: "roles",
+    icon: UserCog,
+  },
+  {
     href: "/settings/model-providers",
     labelKey: "model_providers",
     icon: Server,
@@ -140,6 +149,11 @@ const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     href: "/settings/web-service",
     labelKey: "web_service",
     icon: Globe,
+  },
+  {
+    href: "/settings/storage",
+    labelKey: "storage",
+    icon: HardDrive,
   },
   {
     href: "/settings/logs",
