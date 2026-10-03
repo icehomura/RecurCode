@@ -1,7 +1,7 @@
 "use client"
 
 import { memo } from "react"
-import { type NodeProps } from "@xyflow/react"
+import { type Node, type NodeProps } from "@xyflow/react"
 import {
   FileText,
   Pencil,
@@ -42,7 +42,7 @@ const STATUS_ICONS: Record<string, typeof CircleDot> = {
   failed: XCircle,
 }
 
-function TaskTreeNodeCard({ data }: NodeProps<TaskTreeCardData>) {
+function TaskTreeNodeCard({ data }: NodeProps<Node<TaskTreeCardData>>) {
   const {
     node,
     onSelect,

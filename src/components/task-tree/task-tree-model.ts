@@ -1,7 +1,10 @@
 import type { Node, Edge } from "@xyflow/react"
 import type { TaskTreeNode } from "@/lib/types"
 
-export interface TaskTreeCardData {
+/** A `type` alias (not an `interface`) on purpose: @xyflow/react's `Node<T>`
+ *  constrains `T` to `Record<string, unknown>`, and only a type alias gets the
+ *  implicit index signature that satisfies it. */
+export type TaskTreeCardData = {
   node: TaskTreeNode
   onSelect: (taskId: number) => void
   onAddChild: (parentId: number) => void

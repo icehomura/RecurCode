@@ -11,6 +11,7 @@ import {
 import "@xyflow/react/dist/style.css"
 import { Plus, Loader2 } from "lucide-react"
 import { FolderSelect } from "@/components/shared/folder-select"
+import { useAppWorkspaceStore } from "@/stores/app-workspace-store"
 import { Button } from "@/components/ui/button"
 import { useTaskTreeStore } from "./task-tree-store"
 import { useTaskTreeData } from "./task-tree-data"
@@ -40,6 +41,14 @@ export default function TaskTreeView() {
     closeDocumentPanel,
     refetch,
   } = useTaskTreeStore()
+
+  // The picker needs the project roots: the same filter every other
+  // `FolderSelect` call site applies.
+  const folders = useAppWorkspaceStore((s) => s.folders)
+  const projectFolders = useMemo(
+    () => folders.filter((f) => f.parent_id == null && f.kind === "regular"),
+    [folders]
+  )
 
   useTaskTreeData()
 
@@ -124,6 +133,7 @@ export default function TaskTreeView() {
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-4 py-2 border-b shrink-0">
         <FolderSelect
+          folders={projectFolders}
           value={folderId}
           onChange={(id) => setFolderId(id)}
           className="w-64"
