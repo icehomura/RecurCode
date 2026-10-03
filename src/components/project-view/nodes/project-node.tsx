@@ -1,13 +1,13 @@
 "use client"
 
 import { memo, useCallback } from "react"
-import { Handle, Position, type NodeProps } from "@xyflow/react"
+import { Handle, Position, type Node, type NodeProps } from "@xyflow/react"
 import { ChevronRight, ChevronDown } from "lucide-react"
 import type { ProjectNodeData } from "../project-view-model"
 import { getIconForKind, getColorForKind } from "../project-view-model"
 import { cn } from "@/lib/utils"
 
-function ProjectNodeInner({ data }: NodeProps<ProjectNodeData>) {
+function ProjectNodeInner({ data }: NodeProps<Node<ProjectNodeData>>) {
   const { node, hasChildren, isExpanded, onToggle, onSelect } = data
   const Icon = getIconForKind(node.kind)
   const colorClass = getColorForKind(node.kind)

@@ -12,7 +12,10 @@ import {
   Layers,
 } from "lucide-react"
 
-export interface ProjectNodeData {
+/** A `type` alias (not an `interface`) on purpose: @xyflow/react's `Node<T>`
+ *  constrains `T` to `Record<string, unknown>`, and only a type alias gets the
+ *  implicit index signature that satisfies it. */
+export type ProjectNodeData = {
   node: ProjectStructureNode
   hasChildren: boolean
   isExpanded: boolean

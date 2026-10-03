@@ -11,6 +11,7 @@ import {
 import "@xyflow/react/dist/style.css"
 import { Loader2, Expand, Shrink, RefreshCw, Trash2 } from "lucide-react"
 import { FolderSelect } from "@/components/shared/folder-select"
+import { useAppWorkspaceStore } from "@/stores/app-workspace-store"
 import { Button } from "@/components/ui/button"
 import { useProjectViewStore } from "./project-view-store"
 import { buildProjectLayout } from "./project-view-model"
@@ -35,6 +36,14 @@ export default function ProjectView() {
     collapseAll,
     refetch,
   } = useProjectViewStore()
+
+  // The picker needs the project roots: the same filter every other
+  // `FolderSelect` call site applies.
+  const folders = useAppWorkspaceStore((s) => s.folders)
+  const projectFolders = useMemo(
+    () => folders.filter((f) => f.parent_id == null && f.kind === "regular"),
+    [folders]
+  )
 
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId) ?? null,
@@ -87,6 +96,7 @@ export default function ProjectView() {
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-4 py-2 border-b shrink-0 flex-wrap">
         <FolderSelect
+          folders={projectFolders}
           value={folderId}
           onChange={(id) => setFolderId(id)}
           className="w-64"
