@@ -55,8 +55,16 @@ import { toErrorMessage } from "@/lib/app-error"
 const LEFT_MIN_WIDTH = 280
 const RIGHT_MIN_WIDTH = 420
 
-const AGENT_TYPES = [
-  { value: "", labelKey: "anyAgent" as const },
+/** A picker entry is either the i18n key of the "any agent" default or a
+ *  literal product name. The explicit union is what lets `"labelKey" in at`
+ *  narrow to the keyed arm — as a widened object type the key reads as
+ *  `string | undefined` and the `t()` call below stops type-checking. */
+type AgentTypeEntry =
+  | { value: string; labelKey: "anyAgent" }
+  | { value: string; label: string }
+
+const AGENT_TYPES: AgentTypeEntry[] = [
+  { value: "", labelKey: "anyAgent" },
   { value: "claude_code", label: "Claude Code" },
   { value: "codex", label: "Codex CLI" },
   { value: "open_code", label: "OpenCode" },
