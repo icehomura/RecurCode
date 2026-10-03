@@ -15,8 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { projectStructureDeleteAll, projectStructureList } from "@/lib/api"
-import type { ProjectStructureNode } from "@/lib/types"
+import { projectStructureDeleteAll } from "@/lib/api"
 import { toErrorMessage } from "@/lib/app-error"
 
 export default function StorageSettings() {
