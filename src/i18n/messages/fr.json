@@ -56,7 +56,9 @@
       "browser": "Utilisation du navigateur",
       "computer_use": "Utilisation de l'ordinateur",
       "quick_messages": "Messages rapides",
-      "logs": "Journaux d'exécution"
+      "logs": "Journaux d'exécution",
+      "roles": "Rôles",
+      "storage": "Stockage"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "Afficher dans Récents : {filter}",
       "noRecentChats": "Aucune discussion récente",
       "noRecentFolders": "Aucune conversation de dossier récente",
-      "recentFilterMenuLabel": "Afficher dans Récents"
+      "recentFilterMenuLabel": "Afficher dans Récents",
+      "taskTree": "Arborescence des tâches",
+      "projectView": "Vue du projet"
     },
     "conversation": {
       "reloadFailed": "Échec du rechargement de la conversation : {message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "Le moteur du navigateur de cet ordinateur envoie certaines adresses en dehors du tunnel ; les pages de l'hôte distant restent donc fermées plutôt que d'être chargées depuis cet ordinateur.",
         "probeFailed": "Le navigateur intégré n'a pas pu confirmer qu'il atteint l'hôte distant par le tunnel. Réessayez dans un instant."
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "Rôles d'agent",
+    "description": "Définissez des rôles réutilisables pour les agents. Glissez pour réordonner.",
+    "loading": "Chargement des rôles d'agent…",
+    "emptyList": "Aucun rôle d'agent. Cliquez sur « Nouveau » pour en créer un.",
+    "emptySelection": "Sélectionnez un rôle d'agent à modifier.",
+    "untitled": "Sans titre",
+    "actions": {
+      "new": "Nouveau",
+      "save": "Enregistrer",
+      "delete": "Supprimer",
+      "dragSort": "Glisser pour réordonner",
+      "dragSortMessage": "Glisser pour réordonner le rôle : {name}"
+    },
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Donnez un nom court à ce rôle",
+      "description": "Description",
+      "descriptionPlaceholder": "Que fait ce rôle ?",
+      "systemPrompt": "Invite système",
+      "systemPromptPlaceholder": "Rédigez l'invite système de ce rôle",
+      "targetAgent": "Agent cible",
+      "anyAgent": "N'importe quel agent",
+      "model": "Modèle",
+      "modelPlaceholder": "ex. claude-sonnet-4-20250514",
+      "temperature": "Température",
+      "toolRestrictions": "Restrictions d'outils",
+      "toolRestrictionsPlaceholder": "ex. no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "Supprimer le rôle d'agent ?",
+      "message": "« {name} » sera définitivement supprimé. Continuer ?",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "toasts": {
+      "loadFailed": "Échec du chargement des rôles",
+      "createFailed": "Échec de la création du rôle",
+      "saveFailed": "Échec de l'enregistrement du rôle",
+      "deleteFailed": "Échec de la suppression du rôle",
+      "saveOrderFailed": "Échec de l'enregistrement de l'ordre",
+      "created": "Rôle créé",
+      "saved": "Rôle enregistré",
+      "deleted": "Rôle supprimé"
+    }
+  },
+  "ProjectView": {
+    "title": "Vue du projet",
+    "description": "Visualisez la structure du projet sous forme de carte mentale interactive",
+    "scanButton": "Analyser le projet",
+    "scanning": "Analyse...",
+    "expandAll": "Tout déplier",
+    "collapseAll": "Tout replier",
+    "clear": "Effacer",
+    "clearConfirm": "Supprimer toutes les données de structure de ce dossier ?",
+    "selectFolder": "Sélectionnez un dossier de projet pour voir sa structure",
+    "nodeCount": "{count} nœuds",
+    "toasts": {
+      "scanComplete": "{count} nœuds analysés",
+      "scanFailed": "Échec de l'analyse",
+      "cleared": "Structure du projet effacée",
+      "clearFailed": "Échec de l'effacement"
+    }
+  },
+  "StorageSettings": {
+    "title": "Stockage",
+    "description": "Gérer les données de structure de projet enregistrées",
+    "loading": "Chargement...",
+    "emptyHint": "Aucune donnée de structure de projet enregistrée.",
+    "emptyDetail": "Utilisez la vue du projet pour analyser un projet et générer les données de structure.",
+    "nodeCount": "{count} nœuds",
+    "toasts": {
+      "cleared": "Données de structure effacées",
+      "clearFailed": "Échec de l'effacement des données"
+    },
+    "confirmDelete": {
+      "title": "Effacer la structure du projet ?",
+      "message": "Toutes les données de structure enregistrées pour ce dossier seront définitivement supprimées. Vous pouvez réanalyser à tout moment.",
+      "cancel": "Annuler",
+      "confirm": "Effacer"
     }
   }
 }

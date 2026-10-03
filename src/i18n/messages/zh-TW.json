@@ -56,7 +56,9 @@
       "browser": "瀏覽器操作",
       "computer_use": "電腦操作",
       "quick_messages": "快捷訊息",
-      "logs": "執行日誌"
+      "logs": "執行日誌",
+      "roles": "角色",
+      "storage": "儲存空間"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "最近顯示：{filter}",
       "noRecentChats": "沒有最近的聊天",
       "noRecentFolders": "沒有最近的資料夾對話",
-      "recentFilterMenuLabel": "最近顯示"
+      "recentFilterMenuLabel": "最近顯示",
+      "taskTree": "任務樹",
+      "projectView": "專案檢視"
     },
     "conversation": {
       "reloadFailed": "會話重新載入失敗：{message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "這台電腦的瀏覽器引擎會讓部分位址繞過通道，為避免從這台電腦載入，遠端主機的頁面不會開啟。",
         "probeFailed": "內建瀏覽器無法確認它能透過通道連到遠端主機。請稍後再試。"
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "角色定義",
+    "description": "為智慧體定義可重複使用的角色。拖曳以排序。",
+    "loading": "載入角色列表中…",
+    "emptyList": "尚無角色定義，點擊「新增」建立一個。",
+    "emptySelection": "請選擇一個角色進行編輯。",
+    "untitled": "未命名",
+    "actions": {
+      "new": "新增",
+      "save": "儲存",
+      "delete": "刪除",
+      "dragSort": "拖曳排序",
+      "dragSortMessage": "拖曳以排序角色：{name}"
+    },
+    "fields": {
+      "name": "名稱",
+      "namePlaceholder": "給角色一個簡短的名稱",
+      "description": "描述",
+      "descriptionPlaceholder": "這個角色的職責是什麼？",
+      "systemPrompt": "系統提示詞",
+      "systemPromptPlaceholder": "為此角色撰寫系統提示詞",
+      "targetAgent": "目標代理",
+      "anyAgent": "任意代理",
+      "model": "模型",
+      "modelPlaceholder": "例如 claude-sonnet-4-20250514",
+      "temperature": "溫度",
+      "toolRestrictions": "工具限制",
+      "toolRestrictionsPlaceholder": "例如 no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "刪除角色？",
+      "message": "將永久刪除「{name}」，確定繼續？",
+      "cancel": "取消",
+      "confirm": "刪除"
+    },
+    "toasts": {
+      "loadFailed": "載入角色列表失敗",
+      "createFailed": "建立角色失敗",
+      "saveFailed": "儲存角色失敗",
+      "deleteFailed": "刪除角色失敗",
+      "saveOrderFailed": "儲存排序失敗",
+      "created": "角色已建立",
+      "saved": "角色已儲存",
+      "deleted": "角色已刪除"
+    }
+  },
+  "ProjectView": {
+    "title": "專案檢視",
+    "description": "以互動式心智圖視覺化專案結構",
+    "scanButton": "掃描專案",
+    "scanning": "掃描中...",
+    "expandAll": "全部展開",
+    "collapseAll": "全部折疊",
+    "clear": "清除",
+    "clearConfirm": "確定刪除此資料夾的所有專案結構資料？",
+    "selectFolder": "選擇專案資料夾以檢視其結構",
+    "nodeCount": "{count} 個節點",
+    "toasts": {
+      "scanComplete": "已掃描 {count} 個節點",
+      "scanFailed": "掃描失敗",
+      "cleared": "專案結構已清除",
+      "clearFailed": "清除失敗"
+    }
+  },
+  "StorageSettings": {
+    "title": "儲存空間",
+    "description": "管理已儲存的專案結構資料",
+    "loading": "載入中...",
+    "emptyHint": "尚無專案結構資料。",
+    "emptyDetail": "使用專案檢視掃描專案以產生結構資料。",
+    "nodeCount": "{count} 個節點",
+    "toasts": {
+      "cleared": "專案結構資料已清除",
+      "clearFailed": "清除失敗"
+    },
+    "confirmDelete": {
+      "title": "清除專案結構？",
+      "message": "此操作將永久刪除此資料夾的所有結構資料。您可以隨時重新掃描。",
+      "cancel": "取消",
+      "confirm": "清除"
     }
   }
 }

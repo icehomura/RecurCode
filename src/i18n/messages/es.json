@@ -56,7 +56,9 @@
       "browser": "Uso del navegador",
       "computer_use": "Uso del ordenador",
       "quick_messages": "Mensajes rápidos",
-      "logs": "Registros de ejecución"
+      "logs": "Registros de ejecución",
+      "roles": "Roles",
+      "storage": "Almacenamiento"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "Mostrar en Recientes: {filter}",
       "noRecentChats": "No hay chats recientes",
       "noRecentFolders": "No hay conversaciones de carpeta recientes",
-      "recentFilterMenuLabel": "Mostrar en Recientes"
+      "recentFilterMenuLabel": "Mostrar en Recientes",
+      "taskTree": "Árbol de tareas",
+      "projectView": "Vista del proyecto"
     },
     "conversation": {
       "reloadFailed": "No se pudo recargar la conversación: {message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "El motor del navegador de este equipo envía algunas direcciones por fuera del túnel, así que las páginas del host remoto no se abren para no cargarlas desde este equipo.",
         "probeFailed": "El navegador integrado no pudo confirmar que llega al host remoto a través del túnel. Vuelve a intentarlo en un momento."
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "Roles de agente",
+    "description": "Define roles reutilizables para los agentes. Arrastra para reordenar.",
+    "loading": "Cargando roles de agente…",
+    "emptyList": "Aún no hay roles de agente. Haz clic en «Nuevo» para crear uno.",
+    "emptySelection": "Selecciona un rol de agente para editar.",
+    "untitled": "Sin título",
+    "actions": {
+      "new": "Nuevo",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "dragSort": "Arrastra para reordenar",
+      "dragSortMessage": "Arrastra para reordenar el rol: {name}"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Dale un nombre corto a este rol",
+      "description": "Descripción",
+      "descriptionPlaceholder": "¿Qué hace este rol?",
+      "systemPrompt": "Prompt del sistema",
+      "systemPromptPlaceholder": "Escribe el prompt del sistema para este rol",
+      "targetAgent": "Agente objetivo",
+      "anyAgent": "Cualquier agente",
+      "model": "Modelo",
+      "modelPlaceholder": "p. ej. claude-sonnet-4-20250514",
+      "temperature": "Temperatura",
+      "toolRestrictions": "Restricciones de herramientas",
+      "toolRestrictionsPlaceholder": "p. ej. no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "¿Eliminar el rol de agente?",
+      "message": "«{name}» se eliminará permanentemente. ¿Continuar?",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "toasts": {
+      "loadFailed": "No se pudieron cargar los roles",
+      "createFailed": "No se pudo crear el rol",
+      "saveFailed": "No se pudo guardar el rol",
+      "deleteFailed": "No se pudo eliminar el rol",
+      "saveOrderFailed": "No se pudo guardar el orden",
+      "created": "Rol creado",
+      "saved": "Rol guardado",
+      "deleted": "Rol eliminado"
+    }
+  },
+  "ProjectView": {
+    "title": "Vista del proyecto",
+    "description": "Visualiza la estructura del proyecto como un mapa mental interactivo",
+    "scanButton": "Escanear proyecto",
+    "scanning": "Escaneando...",
+    "expandAll": "Expandir todo",
+    "collapseAll": "Contraer todo",
+    "clear": "Limpiar",
+    "clearConfirm": "¿Eliminar todos los datos de estructura de este proyecto?",
+    "selectFolder": "Selecciona una carpeta de proyecto para ver su estructura",
+    "nodeCount": "{count} nodos",
+    "toasts": {
+      "scanComplete": "Se escanearon {count} nodos",
+      "scanFailed": "Error al escanear",
+      "cleared": "Estructura del proyecto limpiada",
+      "clearFailed": "Error al limpiar"
+    }
+  },
+  "StorageSettings": {
+    "title": "Almacenamiento",
+    "description": "Gestiona los datos de estructura de proyecto guardados",
+    "loading": "Cargando...",
+    "emptyHint": "Aún no hay datos de estructura de proyecto.",
+    "emptyDetail": "Usa la vista del proyecto para escanear un proyecto y generar los datos de estructura.",
+    "nodeCount": "{count} nodos",
+    "toasts": {
+      "cleared": "Datos de estructura limpiados",
+      "clearFailed": "Error al limpiar los datos"
+    },
+    "confirmDelete": {
+      "title": "¿Limpiar la estructura del proyecto?",
+      "message": "Esto eliminará permanentemente todos los datos de estructura guardados de esta carpeta. Puedes volver a escanear cuando quieras.",
+      "cancel": "Cancelar",
+      "confirm": "Limpiar"
     }
   }
 }

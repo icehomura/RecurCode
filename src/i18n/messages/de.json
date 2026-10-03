@@ -56,7 +56,9 @@
       "browser": "Browsernutzung",
       "computer_use": "Computernutzung",
       "quick_messages": "Schnellnachrichten",
-      "logs": "Laufzeitprotokolle"
+      "logs": "Laufzeitprotokolle",
+      "roles": "Rollen",
+      "storage": "Speicher"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "In „Zuletzt“ anzeigen: {filter}",
       "noRecentChats": "Keine letzten Chats",
       "noRecentFolders": "Keine letzten Ordner-Unterhaltungen",
-      "recentFilterMenuLabel": "In „Zuletzt“ anzeigen"
+      "recentFilterMenuLabel": "In „Zuletzt“ anzeigen",
+      "taskTree": "Aufgabenbaum",
+      "projectView": "Projektansicht"
     },
     "conversation": {
       "reloadFailed": "Konversation konnte nicht neu geladen werden: {message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "Die Browser-Engine dieses Computers schickt manche Adressen am Tunnel vorbei, daher bleiben die Seiten des entfernten Hosts geschlossen, statt von diesem Computer geladen zu werden.",
         "probeFailed": "Der integrierte Browser konnte nicht bestätigen, dass er den entfernten Host über den Tunnel erreicht. Versuche es gleich noch einmal."
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "Agentenrollen",
+    "description": "Definiere wiederverwendbare Rollen für Agenten. Zum Sortieren ziehen.",
+    "loading": "Agentenrollen werden geladen…",
+    "emptyList": "Noch keine Agentenrollen. Klicke auf „Neu“, um eine zu erstellen.",
+    "emptySelection": "Wähle eine Agentenrolle zum Bearbeiten.",
+    "untitled": "Unbenannt",
+    "actions": {
+      "new": "Neu",
+      "save": "Speichern",
+      "delete": "Löschen",
+      "dragSort": "Zum Sortieren ziehen",
+      "dragSortMessage": "Zum Sortieren der Agentenrolle ziehen: {name}"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Gib dieser Rolle einen kurzen Namen",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Was macht diese Rolle?",
+      "systemPrompt": "System-Prompt",
+      "systemPromptPlaceholder": "Schreibe den System-Prompt für diese Rolle",
+      "targetAgent": "Ziel-Agent",
+      "anyAgent": "Beliebiger Agent",
+      "model": "Modell",
+      "modelPlaceholder": "z. B. claude-sonnet-4-20250514",
+      "temperature": "Temperatur",
+      "toolRestrictions": "Tool-Einschränkungen",
+      "toolRestrictionsPlaceholder": "z. B. no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "Agentenrolle löschen?",
+      "message": "„{name}“ wird dauerhaft gelöscht. Bist du sicher?",
+      "cancel": "Abbrechen",
+      "confirm": "Löschen"
+    },
+    "toasts": {
+      "loadFailed": "Agentenrollen konnten nicht geladen werden",
+      "createFailed": "Agentenrolle konnte nicht erstellt werden",
+      "saveFailed": "Agentenrolle konnte nicht gespeichert werden",
+      "deleteFailed": "Agentenrolle konnte nicht gelöscht werden",
+      "saveOrderFailed": "Reihenfolge konnte nicht gespeichert werden",
+      "created": "Agentenrolle erstellt",
+      "saved": "Agentenrolle gespeichert",
+      "deleted": "Agentenrolle gelöscht"
+    }
+  },
+  "ProjectView": {
+    "title": "Projektansicht",
+    "description": "Projektstruktur als interaktive Mindmap visualisieren",
+    "scanButton": "Projekt scannen",
+    "scanning": "Wird gescannt...",
+    "expandAll": "Alle ausklappen",
+    "collapseAll": "Alle einklappen",
+    "clear": "Leeren",
+    "clearConfirm": "Alle Projektstruktur-Daten für diesen Ordner löschen?",
+    "selectFolder": "Wähle einen Projektordner, um seine Struktur zu sehen",
+    "nodeCount": "{count} Knoten",
+    "toasts": {
+      "scanComplete": "{count} Knoten gescannt",
+      "scanFailed": "Scan fehlgeschlagen",
+      "cleared": "Projektstruktur geleert",
+      "clearFailed": "Leeren fehlgeschlagen"
+    }
+  },
+  "StorageSettings": {
+    "title": "Speicher",
+    "description": "Gespeicherte Projektstruktur-Daten verwalten",
+    "loading": "Wird geladen...",
+    "emptyHint": "Noch keine Projektstruktur-Daten gespeichert.",
+    "emptyDetail": "Nutze die Projektansicht, um ein Projekt zu scannen und Struktur-Daten zu erzeugen.",
+    "nodeCount": "{count} Knoten",
+    "toasts": {
+      "cleared": "Projektstruktur-Daten geleert",
+      "clearFailed": "Daten konnten nicht geleert werden"
+    },
+    "confirmDelete": {
+      "title": "Projektstruktur leeren?",
+      "message": "Alle gespeicherten Struktur-Daten dieses Ordners werden dauerhaft gelöscht. Du kannst jederzeit neu scannen.",
+      "cancel": "Abbrechen",
+      "confirm": "Leeren"
     }
   }
 }

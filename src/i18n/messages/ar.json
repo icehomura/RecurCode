@@ -56,7 +56,9 @@
       "browser": "استخدام المتصفح",
       "computer_use": "استخدام الحاسوب",
       "quick_messages": "رسائل سريعة",
-      "logs": "سجلات التشغيل"
+      "logs": "سجلات التشغيل",
+      "roles": "الأدوار",
+      "storage": "التخزين"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "عرض في الأحدث: {filter}",
       "noRecentChats": "لا توجد محادثات دردشة حديثة",
       "noRecentFolders": "لا توجد محادثات مجلدات حديثة",
-      "recentFilterMenuLabel": "عرض في الأحدث"
+      "recentFilterMenuLabel": "عرض في الأحدث",
+      "taskTree": "شجرة المهام",
+      "projectView": "عرض المشروع"
     },
     "conversation": {
       "reloadFailed": "فشل إعادة تحميل المحادثة: {message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "يرسل محرك المتصفح في هذا الكمبيوتر بعض العناوين خارج النفق، لذا تبقى صفحات المضيف البعيد مغلقة بدل تحميلها من هذا الكمبيوتر.",
         "probeFailed": "تعذّر على المتصفح المدمج التأكد من أنه يصل إلى المضيف البعيد عبر النفق. حاول مرة أخرى بعد قليل."
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "أدوار الوكلاء",
+    "description": "حدّد أدوارًا قابلة لإعادة الاستخدام للوكلاء. اسحب لإعادة الترتيب.",
+    "loading": "جارٍ تحميل الأدوار…",
+    "emptyList": "لا توجد أدوار بعد. انقر على «جديد» لإنشاء واحد.",
+    "emptySelection": "اختر دورًا لتحريره.",
+    "untitled": "بلا عنوان",
+    "actions": {
+      "new": "جديد",
+      "save": "حفظ",
+      "delete": "حذف",
+      "dragSort": "اسحب لإعادة الترتيب",
+      "dragSortMessage": "اسحب لإعادة ترتيب الدور: {name}"
+    },
+    "fields": {
+      "name": "الاسم",
+      "namePlaceholder": "أعطِ هذا الدور اسمًا قصيرًا",
+      "description": "الوصف",
+      "descriptionPlaceholder": "ما وظيفة هذا الدور؟",
+      "systemPrompt": "موجّه النظام",
+      "systemPromptPlaceholder": "اكتب موجّه النظام لهذا الدور",
+      "targetAgent": "الوكيل المستهدف",
+      "anyAgent": "أي وكيل",
+      "model": "الطراز",
+      "modelPlaceholder": "مثال: claude-sonnet-4-20250514",
+      "temperature": "درجة الحرارة",
+      "toolRestrictions": "قيود الأدوات",
+      "toolRestrictionsPlaceholder": "مثال: no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "حذف الدور؟",
+      "message": "سيُحذف «{name}» نهائيًا. هل تريد المتابعة؟",
+      "cancel": "إلغاء",
+      "confirm": "حذف"
+    },
+    "toasts": {
+      "loadFailed": "فشل تحميل الأدوار",
+      "createFailed": "فشل إنشاء الدور",
+      "saveFailed": "فشل حفظ الدور",
+      "deleteFailed": "فشل حذف الدور",
+      "saveOrderFailed": "فشل حفظ الترتيب",
+      "created": "تم إنشاء الدور",
+      "saved": "تم حفظ الدور",
+      "deleted": "تم حذف الدور"
+    }
+  },
+  "ProjectView": {
+    "title": "عرض المشروع",
+    "description": "تصوّر بنية المشروع كخريطة ذهنية تفاعلية",
+    "scanButton": "فحص المشروع",
+    "scanning": "جارٍ الفحص...",
+    "expandAll": "توسيع الكل",
+    "collapseAll": "طي الكل",
+    "clear": "مسح",
+    "clearConfirm": "حذف كل بيانات بنية المشروع لهذا المجلد؟",
+    "selectFolder": "اختر مجلد مشروع لعرض بنيته",
+    "nodeCount": "{count} عقدة",
+    "toasts": {
+      "scanComplete": "تم فحص {count} عقدة",
+      "scanFailed": "فشل الفحص",
+      "cleared": "تم مسح بنية المشروع",
+      "clearFailed": "فشل المسح"
+    }
+  },
+  "StorageSettings": {
+    "title": "التخزين",
+    "description": "إدارة بيانات بنية المشروع المخزّنة",
+    "loading": "جارٍ التحميل...",
+    "emptyHint": "لا توجد بيانات بنية مشروع مخزّنة بعد.",
+    "emptyDetail": "استخدم عرض المشروع لفحص مشروع وإنشاء بيانات البنية.",
+    "nodeCount": "{count} عقدة",
+    "toasts": {
+      "cleared": "تم مسح بيانات بنية المشروع",
+      "clearFailed": "فشل مسح البيانات"
+    },
+    "confirmDelete": {
+      "title": "مسح بنية المشروع؟",
+      "message": "سيؤدي هذا إلى حذف كل بيانات البنية المخزّنة لهذا المجلد نهائيًا. يمكنك إعادة الفحص في أي وقت.",
+      "cancel": "إلغاء",
+      "confirm": "مسح"
     }
   }
 }

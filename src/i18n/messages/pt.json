@@ -56,7 +56,9 @@
       "browser": "Uso do navegador",
       "computer_use": "Uso do computador",
       "quick_messages": "Mensagens rápidas",
-      "logs": "Registros de execução"
+      "logs": "Registros de execução",
+      "roles": "Funções",
+      "storage": "Armazenamento"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "Mostrar em Recentes: {filter}",
       "noRecentChats": "Nenhum chat recente",
       "noRecentFolders": "Nenhuma conversa de pasta recente",
-      "recentFilterMenuLabel": "Mostrar em Recentes"
+      "recentFilterMenuLabel": "Mostrar em Recentes",
+      "taskTree": "Árvore de tarefas",
+      "projectView": "Visão do projeto"
     },
     "conversation": {
       "reloadFailed": "Falha ao recarregar conversa: {message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "O mecanismo do navegador deste computador envia alguns endereços por fora do túnel, então as páginas do host remoto não abrem para não serem carregadas deste computador.",
         "probeFailed": "O navegador integrado não conseguiu confirmar que alcança o host remoto pelo túnel. Tente novamente em instantes."
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "Funções de agente",
+    "description": "Defina funções reutilizáveis para os agentes. Arraste para reordenar.",
+    "loading": "Carregando funções de agente…",
+    "emptyList": "Ainda não há funções de agente. Clique em «Nova» para criar uma.",
+    "emptySelection": "Selecione uma função de agente para editar.",
+    "untitled": "Sem título",
+    "actions": {
+      "new": "Nova",
+      "save": "Salvar",
+      "delete": "Excluir",
+      "dragSort": "Arraste para reordenar",
+      "dragSortMessage": "Arraste para reordenar a função: {name}"
+    },
+    "fields": {
+      "name": "Nome",
+      "namePlaceholder": "Dê um nome curto a esta função",
+      "description": "Descrição",
+      "descriptionPlaceholder": "O que esta função faz?",
+      "systemPrompt": "Prompt do sistema",
+      "systemPromptPlaceholder": "Escreva o prompt do sistema desta função",
+      "targetAgent": "Agente de destino",
+      "anyAgent": "Qualquer agente",
+      "model": "Modelo",
+      "modelPlaceholder": "ex.: claude-sonnet-4-20250514",
+      "temperature": "Temperatura",
+      "toolRestrictions": "Restrições de ferramentas",
+      "toolRestrictionsPlaceholder": "ex.: no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "Excluir a função de agente?",
+      "message": "«{name}» será excluída permanentemente. Continuar?",
+      "cancel": "Cancelar",
+      "confirm": "Excluir"
+    },
+    "toasts": {
+      "loadFailed": "Falha ao carregar as funções",
+      "createFailed": "Falha ao criar a função",
+      "saveFailed": "Falha ao salvar a função",
+      "deleteFailed": "Falha ao excluir a função",
+      "saveOrderFailed": "Falha ao salvar a ordem",
+      "created": "Função criada",
+      "saved": "Função salva",
+      "deleted": "Função excluída"
+    }
+  },
+  "ProjectView": {
+    "title": "Visão do projeto",
+    "description": "Visualize a estrutura do projeto como um mapa mental interativo",
+    "scanButton": "Analisar projeto",
+    "scanning": "Analisando...",
+    "expandAll": "Expandir tudo",
+    "collapseAll": "Recolher tudo",
+    "clear": "Limpar",
+    "clearConfirm": "Excluir todos os dados de estrutura deste projeto?",
+    "selectFolder": "Selecione uma pasta de projeto para ver sua estrutura",
+    "nodeCount": "{count} nós",
+    "toasts": {
+      "scanComplete": "{count} nós analisados",
+      "scanFailed": "Falha na análise",
+      "cleared": "Estrutura do projeto limpa",
+      "clearFailed": "Falha ao limpar"
+    }
+  },
+  "StorageSettings": {
+    "title": "Armazenamento",
+    "description": "Gerencie os dados de estrutura de projeto salvos",
+    "loading": "Carregando...",
+    "emptyHint": "Nenhum dado de estrutura de projeto salvo ainda.",
+    "emptyDetail": "Use a visão do projeto para analisar um projeto e gerar os dados de estrutura.",
+    "nodeCount": "{count} nós",
+    "toasts": {
+      "cleared": "Dados de estrutura limpos",
+      "clearFailed": "Falha ao limpar os dados"
+    },
+    "confirmDelete": {
+      "title": "Limpar a estrutura do projeto?",
+      "message": "Isso excluirá permanentemente todos os dados de estrutura salvos desta pasta. Você pode analisar novamente quando quiser.",
+      "cancel": "Cancelar",
+      "confirm": "Limpar"
     }
   }
 }

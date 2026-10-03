@@ -56,7 +56,9 @@
       "browser": "ブラウザ操作",
       "computer_use": "コンピューター操作",
       "quick_messages": "クイックメッセージ",
-      "logs": "実行ログ"
+      "logs": "実行ログ",
+      "roles": "ロール",
+      "storage": "ストレージ"
     }
   },
   "AppearanceSettings": {
@@ -2102,7 +2104,9 @@
       "recentFilterTitle": "最近の表示: {filter}",
       "noRecentChats": "最近のチャットはありません",
       "noRecentFolders": "最近のフォルダー会話はありません",
-      "recentFilterMenuLabel": "最近の表示"
+      "recentFilterMenuLabel": "最近の表示",
+      "taskTree": "タスクツリー",
+      "projectView": "プロジェクトビュー"
     },
     "conversation": {
       "reloadFailed": "会話の再読み込みに失敗しました: {message}",
@@ -7078,6 +7082,88 @@
         "bypassed": "このコンピューターのブラウザーエンジンは一部のアドレスをトンネルを通さずに送るため、このコンピューターから読み込まないよう、リモートホストのページは開きません。",
         "probeFailed": "内蔵ブラウザーがトンネル経由でリモートホストに届くことを確認できませんでした。しばらくしてからもう一度お試しください。"
       }
+    }
+  },
+  "AgentRolesSettings": {
+    "title": "エージェントロール",
+    "description": "エージェントで再利用できるロールを定義します。ドラッグで並べ替え。",
+    "loading": "ロールを読み込み中…",
+    "emptyList": "ロールがまだありません。「新規」をクリックして作成してください。",
+    "emptySelection": "編集するロールを選択してください。",
+    "untitled": "無題",
+    "actions": {
+      "new": "新規",
+      "save": "保存",
+      "delete": "削除",
+      "dragSort": "ドラッグで並べ替え",
+      "dragSortMessage": "ロールをドラッグして並べ替え: {name}"
+    },
+    "fields": {
+      "name": "名前",
+      "namePlaceholder": "ロールに短い名前を付けてください",
+      "description": "説明",
+      "descriptionPlaceholder": "このロールの役割は何ですか？",
+      "systemPrompt": "システムプロンプト",
+      "systemPromptPlaceholder": "このロールのシステムプロンプトを書いてください",
+      "targetAgent": "対象エージェント",
+      "anyAgent": "任意のエージェント",
+      "model": "モデル",
+      "modelPlaceholder": "例: claude-sonnet-4-20250514",
+      "temperature": "温度",
+      "toolRestrictions": "ツール制限",
+      "toolRestrictionsPlaceholder": "例: no_bash,no_edit"
+    },
+    "confirmDelete": {
+      "title": "ロールを削除しますか？",
+      "message": "「{name}」を完全に削除します。よろしいですか？",
+      "cancel": "キャンセル",
+      "confirm": "削除"
+    },
+    "toasts": {
+      "loadFailed": "ロールの読み込みに失敗しました",
+      "createFailed": "ロールの作成に失敗しました",
+      "saveFailed": "ロールの保存に失敗しました",
+      "deleteFailed": "ロールの削除に失敗しました",
+      "saveOrderFailed": "並び順の保存に失敗しました",
+      "created": "ロールを作成しました",
+      "saved": "ロールを保存しました",
+      "deleted": "ロールを削除しました"
+    }
+  },
+  "ProjectView": {
+    "title": "プロジェクトビュー",
+    "description": "プロジェクト構造をインタラクティブなマインドマップで可視化します",
+    "scanButton": "プロジェクトをスキャン",
+    "scanning": "スキャン中...",
+    "expandAll": "すべて展開",
+    "collapseAll": "すべて折りたたむ",
+    "clear": "クリア",
+    "clearConfirm": "このフォルダーのプロジェクト構造データをすべて削除しますか？",
+    "selectFolder": "構造を表示するプロジェクトフォルダーを選択してください",
+    "nodeCount": "{count} ノード",
+    "toasts": {
+      "scanComplete": "{count} ノードをスキャンしました",
+      "scanFailed": "スキャンに失敗しました",
+      "cleared": "プロジェクト構造をクリアしました",
+      "clearFailed": "クリアに失敗しました"
+    }
+  },
+  "StorageSettings": {
+    "title": "ストレージ",
+    "description": "保存されたプロジェクト構造データを管理します",
+    "loading": "読み込み中...",
+    "emptyHint": "プロジェクト構造データはまだありません。",
+    "emptyDetail": "プロジェクトビューでプロジェクトをスキャンして構造データを生成してください。",
+    "nodeCount": "{count} ノード",
+    "toasts": {
+      "cleared": "プロジェクト構造データをクリアしました",
+      "clearFailed": "データのクリアに失敗しました"
+    },
+    "confirmDelete": {
+      "title": "プロジェクト構造をクリアしますか？",
+      "message": "このフォルダーの保存済み構造データをすべて削除します。いつでも再スキャンできます。",
+      "cancel": "キャンセル",
+      "confirm": "クリア"
     }
   }
 }
