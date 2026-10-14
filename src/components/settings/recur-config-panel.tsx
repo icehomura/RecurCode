@@ -6,14 +6,12 @@ import {
   CheckCircle2,
   Cpu,
   Download,
-  Eye,
-  EyeOff,
-  KeyRound,
+  HardDrive,
   Loader2,
+  Plus,
   RotateCw,
   Save,
-  ShieldCheck,
-  TerminalSquare,
+  Server,
   Trash2,
   XCircle,
 } from "lucide-react"
@@ -21,178 +19,87 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
 import {
-  acpInstallPiBinary,
-  acpPiListTrustEntries,
-  acpPiSetProjectTrust,
-  acpUninstallPiBinary,
-  acpUpdatePiConfig,
-  acpValidatePiCommand,
-  loadPiConfig,
-  type PiTrustEntry,
+  acpDetectAgentLocalVersion,
+  acpDownloadAgentBinary,
+  acpLoadRecurConfig,
+  acpUninstallAgent,
+  acpUpdateRecurConfig,
+  type RecurConfigProjection,
+  type RecurConfigUpdate,
 } from "@/lib/api"
 import { useAgentInstallStream } from "@/hooks/use-agent-install-stream"
-import { PI_CONFIG_DIR_ENV } from "@/lib/pi-config"
-import {
-  PI_THINKING_LEVELS,
-  implicitWireValue,
-  reasoningFromModel,
-  reasoningToMap,
-  toggleLevel,
-  type PiModelReasoning,
-  type PiThinkingLevel,
-} from "@/lib/pi-thinking"
 import type { AcpAgentInfo } from "@/lib/types"
 import { cn, randomUUID } from "@/lib/utils"
 
-const PI_COMMAND_ENV = "PI_ACP_PI_COMMAND"
-const PI_SESSION_DIR_ENV = "RECUR_AGENT_SESSIONS_DIR"
-/**
- * LEGACY per-agent `env_json` flag that used to gate launch-time workspace-trust
- * seeding. RecurCode no longer seeds pi's `trust.json` — auto-trusting the opened
- * folder let a repo's own `.ra/extensions` execute at pi startup — so nothing
- * reads this key any more; project trust is an explicit per-workspace decision
- * (see `PiProjectTrustBanner` and the Project trust list below). It stays
- * reserved so a `"0"` persisted by an older build keeps out of the raw env
- * editor instead of resurfacing there as a user-defined variable.
- */
-const PI_TRUST_WORKSPACE_ENV = "PI_ACP_TRUST_WORKSPACE"
-
-/**
- * Reserved env keys the structured pi UI owns. pi-acp reads `PI_ACP_PI_COMMAND`
- * to pick which `pi` binary to spawn, and forwards `RECUR_AGENT_DIR` /
- * `RECUR_AGENT_SESSIONS_DIR` to it; `PI_ACP_TRUST_WORKSPACE` is the inert
- * legacy key above. These persist through the same per-agent `env_json` path
- * every other env var uses, so the structured UI needs no bespoke storage — the
- * launch pipeline already injects env_json.
- */
-export const PI_RESERVED_ENV_KEYS = [
-  PI_COMMAND_ENV,
-  PI_CONFIG_DIR_ENV,
-  PI_SESSION_DIR_ENV,
-  PI_TRUST_WORKSPACE_ENV,
-] as const
-
-type PiRuntimeMode = "default" | "custom"
-
-/** A custom provider as `loadPiConfig` projects it out of `models.json`. */
-type PiCustomProvider = Awaited<
-  ReturnType<typeof loadPiConfig>
->["customProviders"][number]
-
-/** A model that has never declared reasoning — pi treats it as `["off"]` only. */
-const NO_REASONING: PiModelReasoning = {
-  enabled: false,
-  levels: [],
-  wireValues: {},
+/** Coerce a nullable projection string to a controlled-input value. */
+function toStr(value: string | null): string {
+  return value ?? ""
 }
 
-/**
- * Curated built-in providers for the enum, as `{ id, label }`: the Select stores
- * the `id` (pi's provider key, written to settings.json / auth.json) but shows the
- * brand `label`. Mirrors pi's authoritative `env-api-keys.ts` `envMap` — the
- * single-API-key subset most users want. Labels are brand names, not localized
- * (same convention as `HERMES_PROVIDERS`). Special-auth providers (azure /
- * bedrock / vertex / cloudflare / github-copilot) are omitted on purpose — they
- * need more than a single key, so they don't fit this flow; use "Custom" for them.
- */
-const PI_BUILTIN_PROVIDERS: { id: string; label: string }[] = [
-  { id: "anthropic", label: "Anthropic" },
-  { id: "openai", label: "OpenAI" },
-  { id: "google", label: "Google Gemini" },
-  { id: "openrouter", label: "OpenRouter" },
-  { id: "vercel-ai-gateway", label: "Vercel AI Gateway" },
-  { id: "xai", label: "xAI" },
-  { id: "deepseek", label: "DeepSeek" },
-  { id: "groq", label: "Groq" },
-  { id: "cerebras", label: "Cerebras" },
-  { id: "mistral", label: "Mistral" },
-  { id: "nvidia", label: "NVIDIA NIM" },
-  { id: "together", label: "Together AI" },
-  { id: "fireworks", label: "Fireworks" },
-  { id: "huggingface", label: "Hugging Face" },
-  { id: "kimi-coding", label: "Kimi For Coding" },
-  { id: "moonshotai", label: "Moonshot AI" },
-  { id: "moonshotai-cn", label: "Moonshot AI (China)" },
-  { id: "zai", label: "Z.AI Coding Plan (Global)" },
-  { id: "zai-coding-cn", label: "Z.AI Coding Plan (China)" },
-  { id: "minimax", label: "MiniMax" },
-  { id: "minimax-cn", label: "MiniMax (China)" },
-  { id: "ant-ling", label: "Ant Ling" },
-  { id: "xiaomi", label: "Xiaomi MiMo" },
-  { id: "xiaomi-token-plan-cn", label: "Xiaomi MiMo Token Plan (China)" },
-  { id: "xiaomi-token-plan-ams", label: "Xiaomi MiMo Token Plan (Amsterdam)" },
-  { id: "xiaomi-token-plan-sgp", label: "Xiaomi MiMo Token Plan (Singapore)" },
-  { id: "opencode", label: "OpenCode Zen" },
-  { id: "opencode-go", label: "OpenCode Go" },
-]
+/** Coerce a nullable projection number to a controlled-input string. */
+function toNumStr(value: number | null): string {
+  return value === null ? "" : String(value)
+}
 
-/** Sentinel Select value that switches the credentials form to custom mode. */
-const PI_CUSTOM_SENTINEL = "__custom__"
+/** Serialize an env map into `KEY=value` lines for the raw editor. */
+function envMapToText(env: Record<string, string>): string {
+  return Object.entries(env)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n")
+}
 
-/** Wire protocols pi accepts for a custom provider in `models.json`. */
-const PI_CUSTOM_API_PROTOCOLS = [
-  "openai-completions",
-  "openai-responses",
-  "anthropic-messages",
-  "google-generative-ai",
-]
-
-type PiValidation = {
-  found: boolean
-  resolvedPath: string | null
-  version: string | null
-} | null
-
-/**
- * Build the env map to persist for pi's runtime. `custom` mode writes
- * `PI_ACP_PI_COMMAND` (+ the optional dir overrides); `default` mode clears all
- * three so pi-acp falls back to the `pi` on PATH. Unrelated env keys are
- * preserved untouched, so this never clobbers other per-agent env.
- */
-export function buildPiRuntimeEnv(
-  prevEnv: Record<string, string>,
-  mode: PiRuntimeMode,
-  command: string,
-  configDir: string,
-  sessionDir: string
-): Record<string, string> {
-  const env: Record<string, string> = { ...prevEnv }
-  const cmd = command.trim()
-  if (mode === "custom" && cmd) {
-    env[PI_COMMAND_ENV] = cmd
-    const cfg = configDir.trim()
-    if (cfg) env[PI_CONFIG_DIR_ENV] = cfg
-    else delete env[PI_CONFIG_DIR_ENV]
-    const ses = sessionDir.trim()
-    if (ses) env[PI_SESSION_DIR_ENV] = ses
-    else delete env[PI_SESSION_DIR_ENV]
-  } else {
-    delete env[PI_COMMAND_ENV]
-    delete env[PI_CONFIG_DIR_ENV]
-    delete env[PI_SESSION_DIR_ENV]
+/** Parse `KEY=value` lines back into an env map, skipping blanks/comments. */
+function parseEnvText(text: string): Record<string, string> {
+  const map: Record<string, string> = {}
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith("#")) continue
+    const idx = line.indexOf("=")
+    if (idx <= 0) continue
+    const key = line.slice(0, idx).trim()
+    const value = line.slice(idx + 1).trim()
+    if (!key) continue
+    map[key] = value
   }
-  return env
+  return map
+}
+
+/** A raw MCP server entry paired with its editable JSON text. */
+interface McpDraft {
+  /** Stable React key (not persisted). */
+  key: string
+  /** JSON serialization of the entry, edited in place. */
+  text: string
+}
+
+/** Build the line label for an MCP entry: its `command` or `url`. */
+function mcpLabel(entry: Record<string, unknown>): string {
+  const command = typeof entry.command === "string" ? entry.command : ""
+  const url = typeof entry.url === "string" ? entry.url : ""
+  return command || url || "(unnamed)"
 }
 
 /**
- * Dedicated settings panel for pi. Two concerns, two stores:
- *  - Credentials/model — written to pi's native `~/.ra/agent/settings.json`
- *    (`defaultProvider`/`defaultModel`/`defaultThinkingLevel`) and `auth.json`
- *    (the API key) via the `acp_update_pi_config` backend.
- *  - Runtime (bring-your-own-pi) — a visual default↔custom toggle that writes
- *    `PI_ACP_PI_COMMAND` (+ optional config/session dir overrides) into the
- *    per-agent `env_json`, letting users run their own pi build/install.
+ * Settings panel for the RecurAgent (`ra`) proxy. Bound to RecurAgent's native
+ * config via `acpLoadRecurConfig` / `acpUpdateRecurConfig`, split into five
+ * concerns:
+ *  - Model & provider — flat model-config keys written to config.json.
+ *  - Profile — selects the active serve-profile pointer.
+ *  - MCP servers — raw JSON entries round-tripped verbatim.
+ *  - Config location — read-only path + exists indicator.
+ *  - Environment — the per-agent `env_json` (API keys / `RA_*` vars) RecurAgent
+ *    reads from the launched process env.
+ *  - Install — the `ra` binary, managed through the generic agent-binary API.
  */
 export function RecurConfigPanel({
   agent,
@@ -207,1021 +114,441 @@ export function RecurConfigPanel({
 }) {
   const t = useTranslations("AcpAgentSettings")
 
-  // --- Credentials (pi's native ~/.ra/agent/{settings,auth,models}.json) ---
-  // `selectedProvider` is the Select value: a built-in id, a loaded-but-not-
-  // enumerated built-in, or PI_CUSTOM_SENTINEL. In custom mode the effective
-  // provider is `customId` (the key written to models.json / auth.json).
-  const [selectedProvider, setSelectedProvider] = useState("")
-  const [customId, setCustomId] = useState("")
-  const [customBaseUrl, setCustomBaseUrl] = useState("")
-  const [customApi, setCustomApi] = useState(PI_CUSTOM_API_PROTOCOLS[0])
-  const [customProviders, setCustomProviders] = useState<PiCustomProvider[]>([])
-  const [model, setModel] = useState("")
-  const [thinkingLevel, setThinkingLevel] = useState("")
-  const [apiKey, setApiKey] = useState("")
-  const [showKey, setShowKey] = useState(false)
-  const [authProviders, setAuthProviders] = useState<string[]>([])
-  const [savingCreds, setSavingCreds] = useState(false)
-  const [loadingCreds, setLoadingCreds] = useState(true)
-  const [reasoning, setReasoning] = useState<PiModelReasoning>(NO_REASONING)
-  const [showWireValues, setShowWireValues] = useState(false)
-
-  const isCustom = selectedProvider === PI_CUSTOM_SENTINEL
-  const effectiveProvider = (isCustom ? customId : selectedProvider).trim()
-
-  // Rehydrate the reasoning controls whenever the edited model's identity changes
-  // (provider switch, or a different model id typed in). Reading the stored entry
-  // rather than defaulting the form to "off" is what stops a save from wiping a
-  // declaration the user hand-wrote into models.json. Adjusting during render is
-  // React's documented pattern for "reset state when the thing it describes
-  // changes" — an effect would render one frame of the previous model's chips.
-  // Newline separator: neither a provider key nor a model id can contain one,
-  // so the halves cannot run together into a colliding key.
-  const reasoningKey =
-    loadingCreds || !isCustom ? null : `${effectiveProvider}\n${model.trim()}`
-  const [lastReasoningKey, setLastReasoningKey] = useState<string | null>(null)
-  if (reasoningKey !== null && reasoningKey !== lastReasoningKey) {
-    setLastReasoningKey(reasoningKey)
-    const stored = customProviders
-      .find((provider) => provider.id === effectiveProvider)
-      ?.models?.find((entry) => entry.id === model.trim())
-    setReasoning(
-      reasoningFromModel(stored?.reasoning, stored?.thinkingLevelMap)
-    )
-  }
-
+  const mountedRef = useRef(true)
   useEffect(() => {
-    let cancelled = false
-    setLoadingCreds(true)
-    loadPiConfig()
-      .then((cfg) => {
-        if (cancelled) return
-        setModel(cfg.defaultModel ?? "")
-        setThinkingLevel(cfg.defaultThinkingLevel ?? "")
-        setAuthProviders(cfg.authProviders ?? [])
-        const customs = cfg.customProviders ?? []
-        setCustomProviders(customs)
-        const dp = cfg.defaultProvider ?? ""
-        const matched = customs.find((c) => c.id === dp)
-        if (matched) {
-          // defaultProvider is a custom/self-hosted provider → custom mode.
-          setSelectedProvider(PI_CUSTOM_SENTINEL)
-          setCustomId(matched.id)
-          setCustomBaseUrl(matched.baseUrl)
-          setCustomApi(matched.api || PI_CUSTOM_API_PROTOCOLS[0])
-        } else {
-          setSelectedProvider(dp)
-        }
-      })
-      .catch((error) => {
-        console.error("[Recur] load config failed", error)
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingCreds(false)
-      })
+    mountedRef.current = true
     return () => {
-      cancelled = true
+      mountedRef.current = false
     }
   }, [])
 
-  // Levels the picker may offer. A built-in provider keeps pi's full vocabulary —
-  // pi carries its own, more accurate declaration for those models.
-  const availableLevels: readonly PiThinkingLevel[] =
-    isCustom && reasoning.enabled ? reasoning.levels : PI_THINKING_LEVELS
-  // pi's `defaultThinkingLevel` is global, not per-model, so a level that suits one
-  // model can be unreachable on another. Say so instead of letting pi clamp it.
-  const defaultLevelUnlisted =
-    isCustom &&
-    reasoning.enabled &&
-    thinkingLevel !== "" &&
-    !reasoning.levels.includes(thinkingLevel as PiThinkingLevel)
-  const effectiveThinkingLevel =
-    isCustom && !reasoning.enabled ? "off" : thinkingLevel
-
-  const handleSaveCreds = useCallback(async () => {
-    const trimmedModel = model.trim()
-    if (!effectiveProvider || !trimmedModel) {
-      toast.error(t("recur_agent.providerModelRequired"))
-      return
-    }
-    const trimmedBaseUrl = customBaseUrl.trim()
-    if (isCustom && !trimmedBaseUrl) {
-      toast.error(t("recur_agent.baseUrlRequired"))
-      return
-    }
-    // An enabled declaration with nothing checked leaves pi with an empty
-    // vocabulary, which clamps to `off` — the exact failure the card exists to
-    // prevent, so refuse it rather than write it.
-    if (isCustom && reasoning.enabled && reasoning.levels.length === 0) {
-      toast.error(t("recur_agent.levelsEmptyError"))
-      return
-    }
-    if (defaultLevelUnlisted) {
-      toast.error(t("recur_agent.defaultLevelUnlisted"))
-      return
-    }
-    const thinkingLevelMap = reasoningToMap(reasoning)
-    setSavingCreds(true)
-    try {
-      await acpUpdatePiConfig({
-        provider: effectiveProvider,
-        model: trimmedModel,
-        thinkingLevel: effectiveThinkingLevel || undefined,
-        apiKey: apiKey.trim() || undefined,
-        customBaseUrl: isCustom ? trimmedBaseUrl : undefined,
-        customApi: isCustom ? customApi : undefined,
-        modelReasoning: isCustom
-          ? {
-              reasoning: reasoning.enabled,
-              thinkingLevelMap: thinkingLevelMap as Record<
-                string,
-                string | null
-              >,
-            }
-          : undefined,
-      })
-      if (apiKey.trim()) {
-        setApiKey("")
-        setAuthProviders((prev) =>
-          prev.includes(effectiveProvider)
-            ? prev
-            : [...prev, effectiveProvider].sort()
-        )
-      }
-      if (isCustom) {
-        // Reflect the just-saved custom provider so a reopen rehydrates it —
-        // including the model's declaration, so switching away and back shows
-        // the chips that are now on disk rather than a stale read.
-        setCustomProviders((prev) => {
-          const previous = prev.find((c) => c.id === effectiveProvider)
-          const models = (previous?.models ?? []).filter(
-            (entry) => entry.id !== trimmedModel
-          )
-          models.push({
-            id: trimmedModel,
-            reasoning: reasoning.enabled,
-            thinkingLevelMap: thinkingLevelMap as Record<string, string | null>,
-          })
-          models.sort((a, b) => a.id.localeCompare(b.id))
-          const next = prev.filter((c) => c.id !== effectiveProvider)
-          next.push({
-            id: effectiveProvider,
-            baseUrl: trimmedBaseUrl,
-            api: customApi,
-            models,
-          })
-          next.sort((a, b) => a.id.localeCompare(b.id))
-          return next
-        })
-      }
-      await onSaved()
-      toast.success(t("toasts.piSaved"))
-    } catch (error) {
-      console.error("[Recur] save config failed", error)
-      toast.error(t("toasts.savePiFailed"))
-    } finally {
-      setSavingCreds(false)
-    }
-  }, [
-    effectiveProvider,
-    isCustom,
-    customBaseUrl,
-    customApi,
-    model,
-    effectiveThinkingLevel,
-    defaultLevelUnlisted,
-    reasoning,
-    apiKey,
-    onSaved,
-    t,
-  ])
-
-  const providerHasKey =
-    effectiveProvider !== "" && authProviders.includes(effectiveProvider)
-
-  // Built-in enum, plus a loaded built-in that isn't in the curated list (so a
-  // pre-existing defaultProvider is never dropped from the dropdown). An unknown
-  // id doubles as its own label since we have no friendly name for it.
-  const providerOptions =
-    selectedProvider &&
-    selectedProvider !== PI_CUSTOM_SENTINEL &&
-    !PI_BUILTIN_PROVIDERS.some((p) => p.id === selectedProvider)
-      ? [
-          ...PI_BUILTIN_PROVIDERS,
-          { id: selectedProvider, label: selectedProvider },
-        ]
-      : PI_BUILTIN_PROVIDERS
-
-  const credsIncomplete =
-    !effectiveProvider || !model.trim() || (isCustom && !customBaseUrl.trim())
-
-  const handleProviderChange = useCallback(
-    (value: string) => {
-      setSelectedProvider(value)
-      // Switching to custom with nothing typed yet → prefill from an existing
-      // custom provider (if any) so a known endpoint need not be re-entered.
-      if (
-        value === PI_CUSTOM_SENTINEL &&
-        !customId.trim() &&
-        customProviders[0]
-      ) {
-        const first = customProviders[0]
-        setCustomId(first.id)
-        setCustomBaseUrl(first.baseUrl)
-        setCustomApi(first.api || PI_CUSTOM_API_PROTOCOLS[0])
-      }
-    },
-    [customId, customProviders]
+  // --- config projection (source of truth for the baseline diff) ---
+  const [projection, setProjection] = useState<RecurConfigProjection | null>(
+    null
   )
+  const [loading, setLoading] = useState(true)
 
-  // --- pi binary (pi-coding-agent) — the prerequisite pi-acp spawns ---
-  // Status reflects the default `pi` on PATH (the global npm package); Install/
-  // Uninstall manage that package and stream to the shared install-log block.
-  // Surfaced inside the Runtime card's "Default pi" mode (where the global pi is
-  // what runs); the bring-your-own-pi override is the "Custom pi" mode.
+  // --- model & provider form ---
+  const [provider, setProvider] = useState("")
+  const [model, setModel] = useState("")
+  const [baseUrl, setBaseUrl] = useState("")
+  const [apiType, setApiType] = useState("")
+  const [apiKeyEnv, setApiKeyEnv] = useState("")
+  const [contextWindow, setContextWindow] = useState("")
+  const [maxIterations, setMaxIterations] = useState("")
+  const [formatAfterEdit, setFormatAfterEdit] = useState(false)
+  const [savingModel, setSavingModel] = useState(false)
+
+  // --- profile ---
+  const [activeProfile, setActiveProfile] = useState("")
+  const [savingProfile, setSavingProfile] = useState(false)
+
+  // --- MCP servers (raw JSON drafts) ---
+  const [mcpDrafts, setMcpDrafts] = useState<McpDraft[]>([])
+  const [savingMcp, setSavingMcp] = useState(false)
+
+  // --- environment (per-agent env_json, raw KEY=value editor) ---
+  const [envText, setEnvText] = useState(() => envMapToText(agent.env))
+  const [savingEnv, setSavingEnv] = useState(false)
+
+  // --- binary ---
   const installStream = useAgentInstallStream()
   const {
-    status: piInstallStatus,
-    logs: piInstallLogs,
-    start: startPiInstall,
-    reset: resetPiInstall,
+    status: installStatus,
+    logs: installLogs,
+    start: startInstall,
+    reset: resetInstall,
   } = installStream
   const installLogEndRef = useRef<HTMLDivElement | null>(null)
-  const [piStatus, setPiStatus] = useState<PiValidation>(null)
-  const [checkingPi, setCheckingPi] = useState(true)
-  const [piOp, setPiOp] = useState<"install" | "uninstall" | null>(null)
+  const [binaryVersion, setBinaryVersion] = useState<string | null>(null)
+  const [binaryKnown, setBinaryKnown] = useState(false)
+  const [checkingBinary, setCheckingBinary] = useState(true)
+  const [binaryOp, setBinaryOp] = useState<"install" | "uninstall" | null>(null)
 
-  const detectPiBinary = useCallback(async () => {
-    setCheckingPi(true)
-    try {
-      setPiStatus(await acpValidatePiCommand("recur_agent"))
-    } catch (error) {
-      console.error("[Recur] detect binary failed", error)
-      setPiStatus({ found: false, resolvedPath: null, version: null })
-    } finally {
-      setCheckingPi(false)
-    }
+  // Populate the form from a freshly loaded projection.
+  const applyProjection = useCallback((proj: RecurConfigProjection) => {
+    setProjection(proj)
+    setProvider(toStr(proj.model.provider))
+    setModel(toStr(proj.model.model))
+    setBaseUrl(toStr(proj.model.baseUrl))
+    setApiType(toStr(proj.model.apiType))
+    setApiKeyEnv(toStr(proj.model.apiKeyEnv))
+    setContextWindow(toNumStr(proj.model.contextWindow))
+    setMaxIterations(toNumStr(proj.model.maxIterations))
+    setFormatAfterEdit(proj.model.formatAfterEdit === true)
+    setActiveProfile(proj.activeProfile)
+    setMcpDrafts(
+      proj.mcpServers.map((entry, i) => ({
+        key: `${i}-${randomUUID()}`,
+        text: JSON.stringify(entry, null, 2),
+      }))
+    )
   }, [])
 
   useEffect(() => {
-    void detectPiBinary()
-  }, [detectPiBinary])
+    acpLoadRecurConfig()
+      .then((proj) => {
+        if (mountedRef.current) applyProjection(proj)
+      })
+      .catch((error) => {
+        console.error("[RecurAgent] load config failed", error)
+        if (mountedRef.current) toast.error(t("recur_agent.loadFailed"))
+      })
+      .finally(() => {
+        if (mountedRef.current) setLoading(false)
+      })
+  }, [applyProjection, t])
+
+  // Detect the installed `ra` binary version once on mount.
+  const detectBinary = useCallback(async () => {
+    setCheckingBinary(true)
+    try {
+      const version = await acpDetectAgentLocalVersion(agent.agent_type)
+      if (!mountedRef.current) return
+      setBinaryVersion(version)
+      setBinaryKnown(true)
+    } catch (error) {
+      console.error("[RecurAgent] detect binary failed", error)
+      if (mountedRef.current) {
+        setBinaryVersion(null)
+        setBinaryKnown(true)
+      }
+    } finally {
+      if (mountedRef.current) setCheckingBinary(false)
+    }
+  }, [agent.agent_type])
+
+  useEffect(() => {
+    void detectBinary()
+  }, [detectBinary])
+
+  // Tear down the install-event subscription on unmount (reset is stable).
+  useEffect(() => () => resetInstall(), [resetInstall])
 
   // Keep the streaming log pinned to its latest line.
   useEffect(() => {
     const container = installLogEndRef.current?.parentElement
     if (container) container.scrollTop = container.scrollHeight
-  }, [piInstallLogs])
+  }, [installLogs])
 
-  // Tear the subscription down on unmount (reset is stable across renders).
-  useEffect(() => () => resetPiInstall(), [resetPiInstall])
+  // --- model save: send only the fields that changed vs the baseline ---
+  const handleSaveModel = useCallback(async () => {
+    if (!projection) return
+    const base = projection.model
+    const update: RecurConfigUpdate = {}
 
-  const handleInstallPi = useCallback(async () => {
-    const taskId = randomUUID()
-    setPiOp("install")
-    await startPiInstall(taskId)
+    // Provider/model/endpoint/protocol/env-name: only send changed, trimmed
+    // values; an empty field clears it (null).
+    if (provider.trim() !== toStr(base.provider))
+      update.provider = provider.trim() || null
+    if (model.trim() !== toStr(base.model))
+      update.model = model.trim() || null
+    if (baseUrl.trim() !== toStr(base.baseUrl))
+      update.baseUrl = baseUrl.trim() || null
+    if (apiType.trim() !== toStr(base.apiType))
+      update.apiType = apiType.trim() || null
+    if (apiKeyEnv.trim() !== toStr(base.apiKeyEnv))
+      update.apiKeyEnv = apiKeyEnv.trim() || null
+
+    // Numbers: empty means null (unset), otherwise the parsed value.
+    const ctx = contextWindow.trim()
+    const baseCtx = toNumStr(base.contextWindow)
+    if (ctx !== baseCtx) {
+      update.contextWindow = ctx === "" ? null : Number(ctx) || null
+    }
+    const iters = maxIterations.trim()
+    const baseIters = toNumStr(base.maxIterations)
+    if (iters !== baseIters) {
+      update.maxIterations = iters === "" ? null : Number(iters) || null
+    }
+
+    // Boolean is always explicit.
+    if (formatAfterEdit !== (base.formatAfterEdit === true))
+      update.formatAfterEdit = formatAfterEdit
+
+    if (Object.keys(update).length === 0) {
+      await onSaved()
+      return
+    }
+
+    setSavingModel(true)
     try {
-      await acpInstallPiBinary(taskId)
-      toast.success(t("toasts.piBinaryInstalled"))
-      await detectPiBinary()
+      await acpUpdateRecurConfig(update)
+      await onSaved()
+      toast.success(t("recur_agent.saved"))
     } catch (error) {
-      console.error("[Recur] install binary failed", error)
-      toast.error(t("toasts.piBinaryInstallFailed"))
+      console.error("[RecurAgent] save config failed", error)
+      toast.error(t("recur_agent.updateFailed"))
     } finally {
-      setPiOp(null)
-    }
-  }, [startPiInstall, detectPiBinary, t])
-
-  const handleUninstallPi = useCallback(async () => {
-    const taskId = randomUUID()
-    setPiOp("uninstall")
-    await startPiInstall(taskId)
-    try {
-      await acpUninstallPiBinary(taskId)
-      toast.success(t("toasts.piBinaryUninstalled"))
-      await detectPiBinary()
-    } catch (error) {
-      console.error("[Recur] uninstall binary failed", error)
-      toast.error(t("toasts.piBinaryUninstallFailed"))
-    } finally {
-      setPiOp(null)
-    }
-  }, [startPiInstall, detectPiBinary, t])
-
-  // --- Runtime (bring-your-own-pi, persisted to env_json reserved keys) ---
-  const [mode, setMode] = useState<PiRuntimeMode>(() =>
-    (agent.env[PI_COMMAND_ENV] ?? "").trim() ? "custom" : "default"
-  )
-  const [command, setCommand] = useState(() => agent.env[PI_COMMAND_ENV] ?? "")
-  const [configDir, setConfigDir] = useState(
-    () => agent.env[PI_CONFIG_DIR_ENV] ?? ""
-  )
-  const [sessionDir, setSessionDir] = useState(
-    () => agent.env[PI_SESSION_DIR_ENV] ?? ""
-  )
-  const [validating, setValidating] = useState(false)
-  const [validation, setValidation] = useState<PiValidation>(null)
-
-  // Project-trust decisions recorded in pi's `trust.json`, listed for review.
-  const [trustEntries, setTrustEntries] = useState<PiTrustEntry[] | null>(null)
-  const [revoking, setRevoking] = useState<string | null>(null)
-
-  const loadTrustEntries = useCallback(async () => {
-    try {
-      setTrustEntries(await acpPiListTrustEntries())
-    } catch (error) {
-      console.error("[Recur] list project trust failed", error)
-      setTrustEntries([])
-    }
-  }, [])
-
-  useEffect(() => {
-    void loadTrustEntries()
-  }, [loadTrustEntries])
-
-  const handleRevokeTrust = useCallback(
-    async (path: string) => {
-      setRevoking(path)
-      try {
-        await acpPiSetProjectTrust(path, null)
-        await loadTrustEntries()
-      } catch (error) {
-        console.error("[Recur] revoke project trust failed", error)
-        toast.error(t("toasts.savePiTrustFailed"))
-      } finally {
-        setRevoking(null)
-      }
-    },
-    [loadTrustEntries, t]
-  )
-
-  const handleValidate = useCallback(async () => {
-    const cmd = command.trim()
-    if (!cmd) return
-    setValidating(true)
-    setValidation(null)
-    try {
-      setValidation(await acpValidatePiCommand(cmd))
-    } catch (error) {
-      console.error("[Recur] validate command failed", error)
-      setValidation({ found: false, resolvedPath: null, version: null })
-    } finally {
-      setValidating(false)
-    }
-  }, [command])
-
-  const customIncomplete = mode === "custom" && !command.trim()
-
-  const handleSaveRuntime = useCallback(async () => {
-    const env = buildPiRuntimeEnv(
-      agent.env,
-      mode,
-      command,
-      configDir,
-      sessionDir
-    )
-    try {
-      await onSaveEnv(env, agent.enabled)
-      toast.success(t("toasts.piRuntimeSaved"))
-    } catch (error) {
-      console.error("[Recur] save runtime failed", error)
-      toast.error(t("toasts.savePiRuntimeFailed"))
+      if (mountedRef.current) setSavingModel(false)
     }
   }, [
-    agent.env,
-    agent.enabled,
-    mode,
-    command,
-    configDir,
-    sessionDir,
-    onSaveEnv,
+    projection,
+    provider,
+    model,
+    baseUrl,
+    apiType,
+    apiKeyEnv,
+    contextWindow,
+    maxIterations,
+    formatAfterEdit,
+    onSaved,
     t,
   ])
 
+  // --- profile save ---
+  const handleProfileChange = useCallback(
+    async (value: string) => {
+      if (!projection || value === activeProfile) return
+      setSavingProfile(true)
+      try {
+        await acpUpdateRecurConfig({ activeProfile: value })
+        setActiveProfile(value)
+        await onSaved()
+        toast.success(t("recur_agent.saved"))
+      } catch (error) {
+        console.error("[RecurAgent] save profile failed", error)
+        toast.error(t("recur_agent.updateFailed"))
+      } finally {
+        if (mountedRef.current) setSavingProfile(false)
+      }
+    },
+    [projection, activeProfile, onSaved, t]
+  )
+
+  // --- MCP draft mutations ---
+  const handleMcpTextChange = useCallback((key: string, text: string) => {
+    setMcpDrafts((prev) =>
+      prev.map((draft) => (draft.key === key ? { ...draft, text } : draft))
+    )
+  }, [])
+
+  const handleMcpAdd = useCallback(() => {
+    setMcpDrafts((prev) => [
+      ...prev,
+      {
+        key: randomUUID(),
+        text: JSON.stringify({ command: "", args: [] }, null, 2),
+      },
+    ])
+  }, [])
+
+  const handleMcpRemove = useCallback((key: string) => {
+    setMcpDrafts((prev) => prev.filter((draft) => draft.key !== key))
+  }, [])
+
+  const handleSaveMcp = useCallback(async () => {
+    const entries: Record<string, unknown>[] = []
+    for (const draft of mcpDrafts) {
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(draft.text)
+      } catch {
+        toast.error(t("recur_agent.mcpInvalidJson"))
+        return
+      }
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
+        toast.error(t("recur_agent.mcpInvalidJson"))
+        return
+      }
+      entries.push(parsed as Record<string, unknown>)
+    }
+    setSavingMcp(true)
+    try {
+      await acpUpdateRecurConfig({ mcpServers: entries })
+      await onSaved()
+      toast.success(t("recur_agent.saved"))
+    } catch (error) {
+      console.error("[RecurAgent] save mcp servers failed", error)
+      toast.error(t("recur_agent.updateFailed"))
+    } finally {
+      if (mountedRef.current) setSavingMcp(false)
+    }
+  }, [mcpDrafts, onSaved, t])
+
+  // --- environment save ---
+  const handleSaveEnv = useCallback(async () => {
+    setSavingEnv(true)
+    try {
+      await onSaveEnv(parseEnvText(envText), agent.enabled)
+      await onSaved()
+      toast.success(t("recur_agent.saved"))
+    } catch (error) {
+      console.error("[RecurAgent] save env failed", error)
+      toast.error(t("recur_agent.updateFailed"))
+    } finally {
+      if (mountedRef.current) setSavingEnv(false)
+    }
+  }, [envText, onSaveEnv, agent.enabled, onSaved, t])
+
+  // --- binary install / uninstall ---
+  const handleInstall = useCallback(async () => {
+    const taskId = randomUUID()
+    setBinaryOp("install")
+    await startInstall(taskId)
+    try {
+      await acpDownloadAgentBinary(agent.agent_type, taskId)
+      await detectBinary()
+    } catch (error) {
+      console.error("[RecurAgent] install binary failed", error)
+    } finally {
+      if (mountedRef.current) setBinaryOp(null)
+    }
+  }, [agent.agent_type, startInstall, detectBinary])
+
+  const handleUninstall = useCallback(async () => {
+    const taskId = randomUUID()
+    setBinaryOp("uninstall")
+    await startInstall(taskId)
+    try {
+      await acpUninstallAgent(agent.agent_type, taskId)
+      await detectBinary()
+    } catch (error) {
+      console.error("[RecurAgent] uninstall binary failed", error)
+    } finally {
+      if (mountedRef.current) setBinaryOp(null)
+    }
+  }, [agent.agent_type, startInstall, detectBinary])
+
+  const profiles = projection?.profiles ?? []
+  const installed = binaryVersion !== null
+
   return (
     <div className="space-y-4">
-      {/* Runtime — which pi binary pi-acp spawns. "Default pi" manages the
-          global pi on PATH (install XOR uninstall, never both); "Custom pi"
-          points at your own build. */}
+      {/* 1. Model & provider */}
       <div className="space-y-3 rounded-md border bg-muted/10 p-3">
         <div>
           <label className="flex items-center gap-1.5 text-xs font-medium">
             <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
-            {t("recur_agent.runtimeTitle")}
-          </label>
-          <p className="mt-1 text-2xs text-muted-foreground">
-            {t("recur_agent.runtimeDescription")}
-          </p>
-        </div>
-
-        <RadioGroup
-          value={mode}
-          onValueChange={(value) => setMode(value as PiRuntimeMode)}
-          className="grid-cols-2"
-        >
-          <label
-            htmlFor="pi-mode-default"
-            className={cn(
-              "flex cursor-pointer items-start gap-2 rounded-md border p-2.5 text-2xs",
-              mode === "default"
-                ? "border-primary bg-primary/5"
-                : "border-input"
-            )}
-          >
-            <RadioGroupItem
-              value="default"
-              id="pi-mode-default"
-              className="mt-0.5"
-            />
-            <span>
-              <span className="block font-medium text-foreground">
-                {t("recur_agent.modeDefault")}
-              </span>
-              <span className="mt-0.5 block text-muted-foreground">
-                {t("recur_agent.modeDefaultHint")}
-              </span>
-            </span>
-          </label>
-          <label
-            htmlFor="pi-mode-custom"
-            className={cn(
-              "flex cursor-pointer items-start gap-2 rounded-md border p-2.5 text-2xs",
-              mode === "custom" ? "border-primary bg-primary/5" : "border-input"
-            )}
-          >
-            <RadioGroupItem
-              value="custom"
-              id="pi-mode-custom"
-              className="mt-0.5"
-            />
-            <span>
-              <span className="block font-medium text-foreground">
-                {t("recur_agent.modeCustom")}
-              </span>
-              <span className="mt-0.5 block text-muted-foreground">
-                {t("recur_agent.modeCustomHint")}
-              </span>
-            </span>
-          </label>
-        </RadioGroup>
-
-        {/* Default pi → status of the global `pi`, with a single contextual
-            action: Install when missing, Uninstall when present (never both). */}
-        {mode === "default" && (
-          <div className="space-y-2.5 rounded-md border border-dashed p-2.5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1 text-2xs">
-                {checkingPi ? (
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    {t("recur_agent.binaryChecking")}
-                  </span>
-                ) : piStatus?.found ? (
-                  <span className="flex items-start gap-1.5 text-emerald-600">
-                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span className="min-w-0">
-                      <span className="font-medium">
-                        {t("recur_agent.binaryInstalled")}
-                      </span>
-                      {piStatus.version ? ` · ${piStatus.version}` : ""}
-                      {piStatus.resolvedPath ? (
-                        <span className="mt-0.5 block break-all text-muted-foreground">
-                          {piStatus.resolvedPath}
-                        </span>
-                      ) : null}
-                    </span>
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <XCircle className="h-3.5 w-3.5 shrink-0" />
-                    {t("recur_agent.binaryMissing")}
-                  </span>
-                )}
-              </div>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={detectPiBinary}
-                  disabled={checkingPi || piOp !== null}
-                  title={t("recur_agent.recheck")}
-                  className="h-7 px-2"
-                >
-                  <RotateCw
-                    className={cn("h-3.5 w-3.5", checkingPi && "animate-spin")}
-                  />
-                </Button>
-                {!checkingPi &&
-                  (piStatus?.found ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleUninstallPi}
-                      disabled={piOp !== null}
-                      className="gap-1.5"
-                    >
-                      {piOp === "uninstall" ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {t("actions.uninstalling")}
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 className="h-3.5 w-3.5" />
-                          {t("actions.uninstall")}
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleInstallPi}
-                      disabled={piOp !== null}
-                      className="gap-1.5"
-                    >
-                      {piOp === "install" ? (
-                        <>
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          {t("recur_agent.installing")}
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-3.5 w-3.5" />
-                          {t("recur_agent.installBinary")}
-                        </>
-                      )}
-                    </Button>
-                  ))}
-              </div>
-            </div>
-
-            {piInstallStatus !== "idle" && (
-              <div className="max-h-[12.5rem] overflow-y-auto rounded-md border bg-muted/50 p-3 font-mono text-2xs leading-relaxed text-muted-foreground">
-                {piInstallLogs.map((line, i) => (
-                  <div
-                    key={i}
-                    className={
-                      line.startsWith("ERROR:") ? "text-destructive" : ""
-                    }
-                  >
-                    {line}
-                  </div>
-                ))}
-                <div ref={installLogEndRef} />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Custom pi → bring your own build / wrapper. */}
-        {mode === "custom" && (
-          <>
-            <div className="space-y-1.5">
-              <label className="text-2xs text-muted-foreground">
-                {t("recur_agent.commandLabel")}
-              </label>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={command}
-                  onChange={(event) => {
-                    setCommand(event.target.value)
-                    setValidation(null)
-                  }}
-                  placeholder="/path/to/pi · pi · ./pi-test.sh"
-                  spellCheck={false}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleValidate}
-                  disabled={validating || !command.trim()}
-                  className="gap-1.5 whitespace-nowrap"
-                >
-                  {validating ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <TerminalSquare className="h-3.5 w-3.5" />
-                  )}
-                  {t("recur_agent.validate")}
-                </Button>
-              </div>
-              {validation && (
-                <p
-                  className={cn(
-                    "flex items-start gap-1.5 text-2xs",
-                    validation.found ? "text-emerald-600" : "text-destructive"
-                  )}
-                >
-                  {validation.found ? (
-                    <>
-                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      <span className="break-all">
-                        {validation.resolvedPath}
-                        {validation.version ? ` (${validation.version})` : ""}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      {t("recur_agent.commandNotFound")}
-                    </>
-                  )}
-                </p>
-              )}
-              <p className="text-2xs text-muted-foreground">
-                {t("recur_agent.commandHint")}
-              </p>
-            </div>
-
-            <details className="rounded-md border border-dashed">
-              <summary className="cursor-pointer list-none px-2.5 py-1.5 text-2xs font-medium text-muted-foreground">
-                {t("recur_agent.advanced")}
-              </summary>
-              <div className="space-y-2.5 px-2.5 pb-2.5">
-                <div className="space-y-1.5">
-                  <label className="text-2xs text-muted-foreground">
-                    {t("recur_agent.configDirLabel")}
-                  </label>
-                  <Input
-                    value={configDir}
-                    onChange={(event) => setConfigDir(event.target.value)}
-                    placeholder="~/.ra/agent"
-                    spellCheck={false}
-                  />
-                  {configDir.trim() !== "" && (
-                    <p className="text-2xs text-amber-600 dark:text-amber-400">
-                      {t("recur_agent.configDirSkillsNote")}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-2xs text-muted-foreground">
-                    {t("recur_agent.sessionDirLabel")}
-                  </label>
-                  <Input
-                    value={sessionDir}
-                    onChange={(event) => setSessionDir(event.target.value)}
-                    placeholder="~/.ra/agent/sessions"
-                    spellCheck={false}
-                  />
-                </div>
-                {/*
-                  Both dirs persist to the per-agent `env_json`, which is injected
-                  into the spawned pi child and nowhere else — while the history
-                  parser resolves pi's sessions directory from RecurCode's OWN process
-                  environment. So a custom dir here splits the two: pi writes and
-                  resumes fine, and the sessions never show up in the list. Saying
-                  so beats letting the user discover it as missing history.
-                */}
-                {(configDir.trim() !== "" || sessionDir.trim() !== "") && (
-                  <p className="text-2xs text-amber-600 dark:text-amber-400">
-                    {t("recur_agent.dirHistoryNote")}
-                  </p>
-                )}
-                <p className="text-2xs text-muted-foreground">
-                  {t("recur_agent.flagsHint")}
-                </p>
-              </div>
-            </details>
-          </>
-        )}
-
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-2xs text-muted-foreground">
-            {customIncomplete ? t("recur_agent.customIncomplete") : ""}
-          </span>
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleSaveRuntime}
-            disabled={saving || customIncomplete}
-            className="gap-1.5"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {t("actions.saving")}
-              </>
-            ) : (
-              <>
-                <Save className="h-3.5 w-3.5" />
-                {t("recur_agent.saveRuntime")}
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* Credentials / model — pi's native settings.json / auth.json */}
-      <div className="space-y-3 rounded-md border bg-muted/10 p-3">
-        <div>
-          <label className="flex items-center gap-1.5 text-xs font-medium">
-            <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
-            {t("recur_agent.configManagement")}
+            {t("recur_agent.modelSectionTitle")}
           </label>
           <p className="mt-1 text-2xs text-muted-foreground">
             {t("recur_agent.configDescription")}
           </p>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-2xs text-muted-foreground">
-            {t("recur_agent.providerLabel")}
-          </label>
-          <Select
-            value={selectedProvider}
-            onValueChange={handleProviderChange}
-            disabled={savingCreds || loadingCreds}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("recur_agent.providerPlaceholder")} />
-            </SelectTrigger>
-            <SelectContent align="start">
-              <SelectItem value={PI_CUSTOM_SENTINEL}>
-                {t("recur_agent.customProvider")}
-              </SelectItem>
-              <SelectSeparator />
-              {providerOptions.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-2xs text-muted-foreground">
+              {t("recur_agent.providerLabel")}
+            </label>
+            <Input
+              value={provider}
+              onChange={(event) => setProvider(event.target.value)}
+              placeholder="anthropic"
+              spellCheck={false}
+              disabled={loading || savingModel}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-2xs text-muted-foreground">
+              {t("recur_agent.modelLabel")}
+            </label>
+            <Input
+              value={model}
+              onChange={(event) => setModel(event.target.value)}
+              placeholder="claude-sonnet-5"
+              spellCheck={false}
+              disabled={loading || savingModel}
+            />
+          </div>
         </div>
 
-        {isCustom && (
-          <div className="space-y-2.5 rounded-md border border-dashed p-2.5">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1.5">
-                <label className="text-2xs text-muted-foreground">
-                  {t("recur_agent.providerIdLabel")}
-                </label>
-                <Input
-                  value={customId}
-                  onChange={(event) => setCustomId(event.target.value)}
-                  placeholder="my-provider"
-                  spellCheck={false}
-                  disabled={savingCreds || loadingCreds}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-2xs text-muted-foreground">
-                  {t("recur_agent.apiProtocolLabel")}
-                </label>
-                <Select
-                  value={customApi}
-                  onValueChange={setCustomApi}
-                  disabled={savingCreds || loadingCreds}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="start">
-                    {PI_CUSTOM_API_PROTOCOLS.map((api) => (
-                      <SelectItem key={api} value={api}>
-                        {api}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-2xs text-muted-foreground">
-                {t("recur_agent.baseUrlLabel")}
-              </label>
-              <Input
-                value={customBaseUrl}
-                onChange={(event) => setCustomBaseUrl(event.target.value)}
-                placeholder="https://api.example.com/v1"
-                spellCheck={false}
-                disabled={savingCreds || loadingCreds}
-              />
-            </div>
-            <p className="text-2xs text-muted-foreground">
-              {t("recur_agent.customProviderHint")}
-            </p>
-          </div>
-        )}
-
         <div className="space-y-1.5">
           <label className="text-2xs text-muted-foreground">
-            {t("recur_agent.modelLabel")}
+            {t("recur_agent.baseUrlLabel")}
           </label>
           <Input
-            value={model}
-            onChange={(event) => setModel(event.target.value)}
-            placeholder="claude-sonnet-5"
+            value={baseUrl}
+            onChange={(event) => setBaseUrl(event.target.value)}
+            placeholder="https://api.example.com/v1"
             spellCheck={false}
-            disabled={savingCreds || loadingCreds}
+            disabled={loading || savingModel}
           />
         </div>
 
-        {/* ---- Reasoning card ----
-            pi reads `reasoning: modelDef.reasoning ?? false`, and an undeclared
-            model gets `["off"]` as its whole thinking vocabulary — so every level
-            the composer sends is clamped back and the picker snaps to Off. Only
-            custom providers need this: a built-in model carries pi's own, more
-            accurate declaration. */}
-        {isCustom && (
-          <div className="space-y-2 rounded-md border bg-background/60 p-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-2xs font-medium">
-                {t("recur_agent.reasoningTitle")}
-              </span>
-              <label className="flex cursor-pointer items-center gap-1.5 text-2xs text-muted-foreground">
-                <Switch
-                  checked={reasoning.enabled}
-                  onCheckedChange={(checked) =>
-                    setReasoning((prev) => ({
-                      ...prev,
-                      enabled: checked,
-                      // First enable with nothing remembered → offer pi's whole
-                      // vocabulary bar xhigh, which most backends reject.
-                      levels:
-                        checked && prev.levels.length === 0
-                          ? PI_THINKING_LEVELS.filter(
-                              (level) => level !== "xhigh"
-                            )
-                          : prev.levels,
-                    }))
-                  }
-                  disabled={savingCreds || loadingCreds}
-                  aria-label={t("recur_agent.reasoningEnableLabel")}
-                />
-                {t("recur_agent.reasoningEnableLabel")}
-              </label>
-            </div>
-            <p className="text-3xs text-muted-foreground">
-              {t("recur_agent.reasoningDescription")}
-            </p>
-
-            {reasoning.enabled && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-2xs text-muted-foreground">
-                    {t("recur_agent.levelsLabel")}
-                  </label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {PI_THINKING_LEVELS.map((level) => {
-                      const active = reasoning.levels.includes(level)
-                      return (
-                        <button
-                          key={level}
-                          type="button"
-                          disabled={savingCreds || loadingCreds}
-                          onClick={() =>
-                            setReasoning((prev) => ({
-                              ...prev,
-                              levels: toggleLevel(prev.levels, level),
-                            }))
-                          }
-                          aria-pressed={active}
-                          className={cn(
-                            "rounded-full border px-2 py-0.5 font-mono text-2xs transition-colors",
-                            active
-                              ? "border-primary/40 bg-primary/10 text-foreground"
-                              : "border-border text-muted-foreground hover:bg-muted"
-                          )}
-                        >
-                          {level}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <p className="text-3xs text-muted-foreground">
-                    {reasoning.levels.length === 0
-                      ? t("recur_agent.levelsEmptyError")
-                      : t("recur_agent.levelsHint")}
-                  </p>
-                </div>
-
-                {reasoning.levels.length > 0 && (
-                  <div className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowWireValues((prev) => !prev)}
-                      className="text-2xs text-muted-foreground hover:text-foreground"
-                    >
-                      {showWireValues ? "▾ " : "▸ "}
-                      {t("recur_agent.wireValuesTitle")}
-                    </button>
-                    {showWireValues && (
-                      <div className="space-y-1.5 rounded-md border border-dashed p-2">
-                        {reasoning.levels.map((level) => (
-                          <div key={level} className="flex items-center gap-2">
-                            <span className="w-16 shrink-0 font-mono text-2xs text-muted-foreground">
-                              {level}
-                            </span>
-                            <Input
-                              value={reasoning.wireValues[level] ?? ""}
-                              onChange={(event) =>
-                                setReasoning((prev) => ({
-                                  ...prev,
-                                  wireValues: {
-                                    ...prev.wireValues,
-                                    [level]: event.target.value,
-                                  },
-                                }))
-                              }
-                              placeholder={implicitWireValue(level)}
-                              spellCheck={false}
-                              className="h-7 font-mono text-xs"
-                              aria-label={`${t("recur_agent.wireValuesTitle")}: ${level}`}
-                              disabled={savingCreds || loadingCreds}
-                            />
-                          </div>
-                        ))}
-                        <p className="text-3xs text-muted-foreground">
-                          {t("recur_agent.wireValuesHint")}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-2xs text-muted-foreground">
+              {t("recur_agent.apiTypeLabel")}
+            </label>
+            <Input
+              value={apiType}
+              onChange={(event) => setApiType(event.target.value)}
+              placeholder="openai-completions"
+              spellCheck={false}
+              disabled={loading || savingModel}
+            />
           </div>
-        )}
-
-        <div className="space-y-1.5">
-          <label className="text-2xs text-muted-foreground">
-            {t("recur_agent.thinkingLabel")}
-          </label>
-          <Select
-            value={effectiveThinkingLevel || "off"}
-            onValueChange={(value) => setThinkingLevel(value)}
-            // A model with no reasoning has exactly one reachable level, so the
-            // control would be a lie.
-            disabled={
-              savingCreds || loadingCreds || (isCustom && !reasoning.enabled)
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="start">
-              {availableLevels.map((level) => (
-                <SelectItem key={level} value={level}>
-                  {t(`pi.thinking.${level}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {defaultLevelUnlisted && (
-            <p className="text-2xs text-destructive">
-              {t("recur_agent.defaultLevelUnlisted")}
+          <div className="space-y-1.5">
+            <label className="text-2xs text-muted-foreground">
+              {t("recur_agent.apiKeyEnvLabel")}
+            </label>
+            <Input
+              value={apiKeyEnv}
+              onChange={(event) => setApiKeyEnv(event.target.value)}
+              placeholder="ANTHROPIC_API_KEY"
+              spellCheck={false}
+              disabled={loading || savingModel}
+            />
+            <p className="text-3xs text-muted-foreground">
+              {t("recur_agent.apiKeyEnvHint")}
             </p>
-          )}
+          </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-2xs text-muted-foreground">
-            {t("recur_agent.apiKeyLabel")}
-          </label>
-          <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-2xs text-muted-foreground">
+              {t("recur_agent.contextWindowLabel")}
+            </label>
             <Input
-              type={showKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
-              placeholder={
-                providerHasKey ? t("recur_agent.apiKeySetPlaceholder") : "sk-..."
-              }
-              disabled={savingCreds || loadingCreds}
+              type="number"
+              value={contextWindow}
+              onChange={(event) => setContextWindow(event.target.value)}
+              placeholder="200000"
+              disabled={loading || savingModel}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowKey((prev) => !prev)}
-              title={
-                showKey ? t("actions.hideApiKey") : t("actions.showApiKey")
-              }
-            >
-              {showKey ? (
-                <EyeOff className="h-3.5 w-3.5" />
-              ) : (
-                <Eye className="h-3.5 w-3.5" />
-              )}
-            </Button>
           </div>
-          <p className="text-2xs text-muted-foreground">{t("recur_agent.apiKeyHint")}</p>
+          <div className="space-y-1.5">
+            <label className="text-2xs text-muted-foreground">
+              {t("recur_agent.maxIterationsLabel")}
+            </label>
+            <Input
+              type="number"
+              value={maxIterations}
+              onChange={(event) => setMaxIterations(event.target.value)}
+              placeholder="30"
+              disabled={loading || savingModel}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <label className="text-2xs text-muted-foreground">
+            {t("recur_agent.formatAfterEditLabel")}
+          </label>
+          <Switch
+            checked={formatAfterEdit}
+            onCheckedChange={setFormatAfterEdit}
+            disabled={loading || savingModel}
+            aria-label={t("recur_agent.formatAfterEditLabel")}
+          />
         </div>
 
         <div className="flex justify-end">
           <Button
             type="button"
             size="sm"
-            onClick={handleSaveCreds}
-            disabled={savingCreds || loadingCreds || credsIncomplete}
+            onClick={handleSaveModel}
+            disabled={loading || savingModel}
             className="gap-1.5"
           >
-            {savingCreds ? (
+            {savingModel ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 {t("actions.saving")}
@@ -1229,80 +556,316 @@ export function RecurConfigPanel({
             ) : (
               <>
                 <Save className="h-3.5 w-3.5" />
-                {t("recur_agent.saveConfig")}
+                {t("recur_agent.saveModel")}
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {/* Project trust — review/revoke the decisions in pi's trust.json.
-          A trusted folder lets that repo's `.ra/extensions` run at pi startup,
-          and the decision is inherited by every folder beneath it and honored by
-          the standalone `pi` CLI too, so it is worth being able to audit. Older
-          RecurCode builds auto-trusted every opened workspace; those entries are
-          indistinguishable from ones made inside pi, so they are listed for
-          review rather than pruned automatically. */}
-      <div className="space-y-2 rounded-md border bg-muted/10 p-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-xs font-medium">
-            <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
-            {t("recur_agent.projectTrustTitle")}
-          </div>
+      {/* 2. Profile */}
+      <div className="space-y-3 rounded-md border bg-muted/10 p-3">
+        <div>
+          <label className="text-xs font-medium">
+            {t("recur_agent.profileLabel")}
+          </label>
           <p className="mt-1 text-2xs text-muted-foreground">
-            {t("recur_agent.projectTrustDescription")}
+            {t("recur_agent.profileHint")}
           </p>
         </div>
 
-        {trustEntries === null ? (
+        {profiles.length === 0 ? (
           <p className="text-2xs text-muted-foreground">
-            {t("recur_agent.projectTrustLoading")}
-          </p>
-        ) : trustEntries.length === 0 ? (
-          <p className="text-2xs text-muted-foreground">
-            {t("recur_agent.projectTrustEmpty")}
+            {t("recur_agent.profileNone")}
           </p>
         ) : (
-          <ul className="space-y-1">
-            {trustEntries.map((entry) => (
-              <li
-                key={entry.path}
-                className="flex items-center gap-2 rounded border bg-background/60 px-2 py-1.5"
-              >
-                <span
-                  className={cn(
-                    "shrink-0 rounded px-1.5 py-0.5 text-3xs font-medium",
-                    entry.trusted
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                      : "bg-muted text-muted-foreground"
-                  )}
+          <Select
+            value={activeProfile}
+            onValueChange={handleProfileChange}
+            disabled={loading || savingProfile}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t("recur_agent.profileNone")} />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {profiles.map((profile) => (
+                <SelectItem key={profile.id} value={profile.id}>
+                  {profile.name || profile.id}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+
+      {/* 3. MCP servers */}
+      <div className="space-y-3 rounded-md border bg-muted/10 p-3">
+        <div>
+          <label className="flex items-center gap-1.5 text-xs font-medium">
+            <Server className="h-3.5 w-3.5 text-muted-foreground" />
+            {t("recur_agent.mcpServersTitle")}
+          </label>
+          <p className="mt-1 text-2xs text-muted-foreground">
+            {t("recur_agent.mcpServersHint")}
+          </p>
+        </div>
+
+        {mcpDrafts.length === 0 ? (
+          <p className="text-2xs text-muted-foreground">
+            {t("recur_agent.mcpServersHint")}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {mcpDrafts.map((draft) => {
+              let label = "(unnamed)"
+              try {
+                label = mcpLabel(JSON.parse(draft.text))
+              } catch {
+                label = t("recur_agent.mcpInvalidJson")
+              }
+              return (
+                <li
+                  key={draft.key}
+                  className="space-y-1.5 rounded-md border border-dashed p-2"
                 >
-                  {entry.trusted
-                    ? t("recur_agent.projectTrustTrusted")
-                    : t("recur_agent.projectTrustDenied")}
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className="min-w-0 flex-1 truncate font-mono text-2xs text-muted-foreground"
+                      title={label}
+                    >
+                      {label}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 shrink-0 gap-1 px-2 text-2xs"
+                      onClick={() => handleMcpRemove(draft.key)}
+                      disabled={loading || savingMcp}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      {t("recur_agent.mcpRemove")}
+                    </Button>
+                  </div>
+                  <Textarea
+                    value={draft.text}
+                    onChange={(event) =>
+                      handleMcpTextChange(draft.key, event.target.value)
+                    }
+                    spellCheck={false}
+                    className="min-h-24 font-mono text-2xs"
+                    disabled={loading || savingMcp}
+                  />
+                </li>
+              )
+            })}
+          </ul>
+        )}
+
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={handleMcpAdd}
+            disabled={loading || savingMcp}
+            className="gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {t("recur_agent.mcpAdd")}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleSaveMcp}
+            disabled={loading || savingMcp}
+            className="gap-1.5"
+          >
+            {savingMcp ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t("actions.saving")}
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5" />
+                {t("recur_agent.saveModel")}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* 4. Config location */}
+      <div className="space-y-2 rounded-md border bg-muted/10 p-3">
+        <label className="flex items-center gap-1.5 text-xs font-medium">
+          <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
+          {t("recur_agent.configPathLabel")}
+        </label>
+        {projection ? (
+          <>
+            <code className="block break-all rounded bg-muted px-2 py-1 font-mono text-2xs text-muted-foreground">
+              {projection.configPath}
+            </code>
+            {projection.exists ? (
+              <span className="flex items-center gap-1.5 text-2xs text-emerald-600">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {t("recur_agent.saved")}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-2xs text-amber-600 dark:text-amber-400">
+                <XCircle className="h-3.5 w-3.5" />
+                {t("recur_agent.configMissing")}
+              </span>
+            )}
+          </>
+        ) : (
+          <p className="flex items-center gap-1.5 text-2xs text-muted-foreground">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {t("recur_agent.binaryChecking")}
+          </p>
+        )}
+      </div>
+
+      {/* 5. Environment (per-agent env_json, raw KEY=value editor) */}
+      <div className="space-y-2 rounded-md border bg-muted/10 p-3">
+        <label className="text-xs font-medium">{t("envVars")}</label>
+        <Textarea
+          value={envText}
+          onChange={(event) => setEnvText(event.target.value)}
+          spellCheck={false}
+          className="min-h-32 font-mono text-2xs"
+          disabled={savingEnv}
+        />
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleSaveEnv}
+            disabled={saving || savingEnv}
+            className="gap-1.5"
+          >
+            {savingEnv ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t("actions.saving")}
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5" />
+                {t("actions.saveEnvVars")}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* 6. Install (`ra` binary, generic agent-binary API) */}
+      <div className="space-y-3 rounded-md border bg-muted/10 p-3">
+        <div>
+          <label className="flex items-center gap-1.5 text-xs font-medium">
+            <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+            {t("recur_agent.binaryTitle")}
+          </label>
+          <p className="mt-1 text-2xs text-muted-foreground">
+            {t("recur_agent.binaryDescription")}
+          </p>
+        </div>
+
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 text-2xs">
+            {checkingBinary ? (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t("recur_agent.binaryChecking")}
+              </span>
+            ) : installed ? (
+              <span className="flex items-start gap-1.5 text-emerald-600">
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 font-medium">
+                  {t("recur_agent.binaryInstalled")}
+                  {binaryVersion ? ` · ${binaryVersion}` : ""}
                 </span>
-                <span
-                  className="min-w-0 flex-1 truncate font-mono text-2xs"
-                  title={entry.path}
-                >
-                  {entry.path}
-                </span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <XCircle className="h-3.5 w-3.5 shrink-0" />
+                {t("recur_agent.binaryMissing")}
+              </span>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => void detectBinary()}
+              disabled={checkingBinary || binaryOp !== null}
+              title={t("recur_agent.recheck")}
+              className="h-7 px-2"
+            >
+              <RotateCw
+                className={cn("h-3.5 w-3.5", checkingBinary && "animate-spin")}
+              />
+            </Button>
+            {!checkingBinary &&
+              (installed ? (
                 <Button
+                  type="button"
+                  variant="outline"
                   size="sm"
-                  variant="ghost"
-                  className="h-6 shrink-0 px-2 text-2xs"
-                  disabled={revoking === entry.path}
-                  onClick={() => void handleRevokeTrust(entry.path)}
+                  onClick={handleUninstall}
+                  disabled={binaryOp !== null}
+                  className="gap-1.5"
                 >
-                  {revoking === entry.path ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                  {binaryOp === "uninstall" ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {t("actions.uninstalling")}
+                    </>
                   ) : (
-                    t("recur_agent.projectTrustRevoke")
+                    <>
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {t("actions.uninstall")}
+                    </>
                   )}
                 </Button>
-              </li>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleInstall}
+                  disabled={binaryOp !== null || !binaryKnown}
+                  className="gap-1.5"
+                >
+                  {binaryOp === "install" ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {t("recur_agent.installing")}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-3.5 w-3.5" />
+                      {t("recur_agent.installBinary")}
+                    </>
+                  )}
+                </Button>
+              ))}
+          </div>
+        </div>
+
+        {installStatus !== "idle" && (
+          <div className="max-h-[12.5rem] overflow-y-auto rounded-md border bg-muted/50 p-3 font-mono text-2xs leading-relaxed text-muted-foreground">
+            {installLogs.map((line, i) => (
+              <div
+                key={i}
+                className={line.startsWith("ERROR:") ? "text-destructive" : ""}
+              >
+                {line}
+              </div>
             ))}
-          </ul>
+            <div ref={installLogEndRef} />
+          </div>
         )}
       </div>
     </div>
