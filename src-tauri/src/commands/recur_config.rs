@@ -42,7 +42,7 @@ fn config_path(root: &Path) -> PathBuf {
 /// update can patch a subset. Serde names match RecurAgent's `Config` exactly
 /// (verbatim snake_case, no rename).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct RecurModelConfig {
     pub provider: Option<String>,
     pub model: Option<String>,
@@ -61,6 +61,7 @@ pub type RecurMcpServer = serde_json::Map<String, serde_json::Value>;
 
 /// A listed profile (id + display name).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RecurProfileSummary {
     pub id: String,
     pub name: String,
@@ -68,6 +69,7 @@ pub struct RecurProfileSummary {
 
 /// Everything the settings panel needs to render current state.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RecurConfigProjection {
     /// Absolute path of the `config.json` this projection reads, so the UI can
     /// show the operator where their edits land.
@@ -84,7 +86,7 @@ pub struct RecurConfigProjection {
 
 /// A patch request. `None` fields leave the on-disk value untouched.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct RecurConfigUpdate {
     #[serde(flatten)]
     pub model: RecurModelConfig,
@@ -307,6 +309,42 @@ mod tests {
         };
         assert!(update_recur_config_at(&dir, update).is_err());
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn update_deserializes_from_camel_case_wire() {
+        // The frontend sends camelCase; flatten must inline the model fields and
+        // rename mcpServers/activeProfile, matching `RecurConfigUpdate`'s wire.
+        let json = r#"{"provider":"anthropic","baseUrl":"https://x","maxIterations":0,"mcpServers":[{"command":"npx","args":[]}],"activeProfile":"dev"}"#;
+        let upd: RecurConfigUpdate = serde_json::from_str(json).unwrap();
+        assert_eq!(upd.model.provider.as_deref(), Some("anthropic"));
+        assert_eq!(upd.model.base_url.as_deref(), Some("https://x"));
+        assert_eq!(upd.model.max_iterations, Some(0));
+        assert_eq!(upd.mcp_servers.as_ref().map(|v| v.len()), Some(1));
+        assert_eq!(upd.active_profile.as_deref(), Some("dev"));
+    }
+
+    #[test]
+    fn projection_serializes_to_camel_case() {
+        let proj = RecurConfigProjection {
+            config_path: "/x/config.json".into(),
+            exists: true,
+            model: RecurModelConfig {
+                base_url: Some("https://y".into()),
+                ..Default::default()
+            },
+            mcp_servers: vec![],
+            profiles: vec![RecurProfileSummary {
+                id: "dev".into(),
+                name: "Dev".into(),
+            }],
+            active_profile: "dev".into(),
+        };
+        let v = serde_json::to_value(&proj).unwrap();
+        assert_eq!(v["configPath"].as_str(), Some("/x/config.json"));
+        assert_eq!(v["model"]["baseUrl"].as_str(), Some("https://y"));
+        assert_eq!(v["profiles"][0]["id"].as_str(), Some("dev"));
+        assert_eq!(v["activeProfile"].as_str(), Some("dev"));
     }
 
     #[test]
