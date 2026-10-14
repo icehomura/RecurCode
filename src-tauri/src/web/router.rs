@@ -1063,6 +1063,14 @@ pub fn build_router(
             post(handlers::acp::acp_load_pi_config),
         )
         .route(
+            "/acp_load_recur_config",
+            post(handlers::acp::acp_load_recur_config),
+        )
+        .route(
+            "/acp_update_recur_config",
+            post(handlers::acp::acp_update_recur_config),
+        )
+        .route(
             "/acp_list_pi_model_capabilities",
             post(handlers::acp::acp_list_pi_model_capabilities),
         )

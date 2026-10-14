@@ -12831,6 +12831,24 @@ pub async fn acp_load_pi_config(db: State<'_, AppDatabase>) -> Result<PiConfigPr
     load_pi_config_for_db(&db).await
 }
 
+/// Read RecurAgent's native config (`~/.ra/config.json` + profiles) for the
+/// settings panel. Desktop command; the web handler calls the same module fn.
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub fn acp_load_recur_config() -> crate::commands::recur_config::RecurConfigProjection {
+    crate::commands::recur_config::load_recur_config()
+}
+
+/// Apply a structured patch to RecurAgent's native config. Pure file IO, so it
+/// needs no DB or emitter.
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub fn acp_update_recur_config(
+    update: crate::commands::recur_config::RecurConfigUpdate,
+) -> Result<(), AcpError> {
+    crate::commands::recur_config::update_recur_config(update)
+}
+
 /// pi's built-in model catalog, asked of the configured runtime (see
 /// [`list_pi_model_catalog_core`]).
 #[cfg(feature = "tauri-runtime")]

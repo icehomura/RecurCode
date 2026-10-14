@@ -954,6 +954,21 @@ pub async fn acp_load_pi_config(
     Ok(Json(config))
 }
 
+pub async fn acp_load_recur_config(
+    Extension(_state): Extension<Arc<AppState>>,
+) -> Result<Json<crate::commands::recur_config::RecurConfigProjection>, AppCommandError> {
+    Ok(Json(crate::commands::recur_config::load_recur_config()))
+}
+
+pub async fn acp_update_recur_config(
+    Extension(_state): Extension<Arc<AppState>>,
+    Json(update): Json<crate::commands::recur_config::RecurConfigUpdate>,
+) -> Result<Json<()>, AppCommandError> {
+    crate::commands::recur_config::update_recur_config(update)
+        .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
+    Ok(Json(()))
+}
+
 pub async fn acp_list_pi_model_capabilities(
     Extension(state): Extension<Arc<AppState>>,
 ) -> Result<Json<acp_commands::PiModelCatalog>, AppCommandError> {
