@@ -2128,6 +2128,20 @@ async fn build_agent(
                 .await;
                 cmd_args.extend(listen.iter().map(|a| (*a).to_string()));
             }
+            // RecurAgent owns its model/MCP/skills config natively (`config.json`
+            // + `profiles/`). Pin its data+config home to RecurCode's RecurAgent
+            // root so the settings panel and the spawned agent read/write the SAME
+            // files. Only an explicit `--data-dir` (not the `RA_HOME` env, which
+            // leaves `config_home` at the brand dir) makes `config_home` track the
+            // data dir, guaranteeing one source of truth.
+            if agent_type == AgentType::RecurAgent {
+                cmd_args.extend([
+                    "--data-dir".to_string(),
+                    crate::commands::recur_config::recur_config_root()
+                        .display()
+                        .to_string(),
+                ]);
+            }
             let cmd_args_for_log = cmd_args.clone();
             if !cmd_args.is_empty() {
                 server = server.args(cmd_args);
