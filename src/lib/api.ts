@@ -853,6 +853,62 @@ export async function loadPiConfig(): Promise<{
   return getTransport().call("acp_load_pi_config", {})
 }
 
+/** A RecurAgent serve-profile summary (id + display name). */
+export interface RecurProfileSummary {
+  id: string
+  name: string
+}
+
+/** Flat model-config keys RecurCode edits in RecurAgent's native config.json. */
+export interface RecurModelConfig {
+  provider: string | null
+  model: string | null
+  baseUrl: string | null
+  apiKeyEnv: string | null
+  apiType: string | null
+  contextWindow: number | null
+  maxIterations: number | null
+  formatAfterEdit: boolean | null
+}
+
+/** Everything the RecurAgent settings panel renders as current state. */
+export interface RecurConfigProjection {
+  configPath: string
+  exists: boolean
+  model: RecurModelConfig
+  /** Raw MCP server entries (RecurAgent's own snake_case shape: command/args/
+   * url/env/...). Round-tripped verbatim so RecurCode need not model each field. */
+  mcpServers: Record<string, unknown>[]
+  profiles: RecurProfileSummary[]
+  activeProfile: string
+}
+
+/** A patch; omitted keys leave the on-disk value untouched. */
+export interface RecurConfigUpdate {
+  provider?: string | null
+  model?: string | null
+  baseUrl?: string | null
+  apiKeyEnv?: string | null
+  apiType?: string | null
+  contextWindow?: number | null
+  maxIterations?: number | null
+  formatAfterEdit?: boolean | null
+  mcpServers?: Record<string, unknown>[] | null
+  activeProfile?: string | null
+}
+
+/** Read RecurAgent's native config for the settings panel. */
+export async function acpLoadRecurConfig(): Promise<RecurConfigProjection> {
+  return getTransport().call("acp_load_recur_config", {})
+}
+
+/** Apply a structured patch to RecurAgent's native config. */
+export async function acpUpdateRecurConfig(
+  update: RecurConfigUpdate,
+): Promise<void> {
+  return getTransport().call("acp_update_recur_config", { update })
+}
+
 /** One built-in model's thinking capability, as pi's own registry reports it. */
 export interface PiModelCapability {
   provider: string
