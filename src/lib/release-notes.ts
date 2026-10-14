@@ -1,5 +1,5 @@
 /**
- * codeg publishes every release in two languages inside one markdown body: the
+ * RecurCode publishes every release in two languages inside one markdown body: the
  * English notes, a thematic break on its own line, then the Chinese
  * translation. Rendering the whole document means half of it is always a
  * translation the reader can't use — and in the status-bar popover, which shows

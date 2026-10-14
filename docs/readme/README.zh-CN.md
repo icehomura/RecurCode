@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="Codeg logo" width="64" align="absmiddle" /></a> Codeg
+  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="RecurCode logo" width="64" align="absmiddle" /></a> RecurCode
 </h1>
 
 <p align="center">
@@ -20,12 +20,12 @@
   把所有 AI 编码智能体收进同一个地方 —— 并让它们协同工作。
 </p>
 
-<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>下载 Codeg</ins></a> · <a href="https://docs.codeg.app/zh"><ins>使用文档</ins></a></h3>
+<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>下载 RecurCode</ins></a> · <a href="https://docs.codeg.app/zh"><ins>使用文档</ins></a></h3>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="../images/workspace-dark.png" />
-    <img src="../images/workspace-light.png" alt="Codeg 工作区：与智能体的对话、实时 diff 与项目文件并排呈现" width="960" />
+    <img src="../images/workspace-light.png" alt="RecurCode 工作区：与智能体的对话、实时 diff 与项目文件并排呈现" width="960" />
   </picture>
 </p>
 
@@ -66,10 +66,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://go.apimart.ai/gh-codeg" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
-      <strong><a href="https://go.apimart.ai/gh-codeg">APIMart</a></strong>
+      <a href="https://go.apimart.ai/gh-RecurCode" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
+      <strong><a href="https://go.apimart.ai/gh-RecurCode">APIMart</a></strong>
     </td>
-    <td>感谢 APIMart 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费，通过<a href="https://go.apimart.ai/gh-codeg">此注册链接</a>注册即可开用。</td>
+    <td>感谢 APIMart 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费，通过<a href="https://go.apimart.ai/gh-RecurCode">此注册链接</a>注册即可开用。</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -84,10 +84,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
-      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">Fluxion AI</a></strong>
+      <a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
+      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">Fluxion AI</a></strong>
     </td>
-    <td>感谢 Fluxion AI 对本项目的赞助！Fluxion AI 通过一个统一的 API，提供快速、可靠、高性价比的 GPT、Claude、Gemini 等领先 AI 模型接入。新用户通过<a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">我们的专属链接</a>注册可获得 3 美元 API 额度。</td>
+    <td>感谢 Fluxion AI 对本项目的赞助！Fluxion AI 通过一个统一的 API，提供快速、可靠、高性价比的 GPT、Claude、Gemini 等领先 AI 模型接入。新用户通过<a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">我们的专属链接</a>注册可获得 3 美元 API 额度。</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -98,7 +98,7 @@
   </tr>
 </table>
 
-> 想成为 Codeg 赞助商？[欢迎通过邮件与我们联系。](mailto:itpkcn@gmail.com)
+> 想成为 RecurCode 赞助商？[欢迎通过邮件与我们联系。](mailto:itpkcn@gmail.com)
 
 ## ✨ 功能特性
 
@@ -108,7 +108,7 @@
 
 ### 一个界面，容纳所有智能体
 
-内置十五个智能体，其它兼容 ACP 的智能体也能从公开注册表或它的 distribution JSON 加入。Codeg 与每一个智能体都用 Agent Client Protocol 对话，所以它们拿到的是同一套丰富的对话界面——工具卡片、实时 diff、计划与权限确认——而不是一个得眯着眼看的终端。
+内置十五个智能体，其它兼容 ACP 的智能体也能从公开注册表或它的 distribution JSON 加入。RecurCode 与每一个智能体都用 Agent Client Protocol 对话，所以它们拿到的是同一套丰富的对话界面——工具卡片、实时 diff、计划与权限确认——而不是一个得眯着眼看的终端。
 
 [文档 →](https://docs.codeg.app/zh/guide/supported-agents) · [自定义智能体 →](https://docs.codeg.app/zh/guide/custom-agents)
 
@@ -125,7 +125,7 @@
 
 ### 每个会话，都搜得到
 
-Codeg 读取每个智能体 CLI 留在磁盘上的历史：一键导入，全部可搜，任意会话都能从中断处继续。`@` 提及一个旧会话，你正在对话的智能体就能读到它——哪怕那是另一个智能体留下的。
+RecurCode 读取每个智能体 CLI 留在磁盘上的历史：一键导入，全部可搜，任意会话都能从中断处继续。`@` 提及一个旧会话，你正在对话的智能体就能读到它——哪怕那是另一个智能体留下的。
 
 [文档 →](https://docs.codeg.app/zh/guide/aggregation)
 
@@ -159,7 +159,7 @@ Codeg 读取每个智能体 CLI 留在磁盘上的历史：一键导入，全部
 
 ### 无人值守的待办任务
 
-把活写下来就可以走开。每个待办任务都有自己的 git 工作树与分支，可以马上开始，也可以定时启动，做完后在待验收里等你；你通过 diff，智能体就把它落地，而 Codeg 会先核对 git 再确认完成。
+把活写下来就可以走开。每个待办任务都有自己的 git 工作树与分支，可以马上开始，也可以定时启动，做完后在待验收里等你；你通过 diff，智能体就把它落地，而 RecurCode 会先核对 git 再确认完成。
 
 [文档 →](https://docs.codeg.app/zh/guide/tasks)
 
@@ -193,7 +193,7 @@ Codeg 读取每个智能体 CLI 留在磁盘上的历史：一键导入，全部
 
 ### 桌面、服务器、手机与聊天
 
-Codeg 可以作为桌面应用运行，也可以作为用任意浏览器访问的自托管服务器，或者一个 Docker 容器。原生 iPhone、iPad 与 Android 客户端——再加上 Telegram、飞书与微信渠道——让智能体随时触手可及，而你的文件与会话始终留在你自己的机器上。
+RecurCode 可以作为桌面应用运行，也可以作为用任意浏览器访问的自托管服务器，或者一个 Docker 容器。原生 iPhone、iPad 与 Android 客户端——再加上 Telegram、飞书与微信渠道——让智能体随时触手可及，而你的文件与会话始终留在你自己的机器上。
 
 [文档 →](https://docs.codeg.app/zh/getting-started/deployment) · [移动应用 →](https://docs.codeg.app/zh/getting-started/installation#mobile-apps) · [消息渠道 →](https://docs.codeg.app/zh/guide/chat-channels)
 
@@ -268,12 +268,12 @@ Codeg 可以作为桌面应用运行，也可以作为用任意浏览器访问�
 - **[项目启动器](https://docs.codeg.app/zh/guide/project-boot)** — 可视化创建新项目，并实时预览
 - **[外观自定义](https://docs.codeg.app/zh/reference/settings/appearance)** — 十二套主题都能逐个色彩 token 重新调色，还有壁纸、圆角与自定义 CSS——界面支持十种语言
 - **[备份与同步](https://docs.codeg.app/zh/reference/settings/system#backup-restore)** — 可加密的备份，以及通过文件或你自己的 WebDAV 服务器在多台机器之间同步配置
-- **[URL Scheme](../../docs/url-scheme.md)** — 用 `codeg://session/<id>` 从其它应用直接打开一个会话（桌面端）
+- **[URL Scheme](../../docs/url-scheme.md)** — 用 `recurcode://session/<id>` 从其它应用直接打开一个会话（桌面端）
 - **还有更多** — 几乎每个版本都有新东西；完整清单见 [发布说明](https://github.com/spacering-net/codeg/releases)
 
 ## 🤖 支持的智能体
 
-Codeg 通过 [Agent Client Protocol](https://agentclientprotocol.com) 与每个智能体对话，所以它们拿到的都是同一套结构化界面。内置十五个，其中大部分 Codeg 都能替你安装、锁定版本并更新：
+RecurCode 通过 [Agent Client Protocol](https://agentclientprotocol.com) 与每个智能体对话，所以它们拿到的都是同一套结构化界面。内置十五个，其中大部分 RecurCode 都能替你安装、锁定版本并更新：
 
 <p>
   <a href="https://www.anthropic.com/claude-code"><kbd><img src="../images/agents/claude-code.svg" alt="" width="16" valign="middle" /> Claude Code</kbd></a> &nbsp;
@@ -294,33 +294,33 @@ Codeg 通过 [Agent Client Protocol](https://agentclientprotocol.com) 与每个�
   <a href="https://docs.codeg.app/zh/guide/custom-agents"><kbd>+ 任意 ACP 智能体</kbd></a>
 </p>
 
-名单之外的呢？从公开的 ACP 注册表里挑一个，或者粘贴它的 distribution JSON——Codeg 会安装它、预检它能否启动，然后像对待内置智能体一样对待它。各自的运行环境要求以及会话在磁盘上的存放位置，见 [支持的智能体](https://docs.codeg.app/zh/guide/supported-agents)。
+名单之外的呢？从公开的 ACP 注册表里挑一个，或者粘贴它的 distribution JSON——RecurCode 会安装它、预检它能否启动，然后像对待内置智能体一样对待它。各自的运行环境要求以及会话在磁盘上的存放位置，见 [支持的智能体](https://docs.codeg.app/zh/guide/supported-agents)。
 
 ## 📦 安装
 
 **桌面端** — macOS、Windows 与 Linux 的安装包都在 [Releases](https://github.com/spacering-net/codeg/releases/latest)，安装步骤见 [安装](https://docs.codeg.app/zh/getting-started/installation)。
 
-**服务器** — 无界面运行 Codeg，用任意浏览器访问。Linux 或 macOS：
+**服务器** — 无界面运行 RecurCode，用任意浏览器访问。Linux 或 macOS：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/spacering-net/codeg/main/install.sh | bash
-CODEG_STATIC_DIR=/usr/local/share/codeg/web codeg-server
+RECUR_CODE_STATIC_DIR=/usr/local/share/RecurCode/web recur-code-server
 ```
 
 Windows（PowerShell）：
 
 ```powershell
 irm https://raw.githubusercontent.com/spacering-net/codeg/main/install.ps1 | iex
-$env:CODEG_STATIC_DIR="$env:LOCALAPPDATA\codeg-server\web"; codeg-server
+$env:RECUR_CODE_STATIC_DIR="$env:LOCALAPPDATA\recur-code-server\web"; recur-code-server
 ```
 
 **Docker** — 同一个服务器，装进一个容器：
 
 ```bash
-docker run -d -p 3080:3080 -v codeg-data:/data ghcr.io/spacering-net/codeg:latest
+docker run -d -p 3080:3080 -v recur-code-data:/data ghcr.io/spacering-net/codeg:latest
 ```
 
-**移动端** — 安装 [iOS 应用](https://apps.apple.com/app/codeg-client/id6785199071) 或 [Android APK](https://github.com/xintaofei/codeg-android/releases/latest)，再把它指向桌面应用的 **Web 服务**或你自己的 `codeg-server`：填地址、填令牌，完成。配对步骤见 [移动应用](https://docs.codeg.app/zh/getting-started/installation#mobile-apps)。
+**移动端** — 安装 [iOS 应用](https://apps.apple.com/app/codeg-client/id6785199071) 或 [Android APK](https://github.com/xintaofei/codeg-android/releases/latest)，再把它指向桌面应用的 **Web 服务**或你自己的 `recur-code-server`：填地址、填令牌，完成。配对步骤见 [移动应用](https://docs.codeg.app/zh/getting-started/installation#mobile-apps)。
 
 Compose、预编译二进制、源码构建与就地升级见 [部署](https://docs.codeg.app/zh/getting-started/deployment)；环境变量见 [配置](https://docs.codeg.app/zh/getting-started/configuration)。
 
@@ -340,10 +340,10 @@ Compose、预编译二进制、源码构建与就地升级见 [部署](https://d
 
 ## 🤝 参与贡献
 
-欢迎提交 issue 与 pull request。想自己构建 Codeg，可以从 [开发](https://docs.codeg.app/zh/reference/development) 与 [架构](https://docs.codeg.app/zh/reference/architecture) 开始。
+欢迎提交 issue 与 pull request。想自己构建 RecurCode，可以从 [开发](https://docs.codeg.app/zh/reference/development) 与 [架构](https://docs.codeg.app/zh/reference/architecture) 开始。
 
 <a href="https://github.com/spacering-net/codeg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="Codeg 贡献者" />
+  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="RecurCode 贡献者" />
 </a>
 
 ## ⭐ Star 历史
@@ -358,10 +358,10 @@ Compose、预编译二进制、源码构建与就地升级见 [部署](https://d
 
 ## 🙏 鸣谢
 
-- [Agent Client Protocol](https://agentclientprotocol.com)：Codeg 得以连接所有受支持智能体的基础
-- [Superpowers](https://github.com/obra/superpowers)：为 Codeg 的专家技能模块提供支持
-- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)：为 Codeg 的 Office 文档工作流提供支持
-- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)：为 Codeg 的科学研究技能提供支持（MIT 许可的子集）
+- [Agent Client Protocol](https://agentclientprotocol.com)：RecurCode 得以连接所有受支持智能体的基础
+- [Superpowers](https://github.com/obra/superpowers)：为 RecurCode 的专家技能模块提供支持
+- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI)：为 RecurCode 的 Office 文档工作流提供支持
+- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)：为 RecurCode 的科学研究技能提供支持（MIT 许可的子集）
 
 ## 📜 许可证
 

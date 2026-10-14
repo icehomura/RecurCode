@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="Codeg logo" width="64" align="absmiddle" /></a> Codeg
+  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="RecurCode logo" width="64" align="absmiddle" /></a> RecurCode
 </h1>
 
 <p align="center">
@@ -20,12 +20,12 @@
   Rode todos os agentes de IA para programação em um só lugar — e deixe que trabalhem juntos.
 </p>
 
-<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>Baixar o Codeg</ins></a> · <a href="https://docs.codeg.app"><ins>Documentação</ins></a></h3>
+<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>Baixar o RecurCode</ins></a> · <a href="https://docs.codeg.app"><ins>Documentação</ins></a></h3>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="../images/workspace-dark.png" />
-    <img src="../images/workspace-light.png" alt="O espaço de trabalho do Codeg: uma conversa com um agente ao lado dos diffs ao vivo que ele produz e dos arquivos do projeto" width="960" />
+    <img src="../images/workspace-light.png" alt="O espaço de trabalho do RecurCode: uma conversa com um agente ao lado dos diffs ao vivo que ele produz e dos arquivos do projeto" width="960" />
   </picture>
 </p>
 
@@ -66,10 +66,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://go.apimart.ai/gh-codeg" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
-      <strong><a href="https://go.apimart.ai/gh-codeg">APIMart</a></strong>
+      <a href="https://go.apimart.ai/gh-RecurCode" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
+      <strong><a href="https://go.apimart.ai/gh-RecurCode">APIMart</a></strong>
     </td>
-    <td>Agradecemos à APIMart por patrocinar este projeto! A APIMart é uma plataforma de API de baixo custo para geração de imagens e vídeos com IA: o GPT-Image-2 custa a partir de US$ 0,006 por imagem, mais de 160 imagens por dólar. Uma única API assíncrona cobre imagem e vídeo: envie uma tarefa, receba um ID e busque os resultados por polling ou callback. Processe dezenas de milhares de imagens em lote sem timeouts e troque de modelo sem alterar o código. Pagamento conforme o uso, sem mensalidade — <a href="https://go.apimart.ai/gh-codeg">cadastre-se aqui</a> para começar.</td>
+    <td>Agradecemos à APIMart por patrocinar este projeto! A APIMart é uma plataforma de API de baixo custo para geração de imagens e vídeos com IA: o GPT-Image-2 custa a partir de US$ 0,006 por imagem, mais de 160 imagens por dólar. Uma única API assíncrona cobre imagem e vídeo: envie uma tarefa, receba um ID e busque os resultados por polling ou callback. Processe dezenas de milhares de imagens em lote sem timeouts e troque de modelo sem alterar o código. Pagamento conforme o uso, sem mensalidade — <a href="https://go.apimart.ai/gh-RecurCode">cadastre-se aqui</a> para começar.</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -84,10 +84,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
-      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">Fluxion AI</a></strong>
+      <a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
+      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">Fluxion AI</a></strong>
     </td>
-    <td>Agradecemos à Fluxion AI por patrocinar este projeto! A Fluxion AI oferece acesso de API rápido, confiável e econômico a GPT, Claude, Gemini e outros modelos de IA líderes por meio de uma única API unificada. Novos usuários podem receber US$ 3 em créditos de API através do <a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">nosso link exclusivo</a>.</td>
+    <td>Agradecemos à Fluxion AI por patrocinar este projeto! A Fluxion AI oferece acesso de API rápido, confiável e econômico a GPT, Claude, Gemini e outros modelos de IA líderes por meio de uma única API unificada. Novos usuários podem receber US$ 3 em créditos de API através do <a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">nosso link exclusivo</a>.</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -98,7 +98,7 @@
   </tr>
 </table>
 
-> Quer se tornar patrocinador do Codeg? [Entre em contato por e-mail.](mailto:itpkcn@gmail.com)
+> Quer se tornar patrocinador do RecurCode? [Entre em contato por e-mail.](mailto:itpkcn@gmail.com)
 
 ## ✨ Recursos
 
@@ -108,7 +108,7 @@
 
 ### Uma interface para todos os agentes
 
-Quinze agentes já vêm integrados, e qualquer outro agente compatível com ACP pode se juntar a eles pelo registro público ou pelo JSON de distribuição dele. O Codeg fala com cada um deles pelo Agent Client Protocol, então todos ganham a mesma conversa rica — cartões de ferramentas, diffs ao vivo, planos e pedidos de permissão — em vez de um terminal para você forçar a vista.
+Quinze agentes já vêm integrados, e qualquer outro agente compatível com ACP pode se juntar a eles pelo registro público ou pelo JSON de distribuição dele. O RecurCode fala com cada um deles pelo Agent Client Protocol, então todos ganham a mesma conversa rica — cartões de ferramentas, diffs ao vivo, planos e pedidos de permissão — em vez de um terminal para você forçar a vista.
 
 [Documentação →](https://docs.codeg.app/guide/supported-agents) · [Agentes personalizados →](https://docs.codeg.app/guide/custom-agents)
 
@@ -125,7 +125,7 @@ Quinze agentes já vêm integrados, e qualquer outro agente compatível com ACP 
 
 ### Todas as sessões, pesquisáveis
 
-O Codeg lê o histórico que a CLI de cada agente guarda em disco: importe-o com um clique, pesquise tudo e retome qualquer sessão de onde ela parou. Mencione uma sessão antiga com `@` e o agente com quem você está falando consegue lê-la — mesmo que outro agente a tenha escrito.
+O RecurCode lê o histórico que a CLI de cada agente guarda em disco: importe-o com um clique, pesquise tudo e retome qualquer sessão de onde ela parou. Mencione uma sessão antiga com `@` e o agente com quem você está falando consegue lê-la — mesmo que outro agente a tenha escrito.
 
 [Documentação →](https://docs.codeg.app/guide/aggregation)
 
@@ -159,7 +159,7 @@ Digite `@`, escolha um agente e envie. Cada agente mencionado roda como uma sess
 
 ### Tarefas a fazer que rodam sem supervisão
 
-Anote o trabalho e vá cuidar de outra coisa. Cada tarefa ganha a própria worktree e o próprio branch do git, começa na hora ou em um horário agendado e espera em Revisão; aceite o diff e o agente faz o merge, e o Codeg confere o git antes de dar a tarefa como concluída.
+Anote o trabalho e vá cuidar de outra coisa. Cada tarefa ganha a própria worktree e o próprio branch do git, começa na hora ou em um horário agendado e espera em Revisão; aceite o diff e o agente faz o merge, e o RecurCode confere o git antes de dar a tarefa como concluída.
 
 [Documentação →](https://docs.codeg.app/guide/tasks)
 
@@ -193,7 +193,7 @@ Organize seu trabalho no espaço: conversas, arquivos, terminais e notas viram c
 
 ### Desktop, servidor, celular e chat
 
-Rode o Codeg como aplicativo de desktop, como servidor auto-hospedado que você abre em qualquer navegador ou como um único contêiner Docker. Clientes nativos para iPhone, iPad e Android — além de canais no Telegram, Lark e WeChat — mantêm seus agentes ao alcance, enquanto seus arquivos e sessões ficam na sua própria máquina.
+Rode o RecurCode como aplicativo de desktop, como servidor auto-hospedado que você abre em qualquer navegador ou como um único contêiner Docker. Clientes nativos para iPhone, iPad e Android — além de canais no Telegram, Lark e WeChat — mantêm seus agentes ao alcance, enquanto seus arquivos e sessões ficam na sua própria máquina.
 
 [Documentação →](https://docs.codeg.app/getting-started/deployment) · [Aplicativos móveis →](https://docs.codeg.app/getting-started/installation#mobile-apps) · [Canais de chat →](https://docs.codeg.app/guide/chat-channels)
 
@@ -268,12 +268,12 @@ Um editor, diffs ao vivo e lado a lado, um cliente git completo com um editor de
 - **[Inicializador de projeto](https://docs.codeg.app/guide/project-boot)** — gere a estrutura de um novo projeto visualmente, com pré-visualização ao vivo
 - **[Do seu jeito](https://docs.codeg.app/reference/settings/appearance)** — doze temas que você pode recolorir token a token, papéis de parede, raio dos cantos e CSS personalizado — em qualquer um dos dez idiomas da interface
 - **[Backup e sincronização](https://docs.codeg.app/reference/settings/system#backup-restore)** — backups criptografados e sincronização de configuração entre máquinas por meio de um arquivo ou do seu próprio servidor WebDAV
-- **[Esquema de URL](../../docs/url-scheme.md)** — `codeg://session/<id>` abre uma conversa a partir de outro aplicativo (desktop)
+- **[Esquema de URL](../../docs/url-scheme.md)** — `recurcode://session/<id>` abre uma conversa a partir de outro aplicativo (desktop)
 - **E mais** — quase toda versão traz algo novo; as [notas de versão](https://github.com/spacering-net/codeg/releases) são a lista completa
 
 ## 🤖 Agentes suportados
 
-O Codeg conversa com todos os agentes pelo [Agent Client Protocol](https://agentclientprotocol.com), então cada um ganha a mesma interface estruturada. Quinze já vêm integrados, e o Codeg instala, fixa a versão e atualiza a maioria deles por você:
+O RecurCode conversa com todos os agentes pelo [Agent Client Protocol](https://agentclientprotocol.com), então cada um ganha a mesma interface estruturada. Quinze já vêm integrados, e o RecurCode instala, fixa a versão e atualiza a maioria deles por você:
 
 <p>
   <a href="https://www.anthropic.com/claude-code"><kbd><img src="../images/agents/claude-code.svg" alt="" width="16" valign="middle" /> Claude Code</kbd></a> &nbsp;
@@ -294,33 +294,33 @@ O Codeg conversa com todos os agentes pelo [Agent Client Protocol](https://agent
   <a href="https://docs.codeg.app/guide/custom-agents"><kbd>+ qualquer agente ACP</kbd></a>
 </p>
 
-Não está na lista? Escolha qualquer agente no registro público do ACP ou cole o JSON de distribuição dele — o Codeg o instala, verifica se ele consegue iniciar e o trata como um agente integrado. Requisitos de execução e onde cada agente guarda as sessões: [Agentes suportados](https://docs.codeg.app/guide/supported-agents).
+Não está na lista? Escolha qualquer agente no registro público do ACP ou cole o JSON de distribuição dele — o RecurCode o instala, verifica se ele consegue iniciar e o trata como um agente integrado. Requisitos de execução e onde cada agente guarda as sessões: [Agentes suportados](https://docs.codeg.app/guide/supported-agents).
 
 ## 📦 Instalação
 
 **Desktop** — os instaladores para macOS, Windows e Linux estão em [Releases](https://github.com/spacering-net/codeg/releases/latest); o passo a passo está em [Instalação](https://docs.codeg.app/getting-started/installation).
 
-**Servidor** — rode o Codeg sem interface e acesse de qualquer navegador. No Linux ou macOS:
+**Servidor** — rode o RecurCode sem interface e acesse de qualquer navegador. No Linux ou macOS:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/spacering-net/codeg/main/install.sh | bash
-CODEG_STATIC_DIR=/usr/local/share/codeg/web codeg-server
+RECUR_CODE_STATIC_DIR=/usr/local/share/RecurCode/web recur-code-server
 ```
 
 No Windows, no PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/spacering-net/codeg/main/install.ps1 | iex
-$env:CODEG_STATIC_DIR="$env:LOCALAPPDATA\codeg-server\web"; codeg-server
+$env:RECUR_CODE_STATIC_DIR="$env:LOCALAPPDATA\recur-code-server\web"; recur-code-server
 ```
 
 **Docker** — o mesmo servidor, em um contêiner:
 
 ```bash
-docker run -d -p 3080:3080 -v codeg-data:/data ghcr.io/spacering-net/codeg:latest
+docker run -d -p 3080:3080 -v recur-code-data:/data ghcr.io/spacering-net/codeg:latest
 ```
 
-**Celular e tablet** — instale o [app de iOS](https://apps.apple.com/app/codeg-client/id6785199071) ou o [APK do Android](https://github.com/xintaofei/codeg-android/releases/latest) e aponte-o para o **Serviço Web** do seu aplicativo de desktop ou para o seu próprio `codeg-server`: URL, token, pronto. Os passos de pareamento estão em [Aplicativos móveis](https://docs.codeg.app/getting-started/installation#mobile-apps).
+**Celular e tablet** — instale o [app de iOS](https://apps.apple.com/app/codeg-client/id6785199071) ou o [APK do Android](https://github.com/xintaofei/codeg-android/releases/latest) e aponte-o para o **Serviço Web** do seu aplicativo de desktop ou para o seu próprio `recur-code-server`: URL, token, pronto. Os passos de pareamento estão em [Aplicativos móveis](https://docs.codeg.app/getting-started/installation#mobile-apps).
 
 Compose, binários pré-compilados, builds a partir do código e atualizações no lugar estão em [Implantação](https://docs.codeg.app/getting-started/deployment); variáveis de ambiente, em [Configuração](https://docs.codeg.app/getting-started/configuration).
 
@@ -340,10 +340,10 @@ Compose, binários pré-compilados, builds a partir do código e atualizações 
 
 ## 🤝 Como contribuir
 
-Issues e pull requests são bem-vindos. Para compilar o Codeg você mesmo, comece por [Desenvolvimento](https://docs.codeg.app/reference/development) e [Arquitetura](https://docs.codeg.app/reference/architecture).
+Issues e pull requests são bem-vindos. Para compilar o RecurCode você mesmo, comece por [Desenvolvimento](https://docs.codeg.app/reference/development) e [Arquitetura](https://docs.codeg.app/reference/architecture).
 
 <a href="https://github.com/spacering-net/codeg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="Contribuidores do Codeg" />
+  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="Contribuidores do RecurCode" />
 </a>
 
 ## ⭐ Histórico de estrelas
@@ -358,10 +358,10 @@ Issues e pull requests são bem-vindos. Para compilar o Codeg você mesmo, comec
 
 ## 🙏 Agradecimentos
 
-- [Agent Client Protocol](https://agentclientprotocol.com) — a base que permite ao Codeg se conectar a todos os agentes que ele suporta
-- [Superpowers](https://github.com/obra/superpowers) — alimenta o módulo de habilidades de especialistas do Codeg
-- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) — alimenta o fluxo de trabalho de documentos Office do Codeg
-- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) — alimenta as habilidades de Pesquisa científica do Codeg (subconjunto licenciado sob MIT)
+- [Agent Client Protocol](https://agentclientprotocol.com) — a base que permite ao RecurCode se conectar a todos os agentes que ele suporta
+- [Superpowers](https://github.com/obra/superpowers) — alimenta o módulo de habilidades de especialistas do RecurCode
+- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) — alimenta o fluxo de trabalho de documentos Office do RecurCode
+- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) — alimenta as habilidades de Pesquisa científica do RecurCode (subconjunto licenciado sob MIT)
 
 ## 📜 Licença
 

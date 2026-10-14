@@ -80,9 +80,9 @@ pub struct ToolCallState {
     /// extraction. `None` if the agent didn't supply it. Same partial-update
     /// preservation semantic as `locations`.
     ///
-    /// Convention used by codeg's multi-agent delegation (the `delegate_to_agent`
+    /// Convention used by RecurCode's multi-agent delegation (the `delegate_to_agent`
     /// MCP tool) — `DelegationBroker` writes the following object under
-    /// `meta["codeg.delegation"]` on the parent's active tool call:
+    /// `meta["RecurCode.delegation"]` on the parent's active tool call:
     ///
     /// ```jsonc
     /// {
@@ -199,7 +199,7 @@ pub struct UsageInfo {
 ///
 /// Completed delegations are recovered without this field: a live page keeps the
 /// binding in `DelegationProvider` for its lifetime, and a cold load / refresh
-/// rebuilds `meta["codeg.delegation"]` (status + child id) from the child's
+/// rebuilds `meta["RecurCode.delegation"]` (status + child id) from the child's
 /// persisted DB row via `commands::conversations::inject_delegation_meta`
 /// (authoritative, uncapped). The snapshot only has to recover the *running*
 /// binding, which the transient `DelegationStarted` event cannot supply on the
@@ -265,7 +265,7 @@ pub struct SessionState {
     pub status: ConnectionStatus,
     pub live_message: Option<LiveMessage>,
     pub active_tool_calls: BTreeMap<String, ToolCallState>,
-    /// The answers codeg sent back for Qoder `AskUserQuestion` calls whose
+    /// The answers RecurCode sent back for Qoder `AskUserQuestion` calls whose
     /// completion has not arrived yet, keyed by tool-call id: the elicitation
     /// reply's `content` as written (`q<n>` → the chosen label, or a
     /// multi-select's chosen labels and the user's own text as separate
@@ -374,7 +374,7 @@ pub struct SessionState {
     /// Backend-internal — not serialized.
     pub pi_startup_banner: Option<String>,
 
-    /// Config-option values codeg asserted while establishing this session
+    /// Config-option values RecurCode asserted while establishing this session
     /// (`apply_preferred_session_options`) and the agent confirmed — the user's
     /// saved preferences on a connect, the parent's selectors on a fork.
     ///
@@ -394,7 +394,7 @@ pub struct SessionState {
     pub asserted_config_values: BTreeMap<String, String>,
     /// Each config option's value as the agent itself picked it for this
     /// session: the establishment's own answer (or the picker Grok's handshake
-    /// yields), read BEFORE codeg replays any saved preference over it.
+    /// yields), read BEFORE RecurCode replays any saved preference over it.
     /// Rewritten by every establishment, whether or not it had preferences to
     /// replay.
     ///
@@ -410,7 +410,7 @@ pub struct SessionState {
     /// Config-option ids this launch pinned through the environment, which the
     /// agent will therefore refuse to change for as long as the process lives.
     ///
-    /// Cline forced this. codeg pins the provider with `CLINE_PROVIDER` — the
+    /// Cline forced this. RecurCode pins the provider with `CLINE_PROVIDER` — the
     /// only way a bring-your-own provider clears cline's ACP auth gate — and
     /// cline then answers `set_config_option("provider", …)` with `Invalid
     /// params: Cannot change provider: CLINE_PROVIDER environment variable is
@@ -419,7 +419,7 @@ pub struct SessionState {
     /// preference saved from one of those clicks is replayed — and fails —
     /// on every later connect.
     ///
-    /// codeg is what disabled the control, so codeg is what withholds it: these
+    /// RecurCode is what disabled the control, so RecurCode is what withholds it: these
     /// ids are dropped from what the frontend is told about and skipped when
     /// saved preferences are replayed.
     ///
@@ -477,7 +477,7 @@ pub struct SessionState {
     pub(crate) recent_events: RecentEventsBuffer,
 
     /// Per-launch token registered with the delegation broker's
-    /// `TokenRegistry` when `codeg-mcp` is injected at init.
+    /// `TokenRegistry` when `recur-code-mcp` is injected at init.
     /// Revoked when the connection tears down so a leaked binary can't
     /// keep round-tripping after the parent session ends.
     pub delegation_token: Option<String>,
@@ -699,7 +699,7 @@ pub struct SessionState {
     pub last_native_title: Option<String>,
     /// The title claude-agent-acp last published in `session_info_update`,
     /// normalized, held instead of written. Claude Code's transcript is the
-    /// only title source while codeg can read it, so the transcript watcher
+    /// only title source while RecurCode can read it, so the transcript watcher
     /// drops this once it reads the transcript and publishes it only while it
     /// cannot (`session_title::accept_wire_title` and
     /// `release_held_wire_title`). Backend-internal: not on the client
@@ -2029,7 +2029,7 @@ impl SessionState {
     /// ## Assumption this rests on
     ///
     /// Bounding only terminal calls assumes the agent reports one. Every agent
-    /// codeg ships does (`upsert_tool_call` inserts at `Pending` and the
+    /// RecurCode ships does (`upsert_tool_call` inserts at `Pending` and the
     /// adapter's completion update moves it), but one that never did would
     /// leave the table untrimmable at any length. Pinned by
     /// `snapshot_ships_an_all_unsettled_table_whole` so a future change has to
@@ -2131,7 +2131,7 @@ impl SessionState {
                     content: None,
                     locations: None,
                     // Kept: the delegation broker writes the parent↔child
-                    // binding here (`meta["codeg.delegation"]`), which is what
+                    // binding here (`meta["RecurCode.delegation"]`), which is what
                     // re-anchors an inline sub-thread on a mid-turn attach.
                     // Bounded by contract — a small status object, not output.
                     meta: tc.meta.clone(),
@@ -2187,12 +2187,12 @@ impl SessionState {
 /// Max age of the background keep-alive: how long a connection with
 /// launched-but-unresolved background work stays exempt from the idle sweeps
 /// after the LAST `BackgroundActivity` event. Configurable via
-/// `CODEG_ACP_BACKGROUND_KEEPALIVE_MAX_SECS` (seconds; invalid → default 3600;
+/// `RECUR_CODE_ACP_BACKGROUND_KEEPALIVE_MAX_SECS` (seconds; invalid → default 3600;
 /// `0` disables the exemption entirely). Read once per process.
 pub(crate) fn background_keepalive_max_age() -> chrono::Duration {
     static SECS: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
     let secs = *SECS.get_or_init(|| {
-        std::env::var("CODEG_ACP_BACKGROUND_KEEPALIVE_MAX_SECS")
+        std::env::var("RECUR_CODE_ACP_BACKGROUND_KEEPALIVE_MAX_SECS")
             .ok()
             .and_then(|v| v.trim().parse::<i64>().ok())
             // `chrono::Duration::seconds` below is an `expect` over
@@ -2621,7 +2621,7 @@ mod tests {
 
     /// Only the spawn frame carries a task's identity, so it is the only one
     /// allowed to create a row: a progress delta for an id we never saw
-    /// announced means codeg failed to read the announcement, and a row with a
+    /// announced means RecurCode failed to read the announcement, and a row with a
     /// placeholder name and no type is worse than no row at all.
     #[test]
     fn async_task_rows_are_created_only_by_a_spawn_delta() {
@@ -3854,7 +3854,7 @@ mod tests {
             raw_input: Some(format!("{{\"file_path\":\"src/{id}.rs\"}}")),
             raw_output: None,
             locations: Some(serde_json::json!([{ "path": format!("src/{id}.rs") }])),
-            meta: Some(serde_json::json!({ "codeg.delegation": { "status": "completed" } })),
+            meta: Some(serde_json::json!({ "RecurCode.delegation": { "status": "completed" } })),
             images: None,
         });
         let status = if settled { "completed" } else { "in_progress" };
@@ -4080,7 +4080,7 @@ mod tests {
     /// The bound covers terminal calls only, so a table that never reaches one
     /// ships whole however long it gets.
     ///
-    /// Every agent codeg ships reports a terminal status, which is what makes
+    /// Every agent RecurCode ships reports a terminal status, which is what makes
     /// the carve-out for in-flight calls safe. This pins the assumption rather
     /// than leaving it implicit: an agent that stopped reporting one would
     /// turn this test red instead of silently restoring #380.

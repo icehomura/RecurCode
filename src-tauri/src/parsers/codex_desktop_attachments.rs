@@ -25,7 +25,7 @@
 //! A rollout keeps that text verbatim, so without this a desktop session's
 //! transcript shows the whole envelope as the user's message. codex-acp 2.1.1
 //! (#571) decodes the same envelope when it replays history over
-//! `session/load`, but codeg never renders that replay: the transcript comes
+//! `session/load`, but RecurCode never renders that replay: the transcript comes
 //! from the rollout. [`rewrite`] therefore repeats the decoding, ported from
 //! the adapter's `DesktopAttachmentHistory.ts` down to JavaScript's own
 //! whitespace, line terminators and `.`, so a message decodes here exactly
@@ -98,10 +98,10 @@ struct Envelope<'a> {
 /// The message text as the transcript should show it, or `None` when `text`
 /// is not an envelope.
 ///
-/// Each listed file becomes the Markdown link codeg renders any user
+/// Each listed file becomes the Markdown link RecurCode renders any user
 /// attachment as (the shared [`project_user_prompt_block`] projection of a
 /// `resource_link`), so it shows as a file badge with a chip under the bubble,
-/// the same as a file attached in codeg's own composer. The links share one
+/// the same as a file attached in RecurCode's own composer. The links share one
 /// line; the request follows on the next.
 pub(crate) fn rewrite(text: &str) -> Option<String> {
     let envelope = decode(text)?;
@@ -465,7 +465,7 @@ mod tests {
     }
 
     #[test]
-    fn rewrite_renders_each_file_as_the_link_codeg_renders_attachments_as() {
+    fn rewrite_renders_each_file_as_the_link_recur_code_renders_attachments_as() {
         assert_eq!(
             rewrite(
                 "\n# Files mentioned by the user:\n\n## report.pdf: /workspace/a #1.pdf\n\n## diagram.png: /workspace/diagram.png\nImage attachment: true\n\n## My request:\nCompare them\n"

@@ -1,5 +1,5 @@
 /**
- * Parsing helper for the codeg-mcp `check_user_feedback` tool result, shared by
+ * Parsing helper for the recur-code-mcp `check_user_feedback` tool result, shared by
  * the in-stream `FeedbackCheckResultCard` capsule and the adapter pass that
  * hides no-op checks (`dropHiddenFeedbackChecks`).
  *

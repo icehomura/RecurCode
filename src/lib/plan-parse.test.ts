@@ -68,7 +68,7 @@ describe("isPlanModeToolName", () => {
 
   it("plan_review is also plan-like, harmlessly (the seeded call has no input)", () => {
     // codex-acp ≥1.1.8's review gate contains "plan", so it matches the broader
-    // predicate too. That is fine: codeg seeds the call WITHOUT rawInput, so
+    // predicate too. That is fine: RecurCode seeds the call WITHOUT rawInput, so
     // agent-plan's extractor finds no entries and builds no PlanCard.
     expect(isPlanLikeToolName("plan_review")).toBe(true)
     expect(isPlanModeToolName("plan_review")).toBe(true)

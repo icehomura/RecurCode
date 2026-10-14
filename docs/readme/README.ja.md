@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="Codeg logo" width="64" align="absmiddle" /></a> Codeg
+  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="RecurCode logo" width="64" align="absmiddle" /></a> RecurCode
 </h1>
 
 <p align="center">
@@ -20,12 +20,12 @@
   あらゆる AI コーディングエージェントをひとつの場所で動かし、そして協働させます。
 </p>
 
-<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>Codeg をダウンロード</ins></a> · <a href="https://docs.codeg.app"><ins>ドキュメント</ins></a></h3>
+<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>RecurCode をダウンロード</ins></a> · <a href="https://docs.codeg.app"><ins>ドキュメント</ins></a></h3>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="../images/workspace-dark.png" />
-    <img src="../images/workspace-light.png" alt="Codeg のワークスペース：エージェントとの会話と、その隣に並ぶライブ diff とプロジェクトのファイル" width="960" />
+    <img src="../images/workspace-light.png" alt="RecurCode のワークスペース：エージェントとの会話と、その隣に並ぶライブ diff とプロジェクトのファイル" width="960" />
   </picture>
 </p>
 
@@ -66,10 +66,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://go.apimart.ai/gh-codeg" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
-      <strong><a href="https://go.apimart.ai/gh-codeg">APIMart</a></strong>
+      <a href="https://go.apimart.ai/gh-RecurCode" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
+      <strong><a href="https://go.apimart.ai/gh-RecurCode">APIMart</a></strong>
     </td>
-    <td>本プロジェクトをスポンサードしてくださった APIMart に感謝します！APIMart は AI 画像・動画生成に特化した低価格 API プラットフォームです。GPT-Image-2 は 1 枚 $0.006 から、1 ドルで 160 枚以上を生成できます。画像も動画も 1 つの非同期 API でカバー：タスクを送信して ID を受け取り、ポーリングまたはコールバックで結果を取得します。数万枚のバッチ処理でもタイムアウトせず、モデルを切り替えてもコードの変更は不要です。従量課金で月額費用は不要——<a href="https://go.apimart.ai/gh-codeg">こちらから登録</a>すればすぐに使い始められます。</td>
+    <td>本プロジェクトをスポンサードしてくださった APIMart に感謝します！APIMart は AI 画像・動画生成に特化した低価格 API プラットフォームです。GPT-Image-2 は 1 枚 $0.006 から、1 ドルで 160 枚以上を生成できます。画像も動画も 1 つの非同期 API でカバー：タスクを送信して ID を受け取り、ポーリングまたはコールバックで結果を取得します。数万枚のバッチ処理でもタイムアウトせず、モデルを切り替えてもコードの変更は不要です。従量課金で月額費用は不要——<a href="https://go.apimart.ai/gh-RecurCode">こちらから登録</a>すればすぐに使い始められます。</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -84,10 +84,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
-      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">Fluxion AI</a></strong>
+      <a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
+      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">Fluxion AI</a></strong>
     </td>
-    <td>本プロジェクトをスポンサードしてくださった Fluxion AI に感謝します！Fluxion AI は、統一されたひとつの API を通じて、GPT、Claude、Gemini をはじめとする主要な AI モデルへの高速・安定・低コストなアクセスを提供します。新規ユーザーは<a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">専用リンク</a>から登録すると $3 分の API クレジットを受け取れます。</td>
+    <td>本プロジェクトをスポンサードしてくださった Fluxion AI に感謝します！Fluxion AI は、統一されたひとつの API を通じて、GPT、Claude、Gemini をはじめとする主要な AI モデルへの高速・安定・低コストなアクセスを提供します。新規ユーザーは<a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">専用リンク</a>から登録すると $3 分の API クレジットを受け取れます。</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -98,7 +98,7 @@
   </tr>
 </table>
 
-> Codeg のスポンサーになりませんか？[メールでお問い合わせください。](mailto:itpkcn@gmail.com)
+> RecurCode のスポンサーになりませんか？[メールでお問い合わせください。](mailto:itpkcn@gmail.com)
 
 ## ✨ 機能
 
@@ -108,7 +108,7 @@
 
 ### すべてのエージェントを、ひとつのインターフェースで
 
-15 種のエージェントを内蔵し、ほかの ACP エージェントも公開レジストリまたはその distribution JSON から加えられます。Codeg はそのすべてと Agent Client Protocol で通信するので、どれも目を凝らして読むターミナルではなく、同じリッチな会話 — ツールカード、ライブ diff、計画、権限の確認 — として表示されます。
+15 種のエージェントを内蔵し、ほかの ACP エージェントも公開レジストリまたはその distribution JSON から加えられます。RecurCode はそのすべてと Agent Client Protocol で通信するので、どれも目を凝らして読むターミナルではなく、同じリッチな会話 — ツールカード、ライブ diff、計画、権限の確認 — として表示されます。
 
 [ドキュメント →](https://docs.codeg.app/guide/supported-agents) · [カスタムエージェント →](https://docs.codeg.app/guide/custom-agents)
 
@@ -125,7 +125,7 @@
 
 ### すべてのセッションを、検索可能に
 
-Codeg は各エージェント CLI がディスクに残す履歴を読み取ります：ワンクリックでインポートし、すべてを検索し、どのセッションも止まったところから再開できます。古いセッションを `@` で指名すれば、いま話しているエージェントがそれを読めます — 別のエージェントが書いたものでも構いません。
+RecurCode は各エージェント CLI がディスクに残す履歴を読み取ります：ワンクリックでインポートし、すべてを検索し、どのセッションも止まったところから再開できます。古いセッションを `@` で指名すれば、いま話しているエージェントがそれを読めます — 別のエージェントが書いたものでも構いません。
 
 [ドキュメント →](https://docs.codeg.app/guide/aggregation)
 
@@ -159,7 +159,7 @@ Codeg は各エージェント CLI がディスクに残す履歴を読み取り
 
 ### 無人で進む ToDo タスク
 
-仕事を書き留めたら、あとは席を外すだけ。ToDo タスクはそれぞれ専用の git ワークツリーとブランチを持ち、すぐに、または予約した時刻に始まり、そのあと「レビュー」で待ちます。diff を受け入れるとエージェントが取り込み、Codeg は git を確かめてから完了とします。
+仕事を書き留めたら、あとは席を外すだけ。ToDo タスクはそれぞれ専用の git ワークツリーとブランチを持ち、すぐに、または予約した時刻に始まり、そのあと「レビュー」で待ちます。diff を受け入れるとエージェントが取り込み、RecurCode は git を確かめてから完了とします。
 
 [ドキュメント →](https://docs.codeg.app/guide/tasks)
 
@@ -193,7 +193,7 @@ Codeg は各エージェント CLI がディスクに残す履歴を読み取り
 
 ### デスクトップ・サーバー・モバイル・チャット
 
-Codeg はデスクトップアプリとしても、任意のブラウザで開けるセルフホストのサーバーとしても、ひとつの Docker コンテナとしても動かせます。ネイティブの iPhone・iPad・Android クライアント — さらに Telegram、Lark、WeChat のチャットチャンネル — でエージェントにいつでも手が届き、その間もファイルとセッションはあなた自身のマシンにとどまります。
+RecurCode はデスクトップアプリとしても、任意のブラウザで開けるセルフホストのサーバーとしても、ひとつの Docker コンテナとしても動かせます。ネイティブの iPhone・iPad・Android クライアント — さらに Telegram、Lark、WeChat のチャットチャンネル — でエージェントにいつでも手が届き、その間もファイルとセッションはあなた自身のマシンにとどまります。
 
 [ドキュメント →](https://docs.codeg.app/getting-started/deployment) · [モバイルアプリ →](https://docs.codeg.app/getting-started/installation#mobile-apps) · [チャットチャンネル →](https://docs.codeg.app/guide/chat-channels)
 
@@ -268,12 +268,12 @@ Codeg はデスクトップアプリとしても、任意のブラウザで開�
 - **[プロジェクトブート](https://docs.codeg.app/guide/project-boot)** — ライブプレビュー付きで新規プロジェクトを視覚的に構築
 - **[自分好みに](https://docs.codeg.app/reference/settings/appearance)** — カラートークン単位で塗り替えられる 12 のテーマ、壁紙、角丸、カスタム CSS — インターフェースは 10 言語に対応
 - **[バックアップと同期](https://docs.codeg.app/reference/settings/system#backup-restore)** — 暗号化バックアップと、ファイルまたは自分の WebDAV サーバーを介したマシン間の設定同期
-- **[URL スキーム](../../docs/url-scheme.md)** — `codeg://session/<id>` で別のアプリから会話を開けます（デスクトップ）
+- **[URL スキーム](../../docs/url-scheme.md)** — `recurcode://session/<id>` で別のアプリから会話を開けます（デスクトップ）
 - **まだまだあります** — ほぼすべてのリリースで何かが加わります。全リストは [リリースノート](https://github.com/spacering-net/codeg/releases) で確認できます
 
 ## 🤖 対応エージェント
 
-Codeg はすべてのエージェントと [Agent Client Protocol](https://agentclientprotocol.com) で通信するため、どのエージェントにも同じ構造化されたインターフェースが用意されます。15 種を内蔵し、その多くは Codeg がインストール・バージョン固定・更新まで面倒を見ます：
+RecurCode はすべてのエージェントと [Agent Client Protocol](https://agentclientprotocol.com) で通信するため、どのエージェントにも同じ構造化されたインターフェースが用意されます。15 種を内蔵し、その多くは RecurCode がインストール・バージョン固定・更新まで面倒を見ます：
 
 <p>
   <a href="https://www.anthropic.com/claude-code"><kbd><img src="../images/agents/claude-code.svg" alt="" width="16" valign="middle" /> Claude Code</kbd></a> &nbsp;
@@ -294,33 +294,33 @@ Codeg はすべてのエージェントと [Agent Client Protocol](https://agent
   <a href="https://docs.codeg.app/guide/custom-agents"><kbd>+ 任意の ACP エージェント</kbd></a>
 </p>
 
-リストにない？公開されている ACP レジストリから好きなエージェントを選ぶか、その distribution JSON を貼り付ければ、Codeg がインストールし、起動できるかを確かめ、内蔵エージェントと同じように扱います。各エージェントの実行環境要件とセッションの保存場所は [対応エージェント](https://docs.codeg.app/guide/supported-agents) を参照してください。
+リストにない？公開されている ACP レジストリから好きなエージェントを選ぶか、その distribution JSON を貼り付ければ、RecurCode がインストールし、起動できるかを確かめ、内蔵エージェントと同じように扱います。各エージェントの実行環境要件とセッションの保存場所は [対応エージェント](https://docs.codeg.app/guide/supported-agents) を参照してください。
 
 ## 📦 インストール
 
 **デスクトップ** — macOS・Windows・Linux 向けインストーラーは [Releases](https://github.com/spacering-net/codeg/releases/latest) にあります。セットアップ手順は [インストール](https://docs.codeg.app/getting-started/installation) を参照してください。
 
-**サーバー** — Codeg をヘッドレスで動かし、任意のブラウザから利用します。Linux / macOS の場合：
+**サーバー** — RecurCode をヘッドレスで動かし、任意のブラウザから利用します。Linux / macOS の場合：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/spacering-net/codeg/main/install.sh | bash
-CODEG_STATIC_DIR=/usr/local/share/codeg/web codeg-server
+RECUR_CODE_STATIC_DIR=/usr/local/share/RecurCode/web recur-code-server
 ```
 
 Windows（PowerShell）の場合：
 
 ```powershell
 irm https://raw.githubusercontent.com/spacering-net/codeg/main/install.ps1 | iex
-$env:CODEG_STATIC_DIR="$env:LOCALAPPDATA\codeg-server\web"; codeg-server
+$env:RECUR_CODE_STATIC_DIR="$env:LOCALAPPDATA\recur-code-server\web"; recur-code-server
 ```
 
 **Docker** — 同じサーバーを、ひとつのコンテナで：
 
 ```bash
-docker run -d -p 3080:3080 -v codeg-data:/data ghcr.io/spacering-net/codeg:latest
+docker run -d -p 3080:3080 -v recur-code-data:/data ghcr.io/spacering-net/codeg:latest
 ```
 
-**モバイル** — [iOS アプリ](https://apps.apple.com/app/codeg-client/id6785199071) または [Android APK](https://github.com/xintaofei/codeg-android/releases/latest) をインストールし、デスクトップアプリの **Webサービス**か自分の `codeg-server` を指定するだけ：アドレスとトークンを入れれば完了です。接続手順は [モバイルアプリ](https://docs.codeg.app/getting-started/installation#mobile-apps)。
+**モバイル** — [iOS アプリ](https://apps.apple.com/app/codeg-client/id6785199071) または [Android APK](https://github.com/xintaofei/codeg-android/releases/latest) をインストールし、デスクトップアプリの **Webサービス**か自分の `recur-code-server` を指定するだけ：アドレスとトークンを入れれば完了です。接続手順は [モバイルアプリ](https://docs.codeg.app/getting-started/installation#mobile-apps)。
 
 Compose、ビルド済みバイナリ、ソースからのビルド、その場での更新は [デプロイ](https://docs.codeg.app/getting-started/deployment) に、環境変数は [設定](https://docs.codeg.app/getting-started/configuration) にあります。
 
@@ -340,10 +340,10 @@ Compose、ビルド済みバイナリ、ソースからのビルド、その場�
 
 ## 🤝 コントリビューション
 
-イシューもプルリクエストも歓迎します。Codeg を自分でビルドするなら、まず [開発](https://docs.codeg.app/reference/development) と [アーキテクチャ](https://docs.codeg.app/reference/architecture) から読んでください。
+イシューもプルリクエストも歓迎します。RecurCode を自分でビルドするなら、まず [開発](https://docs.codeg.app/reference/development) と [アーキテクチャ](https://docs.codeg.app/reference/architecture) から読んでください。
 
 <a href="https://github.com/spacering-net/codeg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="Codeg のコントリビューター" />
+  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="RecurCode のコントリビューター" />
 </a>
 
 ## ⭐ スター履歴
@@ -358,10 +358,10 @@ Compose、ビルド済みバイナリ、ソースからのビルド、その場�
 
 ## 🙏 謝辞
 
-- [Agent Client Protocol](https://agentclientprotocol.com) — Codeg が対応するすべてのエージェントへ接続できる土台
-- [Superpowers](https://github.com/obra/superpowers) — Codeg のエキスパートスキルモジュールを支えるプロジェクト
-- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) — Codeg の Office ドキュメントワークフローを支えるプロジェクト
-- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) — Codeg の科学研究スキルを支えるプロジェクト（MIT ライセンスのサブセット）
+- [Agent Client Protocol](https://agentclientprotocol.com) — RecurCode が対応するすべてのエージェントへ接続できる土台
+- [Superpowers](https://github.com/obra/superpowers) — RecurCode のエキスパートスキルモジュールを支えるプロジェクト
+- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) — RecurCode の Office ドキュメントワークフローを支えるプロジェクト
+- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) — RecurCode の科学研究スキルを支えるプロジェクト（MIT ライセンスのサブセット）
 
 ## 📜 ライセンス
 

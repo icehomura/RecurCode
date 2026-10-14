@@ -6,20 +6,20 @@
 //   1. Resolves the target triple — `--target <triple>` arg, or
 //      `TAURI_TARGET_TRIPLE` env, or the host's `rustc -vV` host triple.
 //   2. Runs `cargo build --release --no-default-features`, with the feature
-//      each binary target requires, for each sidecar bin (`codeg-mcp`,
-//      `codeg-computer-helper`) for that triple from `src-tauri/`.
+//      each binary target requires, for each sidecar bin (`recur-code-mcp`,
+//      `recur-code-computer-helper`) for that triple from `src-tauri/`.
 //   3. Copies each produced binary to
 //      `src-tauri/binaries/<bin>-<triple>{.exe}` so Tauri's externalBin
 //      bundler picks it up under its bare name at install time.
 //   4. For a macOS target, also wraps the helper in an app of its own,
-//      `src-tauri/binaries/codeg-computer-helper.app`, which the bundle
-//      carries as `Contents/Helpers/codeg-computer-helper.app` (see
+//      `src-tauri/binaries/recur-code-computer-helper.app`, which the bundle
+//      carries as `Contents/Helpers/recur-code-computer-helper.app` (see
 //      `tauri.macos.conf.json`). macOS charges an executable's permissions to
-//      the app bundle it sits in: a helper beside codeg in `Contents/MacOS/`
-//      would hold codeg's — every agent's shell's — and none of its own.
+//      the app bundle it sits in: a helper beside RecurCode in `Contents/MacOS/`
+//      would hold RecurCode's — every agent's shell's — and none of its own.
 //
-// `codeg-computer-helper` takes its trust anchors from the environment at
-// compile time (`CODEG_COMPUTER_PEER_REQUIREMENT`): the release workflow sets
+// `recur-code-computer-helper` takes its trust anchors from the environment at
+// compile time (`RECUR_CODE_COMPUTER_PEER_REQUIREMENT`): the release workflow sets
 // it for the macOS builds, and a local build without it is a development
 // helper that says so. Nothing here sets or defaults it.
 //
@@ -28,9 +28,9 @@
 //     the matrix triple rather than rebuilding for the host.
 //   - Local `pnpm tauri dev` / `pnpm tauri build` invoke it without args and
 //     get a host-triple build, so the externalBin lookup still finds a file.
-//   - Skippable: set `CODEG_SKIP_SIDECAR=1` when iterating on the frontend
+//   - Skippable: set `RECUR_CODE_SKIP_SIDECAR=1` when iterating on the frontend
 //     and you don't care about delegation or computer use: a development
-//     codeg refuses a computer helper built from other sources than its own,
+//     RecurCode refuses a computer helper built from other sources than its own,
 //     so after a change under `src-tauri/src/computer/` run this script once
 //     (it is what rebuilds the helper) and restart `pnpm tauri dev`.
 //
@@ -56,10 +56,10 @@ const SRC_TAURI = resolve(SCRIPT_DIR, "..")
 const BINARIES_DIR = join(SRC_TAURI, "binaries")
 // Every sidecar in `bundle.externalBin`, in the order they are built. (On
 // macOS the helper is bundled as an app instead; see `stageHelperApp`.)
-const BIN_NAMES = ["codeg-mcp", "codeg-computer-helper"]
+const BIN_NAMES = ["recur-code-mcp", "recur-code-computer-helper"]
 // The features their binary targets require (Cargo.toml).
 const FEATURES = "mcp-bin,computer-helper"
-const HELPER = "codeg-computer-helper"
+const HELPER = "recur-code-computer-helper"
 const HELPER_APP = join(BINARIES_DIR, `${HELPER}.app`)
 
 function log(msg) {
@@ -95,8 +95,8 @@ function resolveHostTriple() {
   }
 }
 
-// The helper as an app: its Info.plist (identifier `app.codeg.computer-helper`,
-// no Dock icon), its executable, codeg's icon. Sealed ad hoc, so a bundle
+// The helper as an app: its Info.plist (identifier `app.recurcode.computer-helper`,
+// no Dock icon), its executable, RecurCode's icon. Sealed ad hoc, so a bundle
 // signed around it accepts it; release.yml signs it again with the Developer
 // ID before `tauri build`.
 function stageHelperApp(built) {
@@ -130,8 +130,8 @@ function stageHelperApp(built) {
 }
 
 function main() {
-  if (process.env.CODEG_SKIP_SIDECAR === "1") {
-    log("CODEG_SKIP_SIDECAR=1 — skipping sidecar preparation")
+  if (process.env.RECUR_CODE_SKIP_SIDECAR === "1") {
+    log("RECUR_CODE_SKIP_SIDECAR=1 — skipping sidecar preparation")
     log(
       "computer use refuses a helper older than src-tauri/src/computer/; " +
         "run `pnpm tauri:prepare-sidecars` after changing it"

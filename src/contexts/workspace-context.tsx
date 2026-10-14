@@ -131,7 +131,7 @@ export interface BrowserTabSeed {
   /** The browser profile the tab lives in (its cookie jar and storage).
    *  Fixed for the tab's life: the surface is built in it. */
   profile: string
-  /** The address lives on the codeg host this window is bound to — a
+  /** The address lives on the RecurCode host this window is bound to — a
    *  loopback or private address seen from a remote-workspace window. Such a
    *  tab never loads in a profile of this computer: there it would reach this
    *  machine's `localhost`, not the one the address was printed on. Absent on
@@ -329,7 +329,7 @@ interface WorkspaceActionsValue {
   // `false` leaves the selection alone, claiming it only when nothing holds
   // it, so the strip never carries a tab with an empty column beside it.
   //
-  // `remote` opens the address as one on the remote codeg host (see
+  // `remote` opens the address as one on the remote RecurCode host (see
   // `BrowserTabSeed.remote`); a tab opened from a remote tab is remote too.
   openBrowserTab: (
     url: string,

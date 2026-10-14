@@ -7,7 +7,7 @@ import {
   saveModePreference,
 } from "./selector-prefs-storage"
 
-const STORAGE_KEY = "codeg:selector-prefs"
+const STORAGE_KEY = "RecurCode:selector-prefs"
 
 function seed(prefs: Record<string, unknown>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs))

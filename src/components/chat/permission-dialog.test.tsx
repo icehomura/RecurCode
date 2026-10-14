@@ -94,7 +94,7 @@ describe("PermissionDialog", () => {
 
   it("emphasises the decline when claude marks the ask defaultToNo", () => {
     // claude-agent-acp ≥0.77.0: "must not be approvable by a stray keystroke".
-    // codeg pre-selects nothing and binds no key, so the only thing left to
+    // RecurCode pre-selects nothing and binds no key, so the only thing left to
     // give the decline is the accent colour the approve normally holds.
     const permission: PendingPermission = {
       request_id: "req-danger",
@@ -422,7 +422,7 @@ describe("PermissionDialog", () => {
           option_id: "allow",
           name: "Allow once",
           kind: "allow_once",
-          // A future revision codeg does not understand must render nothing
+          // A future revision RecurCode does not understand must render nothing
           // rather than a half-read list.
           meta: {
             permission: {

@@ -60,7 +60,7 @@ export interface ComposerShortcuts {
   experts: ExpertListItem[]
   science: ScienceListItem[]
   officeActions: readonly OfficeAction[]
-  /** Whether codeg manages this agent's skill links at all (a custom-dir `pi`
+  /** Whether RecurCode manages this agent's skill links at all (a custom-dir `pi`
    *  does not) — when false the skill families are hidden entirely. */
   skillManagementSupported: boolean
   isSkillLocked: (id: string) => boolean

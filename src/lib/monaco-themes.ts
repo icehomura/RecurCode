@@ -62,7 +62,7 @@ export const EDITOR_LINE_HIGHLIGHT: Record<
 // `defineMonacoThemes` registers one per (color, mode); `useMonacoThemeSync` returns
 // the matching name so flipping either axis re-applies through the editor `theme` prop.
 export function monacoThemeName(color: ThemeColor, dark: boolean): string {
-  return `codeg-${dark ? "dark" : "light"}-${color}`
+  return `recur-code-${dark ? "dark" : "light"}-${color}`
 }
 
 // Neutral-preset names, exported as the stable defaults (e.g. the initial value
@@ -448,7 +448,7 @@ const fixPythonTripleQuotes: BeforeMount = (monaco) => {
   })
 }
 
-// Codeg renders files from arbitrary projects but never loads their build
+// RecurCode renders files from arbitrary projects but never loads their build
 // context — there is no tsconfig, no `node_modules`, no `--jsx` flag, and no
 // network access to fetch a `$schema` URL. Monaco's bundled TypeScript and JSON
 // language services don't know that, so they decorate ordinary files with
@@ -643,7 +643,7 @@ export function monacoWsbgThemeName(baseTheme: string, alpha: number): string {
 }
 
 // Recover (color, dark) from a base name produced by `monacoThemeName`
-// (`codeg-{light|dark}-{color}`).
+// (`recur-code-{light|dark}-{color}`).
 function parseMonacoThemeName(baseTheme: string): {
   color: ThemeColor
   dark: boolean

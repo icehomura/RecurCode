@@ -12,7 +12,7 @@
  * action) become grep cards, and `isCodexGrepNoMatchEnvelope` plus the
  * search-action marker cover them. Anything codex cannot reduce to ONE action
  * — `rg --files src | rg foo` is a list-files action plus a search action,
- * `cat f | grep foo` a read plus a search — reaches codeg as a plain shell
+ * `cat f | grep foo` a read plus a search — reaches RecurCode as a plain shell
  * command instead (codex-acp's `usesTerminal`), on a `bash` card. The only
  * record of that process's exit is the line the backend appends to its output,
  * so this module reads exactly that: the exit line, with nothing else printed,
@@ -23,7 +23,7 @@
  * The line the backend appends when a process exits 1 and no signal killed it:
  * `[terminal exited: <format_terminal_exit_status>]`, written by
  * `hosted_terminal_exit_line` (codex / pi) and `poll_terminal_tool_call_output`
- * (terminals codeg hosts) in `src-tauri/src/acp/connection.rs`.
+ * (terminals RecurCode hosts) in `src-tauri/src/acp/connection.rs`.
  */
 export const EXIT_ONE_LINE = "[terminal exited: exit code: 1]"
 

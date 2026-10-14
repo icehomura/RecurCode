@@ -8,7 +8,7 @@
 // 1. **token 列表严格对齐 shadcn 官方 theming 规范**（31 个语义色 + `radius`），
 //    键名不带 `--` 前缀 —— 与 registry-item.json 的 `cssVars.light/dark` 完全一致，
 //    所以用户可以把任意 shadcn 主题（tweakcn / 官方 registry / 他人分享）直接粘进来，
-//    codeg 导出的主题也能被 `shadcn add ./theme.json` 装进任何 shadcn 项目。
+//    RecurCode 导出的主题也能被 `shadcn add ./theme.json` 装进任何 shadcn 项目。
 // 2. **取值永远通过 `style.setProperty()` 落地，绝不字符串拼接进样式表文本** ——
 //    CSSOM 属性值不会被重新解析回「规则上下文」，且 style 属性容纳不了选择器，
 //    所以 `red; } body { display:none } .x {` 这类闭合逃逸在结构上不可能成立。
@@ -190,7 +190,7 @@ const REGISTRY_ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json"
  */
 export function toThemeRegistryItem(
   theme: CustomTheme,
-  name = "codeg-custom-theme"
+  name = "recur-code-custom-theme"
 ): string {
   return JSON.stringify(
     {
@@ -393,7 +393,7 @@ export function sanitizeCustomCss(input: string): CustomCssCheck {
 // ─── DOM 应用 ───
 
 /** 注入用户 CSS 的 `<style>` 元素 id。始终位于 `<head>` 末尾。 */
-export const CUSTOM_CSS_ELEMENT_ID = "codeg-custom-css"
+export const CUSTOM_CSS_ELEMENT_ID = "recur-code-custom-css"
 
 /** 安全外观逃生参数：`?safeStyle=1` 时跳过一切自定义样式。 */
 export const SAFE_STYLE_QUERY_PARAM = "safeStyle"

@@ -526,7 +526,7 @@ describe("extractDelegationSources", () => {
     const sources = extractDelegationSources([
       toolCall(
         "tu-1",
-        "mcp__codeg-mcp__delegate_to_agent",
+        "mcp__recur-code-mcp__delegate_to_agent",
         '{"agent_type":"codex"}'
       ),
     ])
@@ -560,7 +560,7 @@ describe("extractDelegationSources", () => {
       toolCall("tu-a", "resume_delegation", "{}"),
       toolCall(
         "tu-b",
-        "mcp__codeg-mcp__resume_delegation",
+        "mcp__recur-code-mcp__resume_delegation",
         '{"task_id":"t-1"}'
       ),
       toolCall("tu-c", "resume_delegation", '{"task_id":"t-1"}'),
@@ -850,7 +850,7 @@ describe("compactionOnlyPart", () => {
           output: "We kept the parser notes.",
           meta: {
             contextCompaction: { version: 1 },
-            "codeg.compactionSummary": true,
+            "RecurCode.compactionSummary": true,
           },
         },
       ],
@@ -866,7 +866,7 @@ describe("compactionOnlyPart", () => {
     expect(compactionOnlyPart(compactionGroup("input-available"))).toEqual({
       meta: {
         contextCompaction: { version: 1 },
-        "codeg.compactionSummary": true,
+        "RecurCode.compactionSummary": true,
       },
       summary: "We kept the parser notes.",
       state: "input-available",

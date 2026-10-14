@@ -1,11 +1,11 @@
 //! Restore: stage-then-swap-on-startup.
 //!
-//! The DB connection pool holds `codeg.db` open (WAL sidecars), so swapping it
+//! The DB connection pool holds `RecurCode.db` open (WAL sidecars), so swapping it
 //! under a live connection risks corruption (and fails outright on Windows).
 //! Restore therefore runs in two phases:
 //!
 //! 1. **Stage** (while running) — decrypt + extract + checksum-verify the
-//!    archive into `<data_dir>/.codeg-restore-staging/<op_id>/`, then write a
+//!    archive into `<data_dir>/.recur-code-restore-staging/<op_id>/`, then write a
 //!    pending-restore marker. Live data is untouched until this fully succeeds.
 //! 2. **Swap** (next startup) — [`apply_pending_restore_on_startup`] runs as the
 //!    first step of `db::init_database`, before any connection is opened: it
@@ -30,31 +30,31 @@ use super::sections::{self, LiveRoots, SectionKind, SectionPolicy};
 use crate::web::event_bridge::{emit_event, EventEmitter};
 
 /// Marker committing a staged restore; consumed on next startup.
-pub const PENDING_MARKER: &str = ".codeg-restore-pending.json";
+pub const PENDING_MARKER: &str = ".recur-code-restore-pending.json";
 /// Root for staged (extracted, verified, not-yet-applied) restore payloads.
-pub const STAGING_DIR: &str = ".codeg-restore-staging";
+pub const STAGING_DIR: &str = ".recur-code-restore-staging";
 /// Root for pre-restore safety snapshots of the previous live data.
-pub const SAFETY_DIR: &str = ".codeg-restore-backup";
+pub const SAFETY_DIR: &str = ".recur-code-restore-backup";
 /// Side location external transcripts are restored to (never clobbers the
 /// live CLI dirs without explicit conflict resolution — see M7).
 pub const RESTORED_TRANSCRIPTS_DIR: &str = "restored-transcripts";
 /// Transient dir (server mode) holding export archives awaiting download.
-pub const EXPORT_TMP_DIR: &str = ".codeg-backup-tmp";
+pub const EXPORT_TMP_DIR: &str = ".recur-code-backup-tmp";
 /// Transient dir (server mode) holding uploaded archives awaiting inspect/stage.
-pub const UPLOAD_TMP_DIR: &str = ".codeg-restore-upload";
+pub const UPLOAD_TMP_DIR: &str = ".recur-code-restore-upload";
 /// Staging/archive subdirectory holding the database snapshot.
 pub const DB_STAGING_DIR: &str = "db";
 /// Fixed in-archive name of the database snapshot. The LIVE name varies
-/// (`codeg-dev.db` on debug desktop builds), so the two are mapped explicitly
+/// (`recur-code-dev.db` on debug desktop builds), so the two are mapped explicitly
 /// at swap time rather than assumed equal.
-pub const DB_STAGING_NAME: &str = "codeg.db";
+pub const DB_STAGING_NAME: &str = "RecurCode.db";
 /// Per-unit swap progress, written inside the staging dir so a crashed swap
 /// can be resumed exactly once per unit.
-const SWAP_STATE_DIR: &str = ".codeg-swap-state";
+const SWAP_STATE_DIR: &str = ".recur-code-swap-state";
 /// Records what the live data looked like when a safety snapshot was taken —
 /// including what was *absent*, which is the only way a rollback can undo a
 /// restore that introduced a file.
-const SNAPSHOT_MANIFEST: &str = ".codeg-snapshot.json";
+const SNAPSHOT_MANIFEST: &str = ".recur-code-snapshot.json";
 /// How many safety snapshots to keep. Each one holds a full copy of the
 /// previous database and upload tree, and nothing used to reclaim them.
 const SAFETY_SNAPSHOT_KEEP: usize = 2;
@@ -144,7 +144,7 @@ struct PendingRestore {
     created_at: String,
     app_version: String,
     latest_migration: String,
-    /// Which codeg-owned sections this restore is allowed to replace.
+    /// Which recur-code-owned sections this restore is allowed to replace.
     ///
     /// It has to live HERE rather than be re-derived at apply time: the swap
     /// runs in the *next* process and the manifest never reaches staging
@@ -460,7 +460,7 @@ fn snapshot_sort_key(path: &Path) -> Option<i64> {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SafetySnapshot {
-    /// Directory name under `.codeg-restore-backup/`.
+    /// Directory name under `.recur-code-restore-backup/`.
     pub id: String,
     pub path: String,
     /// RFC3339 timestamp of the restore this snapshot was taken for. `None`
@@ -597,7 +597,7 @@ pub fn discard_pending_restore_core(data_dir: &Path) -> Result<bool, AppCommandE
 /// Resolves the live uploads root + preferences path via the env-aware
 /// `paths::*` resolvers (production), then delegates to
 /// [`apply_pending_restore_with_paths`]. Tests call the inner fn with temp
-/// paths so they never touch the real `~/.codeg`.
+/// paths so they never touch the real `~/.recurcode`.
 pub fn apply_pending_restore_on_startup(
     data_dir: &Path,
 ) -> Result<RestoreApplied, std::io::Error> {
@@ -870,7 +870,7 @@ fn snapshot_dir_name(pending: &PendingRestore) -> String {
 }
 
 /// Rename `src` → `dst`, falling back to recursive copy + remove across
-/// filesystem boundaries (CODEG_HOME / CODEG_DATA_DIR may differ).
+/// filesystem boundaries (RECUR_CODE_HOME / RECUR_CODE_DATA_DIR may differ).
 fn move_path(src: &Path, dst: &Path) -> std::io::Result<()> {
     if let Some(parent) = dst.parent() {
         std::fs::create_dir_all(parent)?;
@@ -1190,7 +1190,7 @@ mod tests {
         write_archive(
             &src,
             None,
-            &[("db/codeg.db", b"NEW-DB"), ("uploads/a.txt", b"A")],
+            &[("db/RecurCode.db", b"NEW-DB"), ("uploads/a.txt", b"A")],
         );
 
         let live_base = dir.path().join("live");
@@ -1633,7 +1633,7 @@ mod tests {
 
         let mut manifest = BackupManifest {
             format_version: 1,
-            kind: "codeg-backup".to_string(),
+            kind: "recur-code-backup".to_string(),
             created_at: "2026-06-06T00:00:00Z".to_string(),
             app_version: "0.15.0".to_string(),
             latest_migration: String::new(),

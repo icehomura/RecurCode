@@ -53,7 +53,7 @@ pub const DEFAULT_MAX_BYTES_PER_DAY: u64 = 512 * 1024 * 1024;
 /// Env var overriding [`DEFAULT_MAX_BYTES_PER_DAY`]. `0` removes the ceiling
 /// (for a deliberate long protocol-trace capture); a malformed value falls back
 /// to the default rather than silently removing the bound.
-pub const MAX_BYTES_ENV: &str = "CODEG_LOG_MAX_BYTES";
+pub const MAX_BYTES_ENV: &str = "RECUR_CODE_LOG_MAX_BYTES";
 
 /// Seconds in a day. Unix time has no leap seconds, so every UTC day is exactly
 /// this long and the day number is plain integer division.
@@ -328,7 +328,7 @@ pub trait NoticeSink: Send + 'static {
 /// Production sink: stderr (matching the other bootstrap diagnostics) plus a
 /// synthetic WARN record pushed straight into [`crate::logging::hub::LogHub`],
 /// so the Settings → Logs viewer shows *why* the file went quiet. The direct
-/// push bypasses the subscriber, so the `codeg_lib::logging=off` backstop can't
+/// push bypasses the subscriber, so the `recur_code_lib::logging=off` backstop can't
 /// swallow it and no re-entrancy is possible.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StderrAndHubSink;
@@ -345,7 +345,7 @@ impl NoticeSink for StderrAndHubSink {
                     .map(|d| d.as_millis() as u64)
                     .unwrap_or(0),
                 level: "WARN",
-                target: "codeg_lib::logging".to_string(),
+                target: "recur_code_lib::logging".to_string(),
                 message,
                 fields: Default::default(),
                 spans: Vec::new(),
@@ -747,10 +747,10 @@ mod tests {
         let day = chrono::DateTime::parse_from_rfc3339("2026-09-09T19:26:25Z")
             .unwrap()
             .with_timezone(&chrono::Utc);
-        assert_eq!(daily_file_name("codeg", "log", day), "codeg.2026-09-09.log");
+        assert_eq!(daily_file_name("RecurCode", "log", day), "RecurCode.2026-09-09.log");
         assert_eq!(
-            daily_file_name("codeg-server", "log", day),
-            "codeg-server.2026-09-09.log"
+            daily_file_name("recur-code-server", "log", day),
+            "recur-code-server.2026-09-09.log"
         );
     }
 
@@ -760,17 +760,17 @@ mod tests {
         let now = chrono::Utc::now();
         let today = now.format("%Y-%m-%d").to_string();
         // Same naming scheme tracing_appender uses for Rotation::DAILY.
-        std::fs::write(dir.path().join(format!("codeg.{today}.log")), vec![b'x'; 77]).unwrap();
+        std::fs::write(dir.path().join(format!("RecurCode.{today}.log")), vec![b'x'; 77]).unwrap();
         // A different day's file, and an unrelated file, must not be counted.
-        std::fs::write(dir.path().join("codeg.1999-01-01.log"), vec![b'x'; 5000]).unwrap();
-        std::fs::write(dir.path().join("codeg-server.log"), vec![b'x'; 5000]).unwrap();
+        std::fs::write(dir.path().join("RecurCode.1999-01-01.log"), vec![b'x'; 5000]).unwrap();
+        std::fs::write(dir.path().join("recur-code-server.log"), vec![b'x'; 5000]).unwrap();
 
-        let (day, existing) = resume_point(dir.path(), "codeg", "log");
+        let (day, existing) = resume_point(dir.path(), "RecurCode", "log");
         assert_eq!(existing, 77);
         assert_eq!(day, unix_day_from_secs(now.timestamp()));
 
         // A prefix with no file today reads as a clean slate, not an error.
-        let (_, none) = resume_point(dir.path(), "codeg-server", "log");
+        let (_, none) = resume_point(dir.path(), "recur-code-server", "log");
         assert_eq!(none, 0);
     }
 

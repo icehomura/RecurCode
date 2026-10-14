@@ -49,11 +49,11 @@ import { BrowserToolbar } from "./browser-toolbar"
  * The file-pane content of a browser tab. On the desktop: toolbar, notices,
  * and the native surface (or, when the page could not load, a DOM error page
  * in its place). In a browser there is no native surface; the tab shows a
- * dev server on the codeg host through the port bridge instead.
+ * dev server on the RecurCode host through the port bridge instead.
  */
 export function BrowserTabView({ tab }: { tab: BrowserWorkspaceTab }) {
   if (!isDesktop()) return <BrowserBridgeView tab={tab} />
-  // An address of the remote codeg host: loaded through that host, or not
+  // An address of the remote RecurCode host: loaded through that host, or not
   // at all — never from this computer. A record in a connection's profile is
   // one whatever its flag says: its page was the remote host's.
   if (
@@ -66,7 +66,7 @@ export function BrowserTabView({ tab }: { tab: BrowserWorkspaceTab }) {
 }
 
 /**
- * A tab of the remote codeg host. Its page is shown here and fetched from
+ * A tab of the remote RecurCode host. Its page is shown here and fetched from
  * there: the backend opens it in the window's connection's own profile, whose
  * every connection goes through that connection's tunnel (`browser::remote`),
  * and refuses — with the reason — whatever cannot be opened that way. Then the

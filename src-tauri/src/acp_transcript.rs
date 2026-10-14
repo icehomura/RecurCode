@@ -1,4 +1,4 @@
-//! codeg's own **ACP-native transcript** for custom agents.
+//! RecurCode's own **ACP-native transcript** for custom agents.
 //!
 //! Every built-in agent ships a dedicated parser (`crate::parsers::*`) that
 //! reverse-engineers that agent's private session store to rebuild history.
@@ -7,18 +7,18 @@
 //!
 //! The observation that makes this unnecessary is the same one
 //! [`crate::turn_timings`] already relies on: **every session runs through
-//! codeg**, so the connection layer witnesses the entire conversation. Here we
+//! RecurCode**, so the connection layer witnesses the entire conversation. Here we
 //! take it all the way — instead of recording a derived measurement, we record
 //! the ACP wire itself:
 //!
-//! * each prompt codeg sends (`session/prompt`'s content blocks), and
+//! * each prompt RecurCode sends (`session/prompt`'s content blocks), and
 //! * each `session/update` notification the agent sends back, verbatim.
 //!
 //! [`crate::parsers::acp_native`] reads that back and projects it into
 //! `MessageTurn`s using nothing but ACP semantics — no agent-specific
 //! knowledge anywhere in the loop.
 //!
-//! ## Why raw ACP and not codeg's own `AcpEvent`
+//! ## Why raw ACP and not RecurCode's own `AcpEvent`
 //!
 //! `AcpEvent` is an internal type that changes with every UI feature; persisting
 //! it would silently corrupt old history on refactors. The ACP `SessionUpdate`
@@ -27,7 +27,7 @@
 //!
 //! ## File layout
 //!
-//! `<paths::codeg_acp_transcripts_root()>/<registry-id>/<session-id>.jsonl`
+//! `<paths::recur_code_acp_transcripts_root()>/<registry-id>/<session-id>.jsonl`
 //!
 //! Line 0 is a [`TranscriptHeader`]; every later line is a [`TranscriptEntry`]:
 //!
@@ -93,8 +93,8 @@ pub struct TranscriptHeader {
     /// Session id this transcript continues.
     ///
     /// Agents are not required to persist sessions, and many custom ones keep
-    /// them in memory only — so after a restart `session/load` fails and codeg
-    /// starts a fresh agent session for the SAME conversation. The turns codeg
+    /// them in memory only — so after a restart `session/load` fails and RecurCode
+    /// starts a fresh agent session for the SAME conversation. The turns RecurCode
     /// already recorded are not lost by that; they simply live under the old
     /// session id. Rather than move them (a rename could be interrupted between
     /// the file operation and the `external_id` write, stranding the history),
@@ -129,7 +129,7 @@ impl TranscriptHeader {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EntryKind {
-    /// A prompt codeg sent to the agent. `payload` is the ACP content-block
+    /// A prompt RecurCode sent to the agent. `payload` is the ACP content-block
     /// array from `session/prompt`.
     Prompt,
     /// A `session/update` notification from the agent. `payload` is the
@@ -137,7 +137,7 @@ pub enum EntryKind {
     Update,
     /// End of a prompt turn, as reported by the `session/prompt` **response**.
     /// ACP has no turn-end notification, so without this line turn boundaries
-    /// could only be inferred; codeg is the party that receives the response,
+    /// could only be inferred; RecurCode is the party that receives the response,
     /// so it records it. Payload: `{"stopReason":…, "durationMs":…,
     /// "model":…, "usage":{…}}` (all optional but `stopReason`).
     ///
@@ -150,11 +150,11 @@ pub enum EntryKind {
 /// One recorded line.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TranscriptEntry {
-    /// Epoch milliseconds when codeg observed this.
+    /// Epoch milliseconds when RecurCode observed this.
     pub t: u64,
     pub k: EntryKind,
     pub p: serde_json::Value,
-    /// On a [`EntryKind::Prompt`]: codeg delivered it INTO the running turn
+    /// On a [`EntryKind::Prompt`]: RecurCode delivered it INTO the running turn
     /// (a native steer) instead of starting a turn with it. The reader still
     /// splits the turn there — the steer is a user message of its own — but
     /// the turn did not start at it, so the turn end's whole-turn duration does
@@ -189,7 +189,7 @@ pub fn now_epoch_ms() -> u64 {
 
 /// Whether `s` is safe as a single path component. Mirrors
 /// `turn_timings::safe_component` — the registry id and the session id both
-/// come from outside codeg (user input / the agent's own id generator), so
+/// come from outside RecurCode (user input / the agent's own id generator), so
 /// neither may introduce a separator, a parent ref, or a hidden-file prefix.
 fn safe_component(s: &str) -> bool {
     !s.is_empty()
@@ -241,7 +241,7 @@ impl PendingRecord {
     /// They mark the turn boundaries the reader reconstructs turns from, and —
     /// decisively — a `Prompt` is what makes [`has_entries_in`] answer true.
     /// That answer is the gate keeping a `session/load` replay from appending a
-    /// second copy of history codeg already recorded.
+    /// second copy of history RecurCode already recorded.
     ///
     /// Flushing on arrival is only half of that guarantee: it bounds how long a
     /// prompt sits in the WRITER, not how long it sits in the queue ahead of
@@ -844,7 +844,7 @@ pub fn record_header(
     agent_dir: &str,
     header: &TranscriptHeader,
 ) -> tokio::sync::oneshot::Receiver<()> {
-    record_header_in(&crate::paths::codeg_acp_transcripts_root(), agent_dir, header)
+    record_header_in(&crate::paths::recur_code_acp_transcripts_root(), agent_dir, header)
 }
 
 /// Root-injectable core of [`record_header`].
@@ -867,7 +867,7 @@ pub fn record_entry(
     payload: serde_json::Value,
 ) -> tokio::sync::oneshot::Receiver<()> {
     record_entry_in(
-        &crate::paths::codeg_acp_transcripts_root(),
+        &crate::paths::recur_code_acp_transcripts_root(),
         agent_dir,
         session_id,
         kind,
@@ -901,7 +901,7 @@ pub fn record_steer(
     payload: serde_json::Value,
 ) -> tokio::sync::oneshot::Receiver<()> {
     record_steer_in(
-        &crate::paths::codeg_acp_transcripts_root(),
+        &crate::paths::recur_code_acp_transcripts_root(),
         agent_dir,
         session_id,
         payload,
@@ -981,7 +981,7 @@ pub fn append_line_in(root: &Path, agent_dir: &str, session_id: &str, line: &str
 /// cannot poison the rest of the history.
 pub fn read_transcript(agent_dir: &str, session_id: &str) -> Transcript {
     read_transcript_in(
-        &crate::paths::codeg_acp_transcripts_root(),
+        &crate::paths::recur_code_acp_transcripts_root(),
         agent_dir,
         session_id,
     )
@@ -1087,12 +1087,12 @@ pub fn read_header_in(root: &Path, agent_dir: &str, session_id: &str) -> Option<
     found
 }
 
-/// **The replay gate.** True when this conversation already has history codeg
+/// **The replay gate.** True when this conversation already has history RecurCode
 /// recorded — whether it has reached the file yet or is still on its way there.
 ///
 /// A `session/load` replay may be recorded only when this is false. Answering
 /// "no history" for a conversation that has some is the one dangerous mistake:
-/// the replay is then appended to history codeg already had, and because the
+/// the replay is then appended to history RecurCode already had, and because the
 /// gate reads non-empty from then on, the duplicate is permanent and silent.
 ///
 /// So it is deliberately conservative in exactly one direction — a prompt that
@@ -1101,7 +1101,7 @@ pub fn read_header_in(root: &Path, agent_dir: &str, session_id: &str) -> Option<
 /// that was redundant anyway.
 pub fn has_recorded_history(agent_dir: &str, session_id: &str) -> bool {
     has_recorded_history_in(
-        &crate::paths::codeg_acp_transcripts_root(),
+        &crate::paths::recur_code_acp_transcripts_root(),
         agent_dir,
         session_id,
     )
@@ -1201,7 +1201,7 @@ pub fn read_chain_in(root: &Path, agent_dir: &str, session_id: &str) -> Transcri
 /// after a single read. Shares [`read_chain_in`]'s cycle and depth guards.
 ///
 /// This is the "same conversation, new agent session" signal. When a custom
-/// agent has forgotten a session, codeg opens a fresh one and links it back
+/// agent has forgotten a session, RecurCode opens a fresh one and links it back
 /// (see [`TranscriptHeader::continues_from`]); the reader then renders the
 /// whole chain as ONE conversation, and the generic parser hides the
 /// superseded ids for exactly that reason. So a bind moving from an id in
@@ -1233,7 +1233,7 @@ pub fn continuation_ancestors_in(root: &Path, agent_dir: &str, session_id: &str)
 /// [`continuation_ancestors_in`] against the real transcripts root.
 pub fn continuation_ancestors(agent_dir: &str, session_id: &str) -> Vec<String> {
     continuation_ancestors_in(
-        &crate::paths::codeg_acp_transcripts_root(),
+        &crate::paths::recur_code_acp_transcripts_root(),
         agent_dir,
         session_id,
     )
@@ -1302,7 +1302,7 @@ mod tests {
 
     fn temp_root() -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "codeg-acp-transcript-test-{}-{:?}",
+            "recur-code-acp-transcript-test-{}-{:?}",
             std::process::id(),
             std::thread::current().id()
         ));
@@ -2305,7 +2305,7 @@ mod tests {
     }
 
     /// The gate that keeps a `session/load` replay from appending a second copy
-    /// of history codeg already has. It reads the file, so a prompt sitting in
+    /// of history RecurCode already has. It reads the file, so a prompt sitting in
     /// the writer's buffer would make it answer "empty" and let the replay in.
     #[tokio::test]
     async fn a_continuation_link_is_readable_as_soon_as_its_ack_resolves() {

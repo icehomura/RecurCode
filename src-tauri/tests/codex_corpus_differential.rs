@@ -10,8 +10,8 @@
 //! corpus path, so it never runs in CI. To use it:
 //!
 //! ```sh
-//! CODEG_CODEX_CORPUS_DIR=~/.codex/sessions \
-//! CODEG_CODEX_CORPUS_OUT=/tmp/codex-digest-branch.txt \
+//! RECUR_CODE_CODEX_CORPUS_DIR=~/.codex/sessions \
+//! RECUR_CODE_CODEX_CORPUS_OUT=/tmp/codex-digest-branch.txt \
 //!   cargo test --features test-utils --test codex_corpus_differential -- --ignored --nocapture
 //! # then repeat on the base revision and `diff` the two digests
 //! ```
@@ -25,9 +25,9 @@ use std::collections::BTreeMap;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
-use codeg_lib::models::AgentType;
-use codeg_lib::parsers::codex::CodexParser;
-use codeg_lib::parsers::AgentParser;
+use recur_code_lib::models::AgentType;
+use recur_code_lib::parsers::codex::CodexParser;
+use recur_code_lib::parsers::AgentParser;
 
 fn rollouts_in(root: &Path) -> Vec<PathBuf> {
     let mut found = Vec::new();
@@ -55,12 +55,12 @@ fn rollouts_in(root: &Path) -> Vec<PathBuf> {
 #[test]
 #[ignore = "requires a local Codex rollout corpus; see module docs"]
 fn codex_corpus_digest() {
-    let Ok(root) = std::env::var("CODEG_CODEX_CORPUS_DIR") else {
-        eprintln!("CODEG_CODEX_CORPUS_DIR unset — skipping");
+    let Ok(root) = std::env::var("RECUR_CODE_CODEX_CORPUS_DIR") else {
+        eprintln!("RECUR_CODE_CODEX_CORPUS_DIR unset — skipping");
         return;
     };
     let root = PathBuf::from(shellexpand_home(&root));
-    let out = std::env::var("CODEG_CODEX_CORPUS_OUT")
+    let out = std::env::var("RECUR_CODE_CODEX_CORPUS_OUT")
         .unwrap_or_else(|_| "/tmp/codex-corpus-digest.txt".to_string());
 
     let files = rollouts_in(&root);

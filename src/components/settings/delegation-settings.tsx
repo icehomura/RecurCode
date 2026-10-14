@@ -7,7 +7,7 @@
  *   * "General" — feature kill switch + chain depth limit. Persisted as
  *     `delegation.enabled` / `delegation.depth_limit` on the Rust side.
  *   * "Agent defaults" — per-agent overrides (mode + config_values) that
- *     codeg-mcp uses when spawning a subagent for a `delegate_to_agent`
+ *     recur-code-mcp uses when spawning a subagent for a `delegate_to_agent`
  *     call. Persisted as `delegation.agent_defaults` (one JSON blob).
  *
  * Cancellation is handled out-of-band via MCP `notifications/cancelled`
@@ -117,12 +117,12 @@ export function DelegationSettingsSection() {
   // The switch above is not the only thing that decides whether an agent gets
   // `delegate_to_agent`: the per-agent "the agent handles files and commands
   // itself" switch withholds the delegation tool group too, because delegation
-  // routes the same work back through codeg's process. That override is
+  // routes the same work back through RecurCode's process. That override is
   // invisible from here, which reads as "I turned multi-agent on and the tools
   // are gone" — so name the agents it applies to.
   //
   // `host_tools_agent_mode` is the backend's RESOLVED verdict, not a re-read of
-  // `env`: the knob also resolves from codeg's own process env, and an operator
+  // `env`: the knob also resolves from RecurCode's own process env, and an operator
   // who exported it there would otherwise see no warning while every agent
   // silently lost delegation.
   useEffect(() => {
@@ -149,7 +149,7 @@ export function DelegationSettingsSection() {
   /**
    * Converge on a delegation write that happened elsewhere.
    *
-   * The status-bar codeg-mcp popover flips `enabled` on its own, while the save
+   * The status-bar recur-code-mcp popover flips `enabled` on its own, while the save
    * below submits the whole record. Without this, a form left open across such
    * a toggle would send its stale `enabled` on the next save — changing only the
    * depth limit would silently switch delegation back off.

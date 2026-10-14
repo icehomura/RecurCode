@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/select"
 import type { AcpAgentInfo, LeakedTempScan } from "@/lib/types"
 
-/** codeg-side knob recording the chosen auth method. The agent reads NOTHING
+/** recur-code-side knob recording the chosen auth method. The agent reads NOTHING
  * from it — its auth intent comes from `auth.type` in
  * `<GEMINI_HOME>/antigravity-acp/settings.json` — so the launch path uses it
  * twice: to write that file, and to scrub the credential vars the other
@@ -80,7 +80,7 @@ export const ANTIGRAVITY_ENV_KEYS = [
 /**
  * The four `auth.type` values Antigravity's ACP server accepts, in the order it
  * advertises them at `initialize`. The pre-rebrand `vertex-ai` spelling is
- * still accepted by the server but never written by codeg — a second name for
+ * still accepted by the server but never written by RecurCode — a second name for
  * one method would render as two buttons.
  */
 export type AntigravityAuthMethod =
@@ -234,8 +234,8 @@ type PendingLogin = Extract<AntigravityLoginStart, { alreadySignedIn: false }>
  * false without raising — so the first session simply hangs and then fails,
  * with no link anywhere the user could open themselves.
  *
- * This runs that same flow out of band and splits it in two: codeg shows the
- * link, the user consents in whatever browser they do have, and codeg — which
+ * This runs that same flow out of band and splits it in two: RecurCode shows the
+ * link, the user consents in whatever browser they do have, and RecurCode — which
  * IS on the machine where that port is listening — performs the redirect their
  * browser could not. See `src-tauri/src/acp/antigravity_login.rs`.
  */
@@ -381,7 +381,7 @@ function HeadlessSignIn({
         // request — so the link on screen is spent whether or not the sign-in
         // worked. Leaving the paste box would invite a second attempt that
         // could only fail. `retryable` marks the one case where it is still
-        // live: codeg rejected the paste before sending anything.
+        // live: RecurCode rejected the paste before sending anything.
         pendingRef.current = null
         setPending(null)
         setRedirect("")
@@ -460,7 +460,7 @@ function HeadlessSignIn({
                   <Copy className="size-3.5" />
                 )}
               </Button>
-              {/* The one case where opening it here is useful: a DESKTOP codeg
+              {/* The one case where opening it here is useful: a DESKTOP RecurCode
                   driving a remote agent, or a user browsing the server's panel
                   from their laptop. On the headless host itself it is inert,
                   which is what the copy button beside it is for. */}
@@ -594,7 +594,7 @@ function HeadlessSignIn({
  * in" — the first Google account a user picks is the last one they get. Nothing
  * they can reach from outside fixes it either: the credential is a login-keychain
  * item on macOS and a file under `GEMINI_HOME` elsewhere, so it survives
- * uninstalling the Antigravity CLI and reinstalling codeg.
+ * uninstalling the Antigravity CLI and reinstalling RecurCode.
  *
  * Only for the two OAuth methods. The API-key methods read their credential from
  * the environment on every request, so there is nothing stored to discard — and
@@ -669,7 +669,7 @@ function SignOut({
  * This panel is load-bearing, not cosmetic. Antigravity's `session/new` fails
  * outright with `Authentication required` unless
  * `<GEMINI_HOME>/antigravity-acp/settings.json` declares an `auth.type`
- * (upstream removed environment-based auth selection), and codeg does not
+ * (upstream removed environment-based auth selection), and RecurCode does not
  * implement the ACP `authenticate` request that would otherwise set it. The
  * choice made here is what the launch path writes to that file — so without it
  * the agent cannot start a single session.
@@ -698,8 +698,8 @@ function formatBytes(bytes: number): string {
  *
  * Scan-then-confirm rather than a silent sweep, and the copy says why: the
  * directories live in the system temp dir, which every PyInstaller application
- * shares. codeg cannot tell its own leftovers from another app's, so deleting
- * them is the user's call, not codeg's.
+ * shares. RecurCode cannot tell its own leftovers from another app's, so deleting
+ * them is the user's call, not RecurCode's.
  */
 function LeakedTempSection() {
   const t = useTranslations("AcpAgentSettings")
@@ -803,7 +803,7 @@ function LeakedTempSection() {
           </code>
 
           {/* Nothing is pre-ticked, and every path is shown. The hint above
-              says codeg cannot tell its own leftovers from another
+              says RecurCode cannot tell its own leftovers from another
               application's; a single button that deleted all of them would be
               asking the user to take responsibility for a list they were never
               shown. */}
@@ -1050,7 +1050,7 @@ export function AntigravityConfigPanel({
       // Storing the row is only half of a save. What actually authenticates
       // Antigravity is `auth.type` in the server's settings.json, and that file
       // is the user's — it can legitimately be Hjson with comments, or hold an
-      // `auth` key of a shape codeg refuses to overwrite — in which case the
+      // `auth` key of a shape RecurCode refuses to overwrite — in which case the
       // launch leaves it alone and only writes a log line. Saying "saved"
       // regardless was claiming something that had not happened, and the
       // consequence lands later and elsewhere: switching methods scrubs the
@@ -1292,7 +1292,7 @@ export function AntigravityConfigPanel({
         {/* The save landed in the database but not in the file the server
             reads, so the choice above is NOT what the next session will
             authenticate with. Names the file and the reason, because the fix
-            is to edit that file by hand — codeg will not touch it again. */}
+            is to edit that file by hand — RecurCode will not touch it again. */}
         {syncSkip ? (
           <div className="space-y-1 rounded-md border border-amber-500/40 bg-amber-500/5 p-2">
             <p className="text-2xs text-amber-600 dark:text-amber-400">

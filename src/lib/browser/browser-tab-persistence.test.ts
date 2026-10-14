@@ -199,7 +199,7 @@ describe("browser tab persistence", () => {
     ])
   })
 
-  // A remote tab (an address of the remote codeg host) must come back as
+  // A remote tab (an address of the remote RecurCode host) must come back as
   // one: restored as an ordinary tab it would load this machine's port.
   it("keeps the remote mark through a write, a read and a snapshot", () => {
     writePersistedBrowserTabs(

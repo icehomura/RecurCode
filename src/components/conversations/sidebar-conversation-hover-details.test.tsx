@@ -46,8 +46,8 @@ function conv(
 function folder(overrides: Partial<FolderDetail> = {}): FolderDetail {
   return {
     id: 1,
-    name: "codeg",
-    path: "/Users/dev/projects/codeg",
+    name: "RecurCode",
+    path: "/Users/dev/projects/RecurCode",
     git_branch: null,
     default_agent_type: null,
     last_opened_at: CREATED_AT,
@@ -124,15 +124,15 @@ describe("SidebarConversationHoverDetails", () => {
     seed()
     renderBubble(conv())
 
-    expect(fieldValue("Folder")).toBe("codeg")
-    expect(fieldValue("Path")).toBe("/Users/dev/projects/codeg")
+    expect(fieldValue("Folder")).toBe("RecurCode")
+    expect(fieldValue("Path")).toBe("/Users/dev/projects/RecurCode")
   })
 
   it("renders an aliased folder as `alias [ name ]`", () => {
     seed({ folders: [folder({ alias: "My Project" })] })
     renderBubble(conv())
 
-    expect(fieldValue("Folder")).toBe("My Project [ codeg ]")
+    expect(fieldValue("Folder")).toBe("My Project [ RecurCode ]")
   })
 
   // Paths, branches, and model ids read left-to-right in every locale; without
@@ -151,7 +151,7 @@ describe("SidebarConversationHoverDetails", () => {
     expect(ltr).toEqual([
       "claude-opus-5",
       "feature/x",
-      "/Users/dev/projects/codeg",
+      "/Users/dev/projects/RecurCode",
     ])
   })
 
@@ -262,10 +262,10 @@ describe("SidebarConversationHoverDetails", () => {
 
   it("shows the original path when the source worktree was removed", () => {
     seed()
-    renderBubble(conv({ origin_cwd: "/Users/dev/projects/codeg-feature-x" }))
+    renderBubble(conv({ origin_cwd: "/Users/dev/projects/recur-code-feature-x" }))
 
     expect(fieldValue("Source worktree removed")).toBe(
-      "/Users/dev/projects/codeg-feature-x"
+      "/Users/dev/projects/recur-code-feature-x"
     )
   })
 

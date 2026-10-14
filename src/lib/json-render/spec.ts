@@ -66,7 +66,7 @@ function childKeys(element: UIElement | null | undefined): unknown[] {
 
 /**
  * Whether an element is, through `children` or `slots`, its own descendant.
- * json-render renders such a spec without end — the window hangs until Codeg
+ * json-render renders such a spec without end — the window hangs until RecurCode
  * restarts — so it is shown as code instead. Only what the root reaches
  * counts; an element nothing renders cannot hang anything.
  */

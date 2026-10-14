@@ -5,7 +5,7 @@ import type {
   SessionConfigSelectOptionInfo,
 } from "@/lib/types"
 
-const STORAGE_KEY = "codeg:model-labels"
+const STORAGE_KEY = "RecurCode:model-labels"
 
 // The store hydrates from localStorage once and caches at module scope, so a
 // test that seeds storage has to get a module that has not read it yet.

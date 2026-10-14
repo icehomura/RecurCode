@@ -8,7 +8,7 @@
  * progress (a retry, a reconnect), which updates in place and clears itself.
  *
  * `key` names the MESSAGE, not the call. Telling the same thing again — a
- * notice the agent repeats, the typed account of a failure codeg already
+ * notice the agent repeats, the typed account of a failure RecurCode already
  * reported — updates the toast on screen and replaces the list entry instead
  * of stacking copies.
  *

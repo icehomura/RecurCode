@@ -104,7 +104,7 @@ function piLinkedStatus(expertId: string): ExpertInstallStatus {
   return {
     expertId,
     agentType: "pi",
-    state: "linked_to_codeg",
+    state: "linked_to_recur_code",
     linkPath: "",
     targetPath: null,
     expectedTargetPath: "",

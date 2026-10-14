@@ -884,15 +884,15 @@ export function parsePermissionToolCall(
   // block, in which case it is not a heading at all. claude-agent-acp 0.79.0
   // (#1070) made a `Bash`/`PowerShell` approval's `_meta.permission.title` the
   // raw command — byte-identical to `toolCall.title` — so that a client with no
-  // command view cannot approve a command it was never shown. codeg has that
+  // command view cannot approve a command it was never shown. RecurCode has that
   // view, so taking the string as its heading would print the command twice and
   // push the model's own one-line label off the card entirely: the adapter
-  // still ships it (as `toolCall.content`, since codeg advertises no
+  // still ships it (as `toolCall.content`, since RecurCode advertises no
   // `terminal_output` capability), but the dialog surfaces `contentText` only
   // when NO structured view exists, and a command card always has one.
   //
   // Keyed on the SHAPE, not on an adapter version — the pinned version only
-  // governs what codeg INSTALLS, while `resolve_npx_command` launches whatever
+  // governs what RecurCode INSTALLS, while `resolve_npx_command` launches whatever
   // is on PATH, so "this is claude_code" never implies "this is ≥0.79.0". An
   // equal-to-the-command heading reads the same on every agent and every
   // version, including 0.78.0, whose `shellTitle` fell back to the bare tool

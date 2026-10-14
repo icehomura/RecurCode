@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
   env: {
     // The service worker's caches are keyed to the release; see
     // serviceWorkerUrl() in src/lib/service-worker.ts.
-    CODEG_APP_VERSION: packageJson.version,
+    RECUR_CODE_APP_VERSION: packageJson.version,
   },
   images: {
     unoptimized: true,

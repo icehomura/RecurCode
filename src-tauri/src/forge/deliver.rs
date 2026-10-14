@@ -213,7 +213,7 @@ pub fn adopt_pull_request(
 /// is server-derived: the caller passes coordinates, never URLs or tokens.
 pub struct DeliveryCtx<'a> {
     pub conn: &'a DatabaseConnection,
-    /// codeg data dir — where the GIT_ASKPASS helper script lives.
+    /// RecurCode data dir — where the GIT_ASKPASS helper script lives.
     pub data_dir: &'a Path,
     /// The forge this task came from, read back from its own provenance —
     /// never "whatever this host looks like now". Every method below routes on
@@ -512,7 +512,7 @@ pub async fn get_pull(
 /// maintainer edits. That grant cannot be read reliably up front, so it is not
 /// gated here: a refused push bounces the task back to review with the reason,
 /// and a review turn that added no commits settles without pushing at all.
-/// What IS refused is a fork codeg cannot even name — a deleted or invisible
+/// What IS refused is a fork RecurCode cannot even name — a deleted or invisible
 /// head repository — because a push there can never work for anyone.
 pub fn pull_is_workable(
     provider: ForgeProvider,
@@ -524,7 +524,7 @@ pub fn pull_is_workable(
         && super::normalize_repo(&pull.head_repo).is_none()
     {
         return Err(format!(
-            "{noun} #{} comes from a fork whose repository codeg cannot see (it may be private \
+            "{noun} #{} comes from a fork whose repository RecurCode cannot see (it may be private \
              or deleted), so there would be no way to push work back to it",
             pull.number
         ));
@@ -737,9 +737,9 @@ fn ensure_pushable_branch(branch: &str) -> Result<(), String> {
     crate::commands::folders::ensure_pushable_branch_name(branch).map_err(|e| e.to_string())
 }
 
-/// How a codeg task id is written into text that lands on a forge.
+/// How a RecurCode task id is written into text that lands on a forge.
 ///
-/// The number is codeg-local: it names a row in this workspace's task list,
+/// The number is recur-code-local: it names a row in this workspace's task list,
 /// not anything in the repository the text is posted to. Both halves of the
 /// form below carry weight — neither is decoration:
 ///
@@ -756,7 +756,7 @@ fn task_ref(task_id: i32) -> String {
     format!("`{task_id}`")
 }
 
-/// Body of the pull request codeg opens. `Closes #N` is what links it to the
+/// Body of the pull request RecurCode opens. `Closes #N` is what links it to the
 /// issue: GitHub's native closing keyword beats an API `close` call — it fires
 /// only if the pull request actually merges, and only into the right branch.
 /// That reference is the intended one; the task id beside it is not, hence
@@ -765,7 +765,7 @@ pub fn pull_request_body(issue_url: &str, issue_number: i64, task_id: i32) -> St
     let task = task_ref(task_id);
     format!(
         "Closes #{issue_number}\n\n\
-         Prepared by [codeg](https://github.com/xggz/codeg) work task {task} \
+         Prepared by [RecurCode](https://github.com/xggz/RecurCode) work task {task} \
          from {issue_url}.\n\n\
          Review the diff before merging — the task ran against issue text \
          written by an external author."
@@ -779,7 +779,7 @@ pub enum TaskOutcome<'a> {
     Merged { commit: &'a str, base_branch: &'a str },
     /// Published as a pull request.
     Delivered { pr_url: &'a str },
-    /// The third settlement: accepted in codeg without anything landing.
+    /// The third settlement: accepted in RecurCode without anything landing.
     /// `nothing_to_land` tells the two ways that happens apart — an empty diff,
     /// versus a worktree that was already gone (whose branch may still hold
     /// real commits). Saying the task made no changes about the second would
@@ -787,7 +787,7 @@ pub enum TaskOutcome<'a> {
     Accepted { nothing_to_land: bool },
 }
 
-/// The comment codeg posts when a task finishes.
+/// The comment RecurCode posts when a task finishes.
 ///
 /// Deliberately built from nothing but the task id, the thread it goes to, the
 /// outcome and the diff counters: NO agent-written text (result summary,
@@ -797,7 +797,7 @@ pub enum TaskOutcome<'a> {
 /// a noun string), which is what makes the rule hold as this evolves.
 ///
 /// Every sentence reports what happened to the TASK's work, never a verdict on
-/// the item the thread is about. "Accepted" is codeg's word for the user
+/// the item the thread is about. "Accepted" is RecurCode's word for the user
 /// signing off on a task, and a thread reads it as its own: on a pull request
 /// it says the change was approved, on an issue that the report was accepted.
 /// Neither follows from a task that landed nothing — least of all from a
@@ -829,12 +829,12 @@ pub fn writeback_comment_body(
             // to nothing. Saying it plainly is the difference between a status
             // note and a false claim that the work has shipped.
             format!(
-                "codeg work task {task} is done — merged locally into `{base_branch}` as \
+                "RecurCode work task {task} is done — merged locally into `{base_branch}` as \
                  `{short}`{numbers}."
             )
         }
         TaskOutcome::Delivered { pr_url } => {
-            format!("codeg work task {task} is done — {pr_url}{numbers}.")
+            format!("RecurCode work task {task} is done — {pr_url}{numbers}.")
         }
         TaskOutcome::Accepted { nothing_to_land } => {
             let noun = provider.change_noun();
@@ -848,7 +848,7 @@ pub fn writeback_comment_body(
                 (ForgeItemKind::Issue, true) => "it made no changes".to_string(),
                 (ForgeItemKind::Issue, false) => format!("its work was not merged{numbers}"),
             };
-            format!("codeg work task {task} is done — {what}.")
+            format!("RecurCode work task {task} is done — {what}.")
         }
     }
 }
@@ -1389,7 +1389,7 @@ mod tests {
             },
             Some((3, 42, 7)),
         );
-        // A code-spanned id, never `#12`: the number is codeg's, and both
+        // A code-spanned id, never `#12`: the number is RecurCode's, and both
         // forges would turn the bare form into a link to their own issue 12.
         assert!(merged.contains("work task `12`"), "{merged}");
         assert!(!merged.contains("#12"), "autolinkable task id: {merged}");
@@ -1440,7 +1440,7 @@ mod tests {
     }
 
     /// A task finished with nothing landed must not read as a verdict on the
-    /// item its thread is about. "Accepted" is codeg's word for signing off on
+    /// item its thread is about. "Accepted" is RecurCode's word for signing off on
     /// the TASK, and a thread reads it as its own: a pull request approved, an
     /// issue accepted. On a pull request whose review stopped at an unsound
     /// approach — or whose review-only task only ever delivered a report —
@@ -1463,7 +1463,7 @@ mod tests {
                         Some((3, 42, 7)),
                     );
                     let at = format!("{provider:?} {item:?} nothing_to_land={nothing_to_land}");
-                    assert!(body.starts_with("codeg work task `12` is done — "), "{at}: {body}");
+                    assert!(body.starts_with("RecurCode work task `12` is done — "), "{at}: {body}");
                     let lower = body.to_lowercase();
                     for verdict in ["accept", "approv", "reject", "closed", "lgtm"] {
                         assert!(!lower.contains(verdict), "{at} reads as a verdict: {body}");

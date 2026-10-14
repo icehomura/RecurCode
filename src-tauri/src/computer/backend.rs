@@ -69,10 +69,10 @@ impl std::fmt::Display for BackendError {
         match self {
             BackendError::Unavailable(why) => write!(f, "computer use is unavailable: {why}"),
             BackendError::PermissionMissing(OsPermission::Accessibility) => {
-                f.write_str("codeg-computer-helper has not been granted Accessibility")
+                f.write_str("recur-code-computer-helper has not been granted Accessibility")
             }
             BackendError::PermissionMissing(OsPermission::ScreenRecording) => {
-                f.write_str("codeg-computer-helper has not been granted Screen Recording")
+                f.write_str("recur-code-computer-helper has not been granted Screen Recording")
             }
             BackendError::NoSuchWindow => f.write_str("the window is gone"),
             BackendError::Rejected(why) => write!(f, "the driver was rejected: {why}"),
@@ -118,7 +118,7 @@ impl From<HelperError> for BackendError {
     }
 }
 
-/// Where the backend is in its life, for the person looking at codeg's panel.
+/// Where the backend is in its life, for the person looking at RecurCode's panel.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum BackendState {
@@ -142,7 +142,7 @@ pub struct BackendStatus {
     pub detail: Option<String>,
     /// The pinned driver release.
     pub driver_version: String,
-    /// Whether the running helper checked codeg's signature; `None` while no
+    /// Whether the running helper checked RecurCode's signature; `None` while no
     /// helper is running.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub peer: Option<PeerCheck>,
@@ -164,7 +164,7 @@ pub struct SnapshotOptions {
 pub trait ComputerBackend: Send + Sync {
     async fn status(&self) -> BackendStatus;
 
-    /// The executor's own OS permissions — never codeg's.
+    /// The executor's own OS permissions — never RecurCode's.
     async fn permissions(&self) -> Result<PermissionReport, BackendError>;
 
     /// Raise the system's request for one permission — that one alone —

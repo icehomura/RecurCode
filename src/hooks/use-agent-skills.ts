@@ -18,7 +18,7 @@ import type { AgentSkillItem, AgentType } from "@/lib/types"
  *
  * Keyed by folder so project-scoped skills (`{folder}/.codex/skills`) never leak
  * into another workspace, and a key switch never serves the previous folder's
- * list. `Map`s throughout: the keys are paths codeg does not choose.
+ * list. `Map`s throughout: the keys are paths RecurCode does not choose.
  */
 interface SkillsEntry {
   readonly agentType: AgentType

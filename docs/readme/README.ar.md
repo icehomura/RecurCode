@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="Codeg logo" width="64" align="absmiddle" /></a> Codeg
+  <a href="https://docs.codeg.app"><img src="../../public/icon.svg" alt="RecurCode logo" width="64" align="absmiddle" /></a> RecurCode
 </h1>
 
 <p align="center">
@@ -20,12 +20,12 @@
   شغّل كل وكلاء البرمجة بالذكاء الاصطناعي في مكان واحد — ودعهم يعملون معًا.
 </p>
 
-<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>تنزيل Codeg</ins></a> · <a href="https://docs.codeg.app"><ins>التوثيق</ins></a></h3>
+<h3 align="center"><a href="https://github.com/spacering-net/codeg/releases/latest"><ins>تنزيل RecurCode</ins></a> · <a href="https://docs.codeg.app"><ins>التوثيق</ins></a></h3>
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="../images/workspace-dark.png" />
-    <img src="../images/workspace-light.png" alt="مساحة عمل Codeg: محادثة مع وكيل بجوار فروقاتها الحيّة وملفات المشروع" width="960" />
+    <img src="../images/workspace-light.png" alt="مساحة عمل RecurCode: محادثة مع وكيل بجوار فروقاتها الحيّة وملفات المشروع" width="960" />
   </picture>
 </p>
 
@@ -66,10 +66,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://go.apimart.ai/gh-codeg" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
-      <strong><a href="https://go.apimart.ai/gh-codeg">APIMart</a></strong>
+      <a href="https://go.apimart.ai/gh-RecurCode" target="_blank"><img src="../images/apimart-ai.png" alt="APIMart" width="200" /></a><br/>
+      <strong><a href="https://go.apimart.ai/gh-RecurCode">APIMart</a></strong>
     </td>
-    <td>شكراً لـ APIMart على رعاية هذا المشروع! APIMart منصة API منخفضة التكلفة متخصصة في توليد الصور والفيديو بالذكاء الاصطناعي — GPT-Image-2 ابتداءً من 0.006 دولار للصورة، أي أكثر من 160 صورة بالدولار الواحد. واجهة API واحدة غير متزامنة تغطي الصور والفيديو معاً: أرسل المهمة، واحصل على معرّف، ثم استرجع النتائج عبر الاستطلاع أو عبر رد النداء. عالج عشرات الآلاف من الصور دفعةً واحدة دون انتهاء المهلة، وبدّل النماذج دون تغيير الشيفرة. الدفع حسب الاستخدام دون رسوم شهرية — <a href="https://go.apimart.ai/gh-codeg">سجّل من هنا</a> للبدء.</td>
+    <td>شكراً لـ APIMart على رعاية هذا المشروع! APIMart منصة API منخفضة التكلفة متخصصة في توليد الصور والفيديو بالذكاء الاصطناعي — GPT-Image-2 ابتداءً من 0.006 دولار للصورة، أي أكثر من 160 صورة بالدولار الواحد. واجهة API واحدة غير متزامنة تغطي الصور والفيديو معاً: أرسل المهمة، واحصل على معرّف، ثم استرجع النتائج عبر الاستطلاع أو عبر رد النداء. عالج عشرات الآلاف من الصور دفعةً واحدة دون انتهاء المهلة، وبدّل النماذج دون تغيير الشيفرة. الدفع حسب الاستخدام دون رسوم شهرية — <a href="https://go.apimart.ai/gh-RecurCode">سجّل من هنا</a> للبدء.</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -84,10 +84,10 @@
   </tr>
   <tr>
     <td align="center" width="220">
-      <a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
-      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">Fluxion AI</a></strong>
+      <a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE" target="_blank"><img src="../images/fluxion-ai.png" alt="Fluxion AI" width="160" /></a><br/>
+      <strong><a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">Fluxion AI</a></strong>
     </td>
-    <td>شكراً لـ Fluxion AI على رعاية هذا المشروع! توفّر Fluxion AI وصولاً سريعاً وموثوقاً ومنخفض التكلفة عبر واجهة API موحّدة واحدة إلى GPT وClaude وGemini وغيرها من نماذج الذكاء الاصطناعي الرائدة. يمكن للمستخدمين الجدد الحصول على رصيد API بقيمة 3 دولارات عبر <a href="https://fluxionai.space/register?source=github&campaign=github-codeg-202609&promo=CODEG">رابطنا المخصّص</a>.</td>
+    <td>شكراً لـ Fluxion AI على رعاية هذا المشروع! توفّر Fluxion AI وصولاً سريعاً وموثوقاً ومنخفض التكلفة عبر واجهة API موحّدة واحدة إلى GPT وClaude وGemini وغيرها من نماذج الذكاء الاصطناعي الرائدة. يمكن للمستخدمين الجدد الحصول على رصيد API بقيمة 3 دولارات عبر <a href="https://fluxionai.space/register?source=github&campaign=github-recur-code-202609&promo=RECUR_CODE">رابطنا المخصّص</a>.</td>
   </tr>
   <tr>
     <td align="center" width="220">
@@ -98,7 +98,7 @@
   </tr>
 </table>
 
-> هل ترغب في أن تصبح راعياً لـ Codeg؟ [راسلنا عبر البريد الإلكتروني.](mailto:itpkcn@gmail.com)
+> هل ترغب في أن تصبح راعياً لـ RecurCode؟ [راسلنا عبر البريد الإلكتروني.](mailto:itpkcn@gmail.com)
 
 ## ✨ المزايا
 
@@ -108,7 +108,7 @@
 
 ### واجهة واحدة لكل الوكلاء
 
-يضم Codeg خمسة عشر وكيلاً مدمجًا، ويمكن لأي وكيل آخر متوافق مع ACP الانضمام من السجل العام أو عبر ملف distribution JSON الخاص به. ويتواصل Codeg مع كلٍّ منهم عبر Agent Client Protocol، فيحصلون جميعًا على المحادثة الغنية نفسها — بطاقات الأدوات، والفروقات الحيّة، والخطط، وطلبات الأذونات — بدلاً من طرفية تُضطر إلى التحديق فيها.
+يضم RecurCode خمسة عشر وكيلاً مدمجًا، ويمكن لأي وكيل آخر متوافق مع ACP الانضمام من السجل العام أو عبر ملف distribution JSON الخاص به. ويتواصل RecurCode مع كلٍّ منهم عبر Agent Client Protocol، فيحصلون جميعًا على المحادثة الغنية نفسها — بطاقات الأدوات، والفروقات الحيّة، والخطط، وطلبات الأذونات — بدلاً من طرفية تُضطر إلى التحديق فيها.
 
 [التوثيق ←](https://docs.codeg.app/guide/supported-agents) · [الوكلاء المخصّصون ←](https://docs.codeg.app/guide/custom-agents)
 
@@ -125,7 +125,7 @@
 
 ### كل جلسة قابلة للبحث
 
-يقرأ Codeg السجل الذي تحفظه واجهة CLI لكل وكيل على القرص: استورده بنقرة واحدة، وابحث فيه كله، واستأنف أي جلسة من حيث توقفت. اذكر جلسة قديمة بـ `@`، فيستطيع الوكيل الذي تحادثه قراءتها — حتى لو كتبها وكيل آخر.
+يقرأ RecurCode السجل الذي تحفظه واجهة CLI لكل وكيل على القرص: استورده بنقرة واحدة، وابحث فيه كله، واستأنف أي جلسة من حيث توقفت. اذكر جلسة قديمة بـ `@`، فيستطيع الوكيل الذي تحادثه قراءتها — حتى لو كتبها وكيل آخر.
 
 [التوثيق ←](https://docs.codeg.app/guide/aggregation)
 
@@ -159,7 +159,7 @@
 
 ### مهامّ قيد الانتظار تعمل دون إشراف
 
-دوّن ما تريد إنجازه وانصرف إلى شأنك. تحصل كل مهمة على شجرة عمل git وفرعٍ خاصّين بها، وتبدأ فورًا أو وفق جدول زمني، ثم تنتظر في «مراجعة»؛ اقبل الفروقات فيتولّى الوكيل دمجها، ويتحقق Codeg من git قبل أن يعدّها منجزة.
+دوّن ما تريد إنجازه وانصرف إلى شأنك. تحصل كل مهمة على شجرة عمل git وفرعٍ خاصّين بها، وتبدأ فورًا أو وفق جدول زمني، ثم تنتظر في «مراجعة»؛ اقبل الفروقات فيتولّى الوكيل دمجها، ويتحقق RecurCode من git قبل أن يعدّها منجزة.
 
 [التوثيق ←](https://docs.codeg.app/guide/tasks)
 
@@ -193,7 +193,7 @@
 
 ### سطح المكتب والخادم والأجهزة المحمولة وقنوات المحادثة
 
-شغّل Codeg كتطبيق سطح مكتب، أو كخادم مستضاف ذاتيًا تفتحه من أي متصفح، أو كحاوية Docker واحدة. وتُبقي تطبيقات iPhone وiPad وAndroid الأصلية — إضافةً إلى قنوات Telegram وLark وWeChat — وكلاءك في متناول يدك، بينما تبقى ملفاتك وجلساتك على جهازك أنت.
+شغّل RecurCode كتطبيق سطح مكتب، أو كخادم مستضاف ذاتيًا تفتحه من أي متصفح، أو كحاوية Docker واحدة. وتُبقي تطبيقات iPhone وiPad وAndroid الأصلية — إضافةً إلى قنوات Telegram وLark وWeChat — وكلاءك في متناول يدك، بينما تبقى ملفاتك وجلساتك على جهازك أنت.
 
 [التوثيق ←](https://docs.codeg.app/getting-started/deployment) · [التطبيقات المحمولة ←](https://docs.codeg.app/getting-started/installation#mobile-apps) · [قنوات المحادثة ←](https://docs.codeg.app/guide/chat-channels)
 
@@ -268,12 +268,12 @@
 - **[مُنشئ المشروع](https://docs.codeg.app/guide/project-boot)** — أنشئ مشروعًا جديدًا بصريًا، مع معاينة حية
 - **[اجعله على ذوقك](https://docs.codeg.app/reference/settings/appearance)** — اثنتا عشرة سمة يمكنك إعادة تلوينها رمزًا لونيًا تلو الآخر، وخلفيات، واستدارة الزوايا، وCSS مخصّص — بأيٍّ من لغات الواجهة العشر
 - **[النسخ الاحتياطي والمزامنة](https://docs.codeg.app/reference/settings/system#backup-restore)** — نسخ احتياطية مشفّرة، ومزامنة الإعدادات بين الأجهزة عبر ملف أو خادم WebDAV الخاص بك
-- **[مخطط URL](../../docs/url-scheme.md)** — يفتح `codeg://session/<id>` محادثةً من تطبيق آخر (سطح المكتب)
+- **[مخطط URL](../../docs/url-scheme.md)** — يفتح `recurcode://session/<id>` محادثةً من تطبيق آخر (سطح المكتب)
 - **والمزيد** — يضيف كل إصدار تقريبًا شيئًا جديدًا؛ و[ملاحظات الإصدار](https://github.com/spacering-net/codeg/releases) هي القائمة الكاملة
 
 ## 🤖 الوكلاء المدعومون
 
-يتواصل Codeg مع كل وكيل عبر [Agent Client Protocol](https://agentclientprotocol.com)، فيحصل كلٌّ منهم على الواجهة المنظَّمة نفسها. ويأتي بخمسة عشر وكيلاً مدمجًا، يتولّى تثبيت معظمهم وتثبيت إصداراتهم وتحديثهم نيابةً عنك:
+يتواصل RecurCode مع كل وكيل عبر [Agent Client Protocol](https://agentclientprotocol.com)، فيحصل كلٌّ منهم على الواجهة المنظَّمة نفسها. ويأتي بخمسة عشر وكيلاً مدمجًا، يتولّى تثبيت معظمهم وتثبيت إصداراتهم وتحديثهم نيابةً عنك:
 
 <p>
   <a href="https://www.anthropic.com/claude-code"><kbd><img src="../images/agents/claude-code.svg" alt="" width="16" valign="middle" /> Claude Code</kbd></a> &nbsp;
@@ -294,33 +294,33 @@
   <a href="https://docs.codeg.app/guide/custom-agents"><kbd>+ أي وكيل ACP</kbd></a>
 </p>
 
-ليس في القائمة؟ اختر أي وكيل من سجل ACP العام أو الصق ملف distribution JSON الخاص به — فيتولّى Codeg تثبيته، ويتحقق من قدرته على الإقلاع، ويعامله كوكيل مدمج. متطلبات التشغيل، وأين يحفظ كل وكيل جلساته: [الوكلاء المدعومون](https://docs.codeg.app/guide/supported-agents).
+ليس في القائمة؟ اختر أي وكيل من سجل ACP العام أو الصق ملف distribution JSON الخاص به — فيتولّى RecurCode تثبيته، ويتحقق من قدرته على الإقلاع، ويعامله كوكيل مدمج. متطلبات التشغيل، وأين يحفظ كل وكيل جلساته: [الوكلاء المدعومون](https://docs.codeg.app/guide/supported-agents).
 
 ## 📦 التثبيت
 
 **سطح المكتب** — تجد مثبّتات macOS وWindows وLinux في [Releases](https://github.com/spacering-net/codeg/releases/latest)؛ وخطوات الإعداد في [التثبيت](https://docs.codeg.app/getting-started/installation).
 
-**الخادم** — شغّل Codeg بلا واجهة وادخل إليه من أي متصفح. على Linux أو macOS:
+**الخادم** — شغّل RecurCode بلا واجهة وادخل إليه من أي متصفح. على Linux أو macOS:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/spacering-net/codeg/main/install.sh | bash
-CODEG_STATIC_DIR=/usr/local/share/codeg/web codeg-server
+RECUR_CODE_STATIC_DIR=/usr/local/share/RecurCode/web recur-code-server
 ```
 
 على Windows، في PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/spacering-net/codeg/main/install.ps1 | iex
-$env:CODEG_STATIC_DIR="$env:LOCALAPPDATA\codeg-server\web"; codeg-server
+$env:RECUR_CODE_STATIC_DIR="$env:LOCALAPPDATA\recur-code-server\web"; recur-code-server
 ```
 
 **Docker** — الخادم نفسه، داخل حاوية واحدة:
 
 ```bash
-docker run -d -p 3080:3080 -v codeg-data:/data ghcr.io/spacering-net/codeg:latest
+docker run -d -p 3080:3080 -v recur-code-data:/data ghcr.io/spacering-net/codeg:latest
 ```
 
-**الهاتف واللوحي** — ثبّت [تطبيق iOS](https://apps.apple.com/app/codeg-client/id6785199071) أو [حزمة Android APK](https://github.com/xintaofei/codeg-android/releases/latest)، ثم وجّهه إلى **خدمة الويب** في تطبيق سطح المكتب أو إلى خادم `codeg-server` الخاص بك: العنوان والرمز، وانتهى الأمر. خطوات الاقتران في [التطبيقات المحمولة](https://docs.codeg.app/getting-started/installation#mobile-apps).
+**الهاتف واللوحي** — ثبّت [تطبيق iOS](https://apps.apple.com/app/codeg-client/id6785199071) أو [حزمة Android APK](https://github.com/xintaofei/codeg-android/releases/latest)، ثم وجّهه إلى **خدمة الويب** في تطبيق سطح المكتب أو إلى خادم `recur-code-server` الخاص بك: العنوان والرمز، وانتهى الأمر. خطوات الاقتران في [التطبيقات المحمولة](https://docs.codeg.app/getting-started/installation#mobile-apps).
 
 يغطي [النشر](https://docs.codeg.app/getting-started/deployment) استخدام Compose والملفات التنفيذية الجاهزة والبناء من المصدر والتحديث في المكان؛ وتجد متغيرات البيئة في [الإعداد](https://docs.codeg.app/getting-started/configuration).
 
@@ -340,10 +340,10 @@ docker run -d -p 3080:3080 -v codeg-data:/data ghcr.io/spacering-net/codeg:lates
 
 ## 🤝 المساهمة
 
-نرحّب بفتح المشكلات وتقديم طلبات السحب. ولبناء Codeg بنفسك، ابدأ بـ [التطوير](https://docs.codeg.app/reference/development) و[البنية](https://docs.codeg.app/reference/architecture).
+نرحّب بفتح المشكلات وتقديم طلبات السحب. ولبناء RecurCode بنفسك، ابدأ بـ [التطوير](https://docs.codeg.app/reference/development) و[البنية](https://docs.codeg.app/reference/architecture).
 
 <a href="https://github.com/spacering-net/codeg/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="المساهمون في Codeg" />
+  <img src="https://contrib.rocks/image?repo=spacering-net/codeg" alt="المساهمون في RecurCode" />
 </a>
 
 ## ⭐ سجل النجوم
@@ -358,10 +358,10 @@ docker run -d -p 3080:3080 -v codeg-data:/data ghcr.io/spacering-net/codeg:lates
 
 ## 🙏 شكر وتقدير
 
-- [Agent Client Protocol](https://agentclientprotocol.com) — الأساس الذي يمكّن Codeg من الاتصال بكل وكيل يدعمه
-- [Superpowers](https://github.com/obra/superpowers) — يُشغِّل وحدة مهارات الخبراء في Codeg
-- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) — يُشغِّل سير عمل مستندات Office في Codeg
-- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) — يُشغِّل مهارات البحث العلمي في Codeg (مجموعة فرعية مرخّصة بموجب MIT)
+- [Agent Client Protocol](https://agentclientprotocol.com) — الأساس الذي يمكّن RecurCode من الاتصال بكل وكيل يدعمه
+- [Superpowers](https://github.com/obra/superpowers) — يُشغِّل وحدة مهارات الخبراء في RecurCode
+- [OfficeCLI](https://github.com/iOfficeAI/OfficeCLI) — يُشغِّل سير عمل مستندات Office في RecurCode
+- [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) — يُشغِّل مهارات البحث العلمي في RecurCode (مجموعة فرعية مرخّصة بموجب MIT)
 
 ## 📜 الترخيص
 

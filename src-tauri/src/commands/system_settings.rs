@@ -130,12 +130,12 @@ pub(crate) async fn load_system_language_settings(
 /// a shell before installing it.
 ///
 /// **This is a probe, not the spawn itself**, and the two can disagree on
-/// Windows. A PATH lookup here searches the PATH of codeg's own process, while
+/// Windows. A PATH lookup here searches the PATH of RecurCode's own process, while
 /// the built-in terminal spawns through `portable-pty`, whose `CommandBuilder`
 /// rebuilds PATH from the registry (HKLM + HKCU `Environment`) and so sees a
-/// PATH edited — or a shell installed — after codeg started. Both answer "which
+/// PATH edited — or a shell installed — after RecurCode started. Both answer "which
 /// `pwsh.exe`", and they differ only when those two PATHs name different
-/// directories; what codeg passes to either spawner is the stored string
+/// directories; what RecurCode passes to either spawner is the stored string
 /// itself, which no resolution here can change.
 fn resolve_shell_path(value: &str) -> Option<String> {
     let trimmed = value.trim();
@@ -190,7 +190,7 @@ fn shell_exists(value: &str) -> bool {
 /// ([`resolve_shell`]). Anything else is the user's own choice, resolved to a
 /// concrete path when the host can find it (see [`resolve_shell_path`] for what
 /// that probe can and cannot promise) and echoed verbatim when it cannot: a
-/// shell that isn't installed is still what codeg would try to spawn, and
+/// shell that isn't installed is still what RecurCode would try to spawn, and
 /// saying so beats reporting a shell the user did not pick — the picker badges
 /// it "not installed" alongside.
 ///
@@ -1143,7 +1143,7 @@ mod tests {
 
     /// A scheme-less address is what a user actually types, and what used to
     /// reach `HTTP_PROXY` verbatim — killing every npm-based agent install with
-    /// `ERR_INVALID_URL` while codeg's own reqwest calls kept working.
+    /// `ERR_INVALID_URL` while RecurCode's own reqwest calls kept working.
     #[test]
     fn scheme_less_proxy_addresses_gain_an_http_scheme() {
         assert_eq!(normalized_url("127.0.0.1:7890"), "http://127.0.0.1:7890");
@@ -1581,7 +1581,7 @@ mod tests {
             "{reported} should be resolved to a path the user can recognize"
         );
 
-        // Not installed is still what codeg would try to spawn — echoing it
+        // Not installed is still what RecurCode would try to spawn — echoing it
         // back is what lets the user see their own typo. Trimmed, because that
         // is what `normalize_terminal_settings` stored.
         assert_eq!(

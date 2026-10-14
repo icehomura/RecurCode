@@ -3,7 +3,7 @@
  * UI can show a clear, localized hint the user can act on, instead of the raw
  * CLI error text.
  *
- * Primary case (Windows): codeg keeps an agent's process alive for session
+ * Primary case (Windows): RecurCode keeps an agent's process alive for session
  * reuse. On Windows the running process holds file locks on its own files
  * inside the npm / Volta global package directory, so a reinstall can't remove
  * the old package dir to upgrade or uninstall — npm/Volta surface this as

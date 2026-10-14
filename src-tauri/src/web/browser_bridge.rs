@@ -1,9 +1,9 @@
-//! Web-mode port bridge: shows a dev server that runs on the codeg host
+//! Web-mode port bridge: shows a dev server that runs on the RecurCode host
 //! inside the workbench when the workbench itself runs in a browser.
 //!
 //! In server / Docker deployments an agent's `http://localhost:3000` means the
 //! *server's* loopback, which the user's browser cannot reach. The bridge
-//! listens on extra ports next to codeg's own and forwards each of them to one
+//! listens on extra ports next to RecurCode's own and forwards each of them to one
 //! loopback port on the host, so the workbench can put the page in an iframe.
 //!
 //! ## One listener per target port — why not one shared listener
@@ -20,10 +20,10 @@
 //! page is served at `/` exactly as it would be on the host: no rewriting of
 //! bodies, `history.pushState` routers work, HMR websockets connect.
 //!
-//! ## Authentication: a same-site cookie, not codeg's token
+//! ## Authentication: a same-site cookie, not RecurCode's token
 //!
 //! An iframe navigation cannot carry a bearer header, and the page's own
-//! requests must not carry codeg's token either. The workbench asks the API
+//! requests must not carry RecurCode's token either. The workbench asks the API
 //! (with the token) for a grant; the grant is a random capability tied to one
 //! listener. The frame first loads the listener's entry URL carrying that
 //! capability, which sets an `HttpOnly; SameSite=Lax` cookie named after the
@@ -31,7 +31,7 @@
 //! modules, fetch, websocket upgrades — carries the cookie: the bridge is a
 //! different port on the same host as the workbench, which is the same *site*,
 //! so browsers treat those cookies as first-party (including Safari). The
-//! cookie is sent to codeg's own port too, where nothing reads cookies; the
+//! cookie is sent to RecurCode's own port too, where nothing reads cookies; the
 //! workbench's own cookies (locale preferences) reach the bridge the same way
 //! and are stripped before a request goes on to the dev server.
 //!
@@ -56,11 +56,11 @@
 //! ## Addressing a target by hostname instead of by port
 //!
 //! One origin per target port does not have to mean one *port* per target.
-//! `CODEG_BRIDGE_HOST_PATTERN` names the targets by hostname instead —
-//! `3000.codeg.example.com` for port 3000 — and then the bridge binds nothing
-//! of its own: those requests arrive on codeg's own listener, are recognised
+//! `RECUR_CODE_BRIDGE_HOST_PATTERN` names the targets by hostname instead —
+//! `3000.recurcode.example.com` for port 3000 — and then the bridge binds nothing
+//! of its own: those requests arrive on RecurCode's own listener, are recognised
 //! by their `Host` before anything else looks at them, and are answered here
-//! and nowhere else in codeg. A deployment publishes one port, and a reverse
+//! and nowhere else in RecurCode. A deployment publishes one port, and a reverse
 //! proxy needs one wildcard vhost, instead of a range that has to be guessed
 //! ahead of time. It is what GitHub Codespaces does
 //! (`{codespace}-{port}.app.github.dev`) and what code-server's own docs
@@ -68,24 +68,24 @@
 //!
 //! Everything above still holds, and one part of it gets stronger: cookies
 //! ignore ports but not hostnames, so a capability set on
-//! `3000.codeg.example.com` is never sent to `3001.codeg.example.com` at all,
+//! `3000.recurcode.example.com` is never sent to `3001.recurcode.example.com` at all,
 //! where between two bridge ports it was sent and then refused. The hostname
 //! must be same-site with the workbench for the browser to send the cookie
 //! into the frame at all, which a subdomain of the workbench's own host is by
 //! construction — hence `auto`, and hence a template that should stay under
 //! the same registrable domain.
 //!
-//! Sharing codeg's listener means codeg has to be sure which requests are
+//! Sharing RecurCode's listener means RecurCode has to be sure which requests are
 //! its own, and a hostname is not the bridge's because it looks like one:
 //! `auto` describes `<port>.<anything>`, a shape that covers a workbench on
 //! a numeric-leading hostname. So a request is a target's only when it names
-//! a hostname codeg actually handed out for it (`Listener::hosts`), read
+//! a hostname RecurCode actually handed out for it (`Listener::hosts`), read
 //! from every authority the request carries — a page can add a forwarded
 //! header to a request of its own but cannot drop its `Host`. And a name
 //! handed out stays the bridge's for the life of the process
 //! (`Bridge::minted`), long after its target idles away: the browser's
 //! memory of that origin — a service worker the page left behind — outlives
-//! the target, and codeg's own pages must never be served through it.
+//! the target, and RecurCode's own pages must never be served through it.
 
 use std::collections::{HashMap, HashSet};
 use std::net::SocketAddr;
@@ -108,16 +108,16 @@ use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::protocol::CloseFrame as UpCloseFrame;
 use tokio_tungstenite::tungstenite::Message as UpMessage;
 
-/// Entry URL prefix on a bridge listener: `/__codeg_bridge/enter/{cap}?to=/path`.
-pub const ENTER_PREFIX: &str = "/__codeg_bridge/enter/";
+/// Entry URL prefix on a bridge listener: `/__recur_code_bridge/enter/{cap}?to=/path`.
+pub const ENTER_PREFIX: &str = "/__recur_code_bridge/enter/";
 /// Unauthenticated reachability probe the workbench calls before showing
 /// the frame, so an unmapped port is reported instead of a blank frame.
-pub const PING_PATH: &str = "/__codeg_bridge/ping";
-const COOKIE_PREFIX: &str = "codeg-bridge-";
+pub const PING_PATH: &str = "/__recur_code_bridge/ping";
+const COOKIE_PREFIX: &str = "recur-code-bridge-";
 /// The workbench's own cookies (locale preferences) live on the same host
 /// and are not the dev server's business either.
-const WORKBENCH_COOKIE_PREFIX: &str = "codeg.";
-/// Ports above codeg's own that the bridge takes when `CODEG_BRIDGE_PORTS`
+const WORKBENCH_COOKIE_PREFIX: &str = "RecurCode.";
+/// Ports above RecurCode's own that the bridge takes when `RECUR_CODE_BRIDGE_PORTS`
 /// is not set.
 pub const DEFAULT_POOL_SIZE: u16 = 10;
 /// A listener nobody holds closes after this long without a request.
@@ -130,7 +130,7 @@ const CLOSE_GRACE: Duration = Duration::from_secs(2);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BridgeConfig {
-    /// Address the listeners bind to: the same one codeg's API listener uses.
+    /// Address the listeners bind to: the same one RecurCode's API listener uses.
     pub bind_host: String,
     /// Ports a listener may take, in order of preference; `0` means any free
     /// port (each listener its own). Empty when targets are addressed by
@@ -139,24 +139,24 @@ pub struct BridgeConfig {
     /// Hostname the browser should use for the bridge when it differs from
     /// the one the workbench was loaded from (a reverse proxy in front).
     pub public_host: Option<String>,
-    /// Name the targets by hostname on codeg's own listener instead of giving
+    /// Name the targets by hostname on RecurCode's own listener instead of giving
     /// each one a port of its own.
     pub host_pattern: Option<HostPattern>,
-    /// Ports the bridge refuses to forward to: codeg's own listener.
+    /// Ports the bridge refuses to forward to: RecurCode's own listener.
     pub reserved: Vec<u16>,
 }
 
 impl BridgeConfig {
-    /// Read `CODEG_BRIDGE_PORTS` / `CODEG_BRIDGE_HOST_PATTERN` /
-    /// `CODEG_BRIDGE_PUBLIC_HOST`. `None` when the bridge is switched off
-    /// (`CODEG_BRIDGE_PORTS=off`).
-    pub fn from_env(bind_host: &str, codeg_port: u16) -> Option<Self> {
-        let ports = std::env::var("CODEG_BRIDGE_PORTS").ok();
-        let pattern = std::env::var("CODEG_BRIDGE_HOST_PATTERN").ok();
-        let public_host = std::env::var("CODEG_BRIDGE_PUBLIC_HOST").ok();
+    /// Read `RECUR_CODE_BRIDGE_PORTS` / `RECUR_CODE_BRIDGE_HOST_PATTERN` /
+    /// `RECUR_CODE_BRIDGE_PUBLIC_HOST`. `None` when the bridge is switched off
+    /// (`RECUR_CODE_BRIDGE_PORTS=off`).
+    pub fn from_env(bind_host: &str, recur_code_port: u16) -> Option<Self> {
+        let ports = std::env::var("RECUR_CODE_BRIDGE_PORTS").ok();
+        let pattern = std::env::var("RECUR_CODE_BRIDGE_HOST_PATTERN").ok();
+        let public_host = std::env::var("RECUR_CODE_BRIDGE_PUBLIC_HOST").ok();
         Self::from_values(
             bind_host,
-            codeg_port,
+            recur_code_port,
             ports.as_deref(),
             pattern.as_deref(),
             public_host.as_deref(),
@@ -165,12 +165,12 @@ impl BridgeConfig {
 
     /// The same, from values already read, so the rules can be tested without
     /// touching the process environment. `None` switches the bridge off: the
-    /// operator asked for that (`CODEG_BRIDGE_PORTS=off`), or wrote something
+    /// operator asked for that (`RECUR_CODE_BRIDGE_PORTS=off`), or wrote something
     /// unreadable — a typo must not silently bind ten ports, and must not
     /// silently answer for hostnames, either.
     pub fn from_values(
         bind_host: &str,
-        codeg_port: u16,
+        recur_code_port: u16,
         ports_raw: Option<&str>,
         host_pattern_raw: Option<&str>,
         public_host_raw: Option<&str>,
@@ -180,8 +180,8 @@ impl BridgeConfig {
             None => None,
         };
         let ports = match ports_raw {
-            Some(raw) => parse_ports(raw, codeg_port)?,
-            None => default_ports(codeg_port),
+            Some(raw) => parse_ports(raw, recur_code_port)?,
+            None => default_ports(recur_code_port),
         };
         let public_host = public_host_raw
             .map(|h| h.trim().to_string())
@@ -193,21 +193,21 @@ impl BridgeConfig {
             ports: if host_pattern.is_some() { Vec::new() } else { ports },
             public_host,
             host_pattern,
-            reserved: vec![codeg_port],
+            reserved: vec![recur_code_port],
         })
     }
 }
 
 /// How the browser addresses one target port when the bridge answers on
-/// codeg's own listener instead of binding a port per target.
+/// RecurCode's own listener instead of binding a port per target.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum HostPattern {
     /// `auto`: the port is one label in front of the host the workbench
-    /// itself was reached at — `3000.codeg.example.com` for a workbench on
-    /// `codeg.example.com`, `3000.localhost` for one on `localhost`.
+    /// itself was reached at — `3000.recurcode.example.com` for a workbench on
+    /// `RecurCode.example.com`, `3000.localhost` for one on `localhost`.
     Subdomain,
     /// A template naming `{port}`: `{port}.preview.example.com`,
-    /// `p{port}-codeg.example.com`.
+    /// `p{port}-RecurCode.example.com`.
     Template { prefix: String, suffix: String },
 }
 
@@ -316,18 +316,18 @@ fn is_hostname(host: &str) -> bool {
         })
 }
 
-/// The ten ports after codeg's own, stopping at the end of the port space.
-pub fn default_ports(codeg_port: u16) -> Vec<u16> {
+/// The ten ports after RecurCode's own, stopping at the end of the port space.
+pub fn default_ports(recur_code_port: u16) -> Vec<u16> {
     (1..=DEFAULT_POOL_SIZE)
-        .filter_map(|offset| codeg_port.checked_add(offset))
+        .filter_map(|offset| recur_code_port.checked_add(offset))
         .collect()
 }
 
 /// `3081-3090`, `3081,3082,3090`, a mix of both, `auto` (any free port), or
-/// `off` / `none` / `disabled` / empty (no bridge; returns `None`). Codeg's
+/// `off` / `none` / `disabled` / empty (no bridge; returns `None`). RecurCode's
 /// own port is never part of the pool. An unparseable value is `None` too:
 /// a typo must not silently bind ten ports the operator did not choose.
-pub fn parse_ports(raw: &str, codeg_port: u16) -> Option<Vec<u16>> {
+pub fn parse_ports(raw: &str, recur_code_port: u16) -> Option<Vec<u16>> {
     let raw = raw.trim();
     if raw.is_empty() || matches!(raw.to_ascii_lowercase().as_str(), "off" | "none" | "disabled") {
         return None;
@@ -352,7 +352,7 @@ pub fn parse_ports(raw: &str, codeg_port: u16) -> Option<Vec<u16>> {
             return None;
         }
         for port in range.0..=range.1 {
-            if port != codeg_port && !ports.contains(&port) {
+            if port != recur_code_port && !ports.contains(&port) {
                 ports.push(port);
             }
         }
@@ -397,7 +397,7 @@ pub struct BridgeGrant {
 pub enum BridgeError {
     #[error("the port bridge is off on this server")]
     Disabled,
-    #[error("port {0} is codeg's own listener")]
+    #[error("port {0} is RecurCode's own listener")]
     Reserved(u16),
     #[error("no bridge port is free: {0}")]
     NoPort(String),
@@ -410,16 +410,16 @@ pub enum BridgeError {
 struct Listener {
     target_port: u16,
     /// Port of this listener's own socket; `None` when the target is
-    /// addressed by hostname and its requests arrive on codeg's listener.
+    /// addressed by hostname and its requests arrive on RecurCode's listener.
     bridge_port: Option<u16>,
     /// Bridge hostnames handed out for this target — one per host the
-    /// workbench has been reached at. A request on codeg's listener is this
+    /// workbench has been reached at. A request on RecurCode's listener is this
     /// target's only if it was addressed to a name in here: the pattern
     /// alone describes a *shape* (`auto` would claim `3000.anything`), and a
-    /// shape is not a promise that codeg ever handed the name out.
+    /// shape is not a promise that RecurCode ever handed the name out.
     hosts: Mutex<HashSet<String>>,
     /// Believe `X-Forwarded-Host` / `X-Forwarded-Proto`: only when the
-    /// operator declared a proxy in front (`CODEG_BRIDGE_PUBLIC_HOST`); a
+    /// operator declared a proxy in front (`RECUR_CODE_BRIDGE_PUBLIC_HOST`); a
     /// page can ask its browser to send those headers, `Host` it cannot.
     trust_forwarded: bool,
     caps: Mutex<Vec<String>>,
@@ -524,14 +524,14 @@ struct Bridge {
     /// out of here — not the target idling away, not switching the bridge
     /// off, not pointing it somewhere else. An origin outlives the target
     /// it was handed out for: a page that ran there may have left a service
-    /// worker behind, and codeg's own pages served under that name would be
+    /// worker behind, and RecurCode's own pages served under that name would be
     /// served through it. So the name is refused instead, for as long as
     /// this process runs.
     ///
     /// It grows by one per target port per hostname the workbench is
     /// reached at, and only an authenticated `browser_bridge_open` adds
     /// one: the whole port space on one hostname is a few megabytes, and
-    /// asking for it means holding codeg's token.
+    /// asking for it means holding RecurCode's token.
     minted: Mutex<HashSet<String>>,
 }
 
@@ -544,8 +544,8 @@ static BRIDGE: LazyLock<Bridge> = LazyLock::new(|| Bridge {
 
 static SWEEPER: OnceLock<()> = OnceLock::new();
 
-/// Whether any request on codeg's own listener could be the bridge's. Read
-/// on every request codeg serves, so it stays out of the config mutex.
+/// Whether any request on RecurCode's own listener could be the bridge's. Read
+/// on every request RecurCode serves, so it stays out of the config mutex.
 static HOST_MODE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 /// Whether this process has ever handed out a bridge hostname. Never goes
@@ -686,7 +686,7 @@ pub async fn open(
 /// The same, for a bridge addressed by hostname: nothing to bind, so the
 /// entry is only the capability holder the sweeper ages out. The hostname is
 /// worked out here — the workbench's own is what `auto` builds on, and a
-/// reverse proxy that replaced it is declared by `CODEG_BRIDGE_PUBLIC_HOST`.
+/// reverse proxy that replaced it is declared by `RECUR_CODE_BRIDGE_PUBLIC_HOST`.
 fn open_by_host(
     config: &BridgeConfig,
     pattern: &HostPattern,
@@ -740,7 +740,7 @@ fn open_by_host(
     // Remembered before the grant is handed out, so the first request under
     // this name already finds it. One target can carry several names: a
     // workbench reached at two hostnames renders one for each. The second
-    // record outlives the target, so the name never becomes codeg's again.
+    // record outlives the target, so the name never becomes RecurCode's again.
     lock(&listener.hosts).insert(host.clone());
     lock(&BRIDGE.minted).insert(host.clone());
     NAMES_HANDED_OUT.store(true, Ordering::Release);
@@ -812,7 +812,7 @@ fn serve(socket: tokio::net::TcpListener, listener: Arc<Listener>) {
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
     let router = Router::new()
         .route(PING_PATH, get(ping))
-        .route("/__codeg_bridge/enter/{cap}", get(enter))
+        .route("/__recur_code_bridge/enter/{cap}", get(enter))
         .fallback(any(forward))
         .with_state(listener.clone());
     let task = tokio::spawn(async move {
@@ -827,16 +827,16 @@ fn serve(socket: tokio::net::TcpListener, listener: Arc<Listener>) {
     *lock(&listener.task) = Some(task);
 }
 
-// ─── Routing on codeg's own listener ───────────────────────────────────
+// ─── Routing on RecurCode's own listener ───────────────────────────────────
 
-/// Answer here, and nowhere else in codeg, when the request was addressed to
-/// a bridge hostname. The outermost layer of codeg's router: a bridged
+/// Answer here, and nowhere else in RecurCode, when the request was addressed to
+/// a bridge hostname. The outermost layer of RecurCode's router: a bridged
 /// request gets the same treatment a listener of its own would give it —
 /// no CORS layer, no compression, no body limit, no static fallback — and
-/// codeg's own pages and API are never reached under that hostname.
+/// RecurCode's own pages and API are never reached under that hostname.
 ///
-/// Off unless `CODEG_BRIDGE_HOST_PATTERN` is set, and then a hostname the
-/// pattern does not describe passes straight through to codeg.
+/// Off unless `RECUR_CODE_BRIDGE_HOST_PATTERN` is set, and then a hostname the
+/// pattern does not describe passes straight through to RecurCode.
 pub async fn route_by_host(request: Request, next: Next) -> Response {
     // Names this process handed out are still refused after the bridge is
     // switched off or pointed somewhere else, so being off is not on its
@@ -854,7 +854,7 @@ pub async fn route_by_host(request: Request, next: Next) -> Response {
     // configuration says there is one.
     let names = addressed_hostnames(&request, live.as_ref().is_some_and(|(_, t)| *t));
     if live.is_some() {
-        // A name codeg handed out for a live target is that target's,
+        // A name RecurCode handed out for a live target is that target's,
         // whichever of the request's authorities carried it.
         for name in &names {
             let listener = lock(&BRIDGE.listeners)
@@ -882,15 +882,15 @@ pub async fn route_by_host(request: Request, next: Next) -> Response {
 /// target idling away, the bridge being switched off, the bridge being
 /// pointed somewhere else, none of it reaches the browser's memory of that
 /// origin. A page that ran there may have left a service worker behind, and
-/// codeg's own pages served under that name would be served through it.
+/// RecurCode's own pages served under that name would be served through it.
 /// `pattern` is `None` for exactly those cases, and this is all that is
 /// left to check.
 ///
 /// A dedicated wildcard is the bridge's whether or not a name under it was
 /// ever handed out: with `{port}.preview.example.com` the operator gave the
-/// bridge every name there, so codeg has no business answering. `auto` gets
+/// bridge every name there, so RecurCode has no business answering. `auto` gets
 /// no such benefit of the doubt — it describes `<port>.<anything>`, a shape
-/// that covers names codeg was never asked to take, a workbench on a
+/// that covers names RecurCode was never asked to take, a workbench on a
 /// numeric-leading hostname among them.
 fn unclaimed_is_the_bridges(
     pattern: Option<&HostPattern>,
@@ -914,7 +914,7 @@ fn unclaimed_is_the_bridges(
 /// All of them, not the first that exists: a page can add a forwarded header
 /// to a request of its own but cannot drop its `Host`, so naming the
 /// workbench in one cannot carry a request out of the bridge and onto
-/// codeg's pages under the bridge's own origin.
+/// RecurCode's pages under the bridge's own origin.
 fn addressed_hostnames(request: &Request, trust_forwarded: bool) -> Vec<String> {
     let headers = request.headers();
     let mut raw: Vec<String> = Vec::new();
@@ -942,7 +942,7 @@ fn addressed_hostnames(request: &Request, trust_forwarded: bool) -> Vec<String> 
 }
 
 /// The three answers a bridge listener gives, dispatched by path for a
-/// request that arrived on codeg's listener instead of one of our own.
+/// request that arrived on RecurCode's listener instead of one of our own.
 async fn serve_one(listener: Arc<Listener>, request: Request) -> Response {
     // HEAD as well as GET: axum answers a `get(...)` route for both, and a
     // listener of its own is an axum router.
@@ -1058,7 +1058,7 @@ fn bounce_page(to: &str) -> String {
     let script = json_for_script(to);
     format!(
         "<!doctype html><html><head><meta charset=\"utf-8\">\
-         <meta http-equiv=\"refresh\" content=\"0;url={attribute}\"><title>codeg</title></head>\
+         <meta http-equiv=\"refresh\" content=\"0;url={attribute}\"><title>RecurCode</title></head>\
          <body><script>location.replace({script})</script></body></html>"
     )
 }
@@ -1069,7 +1069,7 @@ async fn forward(State(listener): State<Arc<Listener>>, request: Request) -> Res
 
 async fn forward_request(listener: Arc<Listener>, request: Request) -> Response {
     let (mut parts, body) = request.into_parts();
-    if parts.uri.path().starts_with("/__codeg_bridge/") {
+    if parts.uri.path().starts_with("/__recur_code_bridge/") {
         return StatusCode::NOT_FOUND.into_response();
     }
     let cookie_name = listener.cookie_name();
@@ -1563,7 +1563,7 @@ fn forbidden_page() -> Response {
     html_page(
         StatusCode::FORBIDDEN,
         "This preview is no longer valid",
-        "Reopen the page from codeg to start a new preview session.",
+        "Reopen the page from RecurCode to start a new preview session.",
     )
 }
 
@@ -1571,7 +1571,7 @@ fn cross_origin_page() -> Response {
     html_page(
         StatusCode::FORBIDDEN,
         "This request did not come from the page itself",
-        "A dev server shown through codeg only answers its own page. Open the address from codeg to view it.",
+        "A dev server shown through RecurCode only answers its own page. Open the address from RecurCode to view it.",
     )
 }
 
@@ -1579,7 +1579,7 @@ fn bad_gateway_page(target: u16, err: &dyn std::fmt::Display) -> Response {
     let detail = escape_html(&err.to_string());
     html_page(
         StatusCode::BAD_GATEWAY,
-        &format!("codeg cannot reach port {target} on its host"),
+        &format!("RecurCode cannot reach port {target} on its host"),
         &format!("Is the server still running there? Reload to try again. ({detail})"),
     )
 }
@@ -1621,12 +1621,12 @@ mod tests {
         assert_eq!(parse_ports("abc", 3080), None);
         assert_eq!(parse_ports("3090-3081", 3080), None);
         assert_eq!(parse_ports("0-3", 3080), None);
-        // Only codeg's own port: nothing left.
+        // Only RecurCode's own port: nothing left.
         assert_eq!(parse_ports("3080", 3080), None);
     }
 
     #[test]
-    fn default_pool_is_the_ten_ports_above_codeg() {
+    fn default_pool_is_the_ten_ports_above_recur_code() {
         assert_eq!(default_ports(3080), (3081..=3090).collect::<Vec<_>>());
         assert_eq!(default_ports(65533), vec![65534, 65535]);
     }
@@ -1648,15 +1648,15 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.append(
             header::COOKIE,
-            HeaderValue::from_static("a=1; codeg-bridge-3081=cap-one; b=2"),
+            HeaderValue::from_static("a=1; recur-code-bridge-3081=cap-one; b=2"),
         );
         headers.append(
             header::COOKIE,
-            HeaderValue::from_static("codeg-bridge-3082=cap-two; codeg.locale=zh-CN"),
+            HeaderValue::from_static("recur-code-bridge-3082=cap-two; RecurCode.locale=zh-CN"),
         );
-        assert_eq!(cookie_value(&headers, "codeg-bridge-3081").as_deref(), Some("cap-one"));
-        assert_eq!(cookie_value(&headers, "codeg-bridge-3082").as_deref(), Some("cap-two"));
-        assert_eq!(cookie_value(&headers, "codeg-bridge-3083"), None);
+        assert_eq!(cookie_value(&headers, "recur-code-bridge-3081").as_deref(), Some("cap-one"));
+        assert_eq!(cookie_value(&headers, "recur-code-bridge-3082").as_deref(), Some("cap-two"));
+        assert_eq!(cookie_value(&headers, "recur-code-bridge-3083"), None);
         assert_eq!(foreign_cookies(&headers), "a=1; b=2");
         assert_eq!(foreign_cookies(&HeaderMap::new()), "");
     }
@@ -1664,12 +1664,12 @@ mod tests {
     #[test]
     fn origin_and_referer_point_at_the_target() {
         let mut headers = HeaderMap::new();
-        headers.insert(header::ORIGIN, HeaderValue::from_static("http://codeg.example:3081"));
+        headers.insert(header::ORIGIN, HeaderValue::from_static("http://RecurCode.example:3081"));
         headers.insert(
             header::REFERER,
-            HeaderValue::from_static("http://codeg.example:3081/app/page?tab=2"),
+            HeaderValue::from_static("http://RecurCode.example:3081/app/page?tab=2"),
         );
-        headers.insert(header::COOKIE, HeaderValue::from_static("codeg-bridge-3081=c; sid=9"));
+        headers.insert(header::COOKIE, HeaderValue::from_static("recur-code-bridge-3081=c; sid=9"));
         let rewritten = rewritten_request_headers(&headers, 3000);
         let get = |name: HeaderName| {
             rewritten
@@ -1752,12 +1752,12 @@ mod tests {
             target_port: 3000,
             bridge_port: Some(3081),
             bridge_host: None,
-            entry_path: "/__codeg_bridge/enter/abc".into(),
+            entry_path: "/__recur_code_bridge/enter/abc".into(),
             public_host: None,
         })
         .unwrap();
         assert_eq!(json["bridgePort"], 3081);
-        assert_eq!(json["entryPath"], "/__codeg_bridge/enter/abc");
+        assert_eq!(json["entryPath"], "/__recur_code_bridge/enter/abc");
         assert!(json["publicHost"].is_null());
         assert!(json["bridgeHost"].is_null());
 
@@ -1766,22 +1766,22 @@ mod tests {
         let json = serde_json::to_value(BridgeGrant {
             target_port: 3000,
             bridge_port: None,
-            bridge_host: Some("3000.codeg.example".into()),
-            entry_path: "/__codeg_bridge/enter/abc".into(),
+            bridge_host: Some("3000.recurcode.example".into()),
+            entry_path: "/__recur_code_bridge/enter/abc".into(),
             public_host: None,
         })
         .unwrap();
         assert!(json["bridgePort"].is_null());
-        assert_eq!(json["bridgeHost"], "3000.codeg.example");
+        assert_eq!(json["bridgeHost"], "3000.recurcode.example");
 
         let json = serde_json::to_value(BridgeStatus {
             enabled: true,
             ports: Vec::new(),
             public_host: None,
-            host_pattern: Some("{port}.codeg.example".into()),
+            host_pattern: Some("{port}.recurcode.example".into()),
         })
         .unwrap();
-        assert_eq!(json["hostPattern"], "{port}.codeg.example");
+        assert_eq!(json["hostPattern"], "{port}.recurcode.example");
     }
 
     #[test]
@@ -1796,10 +1796,10 @@ mod tests {
             })
         );
         assert_eq!(
-            HostPattern::parse("P{port}-codeg.example.com"),
+            HostPattern::parse("P{port}-RecurCode.example.com"),
             Some(HostPattern::Template {
                 prefix: "p".into(),
-                suffix: "-codeg.example.com".into()
+                suffix: "-RecurCode.example.com".into()
             })
         );
         for raw in [
@@ -1829,14 +1829,14 @@ mod tests {
     #[test]
     fn a_hostname_names_one_target_port() {
         let auto = HostPattern::Subdomain;
-        let template = HostPattern::parse("p{port}-codeg.example.com").unwrap();
+        let template = HostPattern::parse("p{port}-RecurCode.example.com").unwrap();
 
-        assert_eq!(auto.render(3000, "codeg.example.com").as_deref(), Some("3000.codeg.example.com"));
+        assert_eq!(auto.render(3000, "RecurCode.example.com").as_deref(), Some("3000.recurcode.example.com"));
         assert_eq!(auto.render(3000, "LOCALHOST").as_deref(), Some("3000.localhost"));
-        assert_eq!(auto.target_of("3000.codeg.example.com"), Some(3000));
+        assert_eq!(auto.target_of("3000.recurcode.example.com"), Some(3000));
         assert_eq!(auto.target_of("3000.LOCALHOST"), Some(3000));
-        assert_eq!(template.render(5173, "ignored").as_deref(), Some("p5173-codeg.example.com"));
-        assert_eq!(template.target_of("p5173-codeg.example.com"), Some(5173));
+        assert_eq!(template.render(5173, "ignored").as_deref(), Some("p5173-RecurCode.example.com"));
+        assert_eq!(template.target_of("p5173-RecurCode.example.com"), Some(5173));
 
         // `auto` has nothing to build on: an address is not a name, and a
         // workbench reached without a `Host` has none at all.
@@ -1847,13 +1847,13 @@ mod tests {
         assert_eq!(auto.render(3000, "not a host"), None);
 
         // The workbench's own hostname is not one of the bridge's.
-        assert_eq!(auto.target_of("codeg.example.com"), None);
+        assert_eq!(auto.target_of("RecurCode.example.com"), None);
         assert_eq!(auto.target_of("localhost"), None);
-        assert_eq!(template.target_of("codeg.example.com"), None);
-        assert_eq!(template.target_of("p-codeg.example.com"), None);
+        assert_eq!(template.target_of("RecurCode.example.com"), None);
+        assert_eq!(template.target_of("p-RecurCode.example.com"), None);
         // Neither is a near miss, in either direction.
-        assert_eq!(template.target_of("p5173-codeg.example.com.evil.test"), None);
-        assert_eq!(template.target_of("evil.p5173-codeg.example.com"), None);
+        assert_eq!(template.target_of("p5173-RecurCode.example.com.evil.test"), None);
+        assert_eq!(template.target_of("evil.p5173-RecurCode.example.com"), None);
         assert_eq!(auto.target_of("3000"), None);
         assert_eq!(auto.target_of("3000."), None);
         assert_eq!(auto.target_of("a3000.example.com"), None);
@@ -1868,8 +1868,8 @@ mod tests {
 
     #[test]
     fn a_hostname_is_read_out_of_the_authority() {
-        assert_eq!(hostname_of("3000.codeg.example:8080").as_deref(), Some("3000.codeg.example"));
-        assert_eq!(hostname_of(" 3000.Codeg.Example ").as_deref(), Some("3000.codeg.example"));
+        assert_eq!(hostname_of("3000.recurcode.example:8080").as_deref(), Some("3000.recurcode.example"));
+        assert_eq!(hostname_of(" 3000.RecurCode.Example ").as_deref(), Some("3000.recurcode.example"));
         // Addresses are not names — `3000.` in front of one names nothing.
         assert_eq!(hostname_of("[::1]:3080"), None);
         assert_eq!(hostname_of("127.0.0.1:3080"), None);
@@ -1918,40 +1918,40 @@ mod tests {
             addressed_hostnames(&request(pairs, "/x"), true)
         };
 
-        assert_eq!(direct(&[("host", "3000.Codeg.Test:8080")]), ["3000.codeg.test"]);
+        assert_eq!(direct(&[("host", "3000.RecurCode.Test:8080")]), ["3000.recurcode.test"]);
         // A forwarding header a page added to its own request does not
         // replace the `Host` it cannot drop — both are read, so naming the
         // workbench in one cannot carry the request off the bridge.
         assert_eq!(
-            proxied(&[("host", "3000.codeg.test"), ("x-forwarded-host", "codeg.test")]),
-            ["3000.codeg.test", "codeg.test"]
+            proxied(&[("host", "3000.recurcode.test"), ("x-forwarded-host", "RecurCode.test")]),
+            ["3000.recurcode.test", "RecurCode.test"]
         );
         // A proxy that appends rather than replaces, and one that sends the
         // header twice: every value counts.
         assert_eq!(
-            proxied(&[("host", "codeg:3080"), ("x-forwarded-host", "evil.test, 3000.codeg.test")]),
-            ["codeg", "evil.test", "3000.codeg.test"]
+            proxied(&[("host", "RecurCode:3080"), ("x-forwarded-host", "evil.test, 3000.recurcode.test")]),
+            ["RecurCode", "evil.test", "3000.recurcode.test"]
         );
         // Without a declared proxy in front, forwarding headers are nobody's
         // word for anything.
         assert_eq!(
-            direct(&[("host", "3000.codeg.test"), ("x-forwarded-host", "codeg.test")]),
-            ["3000.codeg.test"]
+            direct(&[("host", "3000.recurcode.test"), ("x-forwarded-host", "RecurCode.test")]),
+            ["3000.recurcode.test"]
         );
         // HTTP/2 carries the authority in the request line, with no `Host`
         // header at all.
         assert_eq!(
-            addressed_hostnames(&request(&[], "http://3000.codeg.test:8080/x"), false),
-            ["3000.codeg.test"]
+            addressed_hostnames(&request(&[], "http://3000.recurcode.test:8080/x"), false),
+            ["3000.recurcode.test"]
         );
         // `Host` wins over the URI's authority where both are there, as it
         // does for every other reader of this request.
         assert_eq!(
             addressed_hostnames(
-                &request(&[("host", "3000.codeg.test")], "http://9.codeg.test/x"),
+                &request(&[("host", "3000.recurcode.test")], "http://9.recurcode.test/x"),
                 false
             ),
-            ["3000.codeg.test"]
+            ["3000.recurcode.test"]
         );
         // Addresses name no bridge target, and nothing at all is nothing.
         assert!(direct(&[("host", "127.0.0.1:3080")]).is_empty());
@@ -1964,32 +1964,32 @@ mod tests {
         let template = HostPattern::parse("{port}.preview.example.com").unwrap();
         let names = |raw: &[&str]| raw.iter().map(|s| s.to_string()).collect::<Vec<_>>();
         let none = HashSet::new();
-        let handed_out = HashSet::from(["3000.codeg.test".to_string()]);
+        let handed_out = HashSet::from(["3000.recurcode.test".to_string()]);
 
         // A wildcard the operator handed over: the bridge answers for every
         // name under it, open target or not, handed out or not.
         assert!(unclaimed_is_the_bridges(Some(&template), &names(&["3000.preview.example.com"]), &none));
         assert!(unclaimed_is_the_bridges(
             Some(&template),
-            &names(&["codeg.example.com", "3000.preview.example.com"]),
+            &names(&["RecurCode.example.com", "3000.preview.example.com"]),
             &none
         ));
-        assert!(!unclaimed_is_the_bridges(Some(&template), &names(&["codeg.example.com"]), &none));
+        assert!(!unclaimed_is_the_bridges(Some(&template), &names(&["RecurCode.example.com"]), &none));
         assert!(!unclaimed_is_the_bridges(Some(&template), &names(&["preview.example.com"]), &none));
         // `auto` claims nothing it did not hand out: the shape alone would
-        // take a workbench on `3000.codeg.test` away from codeg.
-        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3000.codeg.test"]), &none));
+        // take a workbench on `3000.recurcode.test` away from RecurCode.
+        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3000.recurcode.test"]), &none));
         assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&[]), &none));
         // But once it has handed a name out, the name is the bridge's for
         // as long as this process runs — the target can idle away, the
         // origin the page ran on does not.
-        assert!(unclaimed_is_the_bridges(Some(&auto), &names(&["3000.codeg.test"]), &handed_out));
-        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3001.codeg.test"]), &handed_out));
+        assert!(unclaimed_is_the_bridges(Some(&auto), &names(&["3000.recurcode.test"]), &handed_out));
+        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3001.recurcode.test"]), &handed_out));
         // And it stays the bridge's with no configuration at all behind it:
         // switching the bridge off, or pointing it somewhere else, does not
         // reach the browser's memory of that origin.
-        assert!(unclaimed_is_the_bridges(None, &names(&["3000.codeg.test"]), &handed_out));
-        assert!(!unclaimed_is_the_bridges(None, &names(&["3001.codeg.test"]), &handed_out));
+        assert!(unclaimed_is_the_bridges(None, &names(&["3000.recurcode.test"]), &handed_out));
+        assert!(!unclaimed_is_the_bridges(None, &names(&["3001.recurcode.test"]), &handed_out));
         assert!(!unclaimed_is_the_bridges(None, &names(&["3000.preview.example.com"]), &none));
     }
 
@@ -2006,10 +2006,10 @@ mod tests {
             shutdown: Mutex::new(None),
             task: Mutex::new(None),
         };
-        assert_eq!(listener(Some(3081)).cookie_name(), "codeg-bridge-3081");
+        assert_eq!(listener(Some(3081)).cookie_name(), "recur-code-bridge-3081");
         // Addressed by hostname there is no bridge port; the target port is
         // what the hostname says, and the cookie is host-only anyway.
-        assert_eq!(listener(None).cookie_name(), "codeg-bridge-3000");
+        assert_eq!(listener(None).cookie_name(), "recur-code-bridge-3000");
     }
 
     #[test]
@@ -2057,13 +2057,13 @@ mod tests {
         // ignored in favour of `Host`.
         assert!(proxied(&[
             ("host", "127.0.0.1:3081"),
-            ("x-forwarded-host", "codeg.example"),
+            ("x-forwarded-host", "RecurCode.example"),
             ("x-forwarded-proto", "https"),
-            ("origin", "https://codeg.example"),
+            ("origin", "https://RecurCode.example"),
         ]));
         assert!(!proxied(&[
             ("host", "127.0.0.1:3081"),
-            ("x-forwarded-host", "codeg.example"),
+            ("x-forwarded-host", "RecurCode.example"),
             ("origin", "http://127.0.0.1:3081"),
         ]));
         assert!(!direct(&[

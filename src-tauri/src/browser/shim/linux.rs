@@ -1,9 +1,9 @@
 //! Linux shim on top of WebKitGTK (`webkit2gtk` + `gtk`).
 //!
 //! The helper script and the primitive it posts through live in a WebKitGTK
-//! **script world** named `codeg`: `UserScript::for_world` injects the helper
+//! **script world** named `RecurCode`: `UserScript::for_world` injects the helper
 //! there and `register_script_message_handler_in_world` puts
-//! `window.webkit.messageHandlers.codegBrowser` in the same world — a separate
+//! `window.webkit.messageHandlers.recurcodeBrowser` in the same world — a separate
 //! JavaScript global over the same DOM, invisible to page scripts and immune to
 //! their prototype tampering, exactly like macOS's `WKContentWorld`. The send
 //! primitive is spelled the same way it is on macOS, so both platforms share
@@ -14,8 +14,8 @@
 //! the frame that sent it — no `WKFrameInfo`, no execution context — so there
 //! is no frame to check a message against. What stands in for that check is
 //! WHICH HANDLER it arrived on: the helper is injected twice, once into the top
-//! frame with a primitive that posts through `codegBrowser`, and once into every
-//! frame with one that posts through `codegBrowserFrame` — that second one
+//! frame with a primitive that posts through `recurCodeBrowser`, and once into every
+//! frame with one that posts through `recurCodeBrowserFrame` — that second one
 //! leaves the top frame's alone, by asking whether it is the top frame rather
 //! than by running in a particular order. Messages
 //! on the second handler are reported as not-the-main-frame, which is the same
@@ -25,7 +25,7 @@
 //! never reaches the top document — gating those would make ⌘F dead in an
 //! iframe and deny every popup an embedded page asks for).
 //!
-//! Neither handler is reachable from page script: both live in the `codeg`
+//! Neither handler is reachable from page script: both live in the `RecurCode`
 //! world, which the page cannot enter.
 //!
 //! Everything else a tab needs and neither tauri nor wry expose is a
@@ -70,13 +70,13 @@ use super::super::types::BrowserErrorKind;
 pub use super::{NavigationEvent, NavigationSink, PageCloseSink};
 
 /// Name of the script world the helper and its message handler live in.
-pub const WORLD_NAME: &str = "codeg";
+pub const WORLD_NAME: &str = "RecurCode";
 /// The message handler the TOP frame's helper posts through — the same name
 /// macOS registers, so `channel::PREFIX_SCRIPT` is the send primitive on both.
-pub const HANDLER_NAME: &str = "codegBrowser";
+pub const HANDLER_NAME: &str = "recurCodeBrowser";
 /// The one every other frame posts through. What arrives here is reported as
 /// not the main frame.
-pub const FRAME_HANDLER_NAME: &str = "codegBrowserFrame";
+pub const FRAME_HANDLER_NAME: &str = "recurCodeBrowserFrame";
 
 /// A channel message and whether it came from the page's own frame. Unlike the
 /// other platforms this sink is already bound to one tab: a Linux surface owns
@@ -254,7 +254,7 @@ pub fn debug_view(webview: &WebView) -> Value {
 // The page ↔ host channel
 // ---------------------------------------------------------------------------
 
-/// Install the helper in the `codeg` world and the handler it posts through.
+/// Install the helper in the `RecurCode` world and the handler it posts through.
 /// `Ok(true)` — there is no page-world fallback on Linux, a failure is reported
 /// as one. Idempotent per webview.
 ///
@@ -323,7 +323,7 @@ pub fn install_world(
     Ok(true)
 }
 
-/// Evaluate `expression` in the `codeg` world of the main frame. The result
+/// Evaluate `expression` in the `RecurCode` world of the main frame. The result
 /// arrives as the JSON string `{"ok":true,"value":…}` or
 /// `{"ok":false,"error":…}` — the same envelope the other platforms produce,
 /// built inside the page so no platform value conversion is needed.
@@ -566,7 +566,7 @@ pub fn install_navigation_hooks(
         }
         // `false`: the engine puts its own error page up, which is what an
         // owned window should show. An embedded tab's view is hidden while
-        // the tab has an error, and the pane shows codeg's own page instead.
+        // the tab has an error, and the pane shows RecurCode's own page instead.
         false
     });
     webview.connect_load_failed_with_tls_errors(move |_webview, uri, _certificate, flags| {

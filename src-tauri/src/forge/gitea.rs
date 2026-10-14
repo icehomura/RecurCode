@@ -864,7 +864,7 @@ const PR_SCAN_PAGE_SIZE: u32 = 50;
 /// So the scan is bounded: the [`PR_SCAN_PAGES`] most recent pages, newest
 /// first, stopping as soon as the forge runs out. That covers what this is for
 /// — a branch this delivery pushed, whose pull request is either brand new or
-/// the one codeg opened for it last time — and it is the one place this client
+/// the one RecurCode opened for it last time — and it is the one place this client
 /// can be incomplete. It fails SAFE: an unseen pull request reads as
 /// [`super::deliver::PrAdoption::NoMatch`], and the create that follows is
 /// refused by Gitea itself ("this pull request already exists") rather than
@@ -1039,7 +1039,7 @@ pub(crate) async fn api_get(
     let response = super::http_client()?
         .get(url)
         .header("Authorization", format!("token {}", auth.token))
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         // Not `application/json`: one endpoint here (`/pulls/{n}.diff`) answers
         // with text, and Gitea serves what the route produces regardless — but
         // a header that contradicts the route is a needless thing to explain.
@@ -1078,7 +1078,7 @@ async fn send(
 ) -> Result<reqwest::Response, ForgeError> {
     let response = request
         .header("Authorization", format!("token {}", auth.token))
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         .header("Accept", "application/json")
         .json(body)
         .send()
@@ -1213,7 +1213,7 @@ impl RawIssue {
     }
 }
 
-/// `open` / `closed` / `merged`, the three words the rest of codeg understands.
+/// `open` / `closed` / `merged`, the three words the rest of RecurCode understands.
 /// Gitea only has the first two; `merged` is derived, exactly as on GitHub.
 fn pull_state(state: &str, merged: bool) -> String {
     if merged {
@@ -1752,7 +1752,7 @@ mod tests {
                 })
                 .post(move |Json(body): Json<serde_json::Value>| {
                     writer.wrote.lock().unwrap().push(("pull".into(), body));
-                    async { Json(pull_json(8, "open", false, "codeg/task-1")) }
+                    async { Json(pull_json(8, "open", false, "RecurCode/task-1")) }
                 })
             })
             .route(
@@ -2470,7 +2470,7 @@ mod tests {
         let auth = auth_for(api_base);
         let mut req = NewPullRequest {
             title: "Fix the crash",
-            head: "codeg/task-1",
+            head: "RecurCode/task-1",
             base: "main",
             body: "Closes #7",
             draft: true,
@@ -2492,7 +2492,7 @@ mod tests {
             vec!["WIP: Fix the crash", "wip: already said so", "Fix the crash"],
             "prefixed once, never twice, and never when it is not a draft"
         );
-        assert_eq!(seen.wrote("pull")[0]["head"], "codeg/task-1");
+        assert_eq!(seen.wrote("pull")[0]["head"], "RecurCode/task-1");
         assert_eq!(seen.wrote("pull")[0]["base"], "main");
     }
 

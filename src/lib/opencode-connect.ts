@@ -1,7 +1,7 @@
 /**
  * Pure model for OpenCode's "connect a provider" flow.
  *
- * OpenCode reads two files (both managed by codeg):
+ * OpenCode reads two files (both managed by RecurCode):
  *  - `opencode.json` — non-secret provider definitions (`provider.<id>` with
  *    `npm` / `name` / `options.baseURL` / `models`), plus `model` /
  *    `small_model` / `disabled_providers`.

@@ -144,7 +144,7 @@ export function ComposerContextUsage({ tabId }: { tabId: string | null }) {
   //
   // Gated on the session having ANY cache activity. Plenty of backends — a
   // self-hosted OpenAI-compatible endpoint above all — report no cache counters
-  // at all, and codeg cannot tell "the cache did nothing" from "nobody said".
+  // at all, and RecurCode cannot tell "the cache did nothing" from "nobody said".
   // Rendering a confident `0.0%` for the latter is worse than rendering
   // nothing. A session with writes but no reads yet is genuinely 0% and still
   // shows.

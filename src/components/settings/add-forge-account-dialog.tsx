@@ -41,7 +41,7 @@ interface AddForgeAccountDialogProps {
   existing?: GitHubAccount | null
 }
 
-/** Where each forge lets you mint a token, with the scopes codeg needs
+/** Where each forge lets you mint a token, with the scopes RecurCode needs
  *  pre-selected where the forge's own page accepts them in the query. GitLab's
  *  single `api` scope covers reads, merge requests and notes; GitHub wants the
  *  classic-token set; Gitea takes NO query parameters at all — its token page
@@ -51,14 +51,14 @@ function tokenPageUrl(provider: ForgeProviderId, serverUrl: string): string {
   const base =
     serverUrl.trim().replace(/\/+$/, "") || defaultServerUrl(provider)
   if (provider === "gitlab") {
-    const params = new URLSearchParams({ name: "codeg", scopes: "api" })
+    const params = new URLSearchParams({ name: "RecurCode", scopes: "api" })
     return `${base}/-/user_settings/personal_access_tokens?${params.toString()}`
   }
   if (provider === "gitea") {
     return `${base}/user/settings/applications`
   }
   const params = new URLSearchParams({
-    description: "codeg",
+    description: "RecurCode",
     scopes: "repo,read:org,workflow,gist,read:user,user:email",
   })
   return `${base}/settings/tokens/new?${params.toString()}`

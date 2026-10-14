@@ -1,6 +1,6 @@
 "use client"
 
-// Computer use's full status — the helper's permissions, codeg's own, the
+// Computer use's full status — the helper's permissions, RecurCode's own, the
 // backend — as the status-bar popover and the settings page show it.
 //
 // Asked for when `live` turns on, and again each time this window comes back
@@ -145,12 +145,12 @@ export function useComputerStatus(live: boolean) {
   }
 }
 
-/** codeg itself holds a permission — one every agent's shell holds too.
- *  Only for a codeg that is its own responsible process: a development build
+/** RecurCode itself holds a permission — one every agent's shell holds too.
+ *  Only for a RecurCode that is its own responsible process: a development build
  *  run from a terminal reports the terminal's. */
-export function codegHoldsPermission(status: ComputerStatus | null): boolean {
-  const codeg = status?.codeg
+export function recurCodeHoldsPermission(status: ComputerStatus | null): boolean {
+  const RecurCode = status?.recurcode
   return (
-    !!codeg?.selfResponsible && (codeg.accessibility || codeg.screenRecording)
+    !!RecurCode?.selfResponsible && (RecurCode.accessibility || RecurCode.screenRecording)
   )
 }

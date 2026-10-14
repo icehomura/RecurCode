@@ -3,8 +3,8 @@
 // Two kinds: the settings record, which every runtime serves (it is one
 // setting in one database), and everything about the screen itself — status,
 // permissions, the window list, sharing — which exists where computer use is
-// served: the desktop app, for the machine it runs on, and a codeg-server its
-// operator has let share the screen it runs on (`CODEG_COMPUTER_USE`), for
+// served: the desktop app, for the machine it runs on, and a recur-code-server its
+// operator has let share the screen it runs on (`RECUR_CODE_COMPUTER_USE`), for
 // its web clients. Whether this window has it is `computerAvailable`.
 
 import { useEffect, useSyncExternalStore } from "react"
@@ -173,7 +173,7 @@ export async function computerStatus(): Promise<ComputerStatus> {
   return getTransport().call("computer_status", {})
 }
 
-/** The shared windows: codeg's own state, with no helper to start — cheap
+/** The shared windows: RecurCode's own state, with no helper to start — cheap
  *  enough to ask for when a window loads. */
 export async function computerSharedState(): Promise<ComputerStatePayload> {
   return getTransport().call("computer_shared_state", {})
@@ -195,7 +195,7 @@ export async function computerOpenPermissionSettings(
   })
 }
 
-/** Show codeg-computer-helper in the Finder, to drag into System Settings. */
+/** Show recur-code-computer-helper in the Finder, to drag into System Settings. */
 export async function computerRevealHelper(): Promise<void> {
   return getTransport().call("computer_reveal_helper", {})
 }
@@ -264,7 +264,7 @@ export async function computerStopKeyStatus(): Promise<StopKeyStatus> {
   return getTransport().call("computer_stop_key_status", {})
 }
 
-/** The strip telling codeg how large it drew itself, in CSS pixels. */
+/** The strip telling RecurCode how large it drew itself, in CSS pixels. */
 export async function computerIndicatorFit(
   width: number,
   height: number
@@ -272,13 +272,13 @@ export async function computerIndicatorFit(
   return getTransport().call("computer_indicator_fit", { width, height })
 }
 
-/** cua-driver: the release this codeg runs, what the cache holds, anything
+/** cua-driver: the release this RecurCode runs, what the cache holds, anything
  *  under way. `computer://driver` carries the changes. */
 export async function computerDriverInfo(): Promise<DriverInfo> {
   return getTransport().call("computer_driver_info", {})
 }
 
-/** Fetch the release this codeg runs and clear older ones. Answers once it
+/** Fetch the release this RecurCode runs and clear older ones. Answers once it
  *  is done; the download's progress travels on `computer://driver`. */
 export async function computerDriverInstall(): Promise<DriverInfo> {
   return getTransport().call(

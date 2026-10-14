@@ -50,7 +50,7 @@ export function parseCodexScriptCard(
 
 /**
  * What the parser could establish about one command recovered from a code-mode
- * script, written on its `ToolUse.meta` under `codeg.codexScript`.
+ * script, written on its `ToolUse.meta` under `RecurCode.codexScript`.
  *
  * A script that fans a literal table of commands out through one
  * `tools.exec_command({cmd, …})` labels each row, and prints that label ahead of
@@ -75,7 +75,7 @@ export function parseCodexScriptMeta(
   meta: unknown
 ): CodexScriptCallMeta | null {
   if (!meta || typeof meta !== "object" || Array.isArray(meta)) return null
-  const marks = (meta as Record<string, unknown>)["codeg.codexScript"]
+  const marks = (meta as Record<string, unknown>)["RecurCode.codexScript"]
   if (!marks || typeof marks !== "object" || Array.isArray(marks)) return null
 
   const record = marks as Record<string, unknown>

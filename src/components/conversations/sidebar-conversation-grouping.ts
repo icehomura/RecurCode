@@ -388,7 +388,7 @@ export function worktreeChildrenByParent(
  *
  * The header pairs it with the directory name through the same
  * `FolderAliasLabel` a repo header uses, so a worktree reads
- * `task/49 [ codeg-task-49 ]` — the branch is what identifies the worktree, and
+ * `task/49 [ recur-code-task-49 ]` — the branch is what identifies the worktree, and
  * the directory is what identifies it on disk. With neither, `FolderAliasLabel`
  * falls back to the bare directory name on its own.
  *
@@ -397,7 +397,7 @@ export function worktreeChildrenByParent(
  * value actually present for every worktree: the folder row's own `git_branch`
  * column is never written by the folder flow (it stays NULL), so relying on it
  * alone left every worktree labeled by its directory name
- * (`codeg-automation-3-run-8`) instead. The seeded branch lives in the alias
+ * (`recur-code-automation-3-run-8`) instead. The seeded branch lives in the alias
  * rather than in `git_branch` on purpose — it is a label fixed at creation, not
  * a live readout, and `git_branch` seeds the store's branch map, where a stale
  * value would misreport what is checked out now. A user who renames the folder

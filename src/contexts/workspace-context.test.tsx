@@ -85,7 +85,7 @@ const foldersMock = vi.hoisted(() => {
   }
 })
 
-// A window bound to a remote codeg-server, when a test says so.
+// A window bound to a remote recur-code-server, when a test says so.
 const remoteMock = vi.hoisted(() => ({
   remote: false,
   serverBaseUrl: "https://dev.example.com",
@@ -4473,7 +4473,7 @@ describe("browser tabs", () => {
     expect(popup?.profile).toBe("default")
   })
 
-  // An address of the remote codeg host is its own kind of tab: never the
+  // An address of the remote RecurCode host is its own kind of tab: never the
   // same tab as the local page on that address, never in a local profile.
   it("keeps a remote tab apart from the local page on the same address", () => {
     setBrowserProfiles([{ id: "p-work", name: "Work" }])

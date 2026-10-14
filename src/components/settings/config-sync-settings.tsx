@@ -163,7 +163,7 @@ export function ConfigSyncSettings() {
   const [encrypt, setEncrypt] = useState(false)
   const [passphrase, setPassphrase] = useState("")
   const [hasPassphrase, setHasPassphrase] = useState(false)
-  const [remoteDir, setRemoteDir] = useState("codeg")
+  const [remoteDir, setRemoteDir] = useState("RecurCode")
   const [profile, setProfile] = useState("default")
   const [autoSync, setAutoSync] = useState(true)
   const [intervalMinutes, setIntervalMinutes] = useState(5)

@@ -148,7 +148,7 @@ pub fn open_probe(app: &AppHandle, label: &str, profile: &str, url: Url) -> taur
 
 fn build_probe(app: &AppHandle, label: &str, profile: &str, url: Url) -> tauri::Result<WebviewWindow> {
     let builder = WebviewWindowBuilder::new(app, label, WebviewUrl::External(url))
-        .title("codeg")
+        .title("RecurCode")
         .visible(false)
         .focused(false)
         .skip_taskbar(true)

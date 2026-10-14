@@ -164,7 +164,7 @@ describe("codex shell-session cards", () => {
   })
 
   it("leaves a command that started no session unlabelled", () => {
-    renderParts([execPart("cargo build", "Compiling codeg v0.22.2")])
+    renderParts([execPart("cargo build", "Compiling RecurCode v0.22.2")])
 
     expect(screen.queryByText(/^Session /)).toBeNull()
   })

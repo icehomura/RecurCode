@@ -40,7 +40,7 @@ vi.mock("@/lib/api", () => ({
         env: {},
       },
     ] as unknown as AcpAgentInfo[],
-  // What Claude's skill folder holds: Codeg's own `ui-render` and an expert
+  // What Claude's skill folder holds: RecurCode's own `ui-render` and an expert
   // (both linked in from the central store), and one skill of the user's.
   acpListAgentSkills: async () => ({
     supported: true,
@@ -89,7 +89,7 @@ beforeEach(() => {
 })
 
 describe("importing skills from an agent", () => {
-  it("leaves out Codeg's own ui-render, like the other packs' skills", async () => {
+  it("leaves out RecurCode's own ui-render, like the other packs' skills", async () => {
     generativeUiSkillInfo.mockResolvedValue({
       id: "ui-render",
       conflict: false,

@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * The strip codeg keeps above every window while any window is shared: what
+ * The strip RecurCode keeps above every window while any window is shared: what
  * agents may do and in which application, what one has just done, and Stop.
  *
  * It lives in a window of its own (`computer-indicator`), which the backend

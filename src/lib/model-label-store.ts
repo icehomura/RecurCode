@@ -22,7 +22,7 @@
  * should not lose the label for a model its older sessions still reference.
  *
  * `Map`, not a plain object, at BOTH levels. Agent types and model ids are
- * strings codeg does not choose, and a plain object inherits `Object.prototype`
+ * strings RecurCode does not choose, and a plain object inherits `Object.prototype`
  * — so `labels["__proto__"]` answers with the prototype instead of `undefined`,
  * the caller's `?? rawId` fallback never fires, and a React text slot is handed
  * an object to render (which throws). Restoring from JSON has the mirror
@@ -40,7 +40,7 @@ import type {
   SessionConfigSelectOptionInfo,
 } from "@/lib/types"
 
-const STORAGE_KEY = "codeg:model-labels"
+const STORAGE_KEY = "RecurCode:model-labels"
 
 /** model id → the agent's own display name. */
 export type ModelLabels = ReadonlyMap<string, string>
@@ -57,7 +57,7 @@ const listeners = new Set<() => void>()
 /**
  * Keep only `{agent: {id: nonEmptyLabel}}`, discarding anything else.
  *
- * localStorage is shared with every other codeg instance on this machine and
+ * localStorage is shared with every other RecurCode instance on this machine and
  * survives downgrades, so the parsed value is untrusted input — a bare array, a
  * number, or a bucket whose values are objects all have to degrade to "no
  * labels" rather than reach a `.toString()` somewhere in the render tree.

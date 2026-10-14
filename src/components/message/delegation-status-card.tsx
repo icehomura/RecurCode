@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Inline card for the codeg-mcp delegation companion tools
+ * Inline card for the recur-code-mcp delegation companion tools
  * `get_delegation_status` and `cancel_delegation`.
  *
  * A single collapsed line framed around the user's actual intent — "waiting for

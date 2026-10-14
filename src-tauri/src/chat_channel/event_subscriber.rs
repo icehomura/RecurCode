@@ -82,8 +82,8 @@ struct EventConfigCache {
     /// `Instant::now() - Duration::from_secs(TTL + 1)`, which is a panic, not a
     /// saturating subtraction: `Sub<Duration> for Instant` is a `checked_sub`
     /// plus `expect`. On Windows an `Instant` is the QPC reading, i.e. time
-    /// since boot, so starting codeg inside the first 31 seconds of a boot
-    /// aborted the process here. codeg ships an autostart plugin, so launching
+    /// since boot, so starting RecurCode inside the first 31 seconds of a boot
+    /// aborted the process here. RecurCode ships an autostart plugin, so launching
     /// at login is an ordinary case, and this runs inside a long-lived spawned
     /// task with nobody at the keyboard.
     last_refresh: Option<Instant>,

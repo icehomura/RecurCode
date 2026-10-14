@@ -84,7 +84,7 @@ export function useDelegatedSubSession(
   // When the live binding is unavailable (snapshot replay after refresh,
   // or the parent UI mounted after `delegation_started` was consumed),
   // fall back to a child id provided by the caller — typically derived
-  // from `meta["codeg.delegation"].child_conversation_id` carried by the
+  // from `meta["RecurCode.delegation"].child_conversation_id` carried by the
   // parent's tool-call snapshot.
   const childId = binding?.childConversationId ?? fallbackChildConversationId
   const shouldFetch = enabled && childId != null

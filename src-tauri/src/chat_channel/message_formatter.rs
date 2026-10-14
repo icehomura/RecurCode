@@ -30,7 +30,7 @@ pub fn format_agent_error(agent_type: &str, message: &str, lang: Lang) -> RichMe
 ///
 /// This is the passive, notification-only surface for sessions NOT initiated
 /// from a chat channel (desktop / web): it tells the user an agent is blocked
-/// waiting for approval and to act in Codeg. Chat-channel-initiated sessions
+/// waiting for approval and to act in RecurCode. Chat-channel-initiated sessions
 /// keep their interactive `/approve`,`/deny` flow in `session_event_subscriber`
 /// and are suppressed here by the event subscriber (see `process_envelope`).
 ///
@@ -67,7 +67,7 @@ pub fn format_permission_request(tool_call: &serde_json::Value, lang: Lang) -> R
 }
 
 /// Build the "user message" notification for a prompt the user submitted from
-/// the Codeg conversation UI. `text_preview` is the already-bounded message
+/// the RecurCode conversation UI. `text_preview` is the already-bounded message
 /// text (see `ConnectionManager::send_prompt_linked`); it becomes the body so a
 /// channel / webhook consumer sees what was sent.
 pub fn format_user_prompt_sent(text_preview: &str, lang: Lang) -> RichMessage {

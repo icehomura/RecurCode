@@ -1,22 +1,22 @@
 //! Reading the AIR tool-call contract that claude-agent-acp 0.82.0 and
-//! codex-acp 2.0.0 put on the wire, back into the shapes the rest of codeg
+//! codex-acp 2.0.0 put on the wire, back into the shapes the rest of RecurCode
 //! already reads.
 //!
-//! codeg declares `clientCapabilities._meta.jetbrains.air` to both adapters —
+//! RecurCode declares `clientCapabilities._meta.jetbrains.air` to both adapters —
 //! for `sessionFailure`, `asyncTasks` and `recommendedValue` (see
 //! `build_client_capabilities`). From these two releases on, that declaration
 //! ALONE also switches the adapters onto a different tool-call contract: both
 //! test `isAirClient` as "the `_meta.jetbrains.air` object is present", with no
 //! capability of its own. Recorded off both adapters' own scenario harnesses,
-//! run with codeg's exact client capabilities against the old and the new pin,
-//! the contract changes these things codeg reads:
+//! run with RecurCode's exact client capabilities against the old and the new pin,
+//! the contract changes these things RecurCode reads:
 //!
 //! * **`_meta` is merged, not replaced.** A `tool_call_update` leaves out every
 //!   `_meta` key that did not change since the last report of the same call.
 //!   claude compares the keys INSIDE `claudeCode` and `jetbrains.air` one by
 //!   one (plus the `is_mcp_tool_call` / `terminal_info` flags); codex compares
 //!   whole top-level keys. Both are explicit that only an AIR client gets this,
-//!   "because AIR merges these `_meta` keys". codeg replaces a tool call's
+//!   "because AIR merges these `_meta` keys". RecurCode replaces a tool call's
 //!   `_meta` on every update that carries one (`SessionState::upsert_tool_call`,
 //!   the frontend reducer), so an update carrying only a changed marker would
 //!   wipe `claudeCode.toolName` / `parentToolUseId` — un-nesting a subagent's
@@ -43,7 +43,7 @@ use serde_json::{Map, Value};
 
 use crate::models::agent::AgentType;
 
-/// Whether codeg reads this agent's tool calls through the AIR contract — the
+/// Whether RecurCode reads this agent's tool calls through the AIR contract — the
 /// two agents `build_client_capabilities` declares `_meta.jetbrains.air` to.
 pub(crate) fn speaks_air_contract(agent_type: AgentType) -> bool {
     matches!(agent_type, AgentType::ClaudeCode | AgentType::Codex)
@@ -151,7 +151,7 @@ fn merge_state(agent_type: AgentType, state: &mut Map<String, Value>, frame: &Ma
     }
 }
 
-/// Re-derive the legacy `_meta` keys codeg reads from the AIR spellings that
+/// Re-derive the legacy `_meta` keys RecurCode reads from the AIR spellings that
 /// replaced them. Never overwrites a key that is already there: an adapter
 /// that still writes the legacy key is authoritative for it.
 ///
@@ -210,7 +210,7 @@ pub(crate) fn translate_air_meta(agent_type: AgentType, meta: &mut Map<String, V
 }
 
 /// The merged `_meta` of every tool call the adapter is still reporting on
-/// this connection — see the module doc for why codeg has to keep it.
+/// this connection — see the module doc for why RecurCode has to keep it.
 ///
 /// Bounded, least-recently-reported first out. The adapters themselves stop
 /// merging past a bound — claude's filter remembers 2048 tool calls and codex
@@ -261,13 +261,13 @@ impl ToolCallMetaLedger {
         })
     }
 
-    /// Record `extra` keys codeg itself stamped onto an opening frame (e.g.
-    /// `codeg.codexSearchAction`), so the merged `_meta` of later updates keeps
+    /// Record `extra` keys RecurCode itself stamped onto an opening frame (e.g.
+    /// `RecurCode.codexSearchAction`), so the merged `_meta` of later updates keeps
     /// them instead of silently dropping the stamp downstream.
     pub(crate) fn remember_stamps(&mut self, id: &str, meta: &Map<String, Value>) {
         if let Some(entry) = self.entries.get_mut(id) {
             for (key, value) in meta {
-                if key.starts_with("codeg.") {
+                if key.starts_with("RecurCode.") {
                     entry.state.insert(key.clone(), value.clone());
                 }
             }
@@ -638,12 +638,12 @@ mod tests {
     }
 
     #[test]
-    fn codeg_stamps_on_the_opening_frame_survive_later_updates() {
+    fn recur_code_stamps_on_the_opening_frame_survive_later_updates() {
         let mut ledger = ToolCallMetaLedger::default();
         ledger.open(AgentType::Codex, "search-1", None);
         ledger.remember_stamps(
             "search-1",
-            &obj(json!({"codeg.codexSearchAction": true, "other": 1})),
+            &obj(json!({"RecurCode.codexSearchAction": true, "other": 1})),
         );
         let merged = ledger
             .update(
@@ -652,8 +652,8 @@ mod tests {
                 Some(obj(json!({"is_mcp_tool_call": false}))),
             )
             .unwrap();
-        assert_eq!(merged["codeg.codexSearchAction"], true);
-        assert!(merged.get("other").is_none(), "only codeg's own stamps");
+        assert_eq!(merged["RecurCode.codexSearchAction"], true);
+        assert!(merged.get("other").is_none(), "only RecurCode's own stamps");
     }
 
     #[test]

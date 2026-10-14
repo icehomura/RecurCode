@@ -64,7 +64,7 @@ pub fn validate_headers(
         }
         if RESERVED_HEADER_NAMES.contains(&name.to_ascii_lowercase().as_str()) {
             return Err(AppCommandError::invalid_input(format!(
-                "Custom header \"{name}\" is reserved by Codeg"
+                "Custom header \"{name}\" is reserved by RecurCode"
             )));
         }
         header.to_header_pair().map_err(|e| {
@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn normalize_base_url_rejects_non_http_schemes() {
-        let err = normalize_base_url("file:///tmp/codeg").unwrap_err();
+        let err = normalize_base_url("file:///tmp/RecurCode").unwrap_err();
         assert!(err.message.contains("http"));
     }
 
@@ -393,14 +393,14 @@ mod tests {
             &db.conn,
             created.id,
             "Server A",
-            "https://codeg.example.com/",
+            "https://RecurCode.example.com/",
             "next-token",
             &[],
         )
         .await
         .unwrap();
         assert_eq!(updated.name, "Server A");
-        assert_eq!(updated.base_url, "https://codeg.example.com");
+        assert_eq!(updated.base_url, "https://RecurCode.example.com");
         assert!(updated.headers.is_empty());
 
         delete(&db.conn, created.id).await.unwrap();

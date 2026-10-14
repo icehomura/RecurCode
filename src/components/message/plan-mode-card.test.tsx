@@ -119,7 +119,7 @@ describe("PlanModeCard", () => {
   })
 
   it("reports an approved codex plan review from its rawOutput", () => {
-    // codex-acp ≥1.1.8: codeg seeds the call from the permission request (no
+    // codex-acp ≥1.1.8: RecurCode seeds the call from the permission request (no
     // input), and codex's follow-up update supplies the decision text.
     renderCard({
       toolName: "plan_review",

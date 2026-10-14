@@ -48,7 +48,7 @@ const DEFAULT_ROUTE: AcpErrorRoute = {
 }
 
 const ROUTES: Readonly<Record<string, AcpErrorRoute>> = {
-  // The agent's own runtime is too old for the adapter codeg pins, so no
+  // The agent's own runtime is too old for the adapter RecurCode pins, so no
   // session opens until it is updated. The backend's message says which version
   // is needed and how to get it; the agent's settings panel is where to do it.
   agent_runtime_outdated: {
@@ -103,7 +103,7 @@ export function acpErrorNotifiesDesktop(route: AcpErrorRoute): boolean {
 }
 
 /**
- * codeg's verdict on a turn that ended badly (`turn_failed_refusal`,
+ * RecurCode's verdict on a turn that ended badly (`turn_failed_refusal`,
  * `turn_failed_empty`, …). Raised at the turn's end, so it is the SAME failure
  * as any typed account the adapter published during that turn (claude's and
  * codex's AIR terminal records) — the two are told as one notification.

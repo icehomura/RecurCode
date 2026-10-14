@@ -1,6 +1,6 @@
 //! Remote-workspace IPC proxy.
 //!
-//! When a desktop window is opened against a remote codeg-server, every API
+//! When a desktop window is opened against a remote recur-code-server, every API
 //! call and WebSocket event for that connection is funnelled through Rust
 //! commands defined here. The webview never opens an HTTP/WS connection to
 //! the remote host directly — that path is blocked by the Tauri webview's
@@ -100,9 +100,9 @@ const WS_BACKOFF_MAX_SECS: u64 = 32;
 
 /// MUST match the values in `src-tauri/src/web/auth.rs` and
 /// `src/lib/transport/ws-auth.ts`. The server's auth middleware reads the
-/// `sec-websocket-protocol` header looking for `codeg-token.{base64url}`.
-const WS_EVENT_PROTOCOL: &str = "codeg-events";
-const WS_TOKEN_PROTOCOL_PREFIX: &str = "codeg-token.";
+/// `sec-websocket-protocol` header looking for `recur-code-token.{base64url}`.
+const WS_EVENT_PROTOCOL: &str = "recur-code-events";
+const WS_TOKEN_PROTOCOL_PREFIX: &str = "recur-code-token.";
 const WS_EVENTS_PATH: &str = "/ws/events";
 
 /// Internal Tauri-event channels emitted by this proxy. The frontend
@@ -353,7 +353,7 @@ impl Default for RemoteProxyState {
 
 // ─── HTTP proxy command ────────────────────────────────────────────────
 
-/// Forward an HTTP API call to the remote codeg-server identified by
+/// Forward an HTTP API call to the remote recur-code-server identified by
 /// `connection_id`. The frontend's `RemoteDesktopTransport.call(cmd, args)`
 /// delegates to this; it never opens a fetch from the webview.
 ///
@@ -421,7 +421,7 @@ pub async fn remote_http_call(
 
     if !status.is_success() {
         let raw_body = response.text().await.unwrap_or_default();
-        // The remote codeg-server always returns `Json(AppCommandError)`
+        // The remote recur-code-server always returns `Json(AppCommandError)`
         // on errors (see `web/handlers/error.rs::IntoResponse`). Try to
         // deserialize so the caller sees the original code + i18n hint.
         if let Ok(structured) = serde_json::from_str::<AppCommandError>(&raw_body) {
@@ -577,7 +577,7 @@ pub async fn read_local_file_for_upload(
 }
 
 /// Forward a multipart upload (file bytes + optional session bucket) to the
-/// remote codeg-server identified by `connection_id`. Sibling of
+/// remote recur-code-server identified by `connection_id`. Sibling of
 /// `remote_http_call`, but multipart-shaped — the JSON proxy can't carry
 /// binary bodies, and webview `fetch` to a plain `http://` remote is
 /// blocked by mixed-content rules, so we cannot have the frontend hit
@@ -760,7 +760,7 @@ fn guess_mime_from_path(path: &std::path::Path) -> Option<String> {
 
 // ─── Workspace file upload / download proxy ───────────────────────────
 //
-// Issue #179 follow-up: a Tauri client bound to a remote codeg-server
+// Issue #179 follow-up: a Tauri client bound to a remote recur-code-server
 // previously had no path to upload/download workspace files. The web
 // build hits `/api/upload_workspace_file` etc. directly, but a webview
 // against a plain `http://` remote is blocked by mixed-content rules
@@ -1418,7 +1418,7 @@ async fn remote_error_from_response(
 /// Resolve the download URL the remote handed back, and refuse one that leaves
 /// the connection's origin.
 ///
-/// `codeg-server` always answers with a path (`create_download_ticket` builds
+/// `recur-code-server` always answers with a path (`create_download_ticket` builds
 /// `/api/workspace_download/<ticket>`), so the absolute branch only ever fires
 /// for a remote that went off-script. It matters because this is the one
 /// request that carries the connection's custom headers with no bearer token
@@ -1449,7 +1449,7 @@ fn absolute_remote_ticket_url(base_url: &str, ticket_url: &str) -> Result<String
 }
 
 fn partial_download_path(save_path: &str, transfer_id: &str) -> String {
-    format!("{save_path}.codeg-download-{transfer_id}.part")
+    format!("{save_path}.recur-code-download-{transfer_id}.part")
 }
 
 async fn write_response_stream_to_partial<S, F>(
@@ -2006,7 +2006,7 @@ async fn backoff_sleep(shutdown_rx: &mut watch::Receiver<bool>, fail_count: u32)
 }
 
 /// Forward a text frame from the remote WS to all current subscribers of
-/// this connection. The remote codeg-server's `ws.rs` emits frames shaped
+/// this connection. The remote recur-code-server's `ws.rs` emits frames shaped
 /// `{ "channel": "...", "payload": ... }` (see `WebEventBroadcaster`).
 /// We re-emit the payload as-is into the Tauri event named
 /// `remote-ws-event-{connection_id}`, but only to webview labels listed in
@@ -2065,9 +2065,9 @@ async fn snapshot_subscribers(entry: &Arc<WsTaskEntry>) -> Vec<String> {
 // ─── Helpers ──────────────────────────────────────────────────────────
 
 /// Connect to a remote WebSocket with subprotocol-based token auth, speaking
-/// `protocol` (`codeg-events`, or the browser tunnel's). The remote server's
+/// `protocol` (`recur-code-events`, or the browser tunnel's). The remote server's
 /// auth middleware (see `web/auth.rs`) accepts either `Authorization: Bearer …`
-/// or a subprotocol entry shaped `codeg-token.{base64url(token)}`. The latter
+/// or a subprotocol entry shaped `recur-code-token.{base64url(token)}`. The latter
 /// is what browser WebSocket clients use because browsers cannot set arbitrary
 /// headers on WS handshakes; we follow the same convention here so both
 /// transports share one server-side codepath.
@@ -2178,18 +2178,18 @@ mod tests {
 
     #[test]
     fn ticket_url_resolves_a_path_against_the_connection() {
-        // The only shape `codeg-server` actually returns.
+        // The only shape `recur-code-server` actually returns.
         assert_eq!(
             absolute_remote_ticket_url("https://box.example", "/api/workspace_download/t1")
                 .unwrap(),
             "https://box.example/api/workspace_download/t1"
         );
         // A base with a path prefix keeps it — this is why the resolution is
-        // string concatenation and not `Url::join`, which would drop `/codeg`.
+        // string concatenation and not `Url::join`, which would drop `/RecurCode`.
         assert_eq!(
-            absolute_remote_ticket_url("https://box.example/codeg", "/api/workspace_download/t1")
+            absolute_remote_ticket_url("https://box.example/RecurCode", "/api/workspace_download/t1")
                 .unwrap(),
-            "https://box.example/codeg/api/workspace_download/t1"
+            "https://box.example/RecurCode/api/workspace_download/t1"
         );
         assert_eq!(
             absolute_remote_ticket_url("https://box.example/", "api/workspace_download/t1")
@@ -2383,7 +2383,7 @@ mod tests {
     #[test]
     fn partial_download_path_is_unique_sibling() {
         let path = partial_download_path("/tmp/out.zip", "abc");
-        assert_eq!(path, "/tmp/out.zip.codeg-download-abc.part");
+        assert_eq!(path, "/tmp/out.zip.recur-code-download-abc.part");
     }
 
     #[tokio::test]
@@ -2824,7 +2824,7 @@ mod tests {
     #[tokio::test]
     async fn ws_loop_retries_follow_the_stored_connection_until_it_is_deleted() {
         /// Accept one socket and say ready, as a server that refuses with 401
-        /// any dial not carrying `token` and `x-codeg-target: {target}`; refuse
+        /// any dial not carrying `token` and `x-recur-code-target: {target}`; refuse
         /// every later dial; close the socket when told to.
         // tungstenite fixes the handshake callback's error type to an HTTP response.
         #[allow(clippy::result_large_err)]
@@ -2853,7 +2853,7 @@ mod tests {
                             .to_owned()
                     };
                     if !header("sec-websocket-protocol").contains(&offered)
-                        || header("x-codeg-target") != target
+                        || header("x-recur-code-target") != target
                     {
                         return Err(tokio_tungstenite::tungstenite::http::Response::builder()
                             .status(401)
@@ -2883,7 +2883,7 @@ mod tests {
 
         fn stored_target(url: String, token: &str, target: &'static str) -> WsTarget {
             let mut headers = HeaderMap::new();
-            headers.insert("x-codeg-target", HeaderValue::from_static(target));
+            headers.insert("x-recur-code-target", HeaderValue::from_static(target));
             WsTarget {
                 url,
                 token: token.into(),

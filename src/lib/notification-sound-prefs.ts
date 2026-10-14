@@ -21,7 +21,7 @@
 import { useSyncExternalStore } from "react"
 
 const PREFS_KEY = "settings:notification-sound:v1"
-const PREFS_EVENT = "codeg:notification-sound-changed"
+const PREFS_EVENT = "RecurCode:notification-sound-changed"
 
 /** Events that can trigger a sound, in display order. */
 export const SOUND_EVENT_IDS = [

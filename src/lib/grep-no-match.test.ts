@@ -48,7 +48,7 @@ describe("pipelineStages", () => {
   it.each([
     [
       "an input file",
-      "cat /dev/null | grep needle 2>/dev/null </dev/null/codeg-877",
+      "cat /dev/null | grep needle 2>/dev/null </dev/null/recur-code-877",
     ],
     ["an output file", "rg x 2>/dev/null > out.txt"],
     ["an appended file", "rg x 2>/dev/null >> /tmp/log"],

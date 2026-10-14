@@ -1,4 +1,4 @@
-//! Companion-side MCP protocol — the bits that live inside the `codeg-mcp`
+//! Companion-side MCP protocol — the bits that live inside the `recur-code-mcp`
 //! binary but are factored out into the library so they can be unit-tested
 //! without spawning the binary.
 //!
@@ -76,7 +76,7 @@ use crate::models::AutomationAction;
 /// stuck UDS connect/read) and the shutdown-drain loop (so an
 /// unresponsive listener can't keep the EOF / watchdog path hung). 500 ms
 /// is generous for a same-host UDS exchange and short enough that a user
-/// won't notice the bound being hit. Misses are absorbed by the codeg
+/// won't notice the bound being hit. Misses are absorbed by the RecurCode
 /// main side's `cancel_by_parent` cascade when the parent ACP connection
 /// eventually ends.
 const BROKER_CANCEL_BUDGET: Duration = Duration::from_millis(500);
@@ -91,7 +91,7 @@ async fn send_broker_cancel(socket_path: &str, req: &BrokerCancelRequest) {
     let _ = tokio::time::timeout(BROKER_CANCEL_BUDGET, client_cancel(socket_path, req)).await;
 }
 
-/// Static MCP tool schema. Lives next to this module so codeg-mcp ships
+/// Static MCP tool schema. Lives next to this module so recur-code-mcp ships
 /// a single embedded copy — no runtime file IO, no version skew with the
 /// broker's [`super::types::DelegationRequest`].
 pub const TOOL_SCHEMA_JSON: &str = include_str!("tool_schema.json");
@@ -147,7 +147,7 @@ pub fn err(id: Value, code: i64, message: impl Into<String>) -> JsonRpcResponse 
     }
 }
 
-/// Which tool groups this companion exposes. One `codeg-mcp` process can carry
+/// Which tool groups this companion exposes. One `recur-code-mcp` process can carry
 /// the delegation tools, the feedback tool, or both — gated independently so
 /// each feature can be toggled in settings without the other. Passed in via the
 /// `--features` arg at launch; a tool whose group is off is hidden from
@@ -172,7 +172,7 @@ pub struct CompanionFeatures {
     /// three that decide which tabs exist (`browser_open_tab`,
     /// `browser_navigate`, `browser_close_tab`). Off unless the desktop
     /// build's setting says otherwise: the listing names the sites the user
-    /// has open, and nothing else codeg hands an agent is a window onto what
+    /// has open, and nothing else RecurCode hands an agent is a window onto what
     /// they are looking at right now.
     ///
     /// Reading a page, and acting on one, are then each gated per tab by the
@@ -483,7 +483,7 @@ pub async fn dispatch_line(
             json!({
                 "protocolVersion": "2024-11-05",
                 "serverInfo": {
-                    "name": "codeg-mcp",
+                    "name": "recur-code-mcp",
                     "version": env!("CARGO_PKG_VERSION"),
                 },
                 "capabilities": { "tools": {} },
@@ -766,8 +766,8 @@ async fn build_tools_call_spawn(
             register_and_spawn(inflight, id, None, round_trip, render_ask_result).await
         }
         "get_session_info" => {
-            // `session_id` is the codeg conversation id the agent read out of a
-            // `codeg://session/<id>` reference. Accept a JSON number or a numeric
+            // `session_id` is the RecurCode conversation id the agent read out of a
+            // `recurcode://session/<id>` reference. Accept a JSON number or a numeric
             // string (some hosts stringify integer args); reject anything else
             // synchronously so the LLM can fix it.
             let session_id = match parse_session_id(&arguments) {
@@ -777,7 +777,7 @@ async fn build_tools_call_spawn(
                         id,
                         -32602,
                         "get_session_info requires an integer `session_id` \
-                         (the number in the codeg://session/<id> reference)",
+                         (the number in the recurcode://session/<id> reference)",
                     ));
                 }
             };
@@ -826,7 +826,7 @@ async fn build_tools_call_spawn(
             };
             // No external_handle, and no broker-side cancel: dropping this
             // round-trip only suppresses the answer. The read itself finishes
-            // on the codeg side — which is what leaves the line on the tab's
+            // on the RecurCode side — which is what leaves the line on the tab's
             // activity strip, so a canceled call cannot read a page invisibly.
             let round_trip =
                 Box::pin(async move { client_browser_snapshot_round_trip(&socket, &req).await });
@@ -836,7 +836,7 @@ async fn build_tools_call_spawn(
         | "browser_select_option" => {
             // Five names, one request: they differ only in the action they
             // carry, and the checks (control grant, ref freshness) and the
-            // audit line are the same for all of them on the codeg side.
+            // audit line are the same for all of them on the RecurCode side.
             let (tab_id, request) = match browser_action_request(name.as_str(), &arguments) {
                 Ok(parsed) => parsed,
                 Err(msg) => return LineAction::Respond(err(id, -32602, msg)),
@@ -848,7 +848,7 @@ async fn build_tools_call_spawn(
             };
             // No external_handle, and no broker-side cancel, as for the read:
             // an action that has been sent to the page has happened, and the
-            // line it leaves on the strip is written on the codeg side.
+            // line it leaves on the strip is written on the RecurCode side.
             let round_trip =
                 Box::pin(async move { client_browser_act_round_trip(&socket, &req).await });
             register_and_spawn(inflight, id, None, round_trip, render_browser_act_result).await
@@ -863,7 +863,7 @@ async fn build_tools_call_spawn(
                 tab_id,
                 query,
             };
-            // A registry read on the codeg side; the grant check and the
+            // A registry read on the RecurCode side; the grant check and the
             // strip line are in there, as for the snapshot.
             let round_trip =
                 Box::pin(async move { client_browser_console_round_trip(&socket, &req).await });
@@ -880,7 +880,7 @@ async fn build_tools_call_spawn(
                 request,
             };
             // No broker-side cancel, as for the read: the capture finishes on
-            // the codeg side, which is what leaves the line on the strip.
+            // the RecurCode side, which is what leaves the line on the strip.
             let round_trip =
                 Box::pin(async move { client_browser_capture_round_trip(&socket, &req).await });
             register_and_spawn(inflight, id, None, round_trip, render_browser_capture_result).await
@@ -897,7 +897,7 @@ async fn build_tools_call_spawn(
             };
             // No broker-side cancel, and this one matters: the round trip is
             // parked on a dialog in front of a person. Cancelling it here
-            // would take the question away mid-read while the codeg side went
+            // would take the question away mid-read while the RecurCode side went
             // on waiting for an answer that could no longer be delivered.
             let round_trip =
                 Box::pin(async move { client_browser_eval_round_trip(&socket, &req).await });
@@ -996,7 +996,7 @@ async fn build_tools_call_spawn(
                 max_dimension,
             };
             // No broker-side cancel, as for every read: the capture finishes
-            // on the codeg side, which is what writes the activity line.
+            // on the RecurCode side, which is what writes the activity line.
             let round_trip =
                 Box::pin(async move { client_computer_capture_round_trip(&socket, &req).await });
             register_and_spawn(inflight, id, None, round_trip, render_computer_capture_result)
@@ -1059,7 +1059,7 @@ async fn build_tools_call_spawn(
                 delivery,
             };
             // No broker-side cancel: an action cannot be recalled halfway,
-            // and it finishes on the codeg side, which writes its line on
+            // and it finishes on the RecurCode side, which writes its line on
             // the panel's activity list.
             let round_trip =
                 Box::pin(async move { client_computer_act_round_trip(&socket, &req).await });
@@ -1394,7 +1394,7 @@ async fn handle_cancel_notification(
 /// fire) so the broker doesn't hold a `pending` row open forever waiting
 /// for a `TurnComplete` whose response we couldn't deliver anyway. Each
 /// cancel is bounded by [`BROKER_CANCEL_BUDGET`] so a hung listener
-/// can't pin shutdown — the codeg main side's `cancel_by_parent` cascade
+/// can't pin shutdown — the RecurCode main side's `cancel_by_parent` cascade
 /// is the eventual backstop for any cancel that times out here.
 pub async fn drain_and_cancel_all(
     ctx: &CompanionContext,
@@ -1520,7 +1520,7 @@ const FEEDBACK_POLL_WINDOW: Duration = Duration::from_secs(60);
 /// Process-local count of back-to-back empty feedback pulls. A delivery that
 /// carries notes resets it, and an empty pull more than [`FEEDBACK_POLL_WINDOW`]
 /// after the previous empty one starts a new run. Each agent launch is its own
-/// `codeg-mcp`, so the count does not cross agents.
+/// `recur-code-mcp`, so the count does not cross agents.
 #[derive(Default)]
 struct FeedbackPollGuard {
     state: std::sync::Mutex<FeedbackPollState>,
@@ -2195,10 +2195,10 @@ pub fn browser_capture_request(
 
 /// Build the `browser_eval` request from the tool's arguments.
 ///
-/// The length check is here as well as on the codeg side, so an oversized
+/// The length check is here as well as on the RecurCode side, so an oversized
 /// snippet comes back as an argument error the model can act on rather than
 /// travelling the broker to be refused. Validating in both places is the point
-/// — the codeg-side one is the gate, this one is the message.
+/// — the recur-code-side one is the gate, this one is the message.
 pub fn browser_eval_request(
     arguments: &Value,
 ) -> Result<(String, crate::browser::eval::EvalRequest), String> {
@@ -2980,7 +2980,7 @@ pub fn render_computer_windows_result(outcome: &Value) -> Value {
             if any_unshared {
                 out.push_str(
                     "\nA window marked \"not shared\" cannot be read. Ask the user to share it: in \
-                     codeg's status bar they open Computer use and press \"Share a window…\" — it \
+                     RecurCode's status bar they open Computer use and press \"Share a window…\" — it \
                      is theirs to give.",
                 );
             }
@@ -3029,7 +3029,7 @@ pub fn render_computer_capture_result(outcome: &Value) -> Value {
     let text = if s("targetId") == crate::computer::targets::SCREEN_TARGET_ID {
         format!(
             "Screenshot of the entire screen ({}) — a {}×{} px image of the screen, {:.0}×{:.0} \
-             in desktop coordinates. What is never shared — codeg's own windows, the \
+             in desktop coordinates. What is never shared — RecurCode's own windows, the \
              applications on the user's never-share list, the system's own views of other \
              windows (an overview of every window, previews, notifications), and parts of the \
              screen no application the user could share owns — is painted over, and a point on \
@@ -3814,7 +3814,7 @@ pub fn computer_act_request(
 }
 
 /// Map a computer action's outcome into a `tools/call` result: what happened,
-/// and how sure codeg can be of it.
+/// and how sure RecurCode can be of it.
 pub fn render_computer_act_result(outcome: &Value) -> Value {
     let Some(action) = outcome.get("action").filter(|a| a.is_object()) else {
         return computer_refusal(outcome, "Nothing was done.");
@@ -4105,7 +4105,7 @@ mod tests {
     fn ctx_with(features: CompanionFeatures) -> CompanionContext {
         CompanionContext {
             parent_connection_id: "p1".into(),
-            socket_path: "/tmp/codeg-mcp-companion-test-nope.sock".into(),
+            socket_path: "/tmp/recur-code-mcp-companion-test-nope.sock".into(),
             token: "tok".into(),
             features,
             custom_agents: Vec::new(),
@@ -4135,7 +4135,7 @@ mod tests {
         let resp = unwrap_respond(dispatch_for_test(line).await);
         let result = resp.result.unwrap();
         assert_eq!(result["protocolVersion"], "2024-11-05");
-        assert_eq!(result["serverInfo"]["name"], "codeg-mcp");
+        assert_eq!(result["serverInfo"]["name"], "recur-code-mcp");
     }
 
     #[tokio::test]
@@ -5493,7 +5493,7 @@ mod tests {
     fn render_session_result_not_found_is_soft_with_note_text() {
         let outcome = json!({
             "found": false, "session_id": 9,
-            "note": "No session matches id 9. It may have been deleted, or never imported into codeg."
+            "note": "No session matches id 9. It may have been deleted, or never imported into RecurCode."
         });
         let rendered = render_session_result(&outcome);
         assert_eq!(rendered["isError"], false);
@@ -5803,7 +5803,7 @@ mod tests {
         use tokio::net::UnixListener;
 
         // `/tmp`, not `$TMPDIR`: a socket path has ~104 bytes of `sun_path` to
-        // live in, and codeg exports a 72-byte per-session `TMPDIR` to the
+        // live in, and RecurCode exports a 72-byte per-session `TMPDIR` to the
         // agents it launches. Under `tempdir()` this lands at 92 bytes there —
         // green, but with very little left for a deeper nesting.
         let dir = tempfile::tempdir_in("/tmp").unwrap();
@@ -5876,7 +5876,7 @@ mod tests {
         use tokio::net::UnixListener;
 
         // `/tmp`, not `$TMPDIR`: a socket path has ~104 bytes of `sun_path` to
-        // live in, and codeg exports a 72-byte per-session `TMPDIR` to the
+        // live in, and RecurCode exports a 72-byte per-session `TMPDIR` to the
         // agents it launches. Under `tempdir()` this lands at 92 bytes there —
         // green, but with very little left for a deeper nesting.
         let dir = tempfile::tempdir_in("/tmp").unwrap();
@@ -6164,7 +6164,7 @@ mod tests {
     }
 
     /// A result reads as what happened, and a refusal reads as the note the
-    /// codeg side wrote — neither is an `isError`, because both are things to
+    /// RecurCode side wrote — neither is an `isError`, because both are things to
     /// tell the user rather than a broken call.
     #[test]
     fn an_eval_result_reads_as_what_happened() {
@@ -6329,7 +6329,7 @@ mod tests {
 
     /// The five action tools build one request. What each needs, and what
     /// each refuses up front so the model can fix the call without a round
-    /// trip to codeg.
+    /// trip to RecurCode.
     #[test]
     fn action_tools_build_one_request_and_name_what_is_missing() {
         use crate::browser::agent::{ActionKind, PointerButton};
@@ -7574,9 +7574,9 @@ mod tests {
                 { "targetId": "w2", "app": { "key": "com.apple.mail", "name": "Mail", "pid": 6 },
                   "bounds": { "x": 0, "y": 0, "width": 800, "height": 600 }, "onScreen": true,
                   "level": "none" },
-                { "targetId": "w3", "app": { "key": "app.codeg", "name": "codeg", "pid": 7 },
+                { "targetId": "w3", "app": { "key": "app.recurcode", "name": "RecurCode", "pid": 7 },
                   "bounds": { "x": 0, "y": 0, "width": 800, "height": 600 }, "onScreen": true,
-                  "level": "none", "note": "codeg's own window" }
+                  "level": "none", "note": "RecurCode's own window" }
             ]
         }));
         let text = out["content"][0]["text"].as_str().unwrap();
@@ -7584,7 +7584,7 @@ mod tests {
         assert!(text.contains("[shared: read]  notes.txt"), "{text}");
         assert!(text.contains("w2  Mail (pid 6)"), "{text}");
         assert!(text.contains("[not shared]"), "{text}");
-        assert!(text.contains("[never shareable: codeg's own window]"), "{text}");
+        assert!(text.contains("[never shareable: RecurCode's own window]"), "{text}");
         assert!(text.contains("Share a window"), "{text}");
         assert!(!text.contains("Input:"), "{text}");
     }

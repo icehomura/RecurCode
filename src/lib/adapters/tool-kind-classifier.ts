@@ -48,19 +48,19 @@ const ASK_USER_QUESTION_SUFFIX_RE = /[^a-z0-9]ask_user_question$/
 const CHECK_USER_FEEDBACK_SUFFIX_RE = /[^a-z0-9]check_user_feedback$/
 
 /**
- * The codeg-mcp workbench companions, which own `CodegMcpToolCard` (and, for
+ * The recur-code-mcp workbench companions, which own `RecurCodeMcpToolCard` (and, for
  * `resume_delegation`, `ResumedDelegationCard`). Same bare-name-plus-suffix
  * treatment as the delegation tools above: the bare form is what the live path
  * produces post-`inferLiveToolName`, the suffix form is the raw
  * `mcp__<server>__<tool>` name the history parsers keep.
  *
- * MUST stay in sync with `CODEG_MCP_WORKBENCH_TOOLS` in `@/lib/codeg-mcp-tool`
+ * MUST stay in sync with `RECUR_CODE_MCP_WORKBENCH_TOOLS` in `@/lib/recur-code-mcp-tool`
  * — a tool listed there but missing here still gets its dedicated card, but
  * folds into a generic "工具 ×N" tool-group shell instead of standing alone.
  * That is exactly what happened to `resume_delegation` when it was added.
  * `tool-kind-classifier.test.ts` asserts the two can't drift again.
  */
-const CODEG_MCP_WORKBENCH_NAMES: ReadonlySet<string> = new Set([
+const RECUR_CODE_MCP_WORKBENCH_NAMES: ReadonlySet<string> = new Set([
   "get_session_info",
   "task_progress",
   "task_complete",
@@ -68,7 +68,7 @@ const CODEG_MCP_WORKBENCH_NAMES: ReadonlySet<string> = new Set([
   "create_work_task",
   "resume_delegation",
 ])
-const CODEG_MCP_WORKBENCH_SUFFIX_RE =
+const RECUR_CODE_MCP_WORKBENCH_SUFFIX_RE =
   /[^a-z0-9](?:get_session_info|task_progress|task_complete|create_automation|create_work_task|resume_delegation)$/
 
 export function isAgentLikeToolName(toolName: string): boolean {
@@ -84,7 +84,7 @@ export function isAgentLikeToolName(toolName: string): boolean {
     name === "cancel_delegation" ||
     name === "create_goal" ||
     name === "update_goal" ||
-    // codeg-mcp ask_user_question — owns the AskQuestionResultCard, so it must
+    // recur-code-mcp ask_user_question — owns the AskQuestionResultCard, so it must
     // break the run and render standalone rather than fold into a tool-group.
     // "question" is the canonical name (live path); the bare raw name plus the
     // suffix RE below cover the historical `mcp__<server>__ask_user_question`
@@ -100,7 +100,7 @@ export function isAgentLikeToolName(toolName: string): boolean {
     // same AskQuestionResultCard. The history parser keeps this raw name, so
     // hoist it here too; the live path already collapses it to "question".
     name === "request_user_input" ||
-    // codeg-mcp check_user_feedback — owns the FeedbackCheckResultCard capsule,
+    // recur-code-mcp check_user_feedback — owns the FeedbackCheckResultCard capsule,
     // so the (visible) ones must break the run and render standalone rather than
     // fold into a tool-group. The no-op polls are dropped upstream by
     // `dropHiddenFeedbackChecks`, so only received-feedback checks reach here.
@@ -114,8 +114,8 @@ export function isAgentLikeToolName(toolName: string): boolean {
   if (UPDATE_GOAL_SUFFIX_RE.test(name)) return true
   if (ASK_USER_QUESTION_SUFFIX_RE.test(name)) return true
   if (CHECK_USER_FEEDBACK_SUFFIX_RE.test(name)) return true
-  if (CODEG_MCP_WORKBENCH_NAMES.has(name)) return true
-  if (CODEG_MCP_WORKBENCH_SUFFIX_RE.test(name)) return true
+  if (RECUR_CODE_MCP_WORKBENCH_NAMES.has(name)) return true
+  if (RECUR_CODE_MCP_WORKBENCH_SUFFIX_RE.test(name)) return true
   return false
 }
 

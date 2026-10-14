@@ -8,7 +8,7 @@ import { togglePetPanel } from "@/lib/pet/api"
 import { isDesktop } from "@/lib/transport"
 
 /**
- * Ambient status badge overlaid on the sprite's top-right corner — the codeg
+ * Ambient status badge overlaid on the sprite's top-right corner — the RecurCode
  * analogue of Codex's pet "thought bubble". Always-visible signal so the user
  * knows the agent state without opening the panel:
  *

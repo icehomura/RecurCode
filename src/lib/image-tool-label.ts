@@ -2,7 +2,7 @@
  * Label for an in-position image card.
  *
  * Codex image generation hardcodes the English title "Image generation"
- * (codex-acp PR #271). Codeg also routes ANY image-bearing tool (Read of a
+ * (codex-acp PR #271). RecurCode also routes ANY image-bearing tool (Read of a
  * PNG, a page screenshot, a fetched resource) through that same card, and
  * the card used to print "Image generation" even when the tool already had
  * a real name. Keep the dedicated copy only for actual generation; otherwise

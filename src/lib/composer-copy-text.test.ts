@@ -4,8 +4,8 @@ import { unescapeComposerText } from "./composer-copy-text"
 
 describe("unescapeComposerText", () => {
   it("collapses the doubled backslashes of a Windows path (the reported bug)", () => {
-    expect(unescapeComposerText("C:\\\\tools\\\\codeg\\\\xxx.xx")).toBe(
-      "C:\\tools\\codeg\\xxx.xx"
+    expect(unescapeComposerText("C:\\\\tools\\\\RecurCode\\\\xxx.xx")).toBe(
+      "C:\\tools\\RecurCode\\xxx.xx"
     )
   })
 

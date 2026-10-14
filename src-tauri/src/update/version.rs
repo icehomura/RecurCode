@@ -30,7 +30,7 @@ static MANIFEST_HTTP_CLIENT: LazyLock<Result<reqwest::Client, String>> = LazyLoc
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(8))
         .timeout(Duration::from_secs(15))
-        .user_agent(concat!("codeg/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("RecurCode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| format!("failed to initialize update manifest client: {e}"))
 });
@@ -43,7 +43,7 @@ static DOWNLOAD_HTTP_CLIENT: LazyLock<Result<reqwest::Client, String>> = LazyLoc
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(8))
         .read_timeout(Duration::from_secs(120))
-        .user_agent(concat!("codeg/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("RecurCode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| format!("failed to initialize update download client: {e}"))
 });

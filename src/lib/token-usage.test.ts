@@ -604,7 +604,7 @@ describe("shareCardFilename", () => {
     )
     // The end date shown is the last day actually counted, not the exclusive
     // bound.
-    expect(name).toBe("codeg-tokens-2026-07-01_2026-07-31-2026-08-03.png")
+    expect(name).toBe("recur-code-tokens-2026-07-01_2026-07-31-2026-08-03.png")
   })
 
   it("says all-time for an unbounded range", () => {
@@ -612,6 +612,6 @@ describe("shareCardFilename", () => {
       { start: null, end: null },
       new Date("2026-08-03T12:00:00.000Z")
     )
-    expect(name).toBe("codeg-tokens-all-time-2026-08-03.png")
+    expect(name).toBe("recur-code-tokens-all-time-2026-08-03.png")
   })
 })

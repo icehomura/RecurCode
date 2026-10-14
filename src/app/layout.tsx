@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "codeg",
+  title: "RecurCode",
   description: "AI Coding Agent Conversation Manager",
   icons: {
     icon: [
@@ -68,7 +68,7 @@ export default async function RootLayout({
         {/* Written by hand rather than via `metadata.manifest`: Next only adds
             `crossOrigin="use-credentials"` there on Vercel preview builds.
             Without it the browser fetches the manifest without cookies, and
-            an auth proxy in front of codeg-server answers with its login
+            an auth proxy in front of recur-code-server answers with its login
             redirect instead of the manifest. */}
         <link
           rel="manifest"

@@ -695,7 +695,7 @@ fn restore_one(
             // Write to a same-dir temp file, then publish by rename so the final
             // path never holds a partially-written file. The temp is cleaned up
             // on any failure.
-            let tmp = parent.join(format!(".codeg-ext-{}.part", uuid::Uuid::new_v4().simple()));
+            let tmp = parent.join(format!(".recur-code-ext-{}.part", uuid::Uuid::new_v4().simple()));
             let write = (|| -> std::io::Result<()> {
                 let mut out = OpenOptions::new().write(true).create_new(true).open(&tmp)?;
                 let mut input = File::open(src)?;
@@ -863,7 +863,7 @@ fn keyed_lines<'a>(
 /// `MoveFileEx` are ordered, journalled NTFS metadata transactions, so the
 /// barrier is compiled out.
 fn publish_sqlite(src: &Path, target: &Path, parent: &Path) -> FileOutcome {
-    let tmp = parent.join(format!(".codeg-ext-{}.part", uuid::Uuid::new_v4().simple()));
+    let tmp = parent.join(format!(".recur-code-ext-{}.part", uuid::Uuid::new_v4().simple()));
     // 1. The replacement is fully on disk before anything live is touched.
     let staged = (|| -> std::io::Result<()> {
         let mut out = OpenOptions::new().write(true).create_new(true).open(&tmp)?;
@@ -1730,7 +1730,7 @@ mod tests {
         let manifest = b
             .finish(crate::commands::backup::manifest::BackupManifest {
                 format_version: 1,
-                kind: "codeg-backup".to_string(),
+                kind: "recur-code-backup".to_string(),
                 created_at: String::new(),
                 app_version: String::new(),
                 latest_migration: String::new(),
@@ -1836,7 +1836,7 @@ mod tests {
         assert_eq!(snap_rowids, source_rowids);
     }
 
-    /// Backing up must not write into a store codeg does not own — not the
+    /// Backing up must not write into a store RecurCode does not own — not the
     /// database, and not a `-wal`/`-shm` created as a side effect of opening
     /// it for writing.
     #[cfg(unix)]

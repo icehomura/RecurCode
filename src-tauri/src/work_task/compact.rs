@@ -16,7 +16,7 @@ use crate::models::agent::AgentType;
 
 /// Slash-command names that mean "compact this session", most preferred first.
 /// Matched against what the live session actually advertises, so an agent that
-/// spells it `/compress` is handled without codeg knowing that agent by name.
+/// spells it `/compress` is handled without RecurCode knowing that agent by name.
 const COMPACTION_COMMAND_NAMES: &[&str] = &["compact", "compress", "summarize", "summarise"];
 
 /// The compact command for an agent that advertises no matching slash command.

@@ -6,7 +6,7 @@
 //! `ExitPlanModeExtRequest { sessionId, toolCallId, planContent }`) to the client
 //! to get the user's approval before leaving plan mode. Grok waits for the reply.
 //!
-//! Codeg bridges that ext request into an interactive **plan-approval card**
+//! RecurCode bridges that ext request into an interactive **plan-approval card**
 //! rendered above the composer — the SAME shape as the `ask_user_question` bridge
 //! ([`crate::acp::question`]) and the permission dialog: a pending request is
 //! captured onto [`crate::acp::session_state::SessionState`] (in-memory, turn
@@ -158,7 +158,7 @@ pub trait SessionPlanApprovalAccess: Send + Sync {
 }
 
 /// Parse Grok's `_x.ai/exit_plan_mode` ext-request params into the plan markdown
-/// and `toolCallId` codeg needs to render the approval card. Grok's wire shape is
+/// and `toolCallId` RecurCode needs to render the approval card. Grok's wire shape is
 /// `{ sessionId, toolCallId, planContent }`. Lenient: an empty / missing
 /// `planContent` is valid (the empty-plan approval surface), so the only hard
 /// error is a non-object payload. The markdown is length-bounded to

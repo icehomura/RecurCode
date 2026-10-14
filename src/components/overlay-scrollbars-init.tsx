@@ -27,7 +27,7 @@ function isBodyFixedRoute(pathname: string | null): boolean {
 
 const BODY_SCROLLBARS_OPTIONS: UseOverlayScrollbarsParams["options"] = {
   scrollbars: {
-    theme: "os-theme-codeg",
+    theme: "os-theme-RecurCode",
     autoHide: "leave",
     dragScroll: false,
   },

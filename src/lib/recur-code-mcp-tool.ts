@@ -1,6 +1,6 @@
 /**
- * Parsing helpers for the codeg-mcp *workbench* companion tools — the ones that
- * report back into codeg itself rather than driving a sub-agent:
+ * Parsing helpers for the recur-code-mcp *workbench* companion tools — the ones that
+ * report back into RecurCode itself rather than driving a sub-agent:
  * `get_session_info`, `task_progress`, `task_complete`, `create_automation` and
  * `create_work_task` — plus `resume_delegation`.
  *
@@ -16,9 +16,9 @@
  * `cancel_delegation`), `ask_user_question` and `check_user_feedback` each own a
  * richer, purpose-built card; these five had none, so they fell through to the
  * generic tool shell and rendered as a raw argument dump under a name like
- * `"task_progress (codeg-mcp MCP Server)"`. This module resolves the one detail
+ * `"task_progress (recur-code-mcp MCP Server)"`. This module resolves the one detail
  * each call is actually about (which session, which message, which verdict) plus
- * its result text, so `CodegMcpToolCard` can state it in one line.
+ * its result text, so `RecurCodeMcpToolCard` can state it in one line.
  *
  * Both sides of the wire are host-dependent, so parsing mirrors what the
  * delegation cards already do:
@@ -38,10 +38,10 @@ import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 /**
  * The canonical (post-`normalizeToolName`) names this module covers. Kept in
  * sync with the `*_SUFFIX_RE` rules in `tool-call-normalization.ts`, which
- * collapse every host spelling (`mcp__codeg-mcp__task_progress`,
- * `codeg-mcp/task_progress`, …) onto exactly these.
+ * collapse every host spelling (`mcp__recur-code-mcp__task_progress`,
+ * `recur-code-mcp/task_progress`, …) onto exactly these.
  */
-export const CODEG_MCP_WORKBENCH_TOOLS = [
+export const RECUR_CODE_MCP_WORKBENCH_TOOLS = [
   "get_session_info",
   "task_progress",
   "task_complete",
@@ -50,21 +50,21 @@ export const CODEG_MCP_WORKBENCH_TOOLS = [
   "resume_delegation",
 ] as const
 
-export type CodegMcpWorkbenchTool = (typeof CODEG_MCP_WORKBENCH_TOOLS)[number]
+export type RecurCodeMcpWorkbenchTool = (typeof RECUR_CODE_MCP_WORKBENCH_TOOLS)[number]
 
-const TOOL_SET: ReadonlySet<string> = new Set(CODEG_MCP_WORKBENCH_TOOLS)
+const TOOL_SET: ReadonlySet<string> = new Set(RECUR_CODE_MCP_WORKBENCH_TOOLS)
 
 /** Whether `name` is one of the workbench companions, in canonical form. */
-export function isCodegMcpWorkbenchTool(
+export function isRecurCodeMcpWorkbenchTool(
   name: string
-): name is CodegMcpWorkbenchTool {
+): name is RecurCodeMcpWorkbenchTool {
   return TOOL_SET.has(name.toLowerCase().trim())
 }
 
 /** `task_complete`'s three allowed verdicts (validated companion-side). */
 export type TaskVerdict = "success" | "needs_review" | "blocked"
 
-export interface CodegMcpToolModel {
+export interface RecurCodeMcpToolModel {
   /**
    * The single argument worth stating in the collapsed row: the session id,
    * the progress message, the completion summary, the automation/task title.
@@ -137,7 +137,7 @@ const ARGS_WRAPPER_KEYS = [
  * argument collides with the `name` of the very `{name, arguments}` relay
  * envelope this walker exists to peel — accepting the outer object first would
  * label the card with the TOOL's name ("Creating automation
- * mcp__codeg-mcp__create_automation") instead of the automation's. Safe for all
+ * mcp__recur-code-mcp__create_automation") instead of the automation's. Safe for all
  * five tools because none of their schemas
  * (`src-tauri/src/acp/delegation/tool_schema.json`) has an argument named after
  * a wrapper key, so a descent can only ever reach a real payload.
@@ -181,7 +181,7 @@ function parseArgs(
 
 /** Which argument each tool's row is about, and how to recognize its payload. */
 const ARG_SPECS: Record<
-  CodegMcpWorkbenchTool,
+  RecurCodeMcpWorkbenchTool,
   {
     /** Keys that identify the arguments object (any one present is enough). */
     fields: readonly string[]
@@ -305,7 +305,7 @@ function readResultObject(obj: Record<string, unknown>): string | null {
 }
 
 /**
- * Resolve everything `CodegMcpToolCard` renders from a tool call's raw input,
+ * Resolve everything `RecurCodeMcpToolCard` renders from a tool call's raw input,
  * raw output and lifecycle state.
  *
  * `errorText` (or an `output-error` state) always wins the status: these tools
@@ -313,13 +313,13 @@ function readResultObject(obj: Record<string, unknown>): string | null {
  * with no work task to attribute it to — as ordinary `isError: false` text, so
  * an `err` badge really does mean the call itself failed.
  */
-export function parseCodegMcpToolCall(params: {
-  tool: CodegMcpWorkbenchTool
+export function parseRecurCodeMcpToolCall(params: {
+  tool: RecurCodeMcpWorkbenchTool
   input?: string | null
   output?: string | null
   errorText?: string | null
   state?: ToolCallState
-}): CodegMcpToolModel {
+}): RecurCodeMcpToolModel {
   const spec = ARG_SPECS[params.tool]
   const args = parseArgs(params.input, (obj) =>
     spec.fields.some((field) => obj[field] !== undefined)

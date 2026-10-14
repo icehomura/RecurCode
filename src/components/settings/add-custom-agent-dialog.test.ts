@@ -53,7 +53,7 @@ describe("parseManualSpec", () => {
     expect(parseManualSpec("{not json").error).toBe("invalidJson")
     expect(parseManualSpec("[1,2,3]").error).toBe("invalidJson")
     expect(parseManualSpec('"a string"').error).toBe("invalidJson")
-    // Valid JSON, but nothing codeg can launch.
+    // Valid JSON, but nothing RecurCode can launch.
     expect(parseManualSpec('{"something": "else"}').error).toBe(
       "noDistribution"
     )

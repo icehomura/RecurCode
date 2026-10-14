@@ -1,20 +1,20 @@
-//! Centralized resolution of codeg-owned filesystem paths.
+//! Centralized resolution of recur-code-owned filesystem paths.
 //!
-//! Mirrors the conventions already used by `preferences.rs` (`~/.codeg/`)
-//! and `experts.rs` (`~/.codeg/skills/`). New features that need a
+//! Mirrors the conventions already used by `preferences.rs` (`~/.recurcode/`)
+//! and `experts.rs` (`~/.recurcode/skills/`). New features that need a
 //! user-scoped persistent directory should call into this module instead of
-//! re-deriving `dirs::home_dir().join(".codeg")` themselves.
+//! re-deriving `dirs::home_dir().join(".recurcode")` themselves.
 //!
-//! The `codeg_*_root` data directories resolve `$CODEG_HOME`, then
-//! `$CODEG_DATA_DIR`, then `~/.codeg`. Both binaries export `CODEG_DATA_DIR`
+//! The `recur_code_*_root` data directories resolve `$RECUR_CODE_HOME`, then
+//! `$RECUR_CODE_DATA_DIR`, then `~/.recurcode`. Both binaries export `RECUR_CODE_DATA_DIR`
 //! before anything reads it — the desktop app from [`desktop_data_dir`] at the
-//! top of `run()`, `codeg-server` in `main` — so the data directory is what
-//! they resolve to, and `~/.codeg` only serves a process started without
+//! top of `run()`, `recur-code-server` in `main` — so the data directory is what
+//! they resolve to, and `~/.recurcode` only serves a process started without
 //! either variable.
 
 use std::path::{Path, PathBuf};
 
-const CODEG_DIR_NAME: &str = ".codeg";
+const RECUR_CODE_DIR_NAME: &str = ".recurcode";
 const PETS_DIR_NAME: &str = "pets";
 const BROWSER_PROFILES_DIR_NAME: &str = "browser-profiles";
 const UPLOADS_DIR_NAME: &str = "uploads";
@@ -23,181 +23,181 @@ const TURN_TIMINGS_DIR_NAME: &str = "turn-timings";
 const ACP_TRANSCRIPTS_DIR_NAME: &str = "acp-transcripts";
 const BACKGROUNDS_DIR_NAME: &str = "backgrounds";
 
-/// `$CODEG_HOME` if set (and non-empty), else `~/.codeg/`.
+/// `$RECUR_CODE_HOME` if set (and non-empty), else `~/.recurcode/`.
 ///
-/// Returns the relative `.codeg` path when no home directory is available;
+/// Returns the relative `.recurcode` path when no home directory is available;
 /// callers must still handle creation failures gracefully.
-pub fn codeg_home_dir() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+pub fn recur_code_home_dir() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME))
 }
 
 /// Root directory for desktop-pet assets.
 ///
 /// Resolution order:
-/// 1. `$CODEG_HOME/pets` (explicit override, used in tests and custom installs)
-/// 2. `$CODEG_DATA_DIR/pets` (the data directory, see the module docs)
-/// 3. `~/.codeg/pets` (neither set)
-pub fn codeg_pets_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+/// 1. `$RECUR_CODE_HOME/pets` (explicit override, used in tests and custom installs)
+/// 2. `$RECUR_CODE_DATA_DIR/pets` (the data directory, see the module docs)
+/// 3. `~/.recurcode/pets` (neither set)
+pub fn recur_code_pets_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(PETS_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(PETS_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(PETS_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(PETS_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(PETS_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(PETS_DIR_NAME))
 }
 
 /// Root directory for built-in browser profiles (WebView2 user-data folders
 /// on Windows, WebKitGTK data directories on Linux; macOS keeps profiles in
 /// WebKit's own store and never reads this).
 ///
-/// Resolution order matches `codeg_pets_root()`.
-pub fn codeg_browser_profiles_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+/// Resolution order matches `recur_code_pets_root()`.
+pub fn recur_code_browser_profiles_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(BROWSER_PROFILES_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(BROWSER_PROFILES_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(BROWSER_PROFILES_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(BROWSER_PROFILES_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(BROWSER_PROFILES_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(BROWSER_PROFILES_DIR_NAME))
 }
 
 /// Root directory for attachments uploaded from the web client.
 ///
-/// Resolution order matches `codeg_pets_root()`:
-/// 1. `$CODEG_HOME/uploads`
-/// 2. `$CODEG_DATA_DIR/uploads` (the data directory, see the module docs)
-/// 3. `~/.codeg/uploads` (neither set)
+/// Resolution order matches `recur_code_pets_root()`:
+/// 1. `$RECUR_CODE_HOME/uploads`
+/// 2. `$RECUR_CODE_DATA_DIR/uploads` (the data directory, see the module docs)
+/// 3. `~/.recurcode/uploads` (neither set)
 ///
-/// Files in this directory are not garbage-collected by codeg itself —
+/// Files in this directory are not garbage-collected by RecurCode itself —
 /// later conversations may still reference them via `file://` URIs
 /// embedded in session history. To bound the long-term footprint on
 /// shared / multi-tenant servers, operators can set
-/// `CODEG_UPLOAD_MAX_TOTAL_BYTES` (see `web::handlers::files`): new
+/// `RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES` (see `web::handlers::files`): new
 /// uploads beyond the cap are rejected at the API boundary while
 /// existing files stay readable.
 ///
 /// **Concurrency contract:** the quota check uses a process-local
-/// in-flight reservation counter to make `CODEG_UPLOAD_MAX_TOTAL_BYTES`
-/// a hard ceiling within one `codeg-server` process. Multiple
-/// `codeg-server` processes sharing the same uploads root (e.g.
+/// in-flight reservation counter to make `RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES`
+/// a hard ceiling within one `recur-code-server` process. Multiple
+/// `recur-code-server` processes sharing the same uploads root (e.g.
 /// horizontally-scaled containers mounted on the same volume) will
 /// each enforce the cap independently and can collectively exceed it.
-/// codeg is designed for single-process deployments; horizontal
+/// RecurCode is designed for single-process deployments; horizontal
 /// scaling would require external coordination (file lock, Redis,
 /// reverse-proxy quota) that this codebase does not provide.
-pub fn codeg_uploads_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+pub fn recur_code_uploads_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(UPLOADS_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(UPLOADS_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(UPLOADS_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(UPLOADS_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(UPLOADS_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(UPLOADS_DIR_NAME))
 }
 
 /// Root directory for the user-selected workspace background image.
 ///
-/// Resolution mirrors [`codeg_pets_root`] exactly:
-/// 1. `$CODEG_HOME/backgrounds` (explicit override)
-/// 2. `$CODEG_DATA_DIR/backgrounds` (the data directory, see the module docs)
-/// 3. `~/.codeg/backgrounds` (neither set)
-pub fn codeg_backgrounds_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+/// Resolution mirrors [`recur_code_pets_root`] exactly:
+/// 1. `$RECUR_CODE_HOME/backgrounds` (explicit override)
+/// 2. `$RECUR_CODE_DATA_DIR/backgrounds` (the data directory, see the module docs)
+/// 3. `~/.recurcode/backgrounds` (neither set)
+pub fn recur_code_backgrounds_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(BACKGROUNDS_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(BACKGROUNDS_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(BACKGROUNDS_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(BACKGROUNDS_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(BACKGROUNDS_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(BACKGROUNDS_DIR_NAME))
 }
 
 /// Root directory for application diagnostic logs (rotating files written by
 /// the `tracing` file appender; see `crate::logging`).
 ///
-/// Resolution mirrors [`codeg_uploads_root`] exactly so logs land on the same
+/// Resolution mirrors [`recur_code_uploads_root`] exactly so logs land on the same
 /// filesystem root as uploads/pets/the database:
-/// 1. `$CODEG_HOME/logs` (explicit override)
-/// 2. `$CODEG_DATA_DIR/logs` (the data directory, see the module docs)
-/// 3. `~/.codeg/logs` (neither set)
+/// 1. `$RECUR_CODE_HOME/logs` (explicit override)
+/// 2. `$RECUR_CODE_DATA_DIR/logs` (the data directory, see the module docs)
+/// 3. `~/.recurcode/logs` (neither set)
 ///
 /// Pure env + `dirs::home_dir()`, so it is callable at the very start of a
-/// process — before the database (or, in `codeg-server`, the tokio runtime)
+/// process — before the database (or, in `recur-code-server`, the tokio runtime)
 /// exists — which is exactly when the subscriber must be installed. Both
 /// binaries export the data directory before that point, so the logs sit
 /// beside the database however the process was started.
-pub fn codeg_logs_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+pub fn recur_code_logs_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(LOGS_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(LOGS_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(LOGS_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(LOGS_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(LOGS_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(LOGS_DIR_NAME))
 }
 
-/// Root directory for codeg's own per-turn timing observations (see
+/// Root directory for RecurCode's own per-turn timing observations (see
 /// `crate::turn_timings`) — wall-clock turn spans the ACP connection layer
 /// records for agents whose native session store carries no per-turn
 /// timestamps (Cursor). Written by the live connection, read back by the
 /// history parser.
 ///
-/// Resolution mirrors [`codeg_uploads_root`]:
-/// 1. `$CODEG_HOME/turn-timings`
-/// 2. `$CODEG_DATA_DIR/turn-timings` (the data directory, see the module docs)
-/// 3. `~/.codeg/turn-timings` (neither set)
-pub fn codeg_turn_timings_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+/// Resolution mirrors [`recur_code_uploads_root`]:
+/// 1. `$RECUR_CODE_HOME/turn-timings`
+/// 2. `$RECUR_CODE_DATA_DIR/turn-timings` (the data directory, see the module docs)
+/// 3. `~/.recurcode/turn-timings` (neither set)
+pub fn recur_code_turn_timings_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(TURN_TIMINGS_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(TURN_TIMINGS_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(TURN_TIMINGS_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(TURN_TIMINGS_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(TURN_TIMINGS_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(TURN_TIMINGS_DIR_NAME))
 }
 
-/// Root directory for codeg's own ACP transcripts (see
+/// Root directory for RecurCode's own ACP transcripts (see
 /// `crate::acp_transcript`) — the raw `session/update` stream and outgoing
-/// prompts recorded for **custom ACP agents**, which have no codeg-side
+/// prompts recorded for **custom ACP agents**, which have no recur-code-side
 /// transcript parser of their own. Written by the live connection, read back
 /// by `crate::parsers::acp_native`.
 ///
-/// Resolution mirrors [`codeg_turn_timings_root`]:
-/// 1. `$CODEG_HOME/acp-transcripts`
-/// 2. `$CODEG_DATA_DIR/acp-transcripts` (the data directory, see the module docs)
-/// 3. `~/.codeg/acp-transcripts` (neither set)
-pub fn codeg_acp_transcripts_root() -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+/// Resolution mirrors [`recur_code_turn_timings_root`]:
+/// 1. `$RECUR_CODE_HOME/acp-transcripts`
+/// 2. `$RECUR_CODE_DATA_DIR/acp-transcripts` (the data directory, see the module docs)
+/// 3. `~/.recurcode/acp-transcripts` (neither set)
+pub fn recur_code_acp_transcripts_root() -> PathBuf {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(ACP_TRANSCRIPTS_DIR_NAME);
     }
-    if let Some(data) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return PathBuf::from(data).join(ACP_TRANSCRIPTS_DIR_NAME);
     }
     dirs::home_dir()
-        .map(|h| h.join(CODEG_DIR_NAME).join(ACP_TRANSCRIPTS_DIR_NAME))
-        .unwrap_or_else(|| PathBuf::from(CODEG_DIR_NAME).join(ACP_TRANSCRIPTS_DIR_NAME))
+        .map(|h| h.join(RECUR_CODE_DIR_NAME).join(ACP_TRANSCRIPTS_DIR_NAME))
+        .unwrap_or_else(|| PathBuf::from(RECUR_CODE_DIR_NAME).join(ACP_TRANSCRIPTS_DIR_NAME))
 }
 
-/// The data directory the desktop app exports as `CODEG_DATA_DIR` at the top
+/// The data directory the desktop app exports as `RECUR_CODE_DATA_DIR` at the top
 /// of `run()`, before the logging init or anything else reads it: a preset
-/// `CODEG_DATA_DIR` (the operator's, or inherited from the codeg that launched
+/// `RECUR_CODE_DATA_DIR` (the operator's, or inherited from the RecurCode that launched
 /// this one), else the platform data directory joined with the bundle
 /// identifier — exactly what Tauri's `app_data_dir()` returns, which is not
 /// available until `setup`. Absolutized either way, like
@@ -206,7 +206,7 @@ pub fn codeg_acp_transcripts_root() -> PathBuf {
 ///
 /// Exporting it only in `setup`, as the desktop app used to, left the log
 /// directory to depend on how the process was started: a launch from the
-/// Start menu or the Dock wrote to `~/.codeg/logs`, while an instance codeg
+/// Start menu or the Dock wrote to `~/.recurcode/logs`, while an instance RecurCode
 /// restarted (after an update) inherited the variable and wrote beside the
 /// database — and the Settings page always opened the latter.
 pub fn desktop_data_dir(
@@ -224,7 +224,7 @@ pub fn desktop_data_dir(
 /// do `paths::*` resolve their roots against."
 ///
 /// Resolution:
-/// 1. If `CODEG_DATA_DIR` is set and non-empty, return its absolutized
+/// 1. If `RECUR_CODE_DATA_DIR` is set and non-empty, return its absolutized
 ///    form. Honors the operator's choice even on desktop, where a
 ///    pre-set env var should override Tauri's identifier-derived path.
 /// 2. Otherwise return the absolutized form of `tauri_fallback` —
@@ -233,19 +233,19 @@ pub fn desktop_data_dir(
 ///
 /// Always returns an absolute path (`absolutize` re-bases against the
 /// process CWD if needed). Callers should treat the result as
-/// authoritative and not re-read `CODEG_DATA_DIR` themselves; the
-/// startup code in `lib.rs` / `bin/codeg_server.rs` writes the
+/// authoritative and not re-read `RECUR_CODE_DATA_DIR` themselves; the
+/// startup code in `lib.rs` / `bin/recur_code_server.rs` writes the
 /// resolved value back to the env so subprocess inheritance works,
 /// but the in-process source of truth is this function.
 ///
 /// This exists because Tauri's `app.path().app_data_dir()` does **not**
-/// consult `CODEG_DATA_DIR` — it returns the identifier-derived path
+/// consult `RECUR_CODE_DATA_DIR` — it returns the identifier-derived path
 /// unconditionally. Call sites that pass `app_data_dir()` straight
 /// into git credential helpers, ACP, terminal sessions, etc. would
 /// otherwise generate scripts pointing at an empty DB when the
-/// operator pre-set `CODEG_DATA_DIR` to a custom location.
+/// operator pre-set `RECUR_CODE_DATA_DIR` to a custom location.
 pub fn resolve_effective_data_dir(tauri_fallback: &Path) -> PathBuf {
-    if let Some(custom) = std::env::var_os("CODEG_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(custom) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
         return crate::git_credential::absolutize(Path::new(&custom));
     }
     crate::git_credential::absolutize(tauri_fallback)
@@ -296,10 +296,10 @@ fn strip_prefix_ignore_ascii_case<'a>(text: &'a str, prefix: &str) -> Option<&'a
         .then(|| &text[prefix.len()..])
 }
 
-// The resolver functions above depend on global env vars (`CODEG_HOME`,
-// `CODEG_DATA_DIR`), so unit tests would need cross-test serialization to
+// The resolver functions above depend on global env vars (`RECUR_CODE_HOME`,
+// `RECUR_CODE_DATA_DIR`), so unit tests would need cross-test serialization to
 // avoid races. The behaviour is covered end-to-end by `pets::*` tests which
-// set `CODEG_HOME` inside a serialized test mutex; we deliberately don't
+// set `RECUR_CODE_HOME` inside a serialized test mutex; we deliberately don't
 // duplicate that here. `simplify_verbatim_path` reads no env, so it is
 // tested directly.
 #[cfg(test)]
@@ -307,7 +307,7 @@ mod tests {
     use super::*;
 
     /// The desktop app's data directory, decided before anything reads it: a
-    /// preset `CODEG_DATA_DIR` wins, else the platform data directory joined
+    /// preset `RECUR_CODE_DATA_DIR` wins, else the platform data directory joined
     /// with the bundle identifier — Tauri's `app_data_dir()`. Absolute either
     /// way, since it is exported to every subprocess.
     #[test]
@@ -315,24 +315,24 @@ mod tests {
         let platform = std::env::temp_dir().join("platform-data");
         let preset = std::env::temp_dir().join("preset-data");
         assert_eq!(
-            desktop_data_dir(None, Some(&platform), "app.codeg"),
-            Some(platform.join("app.codeg"))
+            desktop_data_dir(None, Some(&platform), "app.recurcode"),
+            Some(platform.join("app.recurcode"))
         );
         assert_eq!(
-            desktop_data_dir(Some(std::ffi::OsStr::new("")), Some(&platform), "app.codeg"),
-            Some(platform.join("app.codeg")),
+            desktop_data_dir(Some(std::ffi::OsStr::new("")), Some(&platform), "app.recurcode"),
+            Some(platform.join("app.recurcode")),
             "an empty preset is no preset"
         );
         assert_eq!(
-            desktop_data_dir(Some(preset.as_os_str()), Some(&platform), "app.codeg"),
+            desktop_data_dir(Some(preset.as_os_str()), Some(&platform), "app.recurcode"),
             Some(preset.clone())
         );
         assert_eq!(
-            desktop_data_dir(Some(preset.as_os_str()), None, "app.codeg"),
+            desktop_data_dir(Some(preset.as_os_str()), None, "app.recurcode"),
             Some(preset)
         );
-        assert_eq!(desktop_data_dir(None, None, "app.codeg"), None);
-        let relative = desktop_data_dir(Some(std::ffi::OsStr::new("data")), None, "app.codeg")
+        assert_eq!(desktop_data_dir(None, None, "app.recurcode"), None);
+        let relative = desktop_data_dir(Some(std::ffi::OsStr::new("data")), None, "app.recurcode")
             .expect("a relative preset");
         assert!(relative.is_absolute(), "{}", relative.display());
         assert!(relative.ends_with("data"));
@@ -343,8 +343,8 @@ mod tests {
     #[test]
     fn simplifies_a_verbatim_drive_path() {
         assert_eq!(
-            simplify_verbatim_path(Path::new(r"\\?\C:\Users\song\.codeg\uploads\b\img.png")),
-            PathBuf::from(r"C:\Users\song\.codeg\uploads\b\img.png")
+            simplify_verbatim_path(Path::new(r"\\?\C:\Users\song\.recurcode\uploads\b\img.png")),
+            PathBuf::from(r"C:\Users\song\.recurcode\uploads\b\img.png")
         );
     }
 
@@ -365,7 +365,7 @@ mod tests {
     #[test]
     fn leaves_every_other_shape_untouched() {
         for path in [
-            "/home/u/.codeg/uploads/b/img.png",
+            "/home/u/.recurcode/uploads/b/img.png",
             "/data/uploads/b/img.png",
             r"C:\Users\song\img.png",
             r"\\srv\share\img.png",

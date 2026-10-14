@@ -24,7 +24,7 @@ const ROOT_PAGE_SOURCE = readFileSync(
   "utf8"
 )
 
-const ORIGIN = "https://codeg.example"
+const ORIGIN = "https://RecurCode.example"
 const BOOT_DOCUMENTS = ["/index.html", "/workspace", "/login"]
 
 interface FakeRequest {
@@ -288,8 +288,8 @@ const offline: Network = async () => {
   throw new TypeError("Failed to fetch")
 }
 
-const SHELL = "codeg-shell-v1-1.2.3"
-const ASSETS = "codeg-assets-v1-1.2.3"
+const SHELL = "recur-code-shell-v1-1.2.3"
+const ASSETS = "recur-code-assets-v1-1.2.3"
 
 /** A worker that installed against a healthy server, then lost it. */
 async function installedWorker(network: Network = offline) {
@@ -497,8 +497,8 @@ describe("cache names follow the release", () => {
     const worker = loadWorker(bootNetwork, "2.0.0")
     await install(worker)
     expect((await worker.storage.keys()).sort()).toEqual([
-      "codeg-assets-v1-2.0.0",
-      "codeg-shell-v1-2.0.0",
+      "recur-code-assets-v1-2.0.0",
+      "recur-code-shell-v1-2.0.0",
     ])
   })
 
@@ -506,15 +506,15 @@ describe("cache names follow the release", () => {
     const worker = loadWorker(bootNetwork, null)
     await install(worker)
     expect((await worker.storage.keys()).sort()).toEqual([
-      "codeg-assets-v1-unversioned",
-      "codeg-shell-v1-unversioned",
+      "recur-code-assets-v1-unversioned",
+      "recur-code-shell-v1-unversioned",
     ])
   })
 
   it("keeps no cache from another policy", async () => {
     const worker = loadWorker(bootNetwork)
-    await worker.storage.open("codeg-assets-v0-1.2.2")
-    await worker.storage.open("codeg-shell-v0-1.2.2")
+    await worker.storage.open("recur-code-assets-v0-1.2.2")
+    await worker.storage.open("recur-code-shell-v0-1.2.2")
     await activate(worker)
     expect(await worker.storage.keys()).toEqual([])
   })
@@ -529,19 +529,19 @@ describe("cache names follow the release", () => {
       await activate(worker)
     }
     expect((await storage.keys()).sort()).toEqual([
-      "codeg-assets-v1-A",
-      "codeg-assets-v1-C",
-      "codeg-shell-v1-C",
+      "recur-code-assets-v1-A",
+      "recur-code-assets-v1-C",
+      "recur-code-shell-v1-C",
     ])
   })
 
-  it("keeps the previous release's assets, drops older codeg caches, and claims open pages", async () => {
+  it("keeps the previous release's assets, drops older RecurCode caches, and claims open pages", async () => {
     const worker = loadWorker(bootNetwork)
     for (const name of [
-      "codeg-assets-v1", // unversioned, from before caches followed releases
-      "codeg-shell-v1",
-      "codeg-assets-v1-1.2.2", // the release this one replaces
-      "codeg-shell-v1-1.2.2",
+      "recur-code-assets-v1", // unversioned, from before caches followed releases
+      "recur-code-shell-v1",
+      "recur-code-assets-v1-1.2.2", // the release this one replaces
+      "recur-code-shell-v1-1.2.2",
       ASSETS,
       SHELL,
       "someone-elses-cache",
@@ -550,7 +550,7 @@ describe("cache names follow the release", () => {
     }
     await activate(worker)
     expect((await worker.storage.keys()).sort()).toEqual(
-      ["codeg-assets-v1-1.2.2", ASSETS, SHELL, "someone-elses-cache"].sort()
+      ["recur-code-assets-v1-1.2.2", ASSETS, SHELL, "someone-elses-cache"].sort()
     )
     expect(worker.claim).toHaveBeenCalled()
   })
@@ -558,11 +558,11 @@ describe("cache names follow the release", () => {
   it("takes the previous release by creation order, not by name", async () => {
     const worker = loadWorker(bootNetwork)
     // As strings 1.10.0 sorts before 1.9.0; it was created after it.
-    for (const name of ["codeg-assets-v1-1.9.0", "codeg-assets-v1-1.10.0"]) {
+    for (const name of ["recur-code-assets-v1-1.9.0", "recur-code-assets-v1-1.10.0"]) {
       await worker.storage.open(name)
     }
     await activate(worker)
-    expect(await worker.storage.keys()).toEqual(["codeg-assets-v1-1.10.0"])
+    expect(await worker.storage.keys()).toEqual(["recur-code-assets-v1-1.10.0"])
   })
 })
 
@@ -813,7 +813,7 @@ describe("cache-first assets", () => {
     // A page still running that release lazy-loads a chunk the server has
     // already dropped; any cached copy of a hashed URL is the right one.
     const worker = loadWorker(offline)
-    const previous = await worker.storage.open("codeg-assets-v1-1.2.2")
+    const previous = await worker.storage.open("recur-code-assets-v1-1.2.2")
     await previous.put(
       subresource("/_next/static/chunks/old.js"),
       script("old chunk")
@@ -828,7 +828,7 @@ describe("cache-first assets", () => {
 
   it("copies a previous release's chunk into this release's cache", async () => {
     const worker = loadWorker(offline)
-    const previous = await worker.storage.open("codeg-assets-v1-1.2.2")
+    const previous = await worker.storage.open("recur-code-assets-v1-1.2.2")
     await previous.put(
       subresource("/_next/static/chunks/old.js"),
       script("old chunk")
@@ -849,7 +849,7 @@ describe("cache-first assets", () => {
     // Navigating to a chunk URL the server no longer has stores its
     // index.html fallback as a document; a script request must not get it.
     const worker = loadWorker(async () => script("real chunk"))
-    const shell = await worker.storage.open("codeg-shell-v1-1.2.2")
+    const shell = await worker.storage.open("recur-code-shell-v1-1.2.2")
     await shell.put(subresource("/_next/static/chunks/x.js"), html("index"))
     const { response } = dispatchFetch(
       worker,
@@ -860,7 +860,7 @@ describe("cache-first assets", () => {
 
   it("never serves a fixed-name file from another release, and revalidates it", async () => {
     const worker = loadWorker(async () => script("new loader"))
-    const previous = await worker.storage.open("codeg-assets-v1-1.2.2")
+    const previous = await worker.storage.open("recur-code-assets-v1-1.2.2")
     await previous.put(subresource("/vs/loader.js"), script("old loader"))
     const { response, settled } = dispatchFetch(
       worker,

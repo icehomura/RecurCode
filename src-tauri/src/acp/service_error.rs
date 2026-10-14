@@ -11,7 +11,7 @@
 //! codex-acp 2.1.1 (#572) reads the message out of it for the `sessionFailure`
 //! title, but still forwards the raw JSON as a failed compaction's `error`,
 //! which the compaction card shows (live: a compaction whose model request
-//! gets that 400 reaches codeg as a readable banner beside a card reading the
+//! gets that 400 reaches RecurCode as a readable banner beside a card reading the
 //! JSON). [`readable_service_error_message`] is the adapter's
 //! `readableServiceErrorMessage`, rule for rule and with JavaScript's idea of
 //! a blank message, so the card reads the sentence the banner does. One input
@@ -167,7 +167,7 @@ mod tests {
         }
     }
 
-    // codeg's own cases.
+    // RecurCode's own cases.
 
     /// JSON writes a whole status as `400.0` just as validly as `400`, and the
     /// adapter's `Number.isInteger` takes both.

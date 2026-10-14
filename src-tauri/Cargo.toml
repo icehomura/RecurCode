@@ -1,10 +1,10 @@
 [package]
-name = "codeg"
+name = "RecurCode"
 version = "0.35.1"
 description = "Agent Code Generation App"
 authors = ["feitao"]
 edition = "2021"
-default-run = "codeg"
+default-run = "RecurCode"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -12,7 +12,7 @@ default-run = "codeg"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "codeg_lib"
+name = "recur_code_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
@@ -46,17 +46,17 @@ tauri-runtime = [
 # also builds the three standalone binaries below, so the test and lint runs
 # cover them.
 test-utils = ["computer-helper", "server-bin", "mcp-bin"]
-# The `codeg-computer-helper` binary. Off unless asked for: the Tauri CLI puts
+# The `recur-code-computer-helper` binary. Off unless asked for: the Tauri CLI puts
 # every binary target whose features are on into a bundle, and the copy
 # `tauri build` would compile is not the helper that ships. That is the one
 # `prepare-sidecars` builds with this feature — a sidecar, and on macOS an app
 # of its own (see `tauri.macos.conf.json`).
 computer-helper = ["dep:x11rb"]
-# The `codeg-server` binary. Off unless asked for, for the same reason: the
+# The `recur-code-server` binary. Off unless asked for, for the same reason: the
 # desktop app serves its web interface from its own process and has no use
 # for a second server, so it must not ship one (70–90 MB) in its bundle.
 server-bin = []
-# The `codeg-mcp` binary, likewise: the companion that ships is the sidecar
+# The `recur-code-mcp` binary, likewise: the companion that ships is the sidecar
 # `prepare-sidecars` builds without the desktop features, and the copy `tauri
 # build` would compile — with them, WebKit and all — would replace it in the
 # bundle.
@@ -76,34 +76,34 @@ browser-child = ["dep:tauri-runtime-wry", "dep:webview2-com", "dep:windows"]
 browser-smoke = []
 
 [[bin]]
-name = "codeg"
+name = "RecurCode"
 path = "src/main.rs"
 required-features = ["tauri-runtime"]
 
 # The standalone server. Built only with `server-bin` (and, for the real
 # thing, without the default features): `cargo build --release --bin
-# codeg-server --no-default-features --features server-bin`.
+# recur-code-server --no-default-features --features server-bin`.
 [[bin]]
-name = "codeg-server"
-path = "src/bin/codeg_server.rs"
+name = "recur-code-server"
+path = "src/bin/recur_code_server.rs"
 required-features = ["server-bin"]
 
 # The MCP companion each agent session runs. Built only with `mcp-bin` (and,
 # for the real thing, without the default features).
 [[bin]]
-name = "codeg-mcp"
-path = "src/bin/codeg_mcp.rs"
+name = "recur-code-mcp"
+path = "src/bin/recur_code_mcp.rs"
 required-features = ["mcp-bin"]
 
 # The computer-use executor: holds the OS permissions (macOS TCC) in place of
-# codeg, and runs the pinned cua-driver as its child. No Tauri: it is launched
+# RecurCode, and runs the pinned cua-driver as its child. No Tauri: it is launched
 # by the desktop app and serves only it. Built only with `computer-helper`.
 [[bin]]
-name = "codeg-computer-helper"
-path = "src/bin/codeg_computer_helper.rs"
+name = "recur-code-computer-helper"
+path = "src/bin/recur_code_computer_helper.rs"
 required-features = ["computer-helper"]
 
-# Runs the `codeg-server` binary, so only where that is built.
+# Runs the `recur-code-server` binary, so only where that is built.
 [[test]]
 name = "credential_helper_subprocess"
 path = "tests/credential_helper_subprocess.rs"
@@ -150,9 +150,9 @@ ignore = "0.4"
 # The official ACP runtime (the `sacp` crate was upstreamed into it and renamed).
 # Stable protocol v1 only: `unstable_protocol_v2` is deliberately left off, so
 # the builder's protocol-compat layer is a pass-through and `initialize` goes
-# out exactly as codeg writes it. The unstable features are exactly the surfaces
-# codeg consumes: `session/fork` and the Session Notices / Session Compaction
-# RFDs. (`unstable_end_turn_token_usage` stays off: codeg's token accounting
+# out exactly as RecurCode writes it. The unstable features are exactly the surfaces
+# RecurCode consumes: `session/fork` and the Session Notices / Session Compaction
+# RFDs. (`unstable_end_turn_token_usage` stays off: RecurCode's token accounting
 # reads the agents' own transcripts, not the prompt response's `usage`.)
 agent-client-protocol = { version = "2.2.0", features = ["unstable_session_fork", "unstable_session_notices", "unstable_session_compaction"] }
 tokio = { version = "1", features = ["process", "io-util", "sync", "macros", "rt", "net", "rt-multi-thread"] }
@@ -255,7 +255,7 @@ block2 = "0.6"
 objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString", "NSData", "NSDictionary", "NSError", "NSObject", "NSArray", "NSValue", "NSURLRequest", "NSURL", "NSEnumerator", "NSObjCRuntime", "NSGeometry", "NSRange", "NSThread", "NSDate", "NSSet", "NSProcessInfo", "NSUUID", "NSURLError"] }
 objc2-web-kit = { version = "0.3", default-features = false, features = ["std", "block2", "objc2-app-kit", "objc2-core-foundation", "WKWebView", "WKWebViewConfiguration", "WKUserContentController", "WKUserScript", "WKContentWorld", "WKScriptMessage", "WKScriptMessageHandler", "WKFrameInfo", "WKSnapshotConfiguration", "WKFindConfiguration", "WKFindResult", "WKNavigation", "WKNavigationAction", "WKNavigationDelegate", "WKNavigationResponse", "WKUIDelegate", "WKWebsiteDataStore", "WKWebsiteDataRecord", "WKContentRuleList", "WKContentRuleListStore"] }
 objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "objc2-core-foundation", "objc2-core-graphics", "NSImage", "NSImageRep", "NSBitmapImageRep", "NSGraphics", "NSGraphicsContext", "NSPasteboard", "NSResponder", "NSView", "NSWindow", "NSApplication"] }
-# Computer use: code-signature checks (Security.framework) between codeg, the
+# Computer use: code-signature checks (Security.framework) between RecurCode, the
 # helper and the driver. Both already in the lock tree via security-framework.
 core-foundation = "0.10"
 core-foundation-sys = "0.8"
@@ -283,7 +283,7 @@ windows = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Com"
 # gated on that feature: a plain target dependency is unconditional on
 # features, so `--no-default-features` would still run the gtk-sys / gdk-sys /
 # atk-sys pkg-config probes while compiling none of the code that needs them.
-# Neither the codeg-server CI cell nor the Docker backend stage installs GTK.
+# Neither the recur-code-server CI cell nor the Docker backend stage installs GTK.
 #
 # `v2_40` is not an independent floor we are choosing: tauri-runtime-wry turns
 # on wry's `linux-body`, which enables it already. Declaring it states the API

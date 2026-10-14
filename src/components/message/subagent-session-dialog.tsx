@@ -14,7 +14,7 @@
  * the same call serves a finished one.
  *
  * Deliberately NOT `LiveTranscriptView`/`MessageListView`: those are bound to a
- * codeg conversation row and a live ACP connection, and a grok sub-agent has
+ * RecurCode conversation row and a live ACP connection, and a grok sub-agent has
  * neither. This renders the parsed turns directly with the shared
  * `ContentPartsRenderer`, which is what the main thread uses for each turn's
  * body anyway.

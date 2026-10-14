@@ -222,7 +222,7 @@ describe("MessageResponse — relative local file links (real Streamdown)", () =
     // the badge renders no extra attributes either way.
     const { container } = render(
       <MessageResponse>
-        {'<a href="/abs/a.md" data-codeg-relative-href="../x">x</a>'}
+        {'<a href="/abs/a.md" data-recur-code-relative-href="../x">x</a>'}
       </MessageResponse>
     )
     await waitFor(() => {

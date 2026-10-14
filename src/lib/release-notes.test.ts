@@ -7,7 +7,7 @@ import {
 
 const ENGLISH = `# Release version 0.24.0
 
-Make codeg yours: recolor any theme, round every corner, or write your own CSS.
+Make RecurCode yours: recolor any theme, round every corner, or write your own CSS.
 
 ## Fixed
 
@@ -16,7 +16,7 @@ Make codeg yours: recolor any theme, round every corner, or write your own CSS.
 
 const CHINESE = `# 发布版本 0.24.0
 
-这一版让 codeg 长成你喜欢的样子：改配色、调圆角，或者直接写自己的 CSS。
+这一版让 RecurCode 长成你喜欢的样子：改配色、调圆角，或者直接写自己的 CSS。
 
 ## 修复
 

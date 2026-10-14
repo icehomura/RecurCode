@@ -6,12 +6,12 @@
 //! subset would be a tautology: it would pass just as happily if every tag in
 //! it were wrong.
 //!
-//! So the fixture in `tests/fixtures/antigravity/` is NOT written by the codeg
+//! So the fixture in `tests/fixtures/antigravity/` is NOT written by the RecurCode
 //! decoder. It was produced by Python's protobuf runtime driving the
 //! `FileDescriptorProto`s extracted from the shipped `agy_acp_server.par`
 //! (build `agy_acp_server_20260818_01_RC01`) — Google's own schema, Google's own
 //! encoder — and laid out in the `steps(idx, step_payload)` SQLite table the Go
-//! harness writes. What this test proves is that codeg's subset agrees with the
+//! harness writes. What this test proves is that RecurCode's subset agrees with the
 //! real thing on the wire.
 //!
 //! Regenerating it needs the shipped archive; the generator is not vendored
@@ -27,8 +27,8 @@
 
 use std::path::PathBuf;
 
-use codeg_lib::models::{ContentBlock, TurnRole};
-use codeg_lib::parsers::{antigravity::AntigravityParser, AgentParser};
+use recur_code_lib::models::{ContentBlock, TurnRole};
+use recur_code_lib::parsers::{antigravity::AntigravityParser, AgentParser};
 
 fn fixture_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -144,7 +144,7 @@ fn decodes_a_trajectory_encoded_by_googles_own_descriptors() {
     // identity buried in a PascalCase envelope — on the planner's announcement
     // (which is what builds this card) as well as on the executing step.
     // Projected verbatim, every MCP call in a session is named "call_mcp_tool"
-    // and none of codeg's MCP-aware cards can match it. The server does not
+    // and none of RecurCode's MCP-aware cards can match it. The server does not
     // ship that shape to ACP clients either, so this mirrors its own rewrite.
     match &blocks[6] {
         ContentBlock::ToolUse {
@@ -154,9 +154,9 @@ fn decodes_a_trajectory_encoded_by_googles_own_descriptors() {
             ..
         } => {
             assert_eq!(tool_use_id.as_deref(), Some("tc-003"));
-            assert_eq!(tool_name, "codeg-mcp_delegate_to_agent");
+            assert_eq!(tool_name, "recur-code-mcp_delegate_to_agent");
             let input = input_preview.as_deref().expect("mcp input");
-            // `{"arguments": {…}}` is the wrapper key every codeg card peels;
+            // `{"arguments": {…}}` is the wrapper key every RecurCode card peels;
             // the raw `Arguments`/`ServerName`/`ToolName` envelope is a shape
             // none of them can read.
             assert_eq!(
@@ -210,7 +210,7 @@ fn decodes_a_trajectory_encoded_by_googles_own_descriptors() {
         other => panic!("expected the harness view_file result, got {other:?}"),
     }
 
-    // ── a step arm codeg does not model ────────────────────────────────────
+    // ── a step arm RecurCode does not model ────────────────────────────────────
     // It still has to SETTLE. A `ToolUse` with no matching `ToolResult` adapts
     // to `input-available` and renders as a spinner — and nothing will ever
     // finish it, because a persisted transcript has no live channel behind it.
@@ -241,7 +241,7 @@ fn decodes_a_trajectory_encoded_by_googles_own_descriptors() {
     assert_eq!(blocks.len(), 12, "no stray blocks: {blocks:?}");
 
     // That last step also carries `task_details` (tag 148) and a packed `Any`
-    // in `attachments` (tag 155) — real fields codeg deliberately does not
+    // in `attachments` (tag 155) — real fields RecurCode deliberately does not
     // model. Reaching this line at all means they were skipped by wire type
     // rather than derailing the decode.
 

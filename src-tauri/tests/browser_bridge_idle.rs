@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 use axum::http::header;
 use axum::Router;
-use codeg_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant};
+use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant};
 
 fn configure() {
     browser_bridge::configure(Some(BridgeConfig {
@@ -47,7 +47,7 @@ fn cookie_for(grant: &BridgeGrant) -> String {
         .entry_path
         .strip_prefix(browser_bridge::ENTER_PREFIX)
         .unwrap();
-    format!("codeg-bridge-{}={cap}", port_of(grant))
+    format!("recur-code-bridge-{}={cap}", port_of(grant))
 }
 
 fn base(grant: &BridgeGrant) -> String {

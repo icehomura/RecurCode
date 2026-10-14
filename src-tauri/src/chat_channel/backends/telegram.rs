@@ -773,7 +773,7 @@ fn json_scalar_to_string(value: &serde_json::Value) -> Option<String> {
 fn telegram_topic_title(title: &str) -> String {
     let title = title.trim();
     let title = if title.is_empty() {
-        "Codeg session"
+        "RecurCode session"
     } else {
         title
     };
@@ -941,11 +941,11 @@ mod tests {
     #[test]
     fn chat_filter_matches_configured_username_case_insensitively() {
         let message = serde_json::json!({
-            "chat": { "id": -100123, "username": "CodegTopics" }
+            "chat": { "id": -100123, "username": "RecurCodeTopics" }
         });
 
-        assert!(telegram_message_chat_matches(&message, "@codegtopics"));
-        assert!(telegram_message_chat_matches(&message, "CODEGTOPICS"));
+        assert!(telegram_message_chat_matches(&message, "@recurcodetopics"));
+        assert!(telegram_message_chat_matches(&message, "RECUR_CODETOPICS"));
         assert!(!telegram_message_chat_matches(&message, "other"));
     }
 

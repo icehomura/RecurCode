@@ -308,7 +308,7 @@ export function ComposerAddMenu({
             </div>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        {/* A custom-dir pi can't have skills managed by codeg's default-dir
+        {/* A custom-dir pi can't have skills managed by RecurCode's default-dir
             store, so hide these shortcuts instead of offering ones that lock
             with a Settings path the Experts/Office matrices also hide for this
             agent. */}

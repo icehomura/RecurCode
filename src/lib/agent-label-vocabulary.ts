@@ -2,11 +2,11 @@
  * Localised names for the vocabulary an agent advertises over ACP.
  *
  * Session modes, session config options and permission options arrive from the
- * agent as already-rendered display strings, and codeg shows them verbatim —
+ * agent as already-rendered display strings, and RecurCode shows them verbatim —
  * which is right, because they are the agent's own concepts and most adapters
  * ship English. `deepseek-acp` does not: it hardcodes Simplified Chinese for
  * every one of them and has no locale mechanism at all (no `LANG`, no setting,
- * nothing), so an English — or Japanese, or German — codeg renders Chinese
+ * nothing), so an English — or Japanese, or German — RecurCode renders Chinese
  * selectors and Chinese approval buttons.
  *
  * The fix is a lookup keyed on **agent type + the stable id**, never on the
@@ -25,7 +25,7 @@
  * - Slash-command and elicitation prose, which carries no stable key and could
  *   only be matched by its Chinese literal.
  * - The agent's system prompt, which is why the model answers in Chinese. That
- *   is upstream behaviour, not a string codeg renders.
+ *   is upstream behaviour, not a string RecurCode renders.
  */
 
 import type {

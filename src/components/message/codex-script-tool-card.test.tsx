@@ -147,7 +147,7 @@ describe("codex code-mode cards", () => {
       input: `echo ${index}`,
       state: "output-available",
       output,
-      meta: { "codeg.codexScript": marks },
+      meta: { "RecurCode.codexScript": marks },
     }
   }
 
@@ -204,7 +204,7 @@ describe("codex code-mode cards", () => {
         input: "git status",
         state: "output-available",
         output: "clean",
-        meta: { "codeg.delegation": { status: "done" } },
+        meta: { "RecurCode.delegation": { status: "done" } },
       },
     ])
 

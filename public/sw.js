@@ -1,5 +1,5 @@
 /*
- * codeg's service worker for the web build.
+ * RecurCode's service worker for the web build.
  *
  * Why this exists: when a PWA window sits minimized, browser memory
  * policies (Edge sleeping tabs, Chrome's Memory Saver) can discard the tab,
@@ -30,7 +30,7 @@
  *
  * Versions: the page registers this script as /sw.js?v=<app version>, so
  * each release installs a new worker whose caches are named after it and
- * start empty, and activate() drops the older codeg caches, keeping only
+ * start empty, and activate() drops the older RecurCode caches, keeping only
  * the previous release's assets for pages still running it. That is what
  * bounds Cache Storage — it never expires entries on its own, so hashed
  * build output would otherwise pile up release after release — and what
@@ -43,15 +43,15 @@
  * Retiring this worker takes a replacement, not a deletion: the static
  * handler answers a missing /sw.js with index.html as text/html, the
  * browser's update check rejects that, and the installed worker keeps
- * running. Ship a sw.js that deletes the codeg caches and unregisters itself.
+ * running. Ship a sw.js that deletes the RecurCode caches and unregisters itself.
  */
 
 const POLICY = "v1"
 const BUILD = new URL(self.location.href).searchParams.get("v") || "unversioned"
 const VERSION = `${POLICY}-${BUILD}`
-const ASSETS_PREFIX = `codeg-assets-${POLICY}-`
+const ASSETS_PREFIX = `recur-code-assets-${POLICY}-`
 const ASSETS_CACHE = `${ASSETS_PREFIX}${BUILD}`
-const SHELL_CACHE = `codeg-shell-${VERSION}`
+const SHELL_CACHE = `recur-code-shell-${VERSION}`
 const SHELL_PATH = "/index.html"
 
 // Stored at install, before this worker can answer anything. The root shell
@@ -94,7 +94,7 @@ self.addEventListener("activate", (event) => {
     (async () => {
       const older = (await caches.keys()).filter(
         (name) =>
-          name.startsWith("codeg-") &&
+          name.startsWith("recur-code-") &&
           name !== ASSETS_CACHE &&
           name !== SHELL_CACHE
       )

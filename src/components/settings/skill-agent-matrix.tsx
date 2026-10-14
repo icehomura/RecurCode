@@ -124,7 +124,7 @@ export function statusKey(skillId: string, agentType: AgentType): string {
 }
 
 function isEnabled(status: ExpertInstallStatus | undefined): boolean {
-  return status?.state === "linked_to_codeg"
+  return status?.state === "linked_to_recur_code"
 }
 
 /** Blocked from being enabled: a real dir or a foreign link sits in the way. */
@@ -342,7 +342,7 @@ export function SkillAgentMatrix({
           next.set(key, {
             expertId: op.expertId,
             agentType: op.agentType,
-            state: op.enable ? "linked_to_codeg" : "not_linked",
+            state: op.enable ? "linked_to_recur_code" : "not_linked",
             linkPath: existing?.linkPath ?? "",
             targetPath: existing?.targetPath ?? null,
             expectedTargetPath: existing?.expectedTargetPath ?? "",

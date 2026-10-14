@@ -116,7 +116,7 @@ describe("ComposerContextUsage cache hit rate", () => {
   it("stays silent when the session reports no cache counters at all", async () => {
     // The shape a self-hosted OpenAI-compatible endpoint produces: real input
     // and output, no cache accounting anywhere. "0.0%" would be a confident
-    // wrong answer — codeg cannot tell an idle cache from an unreported one.
+    // wrong answer — RecurCode cannot tell an idle cache from an unreported one.
     renderUsage(usage({ input_tokens: 5_000, output_tokens: 400 }))
     await openPopover()
 

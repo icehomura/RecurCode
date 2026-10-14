@@ -515,14 +515,14 @@ describe("LogsSettings", () => {
 
     fireEvent.click(screen.getByRole("button", { name: M.targetsAdd }))
 
-    const input = screen.getByPlaceholderText("codeg_lib::acp")
-    fireEvent.change(input, { target: { value: "codeg_lib::acp" } })
+    const input = screen.getByPlaceholderText("recur_code_lib::acp")
+    fireEvent.change(input, { target: { value: "recur_code_lib::acp" } })
     fireEvent.blur(input)
 
     await waitFor(() =>
       expect(mockSetSettings).toHaveBeenCalledWith({
         level: "info",
-        targets: [{ target: "codeg_lib::acp", level: "debug" }],
+        targets: [{ target: "recur_code_lib::acp", level: "debug" }],
       })
     )
   })

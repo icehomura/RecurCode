@@ -200,7 +200,7 @@ describe("the share control", () => {
   })
 
   // A document guest shows a local file, and its address does not give that
-  // away: WebView2 serves it from `https://codeg-doc.localhost/…`. The
+  // away: WebView2 serves it from `https://recur-code-doc.localhost/…`. The
   // backend refuses to bind a grant to one; the control has to agree, or it
   // would offer a share that can only ever fail.
   it("is inert on a document guest, whose address looks like any other site", () => {
@@ -209,8 +209,8 @@ describe("the share control", () => {
         tab={tab}
         state={state({
           kind: "document",
-          url: "https://codeg-doc.localhost/report.html",
-          origin: "https://codeg-doc.localhost",
+          url: "https://recur-code-doc.localhost/report.html",
+          origin: "https://recur-code-doc.localhost",
         })}
       />
     )

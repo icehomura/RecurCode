@@ -4,7 +4,7 @@ This file provides guidance to Code Agent when working with code in this reposit
 
 ## 项目概述
 
-Codeg（Code Generation）是一个多智能体编码工作台，它将多个智能体（Claude Code、Codex CLI、OpenCode、Gemini CLI、OpenClaw、Cline 等）统一到一个工作区中，支持会话聚合和多智能体协作，支持桌面安装，服务器/Docker 部署。
+RecurCode（Code Generation）是一个多智能体编码工作台，它将多个智能体（Claude Code、Codex CLI、OpenCode、Gemini CLI、OpenClaw、Cline 等）统一到一个工作区中，支持会话聚合和多智能体协作，支持桌面安装，服务器/Docker 部署。
 
 ## 技术栈
 
@@ -37,13 +37,13 @@ cargo test --features test-utils
 cargo clippy --all-targets --features test-utils -- -D warnings
 
 # 服务器模式
-cargo check --no-default-features --features server-bin --bin codeg-server
-cargo test --no-default-features --features server-bin --bin codeg-server --lib
-cargo clippy --no-default-features --features server-bin --bin codeg-server --lib -- -D warnings
+cargo check --no-default-features --features server-bin --bin recur-code-server
+cargo test --no-default-features --features server-bin --bin recur-code-server --lib
+cargo clippy --no-default-features --features server-bin --bin recur-code-server --lib -- -D warnings
 
-# codeg-mcp 协作伴生进程（多智能体委托）
-cargo check --no-default-features --features mcp-bin --bin codeg-mcp
-cargo clippy --no-default-features --features mcp-bin --bin codeg-mcp -- -D warnings
+# recur-code-mcp 协作伴生进程（多智能体委托）
+cargo check --no-default-features --features mcp-bin --bin recur-code-mcp
+cargo clippy --no-default-features --features mcp-bin --bin recur-code-mcp -- -D warnings
 
 # 解析器快照评审（输出变化时）
 cargo insta review
@@ -56,11 +56,11 @@ INSTA_UPDATE=auto cargo test --features test-utils     # 自动写新 .snap
 
 项目通过 Cargo feature flags 支持三种二进制：
 
-- **`codeg`**（`tauri-runtime`，默认）：完整桌面应用，包含 Tauri 窗口管理、系统通知、自动更新等
-- **`codeg-server`**（`--no-default-features --features server-bin`）：独立服务器模式，仅编译 Axum HTTP API + WebSocket
-- **`codeg-mcp`**（`--no-default-features --features mcp-bin`）：per-launch stdio MCP 伴生进程，被注入到代理 CLI 的 MCP 配置中，向 LLM 暴露**异步**子智能体委托工具。
+- **`RecurCode`**（`tauri-runtime`，默认）：完整桌面应用，包含 Tauri 窗口管理、系统通知、自动更新等
+- **`recur-code-server`**（`--no-default-features --features server-bin`）：独立服务器模式，仅编译 Axum HTTP API + WebSocket
+- **`recur-code-mcp`**（`--no-default-features --features mcp-bin`）：per-launch stdio MCP 伴生进程，被注入到代理 CLI 的 MCP 配置中，向 LLM 暴露**异步**子智能体委托工具。
 
-后两个（以及 `codeg-computer-helper` 的 `computer-helper`）各要一个默认不开的 feature：Tauri CLI 会把所有 feature 已开的二进制目标打进桌面安装包，不开就不进包。
+后两个（以及 `recur-code-computer-helper` 的 `computer-helper`）各要一个默认不开的 feature：Tauri CLI 会把所有 feature 已开的二进制目标打进桌面安装包，不开就不进包。
 
 ### 共享核心
 
@@ -112,7 +112,7 @@ INSTA_UPDATE=auto cargo test --features test-utils     # 自动写新 .snap
 
 - **仅支持静态导出**：`next.config.ts` 设置 `output: "export"`，不支持动态路由（`[param]`），必须使用查询参数替代
 - **路径别名**：`@/*` 映射到 `./src/*`，导入写法为 `@/lib/utils`、`@/components/ui/button`
-- **服务器部署**：通过环境变量配置（`CODEG_PORT`、`CODEG_HOST`、`CODEG_TOKEN`、`CODEG_DATA_DIR`、`CODEG_STATIC_DIR`）
+- **服务器部署**：通过环境变量配置（`RECUR_CODE_PORT`、`RECUR_CODE_HOST`、`RECUR_CODE_TOKEN`、`RECUR_CODE_DATA_DIR`、`RECUR_CODE_STATIC_DIR`）
 - **Docker 支持**：多阶段构建（Node.js + Rust），支持 `docker-compose` 一键部署
 
 ## 代码风格

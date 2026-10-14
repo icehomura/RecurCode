@@ -857,7 +857,7 @@ pub(crate) async fn api_get(
     let response = super::http_client()?
         .get(url)
         .header("PRIVATE-TOKEN", &auth.token)
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         .header("Accept", "application/json")
         .send()
         .await
@@ -890,7 +890,7 @@ async fn send(
 ) -> Result<reqwest::Response, ForgeError> {
     let response = request
         .header("PRIVATE-TOKEN", &auth.token)
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         .header("Accept", "application/json")
         .json(body)
         .send()
@@ -970,7 +970,7 @@ fn keeps(requested: &str, actual: &str) -> bool {
 }
 
 /// GitLab's `opened`/`locked`/`merged`/`closed` in the three words the rest of
-/// codeg (and the workbench row's icon) understands. `merged` survives as
+/// RecurCode (and the workbench row's icon) understands. `merged` survives as
 /// itself: it is a real state here, unlike GitHub where it has to be inferred.
 fn display_state(state: &str) -> String {
     match state {

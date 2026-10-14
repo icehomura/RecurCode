@@ -13,7 +13,7 @@ export interface ModelOptionGroup {
   options: SessionConfigSelectOptionInfo[]
 }
 
-// The id every agent codeg ships publishes its model selector under. ACP
+// The id every agent RecurCode ships publishes its model selector under. ACP
 // reserves none, so this is a convention rather than a guarantee — the backend
 // pairs it with the `model` category for the same reason
 // (`connection.rs::is_model_config_option`).

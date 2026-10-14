@@ -205,7 +205,7 @@ pub enum ForgeError {
     /// [`ForgeError::Auth`]: adding another account fixes none of them.
     #[error("no {} account for host {host}", provider.display_name())]
     NoAccount { provider: ForgeProvider, host: String },
-    /// The host is not one codeg can read: nothing is configured for it and its
+    /// The host is not one RecurCode can read: nothing is configured for it and its
     /// name claims none of the forges. Distinct from [`ForgeError::NoAccount`]
     /// because the advice differs — "add a GitHub account for bitbucket.org"
     /// is advice that cannot work, while "only GitHub, GitLab and Gitea are
@@ -213,7 +213,7 @@ pub enum ForgeError {
     /// in for a self-hosted instance under an unrelated name).
     #[error("unsupported forge host {host}: only GitHub, GitLab and Gitea are supported")]
     UnsupportedHost { host: String },
-    /// The host answered in a way only the OTHER forge answers — codeg had it
+    /// The host answered in a way only the OTHER forge answers — RecurCode had it
     /// classified wrong and now knows better. Recoverable by construction: the
     /// detection cache has already been corrected by the time this is
     /// returned, so repeating the request routes it to the right client.
@@ -1585,7 +1585,7 @@ pub fn sanitize_web_url(raw: &str) -> Option<String> {
 
 /// Proxy-aware shared HTTP client. A reqwest client caches its proxy
 /// configuration for its whole lifetime (`network/proxy.rs` startup contract),
-/// but codeg lets the user change the proxy at runtime — so the client is
+/// but RecurCode lets the user change the proxy at runtime — so the client is
 /// keyed by the current proxy env fingerprint and rebuilt whenever that
 /// changes. Lazy construction also lands after `init_proxy_from_db` for free.
 /// The proxy env fingerprint a client was built under, paired with that client.

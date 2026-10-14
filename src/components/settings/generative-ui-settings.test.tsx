@@ -83,7 +83,7 @@ const cell = (agentName: string, state: string) =>
 beforeEach(() => {
   vi.clearAllMocks()
   linked = new Map<AgentType, ExpertLinkState>([
-    ["claude_code", "linked_to_codeg"],
+    ["claude_code", "linked_to_recur_code"],
     ["codex", "not_linked"],
   ])
   skillInfo.mockResolvedValue({ id: "ui-render", conflict: false })
@@ -97,7 +97,7 @@ beforeEach(() => {
   )
   applyLinks.mockImplementation(async (ops) =>
     ops.map((op) => {
-      linked.set(op.agentType, op.enable ? "linked_to_codeg" : "not_linked")
+      linked.set(op.agentType, op.enable ? "linked_to_recur_code" : "not_linked")
       return {
         expertId: op.expertId,
         agentType: op.agentType,
@@ -191,7 +191,7 @@ describe("the UI tab", () => {
     await cell("Codex", "Not enabled")
     expect(skillInfo).toHaveBeenCalledTimes(1)
 
-    linked.set("codex", "linked_to_codeg")
+    linked.set("codex", "linked_to_recur_code")
     await act(async () => refresh?.())
     expect(await cell("Codex", "Enabled")).toHaveAttribute(
       "aria-checked",
@@ -216,7 +216,7 @@ describe("the UI tab", () => {
         })
     )
     await act(async () => refresh?.())
-    linked.set("codex", "linked_to_codeg")
+    linked.set("codex", "linked_to_recur_code")
     await act(async () => refresh?.())
     expect(await cell("Codex", "Enabled")).toBeInTheDocument()
 

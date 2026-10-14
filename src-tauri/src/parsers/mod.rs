@@ -27,7 +27,7 @@ use std::sync::OnceLock;
 
 /// A root of external agent-CLI transcript data, archived under
 /// `external/<agent>/` by the optional "include conversation content" toggle.
-/// These paths are owned by the respective CLIs — codeg only reads them.
+/// These paths are owned by the respective CLIs — RecurCode only reads them.
 #[derive(Clone)]
 pub struct ExternalSource {
     /// Stable directory name inside the archive (`external/<agent>/`).
@@ -372,7 +372,7 @@ pub trait AgentParser {
 ///
 /// Every caller goes through here so the internal `@agent` routing frame is
 /// stripped from every agent's history — not just the one agent whose parser
-/// happens to know about it. `codeg-mcp` is injected into every MCP-capable
+/// happens to know about it. `recur-code-mcp` is injected into every MCP-capable
 /// agent, so the frame lands in each of their native transcripts; a per-parser
 /// fix would silently miss whichever parser was written next.
 pub fn build_agent_parser(agent_type: AgentType) -> Box<dyn AgentParser> {
@@ -397,13 +397,13 @@ pub fn build_agent_parser(agent_type: AgentType) -> Box<dyn AgentParser> {
         // pointed at `~/.ra/agent/sessions`.
         AgentType::RecurAgent => Box::new(recur::RecurParser::new()),
         // Custom ACP agents have no native store to reverse-engineer; their
-        // history is codeg's own ACP transcript.
+        // history is RecurCode's own ACP transcript.
         AgentType::Custom(_) => Box::new(acp_native::AcpNativeParser::new(agent_type)),
     };
     Box::new(RouteSanitized(inner))
 }
 
-/// Removes Codeg's internal `@agent` routing frame from whatever a parser read
+/// Removes RecurCode's internal `@agent` routing frame from whatever a parser read
 /// back out of an agent's own transcript.
 ///
 /// Only complete frames that re-render byte-for-byte are touched (see
@@ -525,7 +525,7 @@ fn sanitize_text(text: &mut String) -> bool {
 /// on `GEMINI_HOME` (`acp_server/paths.py`) and DeepSeek expands `DSH_HOME`
 /// (`dsh-home-paths`' `expandHomePath`), but Hermes's `get_hermes_home` is a
 /// bare `Path(val.strip())` and Codex, Claude and the rest are likewise
-/// verbatim. Expanding for one of those would point codeg at `$HOME/...` while
+/// verbatim. Expanding for one of those would point RecurCode at `$HOME/...` while
 /// the agent used a literal `~` directory — and, in the fs sandbox, would hand
 /// out `$HOME` as a writable root the user never selected.
 ///
@@ -1225,7 +1225,7 @@ pub fn merge_context_window_stats(
 /// Stamp a context-window occupancy the AGENT stated directly, overriding
 /// whatever [`merge_context_window_stats`] recomputed from used/max.
 ///
-/// Most agents publish token counts and codeg derives the percentage. Qoder
+/// Most agents publish token counts and RecurCode derives the percentage. Qoder
 /// publishes the percentage (`usage.context_usage_ratio`) and, for its own
 /// hosted models, redacts the token counters to zero — so for those sessions
 /// the stated figure is the ONLY occupancy signal that exists, and
@@ -1266,12 +1266,12 @@ pub fn with_reported_context_percent(
 /// The live reader stamps it on every call it translates from the ACP
 /// compaction lifecycle (`acp::connection::session_compaction_event`); a history
 /// parser stamps it through [`attach_compaction_summary`] on a divider whose
-/// summary its transcript still holds. Codeg-namespaced (like
-/// `codeg.delegation`) rather than nested in `contextCompaction`, whose members
+/// summary its transcript still holds. RecurCode-namespaced (like
+/// `RecurCode.delegation`) rather than nested in `contextCompaction`, whose members
 /// are the adapters' reserved vocabulary. The frontend twin is
 /// `COMPACTION_SUMMARY_META_KEY` in `src/lib/context-compaction.ts`, which shows
 /// a compaction call's output as its summary only under this claim.
-pub(crate) const COMPACTION_SUMMARY_META_KEY: &str = "codeg.compactionSummary";
+pub(crate) const COMPACTION_SUMMARY_META_KEY: &str = "RecurCode.compactionSummary";
 
 /// Hand a synthesized compaction divider — the `_meta.contextCompaction`
 /// ToolUse and its paired ToolResult that every parser emits for a compaction —
@@ -1790,7 +1790,7 @@ mod route_sanitizer_tests {
     /// every MCP-capable agent then persists into its own transcript.
     fn routing_frame(agent_wire: &str) -> String {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: format!("ask [@A](codeg://agent/{agent_wire}) to help"),
+            text: format!("ask [@A](recurcode://agent/{agent_wire}) to help"),
         }];
         append_agent_routes(&mut blocks, true);
         match &blocks[1] {
@@ -1889,7 +1889,7 @@ mod route_sanitizer_tests {
         // The whole point of the shared decorator: this fixture stands in for
         // claude / gemini / opencode / … , none of which know about the frame.
         let frame = routing_frame("antigravity");
-        let visible = "ask [@A](codeg://agent/antigravity) to help";
+        let visible = "ask [@A](recurcode://agent/antigravity) to help";
         let detail = sanitized(Fixture {
             summary: summary(Some(&format!("{visible}\n{frame}")), 2),
             turns: vec![
@@ -1915,7 +1915,7 @@ mod route_sanitizer_tests {
     /// blank band under an `@`-mention bubble reopened from history.
     #[test]
     fn a_frame_in_its_own_block_leaves_no_empty_block_behind() {
-        let visible = "ask [@A](codeg://agent/claude_code) to help";
+        let visible = "ask [@A](recurcode://agent/claude_code) to help";
         let mut user = turn(TurnRole::User, visible);
         user.blocks.push(ContentBlock::Text {
             text: routing_frame("claude_code"),
@@ -1939,7 +1939,7 @@ mod route_sanitizer_tests {
     /// message — same symptom, different transcript shape.
     #[test]
     fn a_blank_line_before_the_frame_is_not_left_behind() {
-        let visible = "ask [@A](codeg://agent/codex) to help";
+        let visible = "ask [@A](recurcode://agent/codex) to help";
         let frame = routing_frame("codex");
         let detail = sanitized(Fixture {
             summary: summary(Some(visible), 1),
@@ -1960,7 +1960,7 @@ mod route_sanitizer_tests {
     /// inside the sidebar title as well.
     #[test]
     fn a_frame_an_agent_stored_without_separators_leaves_neither_prose_nor_title() {
-        let visible = "ask [@A](codeg://agent/antigravity) to help";
+        let visible = "ask [@A](recurcode://agent/antigravity) to help";
         let frame = routing_frame("antigravity");
         // ` ` block join + each separator rewritten to ` `.
         let persisted = format!("{visible} {}", frame.replace('\u{001e}', " "));
@@ -1970,7 +1970,7 @@ mod route_sanitizer_tests {
         // cap is 100 chars and the body alone runs past 500.
         let capped = super::title_from_user_text(&persisted);
         assert!(
-            capped.contains("codeg_internal_agent_routes"),
+            capped.contains("recur_code_internal_agent_routes"),
             "fixture must straddle the frame, or the cut proves nothing"
         );
         let detail = sanitized(Fixture {
@@ -1991,14 +1991,14 @@ mod route_sanitizer_tests {
     /// exists for the agents that rewrite the separators away.
     #[test]
     fn a_title_capped_halfway_through_the_marker_still_leaks_nothing() {
-        let prose = format!("{} ask [@A](codeg://agent/antigravity) to help", "x".repeat(66));
+        let prose = format!("{} ask [@A](recurcode://agent/antigravity) to help", "x".repeat(66));
         let frame = routing_frame("antigravity");
         let persisted = format!("{prose} {}", frame.replace('\u{001e}', " "));
 
         let capped = super::title_from_user_text(&persisted);
-        let marker = "{\"kind\":\"codeg_internal_agent_routes\"";
+        let marker = "{\"kind\":\"recur_code_internal_agent_routes\"";
         assert!(
-            capped.contains("{\"kind\":\"codeg") && !capped.contains(marker),
+            capped.contains("{\"kind\":\"RecurCode") && !capped.contains(marker),
             "the cap must land INSIDE the marker, or this repeats the previous \
              test — got {capped:?}"
         );
@@ -2081,7 +2081,7 @@ mod route_sanitizer_tests {
         // separator is scrubbed from every prompt at ingress, so prose a user
         // can actually type is the tag text WITHOUT it.
         let look_alike =
-            "see <codeg_internal_agent_routes version=\"2\">note</codeg_internal_agent_routes>";
+            "see <recur_code_internal_agent_routes version=\"2\">note</recur_code_internal_agent_routes>";
         // Each frame carries its own nonce, so capture ONE and compare to it.
         let echoed = routing_frame("codex");
         let detail = sanitized(Fixture {
@@ -2109,7 +2109,7 @@ mod route_sanitizer_tests {
     fn only_a_title_is_cut_at_a_dangling_separator() {
         // A parser caps a title but never a turn's text, so a lone separator is
         // evidence of a sliced frame in the first case and not in the second.
-        let dangling = "see \u{001e}<codeg_internal_agent_routes version=\"2\">no";
+        let dangling = "see \u{001e}<recur_code_internal_agent_routes version=\"2\">no";
         let detail = sanitized(Fixture {
             summary: summary(Some(dangling), 1),
             turns: vec![turn(TurnRole::User, dangling)],
@@ -2292,9 +2292,9 @@ mod tests {
             fold_reference_links("看看 [README.md](file:///Users/x/README.md) 这是什么"),
             "看看 README.md 这是什么"
         );
-        // codeg:// links fold too; an agent mention keeps its `@`.
+        // recurcode:// links fold too; an agent mention keeps its `@`.
         assert_eq!(
-            fold_reference_links("调用 [@Codex CLI](codeg://agent/codex) 执行"),
+            fold_reference_links("调用 [@Codex CLI](recurcode://agent/codex) 执行"),
             "调用 @Codex CLI 执行"
         );
         // Multiple links in one string.
@@ -2603,12 +2603,12 @@ mod tests {
     #[test]
     fn path_matching_handles_separator_differences() {
         assert!(path_eq_for_matching(
-            "/Users/demo/workspace/codeg",
-            "/Users/demo/workspace/codeg/"
+            "/Users/demo/workspace/RecurCode",
+            "/Users/demo/workspace/RecurCode/"
         ));
         assert!(path_eq_for_matching(
-            "C:\\Users\\demo\\workspace\\codeg",
-            "C:/Users/demo/workspace/codeg"
+            "C:\\Users\\demo\\workspace\\RecurCode",
+            "C:/Users/demo/workspace/RecurCode"
         ));
     }
 }

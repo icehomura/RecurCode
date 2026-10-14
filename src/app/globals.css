@@ -1404,7 +1404,7 @@
 /* OverlayScrollbars custom theme — 6px track, grows to 8px on hover.
    Use compound selector to beat the base `.os-scrollbar` defaults
    (--os-size:0, --os-handle-bg:none) regardless of CSS load order. */
-.os-scrollbar.os-theme-codeg {
+.os-scrollbar.os-theme-RecurCode {
   --os-size: 6px;
   --os-handle-bg: var(--border);
   --os-handle-bg-hover: var(--muted-foreground);
@@ -1416,7 +1416,7 @@
   z-index: 40;
 }
 
-.os-scrollbar.os-theme-codeg:hover {
+.os-scrollbar.os-theme-RecurCode:hover {
   --os-size: 8px;
 }
 
@@ -1933,7 +1933,7 @@ div.monaco-diff-editor.side-by-side .editor.modified {
   box-shadow: none;
 }
 
-.monaco-editor .codeg-dirty-diff-glyph {
+.monaco-editor .recur-code-dirty-diff-glyph {
   margin-left: 5px;
   position: relative;
   border-left-style: solid;
@@ -1941,19 +1941,19 @@ div.monaco-diff-editor.side-by-side .editor.modified {
   z-index: 5;
 }
 
-.monaco-editor .codeg-dirty-diff-added {
+.monaco-editor .recur-code-dirty-diff-added {
   border-left-color: #2ea043;
 }
 
-.monaco-editor .codeg-dirty-diff-modified {
+.monaco-editor .recur-code-dirty-diff-modified {
   border-left-color: #1f6feb;
 }
 
-.monaco-editor .codeg-dirty-diff-deleted {
+.monaco-editor .recur-code-dirty-diff-deleted {
   border-left-color: #cf222e;
 }
 
-.monaco-editor .codeg-dirty-diff-deleted::after {
+.monaco-editor .recur-code-dirty-diff-deleted::after {
   content: "";
   position: absolute;
   bottom: -4px;
@@ -1962,72 +1962,72 @@ div.monaco-diff-editor.side-by-side .editor.modified {
   border-top-color: #cf222e;
 }
 
-.monaco-editor .codeg-session-diff-line-added {
+.monaco-editor .recur-code-session-diff-line-added {
   background-color: rgba(46, 160, 67, 0.14);
 }
 
-.monaco-editor .codeg-session-diff-line-modified {
+.monaco-editor .recur-code-session-diff-line-modified {
   background-color: rgba(31, 111, 235, 0.12);
 }
 
-.monaco-editor .codeg-session-diff-line-deleted {
+.monaco-editor .recur-code-session-diff-line-deleted {
   background-color: rgba(207, 34, 46, 0.12);
 }
 
-.dark .monaco-editor .codeg-dirty-diff-added {
+.dark .monaco-editor .recur-code-dirty-diff-added {
   border-left-color: #3fb950;
 }
 
-.dark .monaco-editor .codeg-dirty-diff-modified {
+.dark .monaco-editor .recur-code-dirty-diff-modified {
   border-left-color: #388bfd;
 }
 
-.dark .monaco-editor .codeg-dirty-diff-deleted {
+.dark .monaco-editor .recur-code-dirty-diff-deleted {
   border-left-color: #f85149;
 }
 
-.dark .monaco-editor .codeg-dirty-diff-deleted::after {
+.dark .monaco-editor .recur-code-dirty-diff-deleted::after {
   border-top-color: #f85149;
 }
 
-.dark .monaco-editor .codeg-session-diff-line-added {
+.dark .monaco-editor .recur-code-session-diff-line-added {
   background-color: rgba(63, 185, 80, 0.18);
 }
 
-.dark .monaco-editor .codeg-session-diff-line-modified {
+.dark .monaco-editor .recur-code-session-diff-line-modified {
   background-color: rgba(56, 139, 253, 0.2);
 }
 
-.dark .monaco-editor .codeg-session-diff-line-deleted {
+.dark .monaco-editor .recur-code-session-diff-line-deleted {
   background-color: rgba(248, 81, 73, 0.2);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .monaco-editor .codeg-dirty-diff-added {
+  :root:not(.light) .monaco-editor .recur-code-dirty-diff-added {
     border-left-color: #3fb950;
   }
 
-  :root:not(.light) .monaco-editor .codeg-dirty-diff-modified {
+  :root:not(.light) .monaco-editor .recur-code-dirty-diff-modified {
     border-left-color: #388bfd;
   }
 
-  :root:not(.light) .monaco-editor .codeg-dirty-diff-deleted {
+  :root:not(.light) .monaco-editor .recur-code-dirty-diff-deleted {
     border-left-color: #f85149;
   }
 
-  :root:not(.light) .monaco-editor .codeg-dirty-diff-deleted::after {
+  :root:not(.light) .monaco-editor .recur-code-dirty-diff-deleted::after {
     border-top-color: #f85149;
   }
 
-  :root:not(.light) .monaco-editor .codeg-session-diff-line-added {
+  :root:not(.light) .monaco-editor .recur-code-session-diff-line-added {
     background-color: rgba(63, 185, 80, 0.18);
   }
 
-  :root:not(.light) .monaco-editor .codeg-session-diff-line-modified {
+  :root:not(.light) .monaco-editor .recur-code-session-diff-line-modified {
     background-color: rgba(56, 139, 253, 0.2);
   }
 
-  :root:not(.light) .monaco-editor .codeg-session-diff-line-deleted {
+  :root:not(.light) .monaco-editor .recur-code-session-diff-line-deleted {
     background-color: rgba(248, 81, 73, 0.2);
   }
 }
@@ -2206,7 +2206,7 @@ div.monaco-diff-editor.side-by-side .editor.modified {
 
 /* ───────────────── Rich-text composer (Tiptap) ─────────────────
    Live WYSIWYG Markdown styling for the message composer. Scoped to
-   `.codeg-composer` so it never leaks into Streamdown message rendering. */
+   `.recur-code-composer` so it never leaks into Streamdown message rendering. */
 
 /* The composer box reads as one editable surface: clicking its blank chrome
    (padding, the dead space below a short message, the action-bar gaps) focuses
@@ -2215,10 +2215,10 @@ div.monaco-diff-editor.side-by-side .editor.modified {
    re-assert a pointer (buttons carry no explicit cursor of their own). Disabled
    buttons keep `pointer-events: none`, so the box's I-beam shows through them —
    intended: clicking a disabled control still focuses the editor. */
-.codeg-composer-chrome {
+.recur-code-composer-chrome {
   cursor: text;
 }
-.codeg-composer-chrome
+.recur-code-composer-chrome
   :is(button, a[href], [role="button"], [role="menuitem"], [role="combobox"]) {
   cursor: pointer;
 }
@@ -2236,12 +2236,12 @@ div.monaco-diff-editor.side-by-side .editor.modified {
    maintainer runs reduced-motion ON but wants requested motion to play (repo
    convention, matches the always-on spinners); at most one composer animates at
    a time over a 1px ring, so the repaint cost is negligible. */
-@property --codeg-flow-angle {
+@property --recur-code-flow-angle {
   syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
 }
-.codeg-composer-flow::before {
+.recur-code-composer-flow::before {
   content: "";
   position: absolute;
   inset: -1px;
@@ -2249,7 +2249,7 @@ div.monaco-diff-editor.side-by-side .editor.modified {
   border-radius: inherit;
   padding: 1px;
   background: conic-gradient(
-    from var(--codeg-flow-angle, 0deg),
+    from var(--recur-code-flow-angle, 0deg),
     #ff453a,
     #32d74b,
     #0a84ff,
@@ -2264,22 +2264,22 @@ div.monaco-diff-editor.side-by-side .editor.modified {
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
-  animation: codeg-composer-flow 2.5s linear infinite;
+  animation: recur-code-composer-flow 2.5s linear infinite;
 }
 /* The flow is the "active session, input not focused" cue: the moment the
    composer itself gains focus, hide it so the input reverts to its plain default
    style (the standard focus ring applied in the composer className).
    `display:none` also stops the animation while the input is focused. */
-.codeg-composer-flow:focus-within::before {
+.recur-code-composer-flow:focus-within::before {
   display: none;
 }
-@keyframes codeg-composer-flow {
+@keyframes recur-code-composer-flow {
   to {
-    --codeg-flow-angle: 360deg;
+    --recur-code-flow-angle: 360deg;
   }
 }
 
-.codeg-composer .ProseMirror {
+.recur-code-composer .ProseMirror {
   outline: none;
   white-space: pre-wrap;
   word-break: break-word;
@@ -2295,11 +2295,11 @@ div.monaco-diff-editor.side-by-side .editor.modified {
    System highlight colors match the native focused selection (no visible jump).
    `::selection` is suppressed inside the decoration so the two don't double up
    where the browser still paints an inactive selection. */
-.codeg-composer .codeg-inactive-selection {
+.recur-code-composer .recur-code-inactive-selection {
   background-color: Highlight;
   color: HighlightText;
 }
-.codeg-composer .codeg-inactive-selection::selection {
+.recur-code-composer .recur-code-inactive-selection::selection {
   background-color: transparent;
 }
 
@@ -2311,11 +2311,11 @@ div.monaco-diff-editor.side-by-side .editor.modified {
    from being painted; the marker's own advance width becomes the quote's indent,
    which keeps caret movement, selection and IME entirely native (nothing here
    changes the text a transaction sees). */
-.codeg-composer .ProseMirror .codeg-quote-marker {
+.recur-code-composer .ProseMirror .recur-code-quote-marker {
   position: relative;
   color: transparent;
 }
-.codeg-composer .ProseMirror .codeg-quote-marker::before {
+.recur-code-composer .ProseMirror .recur-code-quote-marker::before {
   content: "";
   position: absolute;
   left: 0.1875rem;
@@ -2323,7 +2323,7 @@ div.monaco-diff-editor.side-by-side .editor.modified {
   width: 2px;
   /* Exactly one line box tall so consecutive quoted lines' rules meet with no
      seam. This tracks the `line-height: 1.55` declared on
-     `.codeg-composer .ProseMirror` above: inherited as a unitless number, it
+     `.recur-code-composer .ProseMirror` above: inherited as a unitless number, it
      resolves to 1.55 × this element's own font size, which is what `em` is. */
   height: 1.55em;
   transform: translateY(-50%);
@@ -2337,77 +2337,77 @@ div.monaco-diff-editor.side-by-side .editor.modified {
    is unsupported an invalid `height` on an absolutely positioned pseudo-element
    collapses it to nothing (no rule at all, silently). */
 @supports (height: 1lh) {
-  .codeg-composer .ProseMirror .codeg-quote-marker::before {
+  .recur-code-composer .ProseMirror .recur-code-quote-marker::before {
     height: 1lh;
   }
 }
 
 /* Tight block rhythm — a chat input, not a document. */
-.codeg-composer .ProseMirror > * {
+.recur-code-composer .ProseMirror > * {
   margin: 0;
 }
-.codeg-composer .ProseMirror > * + * {
+.recur-code-composer .ProseMirror > * + * {
   margin-top: 0.5rem;
 }
 
-.codeg-composer .ProseMirror :is(h1, h2, h3, h4) {
+.recur-code-composer .ProseMirror :is(h1, h2, h3, h4) {
   font-weight: 600;
   line-height: 1.3;
 }
-.codeg-composer .ProseMirror h1 {
+.recur-code-composer .ProseMirror h1 {
   font-size: 1.25rem;
 }
-.codeg-composer .ProseMirror h2 {
+.recur-code-composer .ProseMirror h2 {
   font-size: 1.125rem;
 }
-.codeg-composer .ProseMirror :is(h3, h4) {
+.recur-code-composer .ProseMirror :is(h3, h4) {
   font-size: 1rem;
 }
 
-.codeg-composer .ProseMirror :is(ul, ol) {
+.recur-code-composer .ProseMirror :is(ul, ol) {
   padding-left: 1.25rem;
 }
-.codeg-composer .ProseMirror ul {
+.recur-code-composer .ProseMirror ul {
   list-style: disc;
 }
-.codeg-composer .ProseMirror ol {
+.recur-code-composer .ProseMirror ol {
   list-style: decimal;
 }
-.codeg-composer .ProseMirror li > p {
+.recur-code-composer .ProseMirror li > p {
   margin: 0;
 }
 
 /* No blockquote rule here: the schema has no blockquote node (StarterKit
    disables it), so a quote in the composer is literal `> ` text painted by the
-   `.codeg-quote-marker` decoration above. */
+   `.recur-code-quote-marker` decoration above. */
 
-.codeg-composer .ProseMirror code {
+.recur-code-composer .ProseMirror code {
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.85em;
   background: var(--muted);
   padding: 0.1em 0.3em;
   border-radius: 0.25rem;
 }
-.codeg-composer .ProseMirror pre {
+.recur-code-composer .ProseMirror pre {
   background: var(--muted);
   border-radius: 0.5rem;
   padding: 0.6rem 0.75rem;
   overflow-x: auto;
 }
-.codeg-composer .ProseMirror pre code {
+.recur-code-composer .ProseMirror pre code {
   background: transparent;
   padding: 0;
   font-size: 0.8125rem;
 }
 
-.codeg-composer .ProseMirror a {
+.recur-code-composer .ProseMirror a {
   color: var(--primary);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 /* Placeholder painted by @tiptap/extension-placeholder on the empty doc. */
-.codeg-composer .ProseMirror p.is-editor-empty:first-child::before {
+.recur-code-composer .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   color: var(--muted-foreground);
   float: left;
@@ -2416,13 +2416,13 @@ div.monaco-diff-editor.side-by-side .editor.modified {
 }
 
 /* Inline reference badges (atom node view). */
-.codeg-composer .codeg-reference {
+.recur-code-composer .recur-code-reference {
   cursor: default;
   user-select: none;
   white-space: normal;
 }
-.codeg-composer
-  .codeg-reference.ProseMirror-selectednode
+.recur-code-composer
+  .recur-code-reference.ProseMirror-selectednode
   [data-reference-badge] {
   outline: 2px solid var(--ring);
   outline-offset: 1px;

@@ -146,7 +146,7 @@ export function useOpenUrlTarget() {
           break
         case "builtin": {
           // `remote` rides along to wherever the page opens: an address on
-          // the remote codeg host must not load in a profile of this computer.
+          // the remote RecurCode host must not load in a profile of this computer.
           const request: BrowserRequest = action.remote
             ? { kind: "browser", url: action.url, remote: true }
             : { kind: "browser", url: action.url }

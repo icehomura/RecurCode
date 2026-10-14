@@ -1,6 +1,6 @@
 // Transport-aware bindings + shared model for the workspace background image.
 //
-// The image bytes live on disk under `~/.codeg/backgrounds/` (backend
+// The image bytes live on disk under `~/.recurcode/backgrounds/` (backend
 // `crate::backgrounds`), read/written through `getTransport().call(...)` so the
 // same code runs in Tauri (`invoke`) and standalone-server (`fetch`) modes —
 // mirroring `src/lib/pet/api.ts`. The lightweight display config (enabled,

@@ -515,7 +515,7 @@ export function GeneralSettings() {
 
         <CloseBehaviorSettingsSection />
 
-        {/* The two halves of "how Codeg gets my attention", adjacent on
+        {/* The two halves of "how RecurCode gets my attention", adjacent on
             purpose: one leaves the window, one does not. */}
         <DesktopNotificationSettingsSection />
 

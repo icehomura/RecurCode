@@ -3,7 +3,7 @@
  *
  * Claude Code 2.1.283+ lists them on every `system/init` frame as
  * `plugin_errors`, and claude-agent-acp only writes them to its own stderr —
- * they have no ACP surface. The backend reads them off the raw SDK stream codeg
+ * they have no ACP surface. The backend reads them off the raw SDK stream RecurCode
  * already subscribes to and forwards a set once per connection (again only when
  * it changes), so a plugin that silently lost its commands, skills, agents or
  * MCP servers says so. It matters beyond convenience: a plugin hook that fails

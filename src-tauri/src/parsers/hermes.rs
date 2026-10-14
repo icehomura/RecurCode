@@ -70,7 +70,7 @@ impl HermesParser {
 
     /// Open the Hermes state DB read-only. `mode=ro` reads committed WAL frames
     /// even while the Hermes ACP server is actively writing (verified against a
-    /// live process), and guarantees codeg never mutates Hermes data.
+    /// live process), and guarantees RecurCode never mutates Hermes data.
     async fn open_sqlite_connection(&self) -> Result<DatabaseConnection, ParseError> {
         let db_path = self.sqlite_db_path();
         let db_url = format!(
@@ -453,7 +453,7 @@ fn resolve_hermes_home(env: Option<String>, home: Option<PathBuf>) -> PathBuf {
         // truth") is `Path(os.environ["HERMES_HOME"].strip())` with no
         // `expanduser`, so `HERMES_HOME=~/somewhere` really does make Hermes
         // create and use a directory LITERALLY named `~`, next to wherever it
-        // was launched. Expanding here pointed codeg at `$HOME/somewhere`
+        // was launched. Expanding here pointed RecurCode at `$HOME/somewhere`
         // instead — a directory Hermes never touches — so the session list came
         // back empty and the `.env` base-URL reconcile
         // (`commands::acp::reconcile_hermes_runtime_env`) patched a file the
@@ -474,12 +474,12 @@ fn resolve_hermes_home(env: Option<String>, home: Option<PathBuf>) -> PathBuf {
 /// stamps it (`end_reason = 'acp_disconnect'`) on every session it holds when
 /// its stdio closes (`end_all_sessions`, called from `acp_adapter/entry.py`),
 /// and `session/load` / `session/resume` clear it again, so a conversation that
-/// is only opened and closed gets a fresh `ended_at` and no new message. codeg
+/// is only opened and closed gets a fresh `ended_at` and no new message. RecurCode
 /// reads a summary's `ended_at` as where the transcript ends: import stamps
 /// `updated_at` with it, and the import scan moves a conversation forward
 /// whenever it grows, which floated every merely-opened conversation to the
 /// top of the sidebar. Upstream ranks sessions by the newest message timestamp
-/// too (`_sql_freshest_of`, which also folds in a heartbeat column codeg does
+/// too (`_sql_freshest_of`, which also folds in a heartbeat column RecurCode does
 /// not need), and skips the same out-of-window values: a timestamp outside
 /// `EPOCH_MIN..=EPOCH_MAX` (0 to 4.2e9 seconds; the garbage doubles a damaged
 /// page leaves behind, or TEXT) must not pin the session's recency.

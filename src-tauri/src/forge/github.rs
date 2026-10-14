@@ -1073,7 +1073,7 @@ pub(crate) async fn api_get(
     let response = super::http_client()?
         .get(url)
         .header("Authorization", format!("Bearer {}", auth.token))
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         .header("Accept", "application/vnd.github+json")
         .header("X-GitHub-Api-Version", "2022-11-28")
         .send()
@@ -1128,7 +1128,7 @@ async fn send(
 ) -> Result<reqwest::Response, ForgeError> {
     let response = request
         .header("Authorization", format!("Bearer {}", auth.token))
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         .header("Accept", "application/vnd.github+json")
         .header("X-GitHub-Api-Version", "2022-11-28")
         .json(body)
@@ -2213,7 +2213,7 @@ mod tests {
     }
 
     /// The reported bug, from the client's side: a self-hosted GitLab that
-    /// codeg had classified as a GitHub Enterprise gets asked for `/api/v3`,
+    /// RecurCode had classified as a GitHub Enterprise gets asked for `/api/v3`,
     /// and GitLab replies 410 saying exactly what it is.
     ///
     /// That must not surface as "forge API error 410: {...}" — the raw dump the

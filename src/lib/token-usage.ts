@@ -565,5 +565,5 @@ export function shareCardFilename(range: ResolvedRange, now: Date): string {
     range.start && range.end
       ? `${day(range.start)}_${day(new Date(new Date(range.end).getTime() - 1).toISOString())}`
       : "all-time"
-  return `codeg-tokens-${span}-${day(now.toISOString())}.png`
+  return `recur-code-tokens-${span}-${day(now.toISOString())}.png`
 }

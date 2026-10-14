@@ -63,7 +63,7 @@ pub(crate) async fn create_backup_core(
     // and a cross-filesystem temp turns every later rename into a full copy.
     // `cleanup_transient_dirs` already sweeps this root at startup.
     let work = tempfile::tempdir_in(scratch_root(inputs.data_dir)?).map_err(AppCommandError::io)?;
-    let db_snapshot = work.path().join("codeg.db");
+    let db_snapshot = work.path().join("RecurCode.db");
     let zip_tmp = work.path().join("payload.zip");
     let external_scratch = work.path().to_path_buf();
 
@@ -126,8 +126,8 @@ pub(crate) async fn create_backup_core(
                 Some(path.to_string()),
             );
         };
-        builder.add_file("db/codeg.db", &db_snapshot_c, &cancel_c, &mut prog)?;
-        // Every codeg-owned section, straight off the shared table — see
+        builder.add_file("db/RecurCode.db", &db_snapshot_c, &cancel_c, &mut prog)?;
+        // Every recur-code-owned section, straight off the shared table — see
         // `sections.rs` for why this must not be re-hardcoded here.
         let exclude = |rel: &Path| sections::is_excluded_section_entry(rel);
         for section in sections::MANAGED_SECTIONS {
@@ -347,7 +347,7 @@ mod tests {
     }
 
     /// Every managed section rooted under `live_base/<id>` so the test drives
-    /// the real `MANAGED_SECTIONS` table without touching the user's `~/.codeg`.
+    /// the real `MANAGED_SECTIONS` table without touching the user's `~/.recurcode`.
     fn inputs<'a>(
         conn: &'a DatabaseConnection,
         data_dir: &'a Path,
@@ -375,7 +375,7 @@ mod tests {
         std::fs::create_dir_all(uploads.join(".tmp")).unwrap();
         std::fs::write(uploads.join("att.txt"), b"attachment").unwrap();
         std::fs::write(uploads.join(".tmp/partial"), b"should be skipped").unwrap();
-        let dest = dir.path().join("backup.codeg.zip");
+        let dest = dir.path().join("backup.recurcode.zip");
 
         let cancel = CancellationToken::new();
         let manifest = create_backup_core(
@@ -399,7 +399,7 @@ mod tests {
                 .is_dir(),
             "the archive must be assembled under the data dir"
         );
-        assert!(manifest.entries.iter().any(|e| e.path == "db/codeg.db"));
+        assert!(manifest.entries.iter().any(|e| e.path == "db/RecurCode.db"));
         assert!(manifest.entries.iter().any(|e| e.path == "uploads/att.txt"));
         assert!(!manifest.entries.iter().any(|e| e.path.contains(".tmp")));
 
@@ -419,7 +419,7 @@ mod tests {
         let out = dir.path().join("out");
         archive::extract_all(&dest, &out, &manifest, &cancel, &mut archive::null_progress())
             .unwrap();
-        assert_eq!(count_folders(&out.join("db/codeg.db")).await, 1);
+        assert_eq!(count_folders(&out.join("db/RecurCode.db")).await, 1);
     }
 
     #[tokio::test]
@@ -428,7 +428,7 @@ mod tests {
         let db = fresh_disk_db(dir.path()).await;
         let live = dir.path().join("live");
         std::fs::create_dir_all(live.join("uploads")).unwrap();
-        let dest = dir.path().join("backup.codegbak");
+        let dest = dir.path().join("backup.recurcodebak");
 
         let cancel = CancellationToken::new();
         create_backup_core(
@@ -491,7 +491,7 @@ mod tests {
             .unwrap();
         let live = src_dir.path().join("live");
         std::fs::create_dir_all(live.join("uploads")).unwrap();
-        let dest = src_dir.path().join("backup.codeg.zip");
+        let dest = src_dir.path().join("backup.recurcode.zip");
 
         let cancel = CancellationToken::new();
         create_backup_core(
@@ -516,11 +516,11 @@ mod tests {
         )
         .await
         .unwrap();
-        assert!(PathBuf::from(&staged.staging_dir).join("db/codeg.db").exists());
+        assert!(PathBuf::from(&staged.staging_dir).join("db/RecurCode.db").exists());
         assert!(restore_dir.path().join(PENDING_MARKER).is_file());
 
         // Apply on "startup" → live DB carries the two seeded folders. Inject
-        // temp section roots so the test never touches ~/.codeg.
+        // temp section roots so the test never touches ~/.recurcode.
         let restore_live = LiveRoots::rooted_at(&restore_dir.path().join("live"));
         let applied =
             apply_pending_restore_with_paths(restore_dir.path(), &restore_live).unwrap();
@@ -542,7 +542,7 @@ mod tests {
         let db = fresh_disk_db(src_dir.path()).await;
         let live = src_dir.path().join("live");
         std::fs::create_dir_all(live.join("uploads")).unwrap(); // exists, no files
-        let dest = src_dir.path().join("backup.codeg.zip");
+        let dest = src_dir.path().join("backup.recurcode.zip");
         let cancel = CancellationToken::new();
         create_backup_core(
             inputs(&db.conn, src_dir.path(), &live),
@@ -612,7 +612,7 @@ mod tests {
             }
         }
 
-        let dest = src_dir.path().join("backup.codeg.zip");
+        let dest = src_dir.path().join("backup.recurcode.zip");
         let cancel = CancellationToken::new();
         let manifest = create_backup_core(
             inputs(&db.conn, src_dir.path(), &live),
@@ -684,7 +684,7 @@ mod tests {
     }
 
     /// D1 itself: the conversation text of a custom ACP agent lives ONLY in
-    /// `~/.codeg/acp-transcripts`, so this is the round-trip that used to lose
+    /// `~/.recurcode/acp-transcripts`, so this is the round-trip that used to lose
     /// every message while keeping the conversation row.
     #[tokio::test]
     async fn custom_agent_transcript_survives_roundtrip() {
@@ -698,7 +698,7 @@ mod tests {
         std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
         std::fs::write(&transcript, b"{\"type\":\"user\",\"text\":\"hello\"}\n").unwrap();
 
-        let dest = src_dir.path().join("backup.codeg.zip");
+        let dest = src_dir.path().join("backup.recurcode.zip");
         let cancel = CancellationToken::new();
         create_backup_core(
             inputs(&db.conn, src_dir.path(), &live),

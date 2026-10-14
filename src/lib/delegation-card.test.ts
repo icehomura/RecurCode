@@ -30,7 +30,7 @@ describe("parseInput wrapper peeling", () => {
     // walker in acp/lifecycle.rs (ARGS_WRAPPER_KEYS).
     const parsed = parseInput(
       JSON.stringify({
-        providerIdentifier: "codeg-mcp",
+        providerIdentifier: "recur-code-mcp",
         toolName: "delegate_to_agent",
         args: { agent_type: "claude_code", task: "执行 pnpm build" },
       })
@@ -150,7 +150,7 @@ describe("parseDelegationMeta task fields", () => {
     // The persisted Cursor shape: raw_input is "{}" forever, so the meta the
     // broker stamped is the card's ONLY label source after a refresh.
     const parsed = parseDelegationMeta({
-      "codeg.delegation": {
+      "RecurCode.delegation": {
         status: "running",
         child_conversation_id: 42,
         task_preview: "执行 pnpm build",
@@ -165,7 +165,7 @@ describe("parseDelegationMeta task fields", () => {
 
   it("keeps task fields null when the meta lacks them (older backend)", () => {
     const parsed = parseDelegationMeta({
-      "codeg.delegation": { status: "completed" },
+      "RecurCode.delegation": { status: "completed" },
     })
     expect(parsed?.task).toBeNull()
     expect(parsed?.taskId).toBeNull()
@@ -173,7 +173,7 @@ describe("parseDelegationMeta task fields", () => {
 
   it("ignores empty and non-string task fields", () => {
     const parsed = parseDelegationMeta({
-      "codeg.delegation": {
+      "RecurCode.delegation": {
         status: "running",
         task_preview: "",
         task_id: 7,
@@ -188,7 +188,7 @@ describe("parseDelegationMeta task fields", () => {
     // row). It is the agent-type source for a reloaded `resume_delegation`
     // card, whose arguments are just `{task_id, reason}`.
     const parsed = parseDelegationMeta({
-      "codeg.delegation": { status: "completed", agent_type: "codex" },
+      "RecurCode.delegation": { status: "completed", agent_type: "codex" },
     })
     expect(parsed?.agentType).toBe("codex")
   })
@@ -196,12 +196,12 @@ describe("parseDelegationMeta task fields", () => {
   it("rejects an unrecognized agent_type but keeps a custom one", () => {
     expect(
       parseDelegationMeta({
-        "codeg.delegation": { status: "running", agent_type: "not_an_agent" },
+        "RecurCode.delegation": { status: "running", agent_type: "not_an_agent" },
       })?.agentType
     ).toBeNull()
     expect(
       parseDelegationMeta({
-        "codeg.delegation": { status: "running", agent_type: "custom:my-cli" },
+        "RecurCode.delegation": { status: "running", agent_type: "custom:my-cli" },
       })?.agentType
     ).toBe("custom:my-cli")
   })

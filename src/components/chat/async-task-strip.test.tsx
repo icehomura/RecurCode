@@ -87,7 +87,7 @@ describe("AsyncTaskStrip", () => {
     // every one of those was refused at the door — and widening that scope to
     // a temp tree the adapter picked is the wrong trade for reading a log.
     // `openFilePreview` takes an absolute path anywhere and reads through
-    // codeg's own backend, so it needs no scope and works in web as well.
+    // RecurCode's own backend, so it needs no scope and works in web as well.
     renderStrip(
       <AsyncTaskStrip
         tasks={[task({ output_file_path: "/private/tmp/claude-501/x.output" })]}

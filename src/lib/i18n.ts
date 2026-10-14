@@ -13,9 +13,9 @@ export const APP_LOCALES: readonly AppLocale[] = [
   "ar",
 ]
 const FALLBACK_APP_LOCALE: AppLocale = "en"
-export const LANGUAGE_SETTINGS_STORAGE_KEY = "codeg.system_language_settings"
-export const LANGUAGE_MODE_COOKIE_KEY = "codeg.language_mode"
-export const LANGUAGE_COOKIE_KEY = "codeg.locale"
+export const LANGUAGE_SETTINGS_STORAGE_KEY = "RecurCode.system_language_settings"
+export const LANGUAGE_MODE_COOKIE_KEY = "RecurCode.language_mode"
+export const LANGUAGE_COOKIE_KEY = "RecurCode.locale"
 export type IntlLocale =
   | "en"
   | "zh-CN"

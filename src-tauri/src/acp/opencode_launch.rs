@@ -1,4 +1,4 @@
-//! Launch flags for OpenCode's `opencode acp` (codeg#860).
+//! Launch flags for OpenCode's `opencode acp` (RecurCode#860).
 //!
 //! `opencode acp` is more than a stdio ACP server: its ACP bridge drives an
 //! HTTP server embedded in the same process, through the opencode SDK at
@@ -8,18 +8,18 @@
 //! (`--port 0 --hostname 127.0.0.1`). The config block exists for
 //! `opencode serve`, but `acp` inherits it all the same.
 //!
-//! A fixed port there cannot work under codeg, which runs one `opencode acp`
+//! A fixed port there cannot work under RecurCode, which runs one `opencode acp`
 //! per session. The first session binds it; every concurrent session — or any
 //! session while some other opencode process holds the port — exits 1 with
 //! `Error: Unexpected error` / `ServeError` before `initialize` answers,
 //! because opencode gives a non-zero port no fallback. A configured `0.0.0.0`
 //! is wrong more quietly: it publishes the session's agent API on every
 //! interface, and it is also the host the bridge's own SDK then dials — one
-//! codeg's loopback `NO_PROXY` exception (`network::proxy`) does not name.
+//! RecurCode's loopback `NO_PROXY` exception (`network::proxy`) does not name.
 //!
 //! Passing the subcommand's defaults explicitly restores them, since a flag
 //! outranks the config. `--port 0` means "4096 if free, else any free port",
-//! and that fallback is what isolates concurrent sessions; a codeg-picked
+//! and that fallback is what isolates concurrent sessions; a recur-code-picked
 //! non-zero port would bring the failure back through the race between
 //! picking it and opencode binding it. `--hostname 127.0.0.1` keeps the
 //! listener on loopback, which also stops opencode from announcing it over
@@ -129,7 +129,7 @@ async fn help_probe(bin: &Path) -> Option<bool> {
 
 /// The flags to append after `acp` when launching `bin`.
 ///
-/// `cached_version` is the codeg-managed install's version label: the release
+/// `cached_version` is the recur-code-managed install's version label: the release
 /// tag its archive was downloaded from. A binary found on PATH comes without
 /// one, so its `--version` is read through the same cached probe the agent
 /// list already runs on it, which usually makes this free. A release version
@@ -269,14 +269,14 @@ mod tests {
     async fn a_managed_release_label_decides_on_its_own() {
         // Nothing exists at this path, so no probe could have answered: the
         // label alone decided. (That none even runs is proven below, on unix.)
-        let missing = Path::new("/nonexistent/codeg-860/opencode");
+        let missing = Path::new("/nonexistent/recur-code-860/opencode");
         assert_eq!(listen_args(missing, Some("1.18.33")).await, LISTEN_ARGS);
         assert!(listen_args(missing, Some("1.0.41")).await.is_empty());
     }
 
     #[tokio::test]
     async fn a_binary_that_cannot_be_asked_keeps_the_bare_argv() {
-        let missing = Path::new("/nonexistent/codeg-860/opencode");
+        let missing = Path::new("/nonexistent/recur-code-860/opencode");
         assert!(listen_args(missing, Some("0.0.0-dev-202609282300"))
             .await
             .is_empty());
@@ -386,7 +386,7 @@ mod tests {
     #[cfg(unix)]
     #[tokio::test]
     async fn a_2x_build_keeps_the_bare_argv() {
-        // The codeg#860 floor must not leak into opencode 2.x: 2.0.24 rejects
+        // The RecurCode#860 floor must not leak into opencode 2.x: 2.0.24 rejects
         // the listen flags outright (the CLI exits and prints its usage to
         // stdout — the ACP channel), so the bare argv is the only launch that
         // starts. The binary is asked (`--version`, whose real banner reads as

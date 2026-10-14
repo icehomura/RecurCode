@@ -218,7 +218,7 @@ pub(crate) async fn handle_event(
                 // conversation under a new session (`continues`), and
                 // destructive otherwise — a session re-minted under a live
                 // binding would otherwise overwrite the id the row's whole
-                // history hangs off. See codeg#500.
+                // history hangs off. See RecurCode#500.
                 let continues = crate::acp::continued_session_ids(agent_type, session_id);
                 let preserved =
                     conversation_service::bind_external_id(db_conn, cid, session_id, &continues)
@@ -655,7 +655,7 @@ pub(crate) const CURSOR_IDENTITYLESS_MCP_TITLE: &str = "MCP: tool";
 /// agent gets to decide both fields:
 ///
 /// * `title` is a free-form human-readable string the host composes. Some
-///   hosts copy the MCP method verbatim (`mcp__codeg-mcp__delegate_to_agent`),
+///   hosts copy the MCP method verbatim (`mcp__recur-code-mcp__delegate_to_agent`),
 ///   some prefix it with a verb (`Run mcp__…__delegate_to_agent`), some
 ///   rephrase it (`Delegate to codex`). We match by substring so any
 ///   form containing `delegate_to_agent` is captured.
@@ -843,7 +843,7 @@ async fn register_delegation_tool_call_from_event(
     // exact title: if the call turns out to be `delegate_to_agent`, its MCP
     // round-trip claims the id via the post-budget FIFO last resort and the
     // child binds to the REAL ACP id — which is what the live
-    // `meta["codeg.delegation"]` write and the historical
+    // `meta["RecurCode.delegation"]` write and the historical
     // `inject_delegation_meta` match both key on. A non-delegation MCP call's
     // candidate is harmless: it's tombstoned when the call goes terminal and
     // GC'd by the unkeyed TTL otherwise; the FIFO only pays out when a
@@ -982,11 +982,11 @@ mod delegation_title_tests {
     #[test]
     fn matches_mcp_prefixed_method_in_title() {
         assert!(is_delegation_invocation(
-            "mcp__codeg-mcp__delegate_to_agent",
+            "mcp__recur-code-mcp__delegate_to_agent",
             None
         ));
         assert!(is_delegation_invocation(
-            "Run mcp__codeg__delegate_to_agent",
+            "Run mcp__recur_code__delegate_to_agent",
             None
         ));
     }
@@ -1374,7 +1374,7 @@ mod delegation_registration_tests {
         // tc-2 registers unkeyed (tool-name title, no raw_input yet).
         register_delegation_tool_call_from_event(
             &b,
-            &tool_call_event("tc-2", "mcp__codeg-mcp__delegate_to_agent", None),
+            &tool_call_event("tc-2", "mcp__recur-code-mcp__delegate_to_agent", None),
         )
         .await;
         // A parallel keyed sibling sharing the queue (must not be mixed up).
@@ -1382,7 +1382,7 @@ mod delegation_registration_tests {
             &b,
             &tool_call_event(
                 "tc-sibling",
-                "mcp__codeg-mcp__delegate_to_agent",
+                "mcp__recur-code-mcp__delegate_to_agent",
                 Some(r#"{"agent_type":"codex","task":"sibling"}"#),
             ),
         )
@@ -1491,9 +1491,9 @@ mod delegation_registration_tests {
             &b,
             &tool_call_event(
                 "tc-keyed",
-                "codeg-mcp: delegate_to_agent",
+                "recur-code-mcp: delegate_to_agent",
                 Some(
-                    r#"{"providerIdentifier":"codeg-mcp","toolName":"delegate_to_agent","args":{"agent_type":"codex","task":"build it"}}"#,
+                    r#"{"providerIdentifier":"recur-code-mcp","toolName":"delegate_to_agent","args":{"agent_type":"codex","task":"build it"}}"#,
                 ),
             ),
         )

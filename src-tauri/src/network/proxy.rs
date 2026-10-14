@@ -251,13 +251,13 @@ pub fn apply_system_proxy_settings(settings: &SystemProxySettings) -> Result<(),
 
 /// Give a launch environment that carries a proxy the `NO_PROXY` to go with
 /// it, in both spellings: the loopback hosts, the list the child would inherit
-/// from codeg (`inherited`), and whatever the launch itself already sets.
+/// from RecurCode (`inherited`), and whatever the launch itself already sets.
 ///
 /// Merged rather than left to inheritance because a per-agent `NO_PROXY`
-/// would replace only its own spelling: the child would still inherit codeg's
+/// would replace only its own spelling: the child would still inherit RecurCode's
 /// `no_proxy`, which curl, Bun, Python and Node read first, so the agent's own
 /// entries would silently stop applying. And whichever way the proxy arrived —
-/// the settings, or an exported `HTTP_PROXY` codeg passes through — no agent
+/// the settings, or an exported `HTTP_PROXY` RecurCode passes through — no agent
 /// gets one without the loopback exception.
 pub(crate) fn add_no_proxy_to_launch_env(
     merged: &mut BTreeMap<String, String>,
@@ -311,7 +311,7 @@ pub async fn init_proxy_from_db(conn: &DatabaseConnection) {
 /// Names of the proxy env vars currently holding a scheme-less address, e.g.
 /// `HTTPS_PROXY=127.0.0.1:7890`.
 ///
-/// codeg's own settings can no longer produce one (they are normalized before
+/// RecurCode's own settings can no longer produce one (they are normalized before
 /// export), but the startup contract deliberately leaves externally-provided
 /// values alone — a docker `-e` or a shell export can still carry a bare
 /// `host:port`. Node-based tooling rejects those outright, so callers use this
@@ -327,7 +327,7 @@ pub(crate) fn proxy_env_vars_missing_scheme() -> Vec<String> {
 /// The one proxy URL a consumer that can take only one should use: the
 /// process environment as the app's own HTTP clients and agent processes see
 /// it. `HTTPS_PROXY` wins (most page traffic is TLS), then `ALL_PROXY`, then
-/// `HTTP_PROXY`; codeg's setting writes all of them with one value, so the
+/// `HTTP_PROXY`; RecurCode's setting writes all of them with one value, so the
 /// order only matters for externally exported variables. A scheme-less value
 /// is repaired the way [`normalize_proxy_url`] does; an unparsable one is
 /// ignored. (Only the built-in browser reads it, hence desktop-only.)
@@ -414,7 +414,7 @@ mod tests {
 
     /// A per-agent `NO_PROXY` joins the list the child inherits instead of
     /// replacing one spelling of it — the lowercase one would otherwise keep
-    /// codeg's list, and curl, Bun, Python and Node read that one first.
+    /// RecurCode's list, and curl, Bun, Python and Node read that one first.
     #[test]
     fn a_per_agent_bypass_list_joins_the_inherited_one_in_both_spellings() {
         let mut merged = launch_env(&[

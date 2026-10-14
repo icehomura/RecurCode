@@ -24,7 +24,7 @@ import { parseUserMessageSegments } from "./user-message-segments"
  * display text — another once the conversation is opened again — from the
  * agent's own record, which keeps the block the agent read and nothing of the
  * badge — and a third on another client and in a custom agent's history, from
- * codeg's own projection of the prompt. They all have to read the same: in the
+ * RecurCode's own projection of the prompt. They all have to read the same: in the
  * bubble, the badge the composer showed; under it, the site it came from.
  */
 
@@ -237,7 +237,7 @@ describe("a page handed to a conversation, sent and read back", () => {
     )
   }
 
-  /** …and as codeg itself projects the prompt it sent — what a viewer on
+  /** …and as RecurCode itself projects the prompt it sent — what a viewer on
    *  another client receives live, and what a custom agent's history is
    *  rebuilt from (`project_user_prompt_block`): the prose, the attachment as
    *  one text carrying only the block's facts (the lines before any fence),

@@ -13,7 +13,7 @@
 use std::fs;
 use std::path::Path;
 
-use codeg_lib::parsers::{
+use recur_code_lib::parsers::{
     claude::ClaudeParser, cline::ClineParser, codex::CodexParser, gemini::GeminiParser,
     hermes::HermesParser, kimi_code::KimiCodeParser, openclaw::OpenClawParser,
     opencode::OpenCodeParser, AgentParser,
@@ -155,7 +155,7 @@ fn gemini_minimal_session_snapshot() {
     let temp = tempfile::tempdir().expect("create tempdir");
     let base = temp.path().to_path_buf();
     // Gemini layout: <base>/tmp/<project>/chats/session-*.json + .project_root
-    let project_dir = base.join("tmp").join("codeg");
+    let project_dir = base.join("tmp").join("RecurCode");
     let chats_dir = project_dir.join("chats");
     write(
         &project_dir.join(".project_root"),
@@ -493,7 +493,7 @@ fn opencode_minimal_session_snapshot() {
 /// spells its arguments in camelCase (`filePath`, `oldString`), keeps a failed
 /// call's message in `state.error` rather than `state.output`, wraps `read`
 /// results in an XML envelope with `N: ` line prefixes, and returns the whole
-/// SKILL.md inside `<skill_content>`. This pins the rewrite onto codeg's shared
+/// SKILL.md inside `<skill_content>`. This pins the rewrite onto RecurCode's shared
 /// tool vocabulary, plus the sub-agent session nesting via `session.parent_id`.
 #[test]
 fn opencode_tool_call_session_snapshot() {
@@ -1414,7 +1414,7 @@ fn hermes_minimal_session_snapshot() {
 /// Hermes v0.21.6's ACP adapter stamps `ended_at` on every session it holds
 /// when its stdio closes, including one that was only loaded, so the column
 /// can be far later than anything in the transcript. A summary's `ended_at` is
-/// what codeg's import reads as the transcript's end, so it must be the newest
+/// what RecurCode's import reads as the transcript's end, so it must be the newest
 /// active, non-system message, for a never-ended pre-v0.21.6 row as much as for
 /// a stamped one. A session with none falls back to the column, a timestamp
 /// outside upstream's epoch window does not count, and an unusable value is no
@@ -1725,22 +1725,22 @@ fn kimi_code_minimal_session_snapshot() {
     // The session log is the only place the real model id appears.
     write(
         &session_dir.join("logs").join("kimi-code.log"),
-        "2026-03-01T10:00:00.000Z INFO  llm config  provider=kimi model=kimi-k2.7-code modelAlias=codeg-managed\n",
+        "2026-03-01T10:00:00.000Z INFO  llm config  provider=kimi model=kimi-k2.7-code modelAlias=recur-code-managed\n",
     );
 
     // The wire event stream: prompt → think → Read tool → result → text, with a
     // per-step usage record for each of the two steps.
     let wire = [
         json!({"type":"metadata","protocol_version":"1.4","created_at":1772359200000i64}),
-        json!({"type":"config.update","modelAlias":"codeg-managed","thinkingLevel":"high","time":1772359200000i64}),
+        json!({"type":"config.update","modelAlias":"recur-code-managed","thinkingLevel":"high","time":1772359200000i64}),
         json!({"type":"turn.prompt","input":[{"type":"text","text":"build the app"}],"origin":{"kind":"user"},"time":1772359201000i64}),
         json!({"type":"context.append_message","message":{"role":"user","content":[{"type":"text","text":"<system-reminder>ignored</system-reminder>"}],"origin":{"kind":"injection"}},"time":1772359201001i64}),
         json!({"type":"context.append_loop_event","event":{"type":"content.part","part":{"type":"think","think":"inspect the entry file first"}},"time":1772359202000i64}),
         json!({"type":"context.append_loop_event","event":{"type":"tool.call","toolCallId":"Read_0","name":"Read","args":{"file_path":"/tmp/demo/app.ts"}},"time":1772359203000i64}),
         json!({"type":"context.append_loop_event","event":{"type":"tool.result","parentUuid":"Read_0","toolCallId":"Read_0","result":{"output":"   1→export const x = 1\n   2→export const y = 2"}},"time":1772359204000i64}),
-        json!({"type":"usage.record","model":"codeg-managed","usage":{"inputOther":1200,"output":40,"inputCacheRead":800,"inputCacheCreation":0},"usageScope":"turn","time":1772359204500i64}),
+        json!({"type":"usage.record","model":"recur-code-managed","usage":{"inputOther":1200,"output":40,"inputCacheRead":800,"inputCacheCreation":0},"usageScope":"turn","time":1772359204500i64}),
         json!({"type":"context.append_loop_event","event":{"type":"content.part","part":{"type":"text","text":"The app exports x and y."}},"time":1772359205000i64}),
-        json!({"type":"usage.record","model":"codeg-managed","usage":{"inputOther":60,"output":80,"inputCacheRead":2000,"inputCacheCreation":0},"usageScope":"turn","time":1772359205500i64}),
+        json!({"type":"usage.record","model":"recur-code-managed","usage":{"inputOther":60,"output":80,"inputCacheRead":2000,"inputCacheCreation":0},"usageScope":"turn","time":1772359205500i64}),
     ];
     let wire_text = wire
         .iter()

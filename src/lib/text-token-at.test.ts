@@ -107,7 +107,7 @@ describe("textTokenAt", () => {
   })
 
   it("reads home and relative paths as paths", () => {
-    expect(textTokenAt("~/.config/codeg", 4)?.kind).toBe("path")
+    expect(textTokenAt("~/.config/RecurCode", 4)?.kind).toBe("path")
     expect(textTokenAt("./src/lib/utils.ts", 4)?.kind).toBe("path")
     expect(textTokenAt("../sibling/main.rs", 4)?.kind).toBe("path")
   })

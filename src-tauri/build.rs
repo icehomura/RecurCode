@@ -8,11 +8,11 @@ fn main() {
     }
 }
 
-/// A fingerprint of the sources `codeg-computer-helper` is built from,
-/// compiled into it and into codeg alike (`CODEG_COMPUTER_SOURCE`). A
-/// development codeg refuses a helper whose fingerprint is not its own:
+/// A fingerprint of the sources `recur-code-computer-helper` is built from,
+/// compiled into it and into RecurCode alike (`RECUR_CODE_COMPUTER_SOURCE`). A
+/// development RecurCode refuses a helper whose fingerprint is not its own:
 /// `pnpm tauri dev` builds the helper once, as it starts (not at all under
-/// `CODEG_SKIP_SIDECAR=1`), and only codeg after that, so a helper left over
+/// `RECUR_CODE_SKIP_SIDECAR=1`), and only RecurCode after that, so a helper left over
 /// from before an edit would go on answering with the old code (see
 /// `computer::local`). Changes elsewhere in the crate that the helper also
 /// compiles in are not seen; they seldom touch it.
@@ -35,7 +35,7 @@ fn fingerprint_helper_sources() {
     }
 
     let mut files = Vec::new();
-    for source in ["src/computer", "src/bin/codeg_computer_helper.rs"] {
+    for source in ["src/computer", "src/bin/recur_code_computer_helper.rs"] {
         println!("cargo:rerun-if-changed={source}");
         collect(Path::new(source), &mut files);
     }
@@ -53,12 +53,12 @@ fn fingerprint_helper_sources() {
         feed(&std::fs::read(file).unwrap_or_default());
         feed(&[0]);
     }
-    println!("cargo:rustc-env=CODEG_COMPUTER_SOURCE={hash:016x}");
+    println!("cargo:rustc-env=RECUR_CODE_COMPUTER_SOURCE={hash:016x}");
 }
 
 /// Tauri's bundler validates that every `bundle.externalBin` path resolves
-/// to an existing file at build.rs time. The real sidecars — `codeg-mcp` and
-/// `codeg-computer-helper` — are produced by `pnpm tauri:prepare-sidecars`
+/// to an existing file at build.rs time. The real sidecars — `recur-code-mcp` and
+/// `recur-code-computer-helper` — are produced by `pnpm tauri:prepare-sidecars`
 /// (invoked from `beforeBuildCommand` / `beforeDevCommand` and the CI release
 /// matrix) — but plain `cargo check --features tauri-runtime` doesn't go
 /// through that path, so without a backstop every contributor would hit
@@ -90,7 +90,7 @@ fn ensure_sidecar_placeholder() {
     };
     let dir = PathBuf::from("binaries");
 
-    for name in ["codeg-mcp", "codeg-computer-helper"] {
+    for name in ["recur-code-mcp", "recur-code-computer-helper"] {
         let path = dir.join(format!("{name}-{triple}{ext}"));
 
         println!("cargo:rerun-if-changed={}", path.display());
@@ -127,7 +127,7 @@ fn ensure_sidecar_placeholder() {
 /// On macOS the computer-use helper is no sidecar: a bundle carries it as an
 /// app of its own (`tauri.macos.conf.json`), so Tauri no longer copies it
 /// next to the build as it does `bundle.externalBin`. This does, for a
-/// development codeg, which is not bundled and looks for the helper beside
+/// development RecurCode, which is not bundled and looks for the helper beside
 /// itself. The staged file is already watched by `ensure_sidecar_placeholder`.
 #[cfg(feature = "tauri-runtime")]
 fn place_helper_for_development() {
@@ -137,17 +137,17 @@ fn place_helper_for_development() {
     if !triple.contains("apple-darwin") {
         return;
     }
-    let staged = PathBuf::from(format!("binaries/codeg-computer-helper-{triple}"));
+    let staged = PathBuf::from(format!("binaries/recur-code-computer-helper-{triple}"));
     // `target/[<triple>/]<profile>/build/<pkg>-<hash>/out`, as tauri-build
     // finds the same directory: there is no other way to it from here.
     let out_dir = PathBuf::from(std::env::var_os("OUT_DIR").unwrap_or_default());
     let Some(profile_dir) = out_dir.ancestors().nth(3) else {
         return;
     };
-    let placed = profile_dir.join("codeg-computer-helper");
+    let placed = profile_dir.join("recur-code-computer-helper");
     // Through a new file renamed into place: a helper still running from the
     // old one keeps its own, where writing over it would kill it.
-    let incoming = profile_dir.join("codeg-computer-helper.incoming");
+    let incoming = profile_dir.join("recur-code-computer-helper.incoming");
     if let Err(e) =
         std::fs::copy(&staged, &incoming).and_then(|_| std::fs::rename(&incoming, &placed))
     {

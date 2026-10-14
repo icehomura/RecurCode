@@ -168,11 +168,11 @@ describe("HTML files a reply mentions", () => {
     const frame = await frameOf(card)
     const doc = frame.getAttribute("srcdoc") ?? ""
     // A complete document keeps its own markup and titles the card with its
-    // <title> — and, like codeg's file preview, runs no script (and gets no
+    // <title> — and, like RecurCode's file preview, runs no script (and gets no
     // network) until the user enables scripts for it.
     expect(doc).toContain("<h1>Week 38</h1>")
     expect(doc).toContain("script-src 'none'")
-    expect(doc).not.toContain("codeg-visualize:size")
+    expect(doc).not.toContain("recur-code-visualize:size")
     expect(frame).toHaveAttribute("sandbox", "")
     expect(frame.style.height).toBe("480px")
     await screen.findByText("Fitness Report")
@@ -192,7 +192,7 @@ describe("HTML files a reply mentions", () => {
     })
     const trustedDoc = trusted.getAttribute("srcdoc") ?? ""
     expect(trustedDoc).toContain("connect-src https: http:")
-    expect(trustedDoc).toContain("codeg-visualize:size")
+    expect(trustedDoc).toContain("recur-code-visualize:size")
     expect(screen.getByRole("button", { name: /Scripts on/ })).toHaveAttribute(
       "aria-pressed",
       "true"
@@ -327,7 +327,7 @@ describe("frame sizing", () => {
   const sizeMessage = (frame: HTMLIFrameElement, height: number) =>
     window.dispatchEvent(
       new MessageEvent("message", {
-        data: { type: "codeg-visualize:size", height },
+        data: { type: "recur-code-visualize:size", height },
         source: frame.contentWindow,
       })
     )
@@ -360,7 +360,7 @@ describe("frame sizing", () => {
     act(() =>
       window.dispatchEvent(
         new MessageEvent("message", {
-          data: { type: "codeg-visualize:size", height: 200 },
+          data: { type: "recur-code-visualize:size", height: 200 },
           source: window,
         })
       )
@@ -392,7 +392,7 @@ describe("buildVisualizeDocument", () => {
     // outrank.
     expect(doc).toContain(":root,body{background:transparent !important")
     expect(doc).toContain("html>body{padding:1rem 1.25rem}")
-    // In-page links stay in the frame instead of loading codeg into it.
+    // In-page links stay in the frame instead of loading RecurCode into it.
     expect(doc).toContain('<base href="about:srcdoc">')
     expect(doc).toContain("base-uri about:")
   })

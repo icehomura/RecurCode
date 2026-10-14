@@ -1,7 +1,7 @@
 //! Filesystem-backed workspace background-image repository.
 //!
 //! A single user-selected image is stored at
-//! `paths::codeg_backgrounds_root()/background.img`. The repository is
+//! `paths::recur_code_backgrounds_root()/background.img`. The repository is
 //! **decoupled from Tauri** so the same routines back the desktop and
 //! standalone-server runtimes, mirroring `crate::pets` — simplified to one
 //! image with no id/manifest, and with relaxed validation: any dimensions are
@@ -22,7 +22,7 @@ use image::{ImageFormat, ImageReader};
 
 use crate::app_error::AppCommandError;
 use crate::models::background::BackgroundAsset;
-use crate::paths::codeg_backgrounds_root;
+use crate::paths::recur_code_backgrounds_root;
 
 pub mod marketplace;
 
@@ -46,11 +46,11 @@ const STALE_TMP_AGE: Duration = Duration::from_secs(600);
 
 /// Disambiguates staging files between concurrent writers. Paired with the pid
 /// it also separates two processes (desktop app + standalone server) pointed at
-/// one `CODEG_DATA_DIR`.
+/// one `RECUR_CODE_DATA_DIR`.
 static TMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 fn background_path() -> PathBuf {
-    codeg_backgrounds_root().join(BACKGROUND_FILENAME)
+    recur_code_backgrounds_root().join(BACKGROUND_FILENAME)
 }
 
 /// Verify the payload is a real, bounded image before it touches disk. Accepts
@@ -122,7 +122,7 @@ pub fn validate_background(bytes: &[u8]) -> Result<(), AppCommandError> {
 }
 
 fn ensure_backgrounds_root() -> Result<PathBuf, AppCommandError> {
-    let root = codeg_backgrounds_root();
+    let root = recur_code_backgrounds_root();
     if !root.exists() {
         fs::create_dir_all(&root).map_err(AppCommandError::io)?;
     }
@@ -148,7 +148,7 @@ pub(crate) fn write_background_atomic(bytes: &[u8]) -> Result<(), AppCommandErro
 /// either way, and neither writer can truncate the other's bytes.
 ///
 /// Takes `root` explicitly so tests can exercise it against a temp dir instead
-/// of the process-global `CODEG_HOME`.
+/// of the process-global `RECUR_CODE_HOME`.
 fn write_background_atomic_in(root: &Path, bytes: &[u8]) -> Result<(), AppCommandError> {
     sweep_stale_staging_files(root);
     let final_path = root.join(BACKGROUND_FILENAME);
@@ -269,7 +269,7 @@ mod tests {
     use super::*;
 
     // The env-resolved paths (`background_path`, `ensure_backgrounds_root`)
-    // depend on the global `CODEG_HOME`/`CODEG_DATA_DIR` (shared, races under
+    // depend on the global `RECUR_CODE_HOME`/`RECUR_CODE_DATA_DIR` (shared, races under
     // parallel tests), so — like `pets::tests` — those are covered by manual
     // smoke tests. `write_background_atomic_in` takes its root explicitly, so
     // the staging/rename behaviour is testable against a temp dir.

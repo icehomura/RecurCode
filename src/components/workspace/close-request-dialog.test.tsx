@@ -75,7 +75,7 @@ describe("CloseRequestDialog", () => {
     renderDialog()
     await fire(ASK)
 
-    await screen.findByText("Close codeg?")
+    await screen.findByText("Close RecurCode?")
     await user.click(screen.getByRole("button", { name: "Minimize to tray" }))
 
     // Unremembered: this press only, the preference stays `ask`.
@@ -89,7 +89,7 @@ describe("CloseRequestDialog", () => {
     await fire(ASK)
 
     await user.click(await screen.findByLabelText("Remember my choice"))
-    await user.click(screen.getByRole("button", { name: "Exit codeg" }))
+    await user.click(screen.getByRole("button", { name: "Exit RecurCode" }))
 
     expect(resolveCloseRequest).toHaveBeenCalledWith("exit", true)
   })
@@ -136,7 +136,7 @@ describe("CloseRequestDialog", () => {
     renderDialog()
     await fire({ mode: "confirm_terminals", running_terminals: 3 })
 
-    await screen.findByText("Exit codeg?")
+    await screen.findByText("Exit RecurCode?")
     expect(screen.queryByLabelText("Remember my choice")).toBeNull()
     expect(
       screen.getByText(
@@ -144,7 +144,7 @@ describe("CloseRequestDialog", () => {
       )
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "Exit codeg" }))
+    await user.click(screen.getByRole("button", { name: "Exit RecurCode" }))
     expect(resolveCloseRequest).toHaveBeenCalledWith("exit", false)
   })
 

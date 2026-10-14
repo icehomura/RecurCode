@@ -58,11 +58,11 @@ import { cn } from "@/lib/utils"
  *     it, since fragments are told to read and save their state through it.
  *
  * A *complete* document (anything an agent wrote as a page) is not a Codex
- * fragment and gets codeg's file-preview treatment instead — including its
+ * fragment and gets RecurCode's file-preview treatment instead — including its
  * rule that no script runs until the user enables scripts for it.
  *
  * The theme-variable contract (`--background`, `--foreground`, `--card`…) uses
- * the same names codeg's own shadcn tokens use, so the current codeg theme is
+ * the same names RecurCode's own shadcn tokens use, so the current RecurCode theme is
  * copied into the frame and the visual matches the transcript around it.
  */
 
@@ -79,7 +79,7 @@ const STATIC_DOCUMENT_HEIGHT = 480
 const COLLAPSED_MAX_HEIGHT = 640
 /** Backstop for "Show all": past this the frame scrolls instead of growing. */
 const MAX_FRAME_HEIGHT = 12000
-const SIZE_MESSAGE_TYPE = "codeg-visualize:size"
+const SIZE_MESSAGE_TYPE = "recur-code-visualize:size"
 
 const RESOURCE_SOURCES = [
   "blob:",
@@ -104,7 +104,7 @@ const FRAME_CSP = [
   "connect-src blob: data:",
   "frame-src 'none'",
   "object-src 'none'",
-  // The skill's own policy says `'none'`; codeg pins the base to the frame's
+  // The skill's own policy says `'none'`; RecurCode pins the base to the frame's
   // `about:srcdoc` instead (see FRAME_BASE), which no external origin can use.
   "base-uri about:",
   "form-action 'none'",
@@ -112,12 +112,12 @@ const FRAME_CSP = [
 
 /**
  * A `srcdoc` document without a `<base>` resolves URLs against the PARENT's
- * base URL, so an in-page `#anchor` link would navigate the frame to codeg
+ * base URL, so an in-page `#anchor` link would navigate the frame to RecurCode
  * itself. Same pin as the file preview's (`html-preview-inline.ts`).
  */
 const FRAME_BASE = `<base href="about:srcdoc">`
 
-/** Names shared by the skill's contract and codeg's theme tokens. */
+/** Names shared by the skill's contract and RecurCode's theme tokens. */
 const THEME_TOKENS = [
   "background",
   "foreground",
@@ -336,7 +336,7 @@ export function resetCodexVisualizeAssetsForTests(): void {
   assetsPromise = null
 }
 
-/** Copy codeg's current theme tokens into the frame's variable contract. */
+/** Copy RecurCode's current theme tokens into the frame's variable contract. */
 function readThemeOverrides(): string {
   if (typeof document === "undefined") return ""
   const style = getComputedStyle(document.documentElement)
@@ -345,10 +345,10 @@ function readThemeOverrides(): string {
     const value = style.getPropertyValue(`--${token}`).trim()
     if (value) decls.push(`--${token}:${value}`)
   }
-  // The skill aliases its first chart series to `--primary`. codeg's primary
+  // The skill aliases its first chart series to `--primary`. RecurCode's primary
   // is near-black on the neutral presets, which turned every series-1 bar
   // and line black; keep the skill's own blue for charts while controls
-  // still follow codeg's primary.
+  // still follow RecurCode's primary.
   decls.push("--viz-series-1:var(--blue)")
   return `:root{${decls.join(";")}}`
 }
@@ -380,7 +380,7 @@ async function resolvePreviewPath(
 
 /**
  * A complete HTML document an agent wrote to disk (a report, a dashboard, a
- * mockup): shown as-is, the way codeg's own file preview shows it — sibling
+ * mockup): shown as-is, the way RecurCode's own file preview shows it — sibling
  * local resources (css / js / images next to it) inlined, the file preview's
  * sandbox CSP applied (strict with scripts off, open-web with scripts on) —
  * plus, when scripts run, the size reporter so the card can fit its height.
@@ -543,7 +543,7 @@ export const CodexVisualizeCard = memo(function CodexVisualizeCard({
       const b64 = await readFileBase64(absPath, MAX_FRAGMENT_BYTES)
       const html = decodeBase64Utf8(b64)
       if (isCompleteHtmlDocument(html)) {
-        // An arbitrary page, not a Codex fragment: as in codeg's file preview,
+        // An arbitrary page, not a Codex fragment: as in RecurCode's file preview,
         // none of its scripts run — and it gets no network — until the user
         // enables them for it.
         const scripts = choice ?? false

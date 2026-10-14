@@ -13,7 +13,7 @@
 //! the current official catalog **verbatim** (minus any the user removed) and
 //! append the user's custom entries.
 //!
-//! The official catalog is sourced at runtime from the codex codeg actually
+//! The official catalog is sourced at runtime from the codex RecurCode actually
 //! launches (see [`crate::acp::codex_catalog_source`]); this module is the pure,
 //! snapshot-in / catalog-out core. We store a **compact** intent
 //! ([`CodexModelConfig`]: sparse `customs` + `excluded_officials`) so the set of
@@ -39,12 +39,12 @@ use crate::app_error::{AppCommandError, AppErrorCode};
 const BUNDLED_SNAPSHOT: &str = include_str!("../../resources/codex/bundled-catalog.json");
 
 /// File name (relative to `CODEX_HOME`) of the generated catalog codex reads.
-pub const CATALOG_REL: &str = "codeg-model-catalog.json";
+pub const CATALOG_REL: &str = "recur-code-model-catalog.json";
 /// File name (relative to `CODEX_HOME`) of the compact source list we round-trip
 /// back into the editor when no DB provider owns the list (api-key mode).
-pub const SOURCE_REL: &str = "codeg-model-catalog.source.json";
+pub const SOURCE_REL: &str = "recur-code-model-catalog.source.json";
 
-/// Fields codeg owns/derives itself, so they are never captured as `overrides`
+/// Fields RecurCode owns/derives itself, so they are never captured as `overrides`
 /// when importing a pre-existing catalog: `slug`/`display_name`/`context_window`
 /// map to dedicated compact fields, and `visibility`/`supported_in_api`/
 /// `priority`/`upgrade` are force-set by [`expand_to_catalog`].
@@ -464,7 +464,7 @@ pub fn default_slug(config: &CodexModelConfig, snapshot: &[Value]) -> Option<Str
 /// applies** — i.e. "feature off", so codex should use its own catalog
 /// untouched. Removals of models codex has since retired to `hide` are ghosts:
 /// [`expand_to_catalog`] ignores them, so a config carrying only ghosts would
-/// have codeg replace the whole model table (freezing the official list) for a
+/// have RecurCode replace the whole model table (freezing the official list) for a
 /// result identical to codex's own. Treating it as empty hands control back.
 pub fn is_effectively_empty(config: &CodexModelConfig, snapshot: &[Value]) -> bool {
     if !config.customs.is_empty() {
@@ -588,7 +588,7 @@ pub fn parse_model_config(raw: Option<&str>) -> CodexModelConfig {
 }
 
 /// Adopt a **pre-existing** `{"models":[ ModelInfo, ... ]}` catalog (one the user
-/// configured by hand, or codeg's own catalog when its source sidecar is missing)
+/// configured by hand, or RecurCode's own catalog when its source sidecar is missing)
 /// into the compact config, reconciled against the live official catalog:
 /// non-official models become `customs`, listable officials **absent** from the
 /// foreign catalog are recorded as `excluded_officials` (the user removed them),
@@ -843,7 +843,7 @@ mod tests {
             .min_by_key(|m| priority_of(m))
             .unwrap();
         assert_eq!(slug_of(min), Some("gpt-6.1-sol"));
-        // The root `model` codeg writes for that config agrees.
+        // The root `model` RecurCode writes for that config agrees.
         assert_eq!(default_slug(&removal, &raw).as_deref(), Some("gpt-6.1-sol"));
 
         // A custom still leads, ahead of every official.
@@ -1335,7 +1335,7 @@ mod tests {
 
     #[test]
     fn write_and_clear_catalog_files() {
-        let dir = std::env::temp_dir().join(format!("codeg-catalog-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("recur-code-catalog-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let s = snap();
         let raw = r#"{"customs":[{"slug":"gw/x","base":"gpt-5.6-sol"}],"default":"gw/x"}"#;

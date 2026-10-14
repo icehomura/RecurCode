@@ -7,7 +7,7 @@
  *
  * Shaped like its neighbour `notification-sound-settings.tsx` (same section
  * grammar, same localStorage-backed write-through with no Save button) because
- * the two are read as one pair: "how does Codeg get my attention".
+ * the two are read as one pair: "how does RecurCode get my attention".
  *
  * The permission card is where they diverge, and it is the reason this section
  * exists. Permission is only a real, three-valued thing in a browser; on the
@@ -307,7 +307,7 @@ export function DesktopNotificationSettingsSection() {
           </SettingRow>
 
           {/* Names the app the OS actually attributes our notifications to.
-              Without it the panel implies the user's own "codeg" switches are
+              Without it the panel implies the user's own "RecurCode" switches are
               what govern delivery, and when the identity has degraded that is
               simply false — they'd be tuning an app that receives nothing. */}
           {identity && (

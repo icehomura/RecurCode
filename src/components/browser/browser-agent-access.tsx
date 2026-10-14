@@ -117,7 +117,7 @@ export function BrowserAgentShareControl({
 
   if (!grant) {
     // The agents of a remote workspace run on its host, and their browser
-    // tools reach that host's codeg — which has no browser. Sharing a page
+    // tools reach that host's RecurCode — which has no browser. Sharing a page
     // of this window would hand it to nobody who works here.
     const remoteWindow = isRemoteDesktopMode()
     return (

@@ -43,7 +43,7 @@ export function buildQoderEnv(
   return env
 }
 
-/** The copy-pasteable login command. A codeg-managed `qoder` lives in the
+/** The copy-pasteable login command. A recur-code-managed `qoder` lives in the
  * cache rather than on PATH, so a bare `qoder login` would fail — use the
  * resolved absolute path, quoted when it contains whitespace. */
 export function qoderLoginCommand(binaryPath?: string | null): string {
@@ -82,8 +82,8 @@ export function qoderAuthMethod(configJson?: string | null): string {
  * wall of individual controls.
  *
  * Writing the whole document is also what makes deleting a key possible, and it
- * keeps codeg out of the way of the file's other writers — Qoder's own
- * `/settings` dialog, codeg's MCP settings page (owner of the top-level
+ * keeps RecurCode out of the way of the file's other writers — Qoder's own
+ * `/settings` dialog, RecurCode's MCP settings page (owner of the top-level
  * `mcpServers`) and the CLI's permission engine all touch the same file.
  *
  * Model and reasoning effort are deliberately absent: Qoder reports both as

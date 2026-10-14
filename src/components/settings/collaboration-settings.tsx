@@ -1,13 +1,13 @@
 "use client"
 
 /**
- * Collaboration settings: the two panels that decide how much of codeg an
+ * Collaboration settings: the two panels that decide how much of RecurCode an
  * agent may reach beyond its own conversation.
  *
  *   * "Multi-Agent Collaboration" — whether an agent may hand a sub-task to
  *     another agent at all, how deep the chain may go, and what each agent is
  *     spawned with (`delegation-settings.tsx`).
- *   * "In-conversation tools" — the tool groups codeg-mcp injects when an
+ *   * "In-conversation tools" — the tool groups recur-code-mcp injects when an
  *     agent starts: feedback, ask-user-question, session info, the built-in
  *     browser, computer use and the create-from-chat writers
  *     (`agent-tools-settings.tsx`). Computer use's own settings — the driver,

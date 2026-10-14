@@ -157,7 +157,7 @@ describe("restampSkillPrefixes", () => {
   })
   afterEach(() => editor?.destroy())
 
-  /** A codeg-managed skill badge (carries a `meta.scope`, unlike ACP commands). */
+  /** A recur-code-managed skill badge (carries a `meta.scope`, unlike ACP commands). */
   function insertSkillBadge(id: string, prefix: "/" | "$" = "/") {
     editor.commands.insertReference({
       refType: "skill",
@@ -296,8 +296,8 @@ describe("restoreBlocksIntoEditor", () => {
     // No badge is privileged over another: routing is derived backend-side from
     // the VISIBLE link, so a restored draft sends exactly like the original.
     const text =
-      "raw [@Claude](codeg://agent/claude_code) then " +
-      "genuine [@Claude](codeg://agent/claude_code)"
+      "raw [@Claude](recurcode://agent/claude_code) then " +
+      "genuine [@Claude](recurcode://agent/claude_code)"
     const blocks: PromptInputBlock[] = [{ type: "text", text }]
     restoreBlocksIntoEditor(editor, blocks)
 

@@ -1,5 +1,5 @@
 //! Token-authenticated API of the web-mode port bridge: the workbench asks
-//! here (with codeg's token) for a grant, then loads the bridge listener's
+//! here (with RecurCode's token) for a grant, then loads the bridge listener's
 //! entry URL in an iframe. See `web::browser_bridge` for the listener side.
 
 use axum::http::HeaderMap;
@@ -44,7 +44,7 @@ pub async fn browser_bridge_open(
 ) -> Result<Json<BridgeOpenResult>, AppCommandError> {
     let (port, path) = bridgeable_target(&params.url)?;
     // The hostname this very request was addressed to is the workbench's own,
-    // which is what a bridge hostname is built on (`CODEG_BRIDGE_HOST_PATTERN`
+    // which is what a bridge hostname is built on (`RECUR_CODE_BRIDGE_HOST_PATTERN`
     // = `auto`); a bridge addressed by port ignores it.
     let workbench_host = browser_bridge::workbench_hostname(&headers);
     let grant = browser_bridge::open(port, &params.tab_id, workbench_host.as_deref())
@@ -71,7 +71,7 @@ pub async fn browser_bridge_close(
 
 /// The loopback port `url` names and the path to land on. Only plain `http`
 /// to the host's own loopback can be bridged: the bridge speaks to the target
-/// without TLS, and a private-network or public host would make codeg a
+/// without TLS, and a private-network or public host would make RecurCode a
 /// general-purpose proxy.
 pub fn bridgeable_target(url: &str) -> Result<(u16, String), AppCommandError> {
     let parsed = reqwest::Url::parse(url.trim())

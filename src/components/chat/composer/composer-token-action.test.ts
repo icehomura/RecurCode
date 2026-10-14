@@ -50,8 +50,8 @@ describe("composerTokenOpenTarget", () => {
     expect(composerTokenOpenTarget(tokenIn("/var/log/app.log:42"))).toBe(
       "/var/log/app.log:42"
     )
-    expect(composerTokenOpenTarget(tokenIn("~/.config/codeg"))).toBe(
-      "~/.config/codeg"
+    expect(composerTokenOpenTarget(tokenIn("~/.config/RecurCode"))).toBe(
+      "~/.config/RecurCode"
     )
   })
 

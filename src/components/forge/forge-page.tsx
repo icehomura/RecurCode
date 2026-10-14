@@ -681,7 +681,7 @@ export function ForgePage() {
   }, [effectiveFolderId, forgeCorrection])
 
   /**
-   * The remote only when codeg can actually read it.
+   * The remote only when RecurCode can actually read it.
    *
    * A repository on Bitbucket, Gitee or someone's Gitea parses into perfectly
    * good coordinates and resolves to a provider — the last-resort GitHub guess
@@ -1599,7 +1599,7 @@ export function ForgePage() {
           <EmptyHint text={t("noRemote")} />
         ) : !remote.supported ? (
           // Said BEFORE anything is fetched, and in place of the list: the
-          // remote is real, it just is not one of the two forges codeg speaks.
+          // remote is real, it just is not one of the two forges RecurCode speaks.
           // What used to happen here was a request nobody could serve, reported
           // as whatever the wrong API said back — "no GitHub account for
           // gitee.com", or a raw 404 — neither of which names the actual

@@ -74,7 +74,7 @@ function describeNotificationSession(
  * `contextKey`.
  *
  * With "hide notification contents" on, it reads as it always did —
- * `<folder> - Codeg` over the message alone — except that the folder is the
+ * `<folder> - RecurCode` over the message alone — except that the folder is the
  * session's own. A session title is the user's own words (often the first
  * line of their prompt), exactly what that setting exists to keep out of the
  * notification centre.
@@ -90,7 +90,7 @@ export function sessionNotificationPayload(
     connectionConversationId,
     activeFolderName
   )
-  const folderTitle = folderName ? `${folderName} - Codeg` : "Codeg"
+  const folderTitle = folderName ? `${folderName} - RecurCode` : "RecurCode"
   if (!sessionTitle) return { title: folderTitle, ...content }
   return {
     title: sessionTitle,

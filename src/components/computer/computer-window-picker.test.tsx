@@ -92,7 +92,7 @@ beforeEach(() => {
 })
 
 describe("ComputerWindowPicker", () => {
-  /** A window shared before this window of codeg loaded is shown as shared —
+  /** A window shared before this window of RecurCode loaded is shown as shared —
    * the list says so, and the store has not been told anything yet. */
   it("shows a grant the store has not heard of yet", async () => {
     api.computerListShareableWindows.mockResolvedValue([window("read")])
@@ -295,7 +295,7 @@ describe("ComputerWindowPicker", () => {
     )
   })
 
-  /** A Stop — even from another codeg window — ends every sharing and holds
+  /** A Stop — even from another RecurCode window — ends every sharing and holds
    * nothing back: the window is on offer again at once. */
   it("offers sharing again straight after a Stop", async () => {
     api.computerListShareableWindows.mockResolvedValue([window("read")])
@@ -385,9 +385,9 @@ describe("ComputerWindowPicker", () => {
       window("read", { targetId: "w2", appName: "Notes", title: "todo" }),
       window("none", {
         targetId: "w3",
-        appName: "codeg",
-        title: "codeg",
-        notGrantable: "codeg",
+        appName: "RecurCode",
+        title: "RecurCode",
+        notGrantable: "RecurCode",
       }),
     ])
     api.computerShareWindows.mockResolvedValue({ shared: [], skipped: 0 })
@@ -540,24 +540,24 @@ describe("ComputerWindowPicker", () => {
   })
 
   /** Windows that can never be shared are kept out of the grid, folded
-   * away with their reasons — codeg's with why. */
+   * away with their reasons — RecurCode's with why. */
   it("folds the windows that cannot be shared away, with the reason", async () => {
     api.computerListShareableWindows.mockResolvedValue([
       window("none"),
       window("none", {
         targetId: "w3",
-        appName: "codeg",
+        appName: "RecurCode",
         title: "Settings",
-        notGrantable: "codeg",
+        notGrantable: "RecurCode",
       }),
     ])
     mount()
     await levelsOf("TextEdit")
-    expect(screen.queryByText("codeg's window")).toBeNull()
+    expect(screen.queryByText("RecurCode's window")).toBeNull()
     fireEvent.click(
       screen.getByRole("button", { name: "1 window can't be shared" })
     )
-    expect(await screen.findByText("codeg's window")).toBeInTheDocument()
+    expect(await screen.findByText("RecurCode's window")).toBeInTheDocument()
     expect(
       screen.getByText(/could approve its own requests/)
     ).toBeInTheDocument()

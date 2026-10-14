@@ -16,7 +16,7 @@ import type { AgentType } from "@/lib/types"
  * prompt meant for the first. Mirrors the `task-compose-events` idiom.
  */
 
-export const ASK_SELECTION_PARKED_EVENT = "codeg:ask-selection-parked"
+export const ASK_SELECTION_PARKED_EVENT = "RecurCode:ask-selection-parked"
 
 export interface AskSelectionParkedDetail {
   /** Draft tab the prompt was parked for. */

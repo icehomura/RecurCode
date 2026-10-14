@@ -69,33 +69,33 @@ describe("CloneDialog clone path preview", () => {
   it("joins a Windows directory with a backslash", () => {
     renderDialog()
     fillForm("https://github.com/xintaofei/codeg", "C:\\work")
-    // Previously rendered `C:\work/codeg` — a native prefix with a stray
+    // Previously rendered `C:\work/RecurCode` — a native prefix with a stray
     // forward slash bolted on, which is what the bug report showed.
-    expect(previewedPath()).toBe("C:\\work\\codeg")
+    expect(previewedPath()).toBe("C:\\work\\RecurCode")
   })
 
   it("joins a POSIX directory with a forward slash", () => {
     renderDialog()
     fillForm("https://github.com/xintaofei/codeg", "/home/me/work")
-    expect(previewedPath()).toBe("/home/me/work/codeg")
+    expect(previewedPath()).toBe("/home/me/work/RecurCode")
   })
 
   it("does not double a separator the directory already ends with", () => {
     renderDialog()
     fillForm("https://github.com/xintaofei/codeg.git", "C:\\work\\")
-    expect(previewedPath()).toBe("C:\\work\\codeg")
+    expect(previewedPath()).toBe("C:\\work\\RecurCode")
   })
 
   it("keeps the repo name when the url has a trailing slash", () => {
     renderDialog()
     fillForm("https://github.com/xintaofei/codeg/", "C:\\work")
-    expect(previewedPath()).toBe("C:\\work\\codeg")
+    expect(previewedPath()).toBe("C:\\work\\RecurCode")
   })
 
   it("strips a .git suffix that sits behind a trailing slash", () => {
     renderDialog()
     fillForm("https://github.com/xintaofei/codeg.git/", "C:\\work")
-    expect(previewedPath()).toBe("C:\\work\\codeg")
+    expect(previewedPath()).toBe("C:\\work\\RecurCode")
   })
 
   it("clones into the same path it previewed", async () => {

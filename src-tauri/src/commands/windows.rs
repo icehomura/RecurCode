@@ -1391,7 +1391,7 @@ pub async fn open_pet_window(
 
     let url = WebviewUrl::App(format!("pet?petId={pet_id}").into());
     let mut builder = WebviewWindowBuilder::new(&app, PET_WINDOW_LABEL, url)
-        .title("codeg pet")
+        .title("RecurCode pet")
         .inner_size(PET_BASE_WIDTH * scale, PET_BASE_HEIGHT * scale)
         .min_inner_size(PET_BASE_WIDTH * 0.5, PET_BASE_HEIGHT * 0.5)
         .max_inner_size(PET_BASE_WIDTH * 3.0, PET_BASE_HEIGHT * 3.0)
@@ -1724,7 +1724,7 @@ fn open_pet_panel_window(app: &AppHandle) -> Result<(), AppCommandError> {
 
     let url = WebviewUrl::App("pet-panel".into());
     let builder = WebviewWindowBuilder::new(app, PET_PANEL_LABEL, url)
-        .title("codeg sessions")
+        .title("RecurCode sessions")
         .inner_size(PET_PANEL_WIDTH, PET_PANEL_DEFAULT_HEIGHT)
         .position(panel_x, panel_y)
         .resizable(false)
@@ -1788,7 +1788,7 @@ pub async fn resize_pet_panel(app: AppHandle, height: f64) -> Result<(), AppComm
 /// conversation. Uses an event (not a URL reload) so the in-memory tab/session
 /// state survives — `PetFocusBridge` in the main window calls `openTab`.
 ///
-/// Only the pet panel calls this. A `codeg://` OS deep link cannot: the emit
+/// Only the pet panel calls this. A `recurcode://` OS deep link cannot: the emit
 /// reaches only webviews that have *already* registered a JS listener, which
 /// on a cold start is none of them — see `deep_link::PENDING_FOCUS` for the
 /// handoff that path uses instead.
@@ -2014,7 +2014,7 @@ fn load_macos_tray_template_icon() -> Result<tauri::image::Image<'static>, Strin
 pub const TRAY_MENU_ID_PREFIX: &str = "tray:";
 pub const TRAY_MENU_ID_SHOW: &str = "tray:show";
 pub const TRAY_MENU_ID_QUIT: &str = "tray:quit";
-pub const TRAY_ICON_ID: &str = "codeg-tray";
+pub const TRAY_ICON_ID: &str = "recur-code-tray";
 
 /// True after `install_tray_icon` returns `Ok`. The hide-on-close path
 /// in `lib.rs` consults this so we don't strand the user on systems
@@ -2370,43 +2370,43 @@ fn tray_labels_for(locale: crate::models::system::AppLocale) -> TrayLabels {
     match locale {
         AppLocale::ZhCn => TrayLabels {
             show_workspace: "显示工作台",
-            quit: "退出 Codeg",
+            quit: "退出 RecurCode",
         },
         AppLocale::ZhTw => TrayLabels {
             show_workspace: "顯示工作臺",
-            quit: "退出 Codeg",
+            quit: "退出 RecurCode",
         },
         AppLocale::Ja => TrayLabels {
             show_workspace: "ワークスペースを表示",
-            quit: "Codeg を終了",
+            quit: "RecurCode を終了",
         },
         AppLocale::Ko => TrayLabels {
             show_workspace: "워크스페이스 표시",
-            quit: "Codeg 종료",
+            quit: "RecurCode 종료",
         },
         AppLocale::Es => TrayLabels {
             show_workspace: "Mostrar el área de trabajo",
-            quit: "Salir de Codeg",
+            quit: "Salir de RecurCode",
         },
         AppLocale::De => TrayLabels {
             show_workspace: "Arbeitsbereich anzeigen",
-            quit: "Codeg beenden",
+            quit: "RecurCode beenden",
         },
         AppLocale::Fr => TrayLabels {
             show_workspace: "Afficher l'espace de travail",
-            quit: "Quitter Codeg",
+            quit: "Quitter RecurCode",
         },
         AppLocale::Pt => TrayLabels {
             show_workspace: "Mostrar área de trabalho",
-            quit: "Sair do Codeg",
+            quit: "Sair do RecurCode",
         },
         AppLocale::Ar => TrayLabels {
             show_workspace: "إظهار مساحة العمل",
-            quit: "إنهاء Codeg",
+            quit: "إنهاء RecurCode",
         },
         AppLocale::En => TrayLabels {
             show_workspace: "Show Workspace",
-            quit: "Quit Codeg",
+            quit: "Quit RecurCode",
         },
     }
 }
@@ -2439,7 +2439,7 @@ pub fn install_tray_icon(
         .build()?;
 
     let mut builder = TrayIconBuilder::with_id(TRAY_ICON_ID)
-        .tooltip("Codeg")
+        .tooltip("RecurCode")
         .menu(&menu)
         // `false` is required for `on_tray_icon_event::Click` to fire on
         // every platform we ship: the default `true` causes the OS to
@@ -2712,8 +2712,8 @@ mod settings_route_tests {
     /// to a real route. `general` is the one that looks redundant and is not:
     /// the fallback below it is Appearance, so a caller wanting the General
     /// page must be able to name it and land there. `collaboration` is where
-    /// the codeg-mcp tool switches live in full, and it is what the status-bar
-    /// codeg-mcp popover links to; `computer-use` is what the Computer use
+    /// the recur-code-mcp tool switches live in full, and it is what the status-bar
+    /// recur-code-mcp popover links to; `computer-use` is what the Computer use
     /// popover links to.
     #[test]
     fn every_named_settings_section_resolves_to_its_own_route() {

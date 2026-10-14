@@ -7,23 +7,23 @@ import type { ReferenceAttrs } from "./types"
 // (from-prompt-blocks.ts) and transcript badge rendering
 // (ai-elements/markdown-link.tsx). Mirrors the schemes the adapters emit
 // (suggestion/adapters.ts) and the node's allow-list (nodes/reference-node.ts).
-const AGENT_URI = /^codeg:\/\/agent\/(.+)$/i
-const SESSION_URI = /^codeg:\/\/session\/(.+)$/i
-const COMMIT_URI = /^codeg:\/\/commit\/.*@(.+)$/i
+const AGENT_URI = /^RecurCode:\/\/agent\/(.+)$/i
+const SESSION_URI = /^RecurCode:\/\/session\/(.+)$/i
+const COMMIT_URI = /^RecurCode:\/\/commit\/.*@(.+)$/i
 // command / skill / expert tokens, surfaced as badges in transcript user messages
 // (message/user-message-segments.ts). The label arrives with the literal `/`·`$`
 // prefix, which the skill branch strips so the badge reads the bare name.
-const SKILL_URI = /^codeg:\/\/skill\/(.+)$/i
+const SKILL_URI = /^RecurCode:\/\/skill\/(.+)$/i
 
 // A path-less attached file (local-desktop paste/drop of inline bytes — an
 // embedded `resource` or a `data:` link) can't live in the doc by its real uri,
 // so its inline badge carries this synthetic display uri while the real
 // bytes-bearing block is held in a send-time map keyed by it (see
-// message-input's `embeddedPayloadsRef`). `codeg://` (not `file://`) is used on
+// message-input's `embeddedPayloadsRef`). `recurcode://` (not `file://`) is used on
 // purpose: it is never a real filesystem path (so it can't collide with a
 // genuine attachment) and it survives Streamdown's sanitize/harden pipeline, so
 // the transcript renders it as an inert file badge rather than a blocked link.
-const EMBEDDED_URI_PREFIX = "codeg://embedded/"
+const EMBEDDED_URI_PREFIX = "recurcode://embedded/"
 
 /**
  * Mint a fresh inert display uri for a path-less embedded attachment badge.
@@ -68,14 +68,14 @@ export function refOfEmbeddedReferenceUri(uri: string): string | null {
 }
 
 /**
- * Parse a composer reference uri (`file://` / `codeg://…`) back into
+ * Parse a composer reference uri (`file://` / `recurcode://…`) back into
  * {@link ReferenceAttrs}, or null when it isn't a recognized reference scheme
  * (in which case the caller treats it as a plain link / attachment).
  *
  * `label` is the human-readable text (a sent resource's name, or a markdown
  * link's text); it falls back to the uri basename or `#id` when empty.
  */
-export function parseCodegReferenceUri(
+export function parseRecurCodeReferenceUri(
   uri: string,
   label: string
 ): ReferenceAttrs | null {
@@ -109,11 +109,11 @@ export function parseCodegReferenceUri(
   const session = uri.match(SESSION_URI)
   if (session) {
     const id = session[1]
-    // Current format is `codeg://session/<conversation_id>` (a bare numeric id),
+    // Current format is `recurcode://session/<conversation_id>` (a bare numeric id),
     // which matches no agent-type prefix and so degrades to a session badge
     // without an agent icon — fine, since the live-inserted badge carries the
     // agent via `meta` and get_session_info resolves the agent server-side.
-    // LEGACY links `codeg://session/<agent_type>_<external_id>` (still present in
+    // LEGACY links `recurcode://session/<agent_type>_<external_id>` (still present in
     // historical transcripts) keep their agent icon: the type is recovered by
     // prefix match against the known set — never by splitting on the first `_`,
     // since agent types themselves contain underscores (claude_code, open_code,

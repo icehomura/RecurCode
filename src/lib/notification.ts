@@ -25,11 +25,11 @@ import { getShellTransport, isDesktop } from "./transport"
  * `PermissionState::Granted` for both `permission_state()` and
  * `request_permission()`, and `mac-notification-sys` exposes no authorization
  * API at all. Reporting "granted" there would be inventing a fact — the user
- * may well have Codeg switched off in System Settings and we cannot see it.
+ * may well have RecurCode switched off in System Settings and we cannot see it.
  * So the desktop UI states who owns the decision and offers a test send.
  *
  * `unsupported` covers the browser case that bites real deployments: a
- * `codeg-server` reached over plain `http://` on a LAN address is not a secure
+ * `recur-code-server` reached over plain `http://` on a LAN address is not a secure
  * context, so `Notification` is simply absent.
  */
 export type NotificationPermissionState =
@@ -103,7 +103,7 @@ export async function deliverSystemNotification(
     // Deliberately the SHELL transport, not `getTransport()`. In a
     // remote-desktop window `getTransport()` is the remote HTTP transport, and
     // `send_notification` is a `tauri-runtime`-only command that the
-    // `codeg-server` binary never registers — so every notification in those
+    // `recur-code-server` binary never registers — so every notification in those
     // windows was being posted to a machine the user isn't sitting at, failed,
     // and got swallowed by the caller's `.catch()`. A notification belongs to
     // the screen in front of the user, which is always the local shell.
@@ -129,7 +129,7 @@ export async function deliverSystemNotification(
  * unbundled process, so the backend claims a bundle id and the OS attributes
  * the notification — and its permission, icon and System Settings page — to
  * THAT app. When `bundleId` differs from `requestedBundleId` the switches the
- * user can see under "codeg" govern nothing.
+ * user can see under "RecurCode" govern nothing.
  */
 export interface NotificationIdentity {
   /** Bundle id notifications are actually delivered under. */

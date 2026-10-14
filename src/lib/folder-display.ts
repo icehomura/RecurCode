@@ -23,7 +23,7 @@ export function resolveFolderDisplayName(
 
 /**
  * Plain-string folder label for `title` tooltips and other string-only contexts:
- * `alias [ name ]` (e.g. `My Project [ codeg ]`) when an alias is set, else the
+ * `alias [ name ]` (e.g. `My Project [ RecurCode ]`) when an alias is set, else the
  * bare `name`. The rendered (color-distinguished) equivalent is the
  * `FolderAliasLabel` component — keep the `alias [ name ]` spacing in sync.
  */

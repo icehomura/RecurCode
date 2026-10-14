@@ -115,7 +115,7 @@ function createAddToChatPill(
   // lives on an inner <span> Monaco never touches; the button keeps only the
   // pill chrome and shrink-wraps it (Monaco positions the button absolutely).
   dom.className =
-    "codeg-add-to-chat-pill rounded-md border border-border bg-popover px-2 py-0.5 text-xs font-medium text-popover-foreground shadow-md cursor-pointer select-none hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+    "recur-code-add-to-chat-pill rounded-md border border-border bg-popover px-2 py-0.5 text-xs font-medium text-popover-foreground shadow-md cursor-pointer select-none hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
   // Hand-written SVG (lucide "message-square-plus"): raw DOM can't host a React
   // lucide component. `currentColor` + the blue text class echoes the file badge;
   // the `lucide` class gives it the same stroke weight as the React-rendered
@@ -123,9 +123,9 @@ function createAddToChatPill(
   dom.innerHTML =
     '<span class="inline-flex items-center gap-1">' +
     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide text-blue-600 dark:text-blue-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M9 10h6"/><path d="M12 7v6"/></svg>' +
-    '<span class="codeg-add-to-chat-label"></span>' +
+    '<span class="recur-code-add-to-chat-label"></span>' +
     "</span>"
-  const labelSpan = dom.querySelector(".codeg-add-to-chat-label")
+  const labelSpan = dom.querySelector(".recur-code-add-to-chat-label")
   if (labelSpan) labelSpan.textContent = getLabel()
   dom.addEventListener("click", (event) => {
     event.preventDefault()
@@ -143,7 +143,7 @@ function createAddToChatPill(
       : monaco.editor.ContentWidgetPositionPreference.BELOW
 
   const widget: MonacoEditorNs.IContentWidget = {
-    getId: () => "codeg.addToChatPill",
+    getId: () => "RecurCode.addToChatPill",
     getDomNode: () => dom,
     getPosition: () => {
       if (!visible || !position) return null
@@ -1008,7 +1008,7 @@ export function FileWorkspacePanel() {
     ) => {
       addToChatActionRef.current?.dispose()
       addToChatActionRef.current = editor.addAction({
-        id: "codeg.addSelectionToChat",
+        id: "RecurCode.addSelectionToChat",
         label: selectionLabel,
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.5,
@@ -1020,18 +1020,18 @@ export function FileWorkspacePanel() {
         // `expandLineSelection`, honoring the user's choice of ⌘L as "add to
         // chat". The empty case is handled in `run` — `addSelectionToChat`
         // attaches the current line — so menu / ⌘L always do something useful.
-        precondition: "codegSelectionAttachable",
+        precondition: "recurCodeSelectionAttachable",
         run: () => addSelectionToChat(),
       })
       addFileToChatActionRef.current?.dispose()
       addFileToChatActionRef.current = editor.addAction({
-        id: "codeg.addFileToChat",
+        id: "RecurCode.addFileToChat",
         label: fileLabel,
         contextMenuGroupId: "navigation",
         contextMenuOrder: 1.6,
         // Whole-file attach is independent of any selection; share the same
         // attachability gate (real file tab + folder + active conversation).
-        precondition: "codegSelectionAttachable",
+        precondition: "recurCodeSelectionAttachable",
         run: () => addFileToChat(),
       })
     },
@@ -1090,7 +1090,7 @@ export function FileWorkspacePanel() {
     ) => {
       wordWrapActionRef.current?.dispose()
       wordWrapActionRef.current = editor.addAction({
-        id: "codeg.toggleWordWrap",
+        id: "RecurCode.toggleWordWrap",
         label,
         keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KeyZ],
         contextMenuGroupId: "z_view",
@@ -1267,7 +1267,7 @@ export function FileWorkspacePanel() {
         options: {
           isWholeLine: true,
           linesDecorationsClassName:
-            "codeg-dirty-diff-glyph codeg-dirty-diff-added",
+            "recur-code-dirty-diff-glyph recur-code-dirty-diff-added",
         },
       }))
     const modifiedDecorations = modified
@@ -1277,7 +1277,7 @@ export function FileWorkspacePanel() {
         options: {
           isWholeLine: true,
           linesDecorationsClassName:
-            "codeg-dirty-diff-glyph codeg-dirty-diff-modified",
+            "recur-code-dirty-diff-glyph recur-code-dirty-diff-modified",
         },
       }))
     const deletedDecorations = deleted
@@ -1292,7 +1292,7 @@ export function FileWorkspacePanel() {
         options: {
           isWholeLine: false,
           linesDecorationsClassName:
-            "codeg-dirty-diff-glyph codeg-dirty-diff-deleted",
+            "recur-code-dirty-diff-glyph recur-code-dirty-diff-deleted",
         },
       }))
     const decorations = [
@@ -1381,11 +1381,11 @@ export function FileWorkspacePanel() {
       applyGitChangeDecorations()
 
       // --- "Add selection to chat": context-menu action, ⌘L shortcut, and the
-      // floating pill. All three are gated by the `codegSelectionAttachable`
+      // floating pill. All three are gated by the `recurCodeSelectionAttachable`
       // context key so they only appear for a real file tab with an active
       // conversation to attach to.
       const attachableKey = editorInstance.createContextKey<boolean>(
-        "codegSelectionAttachable",
+        "recurCodeSelectionAttachable",
         false
       )
       attachableKeyRef.current = attachableKey

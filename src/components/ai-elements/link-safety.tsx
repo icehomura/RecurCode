@@ -116,7 +116,7 @@ export function openLinkWithSafety(
     decline()
     return
   }
-  // Streamdown's contract also allows a promise. codeg's own config never
+  // Streamdown's contract also allows a promise. RecurCode's own config never
   // returns one; if that ever changes, this branch must synchronously reserve
   // a tab BEFORE awaiting and navigate it afterwards — by the time the promise
   // settles the gesture is gone and this open will be blocked. A rejected check

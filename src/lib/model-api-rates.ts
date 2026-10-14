@@ -4,7 +4,7 @@ import type {
 } from "@/lib/types"
 
 /**
- * Public API list rates from the models.dev catalog Codeg already fetches.
+ * Public API list rates from the models.dev catalog RecurCode already fetches.
  *
  * These are catalog list rates per million tokens (input, output, cache
  * read, cache write). It is not what a subscription plan charged, and it is

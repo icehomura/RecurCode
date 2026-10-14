@@ -282,11 +282,11 @@ interface MessageInputProps {
 // that uri directly (it serializes to a ResourceLink and round-trips through the
 // draft doc untouched). A path-less file (a local-desktop paste/drop carrying
 // inline bytes — an embedded resource or a `data:` link) can't live in the doc,
-// so its badge carries an inert `codeg://embedded/…` display uri
+// so its badge carries an inert `recurcode://embedded/…` display uri
 // (`buildEmbeddedReferenceUri`) while the real bytes-bearing block is held in the
 // `embeddedPayloadsRef` map keyed by that uri. `docToPromptBlocks` drops the
 // embedded badge from the prose; `buildDraft` appends the mapped block for every
-// embedded badge still in the document. The `codeg://` scheme is never a real
+// embedded badge still in the document. The `recurcode://` scheme is never a real
 // path (no collision with a genuine attachment) and survives the transcript's
 // sanitize/harden pipeline, so it renders as an inert file badge, not a blocked
 // link — see {@link buildEmbeddedReferenceUri} / {@link isEmbeddedReferenceUri}.
@@ -294,7 +294,7 @@ interface MessageInputProps {
 /** Drop embedded-attachment reference badges from a draft document before it is
  *  persisted: their bytes live only in the in-memory `embeddedPayloadsRef` map
  *  (never serialized into the draft), so a restored badge would send nothing.
- *  Identified purely by the unambiguous `codeg://embedded/…` display uri (no map
+ *  Identified purely by the unambiguous `recurcode://embedded/…` display uri (no map
  *  needed) — a real `file://` attachment is never matched. Stripping at save
  *  keeps the live badge visible this session but matches the pre-existing
  *  behavior where out-of-band pasted bytes don't survive a draft round-trip. */
@@ -1354,7 +1354,7 @@ export function MessageInput({
   // Sidebar "add to session": drop a session mention badge — the very same
   // reference the `@` panel's Sessions group inserts — at the caret. Deduped by
   // uri like the file badges, so repeated menu clicks can't stack the same
-  // `codeg://session/<id>` twice; the focus still lands in the composer either
+  // `recurcode://session/<id>` twice; the focus still lands in the composer either
   // way so the user sees where the badge went.
   useEffect(() => {
     if (!attachmentTabId) return
@@ -1503,7 +1503,7 @@ export function MessageInput({
       ? serializeDocToDisplayText(editor.state.doc).trim()
       : ""
     // Append the real bytes-bearing block for every embedded-attachment badge
-    // still present in the document, looked up by its `codeg://embedded/…` uri.
+    // still present in the document, looked up by its `recurcode://embedded/…` uri.
     // Walking the live doc (rather than a swap pass over a stored draft) means a
     // deleted badge's stale map entry is simply never emitted, and an undo that
     // resurrects a badge re-emits it — no pruning, and no orphan uri can leak.
@@ -2190,7 +2190,7 @@ export function MessageInput({
               {...chromeFocus}
               onContextMenuCapture={handleComposerContextMenu}
               className={cn(
-                // `codeg-composer-chrome` paints the text I-beam across the box's
+                // `recur-code-composer-chrome` paints the text I-beam across the box's
                 // blank areas (padding, the dead space below a short message, the
                 // action-bar gaps) so the whole input reads as clickable-to-type;
                 // interactive controls re-assert their own cursor (see globals.css).
@@ -2199,7 +2199,7 @@ export function MessageInput({
                 // vanishes over a workspace background image); it adapts per theme
                 // (dark ink in light mode, light ink in dark) and stays legible.
                 // Focus still swaps to `border-ring` below.
-                "codeg-composer-chrome @container relative flex flex-col rounded-xl border border-foreground/20 bg-transparent transition-colors",
+                "recur-code-composer-chrome @container relative flex flex-col rounded-xl border border-foreground/20 bg-transparent transition-colors",
                 boxMinHeight,
                 // Standard focus ring — always shown when the composer is
                 // focused (the plain default input style). `bg-background
@@ -2220,7 +2220,7 @@ export function MessageInput({
                 // flow (globals.css) so the default focus ring above takes over.
                 // A lone/non-tiled session (showActiveFlow=false) and inactive
                 // tiles show the plain default border.
-                showActiveFlow && "codeg-composer-flow",
+                showActiveFlow && "recur-code-composer-flow",
                 !folderBranchPickerAttached &&
                   showDragActive &&
                   "ring-1 ring-primary/40",

@@ -150,7 +150,7 @@ describe("isMonochromeSvgDataUrl", () => {
     expect(isMonochromeSvgDataUrl(null)).toBe(false)
     expect(isMonochromeSvgDataUrl("https://e/i.svg")).toBe(false)
     expect(isMonochromeSvgDataUrl("data:image/png;base64,AAAA")).toBe(false)
-    // Percent-encoded svg data urls are not produced by codeg's inliner or
+    // Percent-encoded svg data urls are not produced by RecurCode's inliner or
     // the upload form; they stay on the <img> path.
     expect(isMonochromeSvgDataUrl("data:image/svg+xml;utf8,<svg/>")).toBe(false)
     expect(

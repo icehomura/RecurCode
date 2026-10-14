@@ -1,12 +1,12 @@
 //! The ops that change a window, as fixed driver calls.
 //!
-//! Every action codeg sends is a closed [`WindowAction`]; this module builds
+//! Every action RecurCode sends is a closed [`WindowAction`]; this module builds
 //! the driver's arguments from its fields — the tool (`click`,
 //! `double_click`, `right_click`, `scroll`, `type_text`, `press_key`,
 //! `set_value`), the window, the element or the point, the `delivery_mode`
-//! codeg asked for where the tool takes one (macOS's `set_value` does not) —
+//! RecurCode asked for where the tool takes one (macOS's `set_value` does not) —
 //! and nothing else: the driver refuses an argument its tool does not name.
-//! That is `"background"` unless codeg asked for the front, which it does
+//! That is `"background"` unless RecurCode asked for the front, which it does
 //! only where the person allows it: the driver then brings the window forward
 //! for the one call and sends real input — and on macOS and Windows switches
 //! back afterwards; on Linux the window stays in front. What the driver would
@@ -21,7 +21,7 @@
 //! window is shown again without being made active (see `super::hwnd`).
 //! Either way to that one window of that one process, bringing nothing to the
 //! front. On Linux the driver's `bring_to_front` is the only way, and it
-//! brings the window to the front: done only when codeg sent the restore
+//! brings the window to the front: done only when RecurCode sent the restore
 //! for the front. The driver is asked afterwards whether the window is on
 //! the screen again.
 //!
@@ -46,7 +46,7 @@
 //! The rest of "is this input still going where it was meant to" is the
 //! driver's own background gate on macOS, which re-reads the window's owner,
 //! the element's window and the application's other windows at the moment of
-//! delivery, and refuses by code; each code comes back to codeg as one of the
+//! delivery, and refuses by code; each code comes back to RecurCode as one of the
 //! helper's, in words written here rather than the driver's.
 
 use std::collections::{HashMap, VecDeque};
@@ -438,7 +438,7 @@ async fn ask_back(
 }
 
 /// Ask for the window back through the driver, which on Linux can only do it
-/// by bringing it to the front — which codeg asked for only where the person
+/// by bringing it to the front — which RecurCode asked for only where the person
 /// allows it. `false` when it is on the screen already. Where the window
 /// manager says the window is not minimized — on another desktop — it is not
 /// brought over, as on the other platforms; where nothing says (Wayland), an
@@ -933,7 +933,7 @@ fn keys_free(
 }
 
 /// What the agent is told where the held modifiers cannot be told.
-const MODIFIERS_UNKNOWN: &str = "On this desktop codeg cannot tell whether the user is holding \
+const MODIFIERS_UNKNOWN: &str = "On this desktop RecurCode cannot tell whether the user is holding \
      down a modifier key, and keys sent with the window brought to the front would combine with \
      one — so nothing was sent, and retrying will not change that. Leave `delivery` out to send \
      it in the background, or use computer_set_value or a click on an element by ref.";
@@ -1142,7 +1142,7 @@ const WEB_TYPING_REFUSED: &str = "This application is built on Chromium or Elect
 /// click it may already have acted on (`effect: "unverifiable"`), and on
 /// Linux background input that goes through `/dev/uinput`, which the
 /// session cannot write. Whether the front is to be had is the person's
-/// setting, which codeg knows and adds to these words.
+/// setting, which RecurCode knows and adds to these words.
 fn background_refusal(tool: &str, result: &ToolCallResult) -> String {
     let said = |key: &str| {
         result
@@ -1159,7 +1159,7 @@ fn background_refusal(tool: &str, result: &ToolCallResult) -> String {
     }
     if result.code() == Some("uinput_unavailable") || said("cause") == Some("uinput_unavailable") {
         return "This Linux desktop takes such input in the background only through \
-                /dev/uinput, which codeg cannot use here, so nothing was sent."
+                /dev/uinput, which RecurCode cannot use here, so nothing was sent."
             .to_string();
     }
     if !matches!(tool, "press_key" | "type_text") {
@@ -1190,7 +1190,7 @@ fn background_refusal(tool: &str, result: &ToolCallResult) -> String {
     if chromium {
         words.push_str(
             " On Windows no application built on Chromium takes keys in the background: Edge, \
-             Chrome, VS Code and other Electron apps. For a web page, codeg's own browser (the \
+             Chrome, VS Code and other Electron apps. For a web page, RecurCode's own browser (the \
              browser_* tools) does.",
         );
     }
@@ -1212,8 +1212,8 @@ pub fn needs_capture(error: &HelperError) -> bool {
 
 /// A window whose application runs with more rights than the driver: no
 /// input reaches it, whichever way it is sent.
-const HIGHER_RIGHTS: &str = "That window's application runs with more rights than codeg (as \
-     administrator), and Windows lets no input from codeg reach it, in the background or at the \
+const HIGHER_RIGHTS: &str = "That window's application runs with more rights than RecurCode (as \
+     administrator), and Windows lets no input from RecurCode reach it, in the background or at the \
      front. Nothing was sent; ask the user to do this step.";
 
 /// A call with the window brought to the front that failed before any input
@@ -1363,7 +1363,7 @@ fn act_error(tool: &str, mode: ActDelivery, result: &ToolCallResult) -> HelperEr
         "background_uipi_blocked" => error(HelperErrorCode::ActionFailed, HIGHER_RIGHTS),
         "input_delivery_unavailable" => error(
             HelperErrorCode::ActionFailed,
-            "This window takes no typing from codeg: Windows can accept it without it ever \
+            "This window takes no typing from RecurCode: Windows can accept it without it ever \
              reaching the prompt, so it is not sent, in the background or at the front. Ask the \
              user to type it, or run the command another way.",
         ),
@@ -1416,18 +1416,18 @@ fn act_error(tool: &str, mode: ActDelivery, result: &ToolCallResult) -> HelperEr
             "Keys cannot be held down through that pointer action on this desktop, so nothing \
              was sent. Do it without modifiers.",
         ),
-        // Arguments codeg built and the driver does not take: a fault here,
+        // Arguments RecurCode built and the driver does not take: a fault here,
         // not in what the agent asked.
         "invalid_arguments" => {
             tracing::error!(
-                "the driver refused the {tool} codeg built: {}",
+                "the driver refused the {tool} RecurCode built: {}",
                 result.text()
             );
             error(
                 HelperErrorCode::ActionFailed,
                 &format!(
-                    "The driver did not take the {tool} as codeg sent it, so nothing was sent. \
-                     That is a fault in codeg, not in the request — trying again will not help. \
+                    "The driver did not take the {tool} as RecurCode sent it, so nothing was sent. \
+                     That is a fault in RecurCode, not in the request — trying again will not help. \
                      Tell the user."
                 ),
             )
@@ -1679,7 +1679,7 @@ mod tests {
         assert!(book
             .check(1, 10, &set, Some("com.apple.TextEdit"), false)
             .is_ok());
-        // An application codeg cannot name could be Safari.
+        // An application RecurCode cannot name could be Safari.
         assert_eq!(
             book.check(1, 10, &set, None, false).unwrap_err().code,
             HelperErrorCode::ActionFailed
@@ -1995,7 +1995,7 @@ mod tests {
             assert_eq!(e.code, HelperErrorCode::BackgroundUnavailable);
             assert!(e.message.contains("/dev/uinput"), "{}", e.message);
         }
-        // Arguments the driver does not take are codeg's fault, said so.
+        // Arguments the driver does not take are RecurCode's fault, said so.
         let bad = act_error(
             "set_value",
             back,
@@ -2005,13 +2005,13 @@ mod tests {
             ),
         );
         assert_eq!(bad.code, HelperErrorCode::ActionFailed);
-        assert!(bad.message.contains("fault in codeg"), "{}", bad.message);
+        assert!(bad.message.contains("fault in RecurCode"), "{}", bad.message);
     }
 
     /// On macOS an application built on Chromium or Electron refuses typing
     /// by ref in the background — and only typing: its keys still go there,
     /// which the words say, rather than send the agent to a submit button or
-    /// to the user for return. Whether the front may be tried is codeg's to
+    /// to the user for return. Whether the front may be tried is RecurCode's to
     /// add.
     #[test]
     fn web_typing_refused_in_the_background_leaves_keys_open() {
@@ -2038,7 +2038,7 @@ mod tests {
     }
 
     /// The front fails in words of its own — a window that would not come
-    /// forward, an application with more rights than codeg — and they are
+    /// forward, an application with more rights than RecurCode — and they are
     /// read as such only when the front was asked for. Only a failure the
     /// driver says came before any input went out is one to try again; one
     /// it found after (the window gone from the front once the click was

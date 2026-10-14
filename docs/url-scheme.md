@@ -1,22 +1,22 @@
 # URL scheme
 
-The desktop app registers the custom URL scheme `codeg://` so another program
-can bring Codeg forward and open a specific conversation.
+The desktop app registers the custom URL scheme `recurcode://` so another program
+can bring RecurCode forward and open a specific conversation.
 
-This is the OS handler for the same `codeg://session/<id>` form already used
-as an in-app markdown mention. Mention badges (`codeg://agent/…`,
-`codeg://commit/…`, `codeg://embedded/…`) stay in-process and are **not**
+This is the OS handler for the same `recurcode://session/<id>` form already used
+as an in-app markdown mention. Mention badges (`recurcode://agent/…`,
+`recurcode://commit/…`, `recurcode://embedded/…`) stay in-process and are **not**
 OS navigation.
 
 ## Forms
 
 | URL | Effect |
 | --- | --- |
-| `codeg://session/214` | Open conversation **214** (Codeg's numeric id) |
-| `codeg://session/<external-id>` | Open by the agent's own session id (Grok UUID, Codex thread id, …) |
-| `codeg://workspace?conversationId=214` | Same lookup. `folderId` and `agent` are optional; when omitted they are read from the row |
-| `codeg://workspace?folderId=3&conversationId=214&agent=grok` | Same, but rejected if folder or agent do not match the row |
-| `codeg://open` / `codeg://` | Show the workspace, no tab change |
+| `recurcode://session/214` | Open conversation **214** (RecurCode's numeric id) |
+| `recurcode://session/<external-id>` | Open by the agent's own session id (Grok UUID, Codex thread id, …) |
+| `recurcode://workspace?conversationId=214` | Same lookup. `folderId` and `agent` are optional; when omitted they are read from the row |
+| `recurcode://workspace?folderId=3&conversationId=214&agent=grok` | Same, but rejected if folder or agent do not match the row |
+| `recurcode://open` / `recurcode://` | Show the workspace, no tab change |
 
 A missing or deleted conversation is a no-op besides showing the workspace.
 
@@ -24,17 +24,17 @@ A missing or deleted conversation is a no-op besides showing the workspace.
 
 ```bash
 # macOS / Linux
-open "codeg://session/214"
-xdg-open "codeg://session/214"
+open "recurcode://session/214"
+xdg-open "recurcode://session/214"
 
 # Windows
-start codeg://session/214
+start recurcode://session/214
 ```
 
 From a local web app (the custom scheme cannot be `fetch`'d; assign it):
 
 ```js
-window.location.href = "codeg://session/214"
+window.location.href = "recurcode://session/214"
 ```
 
 ## Cold start vs already running
@@ -64,7 +64,7 @@ once on mount, right after subscribing.
 ## Scheme registration
 
 The desktop installer registers the scheme — `CFBundleURLTypes` on macOS,
-protocol handler on Windows, `x-scheme-handler/codeg` on Linux — but the Linux
+protocol handler on Windows, `x-scheme-handler/RecurCode` on Linux — but the Linux
 half needs two extra pieces, because Tauri's bundler renders the `.desktop`
 `Exec` line with no field code ([tauri#15928], [tauri#16014]). Without one, the
 freedesktop spec says the launcher passes no URL, so the app is advertised as
@@ -80,9 +80,9 @@ the scheme owner and then started empty.
   portals skip `NoDisplay` entries, which is why the packaged entry above still
   has to be right. On Windows it adds the `HKCU` class key a portable/zip copy
   never gets from the installer. Debug builds are skipped so a dev run cannot
-  take the scheme away from an installed Codeg.
+  take the scheme away from an installed RecurCode.
 
-Not available in `codeg-server` / browser-only mode — use the
+Not available in `recur-code-server` / browser-only mode — use the
 `/workspace?folderId=&conversationId=&agent=` query string there.
 
 [tauri#15928]: https://github.com/tauri-apps/tauri/issues/15928

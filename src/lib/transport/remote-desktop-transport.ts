@@ -11,7 +11,7 @@ import type {
   UnsubscribeFn,
 } from "./types"
 
-// See WebTransport for rationale. Bounded so an older remote codeg-server
+// See WebTransport for rationale. Bounded so an older remote recur-code-server
 // (no `__ready__` support) can't permanently hang the desktop UI.
 const READY_TIMEOUT_MS = 5_000
 
@@ -78,7 +78,7 @@ function isAuthenticationFailed(err: unknown): boolean {
 
 /**
  * Transport that the desktop client uses when a window is bound to a
- * remote codeg-server. Every HTTP call and WebSocket event is routed
+ * remote recur-code-server. Every HTTP call and WebSocket event is routed
  * through Rust commands (`remote_http_call`, `remote_ws_subscribe`,
  * `remote_ws_unsubscribe`) defined in `src-tauri/src/commands/remote_proxy.rs`.
  *

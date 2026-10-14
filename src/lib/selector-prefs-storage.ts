@@ -19,7 +19,7 @@
 
 import type { SessionModeStateInfo } from "@/lib/types"
 
-const STORAGE_KEY = "codeg:selector-prefs"
+const STORAGE_KEY = "RecurCode:selector-prefs"
 
 interface SelectorPrefs {
   modeId?: string
@@ -79,7 +79,7 @@ function updatePrefs(
 const CURSOR_VARIANT_KEYS = new Set(["thinking", "context", "effort", "fast"])
 
 /**
- * Heal a `model` preference saved before codeg opted into cursor-agent's
+ * Heal a `model` preference saved before RecurCode opted into cursor-agent's
  * parameterized model picker.
  *
  * That older surface identified a model by a stringified variant —

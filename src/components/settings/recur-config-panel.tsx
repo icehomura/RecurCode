@@ -59,7 +59,7 @@ const PI_COMMAND_ENV = "PI_ACP_PI_COMMAND"
 const PI_SESSION_DIR_ENV = "RECUR_AGENT_SESSIONS_DIR"
 /**
  * LEGACY per-agent `env_json` flag that used to gate launch-time workspace-trust
- * seeding. codeg no longer seeds pi's `trust.json` — auto-trusting the opened
+ * seeding. RecurCode no longer seeds pi's `trust.json` — auto-trusting the opened
  * folder let a repo's own `.ra/extensions` execute at pi startup — so nothing
  * reads this key any more; project trust is an explicit per-workspace decision
  * (see `PiProjectTrustBanner` and the Project trust list below). It stays
@@ -872,7 +872,7 @@ export function RecurConfigPanel({
                 {/*
                   Both dirs persist to the per-agent `env_json`, which is injected
                   into the spawned pi child and nowhere else — while the history
-                  parser resolves pi's sessions directory from codeg's OWN process
+                  parser resolves pi's sessions directory from RecurCode's OWN process
                   environment. So a custom dir here splits the two: pi writes and
                   resumes fine, and the sessions never show up in the list. Saying
                   so beats letting the user discover it as missing history.
@@ -1240,7 +1240,7 @@ export function RecurConfigPanel({
           A trusted folder lets that repo's `.ra/extensions` run at pi startup,
           and the decision is inherited by every folder beneath it and honored by
           the standalone `pi` CLI too, so it is worth being able to audit. Older
-          codeg builds auto-trusted every opened workspace; those entries are
+          RecurCode builds auto-trusted every opened workspace; those entries are
           indistinguishable from ones made inside pi, so they are listed for
           review rather than pruned automatically. */}
       <div className="space-y-2 rounded-md border bg-muted/10 p-3">

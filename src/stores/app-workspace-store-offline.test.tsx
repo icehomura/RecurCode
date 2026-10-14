@@ -100,7 +100,7 @@ afterEach(() => {
 
 it("preserves a restored composer draft until an authoritative folder snapshot arrives", async () => {
   const savedText = loadMessageInputDraftV2(draftKey)
-  const storageKey = `codeg:message-input-draft:v2:${draftKey}`
+  const storageKey = `RecurCode:message-input-draft:v2:${draftKey}`
   const persistedText = localStorage.getItem(storageKey)
   expect(persistedText).not.toBeNull()
   render(

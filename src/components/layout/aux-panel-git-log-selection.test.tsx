@@ -196,7 +196,7 @@ describe("Commits tab branch query", () => {
   })
 
   it("ignores an older branch refresh that omits the saved branch", async () => {
-    const key = "codeg:gitlog:selection:/worktrees/a"
+    const key = "RecurCode:gitlog:selection:/worktrees/a"
     window.localStorage.setItem(
       key,
       JSON.stringify({ branch: "feature/new", author: null })
@@ -235,7 +235,7 @@ describe("Commits tab branch query", () => {
   })
 
   it("discards an older branch response when the latest refresh fails", async () => {
-    const key = "codeg:gitlog:selection:/worktrees/a"
+    const key = "RecurCode:gitlog:selection:/worktrees/a"
     window.localStorage.setItem(
       key,
       JSON.stringify({ branch: "feature/new", author: null })

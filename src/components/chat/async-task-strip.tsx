@@ -96,7 +96,7 @@ function AsyncTaskRow({
   // door. Widening the scope to cover a temp tree the adapter chose is the
   // wrong trade for reading a log file, and it would still hand a `.output`
   // extension to whatever the OS guesses. `openFilePreview` takes an absolute
-  // path anywhere, reads through codeg's own backend, and works in web too —
+  // path anywhere, reads through RecurCode's own backend, and works in web too —
   // so this button no longer needs `isLocalDesktop()` gating either.
   const handleOpenOutput = useCallback(() => {
     if (!task.output_file_path) return

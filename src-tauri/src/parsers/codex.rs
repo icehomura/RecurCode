@@ -245,7 +245,7 @@ impl CodexParser {
     ///
     /// Pointers chain — a fork of a fork, and every revert adds a rollout — so
     /// they are followed to the root. A chain ends early at a rollout it has
-    /// already visited (a malformed cycle) or one codeg cannot find, which is
+    /// already visited (a malformed cycle) or one RecurCode cannot find, which is
     /// not an error: the rollout may have been pruned, or live in a codex home
     /// this parser isn't pointed at. What was reached renders on its own rather
     /// than the conversation being refused. One that is there but fails to
@@ -357,7 +357,7 @@ impl CodexParser {
     /// under the same thread id and leaves the old file in place, so the id
     /// matches several files and traversal order would decide — on NTFS, whose
     /// listings are name-sorted, always in favour of the stale original. codex
-    /// records the switch in its SQLite state; codeg reads only the rollouts, so
+    /// records the switch in its SQLite state; RecurCode reads only the rollouts, so
     /// this is codex's own rule for when that state is unavailable: the newest
     /// file.
     fn find_current_rollout(&self, thread_id: &str) -> Option<PathBuf> {
@@ -1831,7 +1831,7 @@ fn codex_script_meta(
     if truncated {
         marks.insert("truncated".to_string(), true.into());
     }
-    (!marks.is_empty()).then(|| serde_json::json!({ "codeg.codexScript": marks }))
+    (!marks.is_empty()).then(|| serde_json::json!({ "RecurCode.codexScript": marks }))
 }
 
 /// How to name a call when telling the reader whose output shares a card.
@@ -2359,7 +2359,7 @@ fn infer_tool_call_output_is_error(
 /// Synthetic rawInput key the live input shaper uses to carry the collab op
 /// through to the card (see frontend `collab-tool.ts` `COLLAB_OP_KEY`). Kept in
 /// sync here so history `wait_agent` capsules render with an op-aware title.
-const COLLAB_OP_KEY: &str = "__codegCollabOp";
+const COLLAB_OP_KEY: &str = "__recur_codeCollabOp";
 
 /// Whether a collab status string is an error (mirrors the frontend
 /// `isErrorCollabStatusKind`: only `errored` / `failed` / `notFound`).
@@ -2411,7 +2411,7 @@ const CODEX_ENCRYPTED_PLACEHOLDER: &str = "[encrypted]";
 /// Public because the LIVE path writes the same key
 /// (`acp/connection.rs::classify_codex_subagent_activity`) — streaming and
 /// reload must not disagree about what the card means.
-pub const CODEX_SUBAGENT_LAUNCH_KEY: &str = "__codegCodexSubagentLaunch";
+pub const CODEX_SUBAGENT_LAUNCH_KEY: &str = "__recur_codeCodexSubagentLaunch";
 
 /// Whether a `spawn_agent`'s arguments are codex 0.147's native team-of-agents
 /// shape: `task_name` and no `agent_type` (which that release removed).
@@ -2426,7 +2426,7 @@ fn is_native_team_spawn(args: Option<&serde_json::Value>) -> bool {
 /// Written by both the rollout parser and the live path
 /// (`acp/connection.rs`), so a reload cannot disagree with the stream about
 /// whether the child finished.
-pub const CODEX_SUBAGENT_STATE_KEY: &str = "__codegCodexSubagentState";
+pub const CODEX_SUBAGENT_STATE_KEY: &str = "__recur_codeCodexSubagentState";
 
 /// One `SubAgentActivity` record, normalized across the two on-disk shapes.
 ///
@@ -3151,7 +3151,7 @@ impl CodexParser {
         //     its result is only a fallback for agents never waited on.
         // codex-acp 1.0.1 (#223) maps `collabAgentToolCall` onto live ACP
         // `tool_call`s; 1.1.3+ (#304) additionally emits `subAgentActivity` as a
-        // SEPARATE live `tool_call` (`_meta.codex.subagent`), but codeg
+        // SEPARATE live `tool_call` (`_meta.codex.subagent`), but RecurCode
         // suppresses it (redundant with the collab capsule — see
         // `is_codex_subagent_activity`) and it carries no transcript content, so
         // the nested `agent-<id>.jsonl` stats still only exist on history reload.
@@ -5312,10 +5312,10 @@ fn extract_turn_usage_from_codex_usage(usage: &serde_json::Value) -> Option<Turn
 /// Codex's `input_tokens` is the WHOLE prompt. It includes the tokens read from
 /// the prompt cache (`cached_input_tokens`) and the tokens written to it
 /// (`cache_write_input_tokens`, which some providers and gateways report and
-/// OpenAI's API leaves at 0), while codeg's four counters are disjoint. So
+/// OpenAI's API leaves at 0), while RecurCode's four counters are disjoint. So
 /// both are split out of the input rather than counted as fresh input;
 /// codex-acp 2.2.0 made the same correction to its own `TokenCount`. A real
-/// rollout on codeg's bound provider reads `input 19915, cached 17152, write
+/// rollout on RecurCode's bound provider reads `input 19915, cached 17152, write
 /// 2304`: 459 fresh.
 ///
 /// The write is capped at what the input has left after the read, so a provider
@@ -5826,7 +5826,7 @@ const CODEX_PLAN_APPROVED_OUTPUT: &str = "User approved the plan.";
 
 /// Append the settled `plan_review` call that reports an approved plan.
 ///
-/// Deliberately the same shape the LIVE path produces: codeg seeds codex-acp's
+/// Deliberately the same shape the LIVE path produces: RecurCode seeds codex-acp's
 /// unannounced plan-review call with `raw_input: None` (see
 /// `handle_permission_request`) because the plan is already in the transcript,
 /// and the frontend renders that input-less call as a bare decision marker. So
@@ -5910,11 +5910,11 @@ const CODEX_ACP_TITLE_MAX_UNITS: usize = 256;
 
 /// codex-acp's `normalizeSessionTitle` (`SessionTitle.ts`), which makes every
 /// `session_info_update.title` it publishes (a `session/list` title is not cut
-/// since 2.2.2, but codeg never lists): whitespace runs collapsed to one
+/// since 2.2.2, but RecurCode never lists): whitespace runs collapsed to one
 /// space, then a title over 256 UTF-16 units cut to 255, never through a
-/// surrogate pair, and ended with "…". The cut cannot be left to codeg's own
+/// surrogate pair, and ended with "…". The cut cannot be left to RecurCode's own
 /// 100-character one: it comes first, and the archive markers the live path
-/// strips afterwards can pull it inside the characters codeg keeps.
+/// strips afterwards can pull it inside the characters RecurCode keeps.
 fn codex_acp_session_title(name: &str) -> String {
     let collapsed = name
         .split(is_js_whitespace)
@@ -6267,7 +6267,7 @@ struct PendingPromotedMessage {
 ///   blocks and compaction summaries, i.e. text codex deliberately keeps out of
 ///   the chat. That rule regresses 60 existing conversations.
 /// * *Per file, when the event channel is absent anywhere* — this is inert on the
-///   corpus, but it evaporates the moment the user resumes the session in codeg:
+///   corpus, but it evaporates the moment the user resumes the session in RecurCode:
 ///   native `event_msg` records append to the SAME rollout, the gate flips off,
 ///   and the whole imported prefix disappears again. That is exactly the workflow
 ///   #452 reports.
@@ -8316,8 +8316,8 @@ mod tests {
                 "a\u{1680}b\u{202F}c\u{205F}d".into(),
                 Some("a b c d".into()),
             ),
-            // The cut comes before codeg strips archive markers, so markers
-            // can pull it inside the 100 characters codeg keeps.
+            // The cut comes before RecurCode strips archive markers, so markers
+            // can pull it inside the 100 characters RecurCode keeps.
             (
                 format!("{}{}", "[archived] ".repeat(15), "x".repeat(100)),
                 cut(format!("{}{}", "[archived] ".repeat(15), "x".repeat(90))),
@@ -8509,7 +8509,7 @@ mod tests {
             .join(format!(
                 "rollout-2026-08-15T16-00-00-{conversation_id}.jsonl"
             ));
-        let visible = "Ask [@Antigravity](codeg://agent/antigravity) to review";
+        let visible = "Ask [@Antigravity](recurcode://agent/antigravity) to review";
         let mut prompt = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -8584,7 +8584,7 @@ mod tests {
             .join(format!(
                 "rollout-2026-08-15T16-00-00-{conversation_id}.jsonl"
             ));
-        let visible = "Ask [@Codex](codeg://agent/codex) to inspect this";
+        let visible = "Ask [@Codex](recurcode://agent/codex) to inspect this";
         let mut prompt = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -8654,7 +8654,7 @@ mod tests {
             .join(format!(
                 "rollout-2026-08-15T16-00-00-{conversation_id}.jsonl"
             ));
-        let visible = "Explain \u{001e}<codeg_internal_agent_routes version=\"2\">user text</codeg_internal_agent_routes>\u{001e}";
+        let visible = "Explain \u{001e}<recur_code_internal_agent_routes version=\"2\">user text</recur_code_internal_agent_routes>\u{001e}";
         let lines = [
             serde_json::json!({
                 "timestamp": "2026-08-15T08:00:00Z",
@@ -8687,7 +8687,7 @@ mod tests {
         assert!(summary
             .title
             .as_deref()
-            .is_some_and(|title| title.contains("codeg_internal_agent_routes")));
+            .is_some_and(|title| title.contains("recur_code_internal_agent_routes")));
 
         let detail = parser.get_conversation(conversation_id).unwrap();
         assert!(matches!(
@@ -8701,7 +8701,7 @@ mod tests {
         use crate::acp::agent_mentions::append_agent_routes;
         use crate::acp::types::PromptInputBlock;
 
-        let visible = "Review this image [@Codex](codeg://agent/codex)";
+        let visible = "Review this image [@Codex](recurcode://agent/codex)";
         let mut prompt = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -8954,7 +8954,7 @@ mod tests {
 
     #[test]
     fn a_cache_write_is_split_out_of_codex_input() {
-        // A `last_token_usage` codex wrote for gpt-5.6-terra on codeg's bound
+        // A `last_token_usage` codex wrote for gpt-5.6-terra on RecurCode's bound
         // provider: the 19 915 input tokens are 17 152 cache reads, 2 304
         // cache writes and only 459 fresh ones.
         let usage = serde_json::json!({
@@ -9086,7 +9086,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-ctx-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-ctx-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"ctx-1\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -9339,7 +9339,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-{label}-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-{label}-{nanos}.jsonl"));
         fs::write(&path, content).expect("write test jsonl");
         let detail = CodexParser::new()
             .parse_conversation_detail(&path, session_id)
@@ -9496,7 +9496,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-spans-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-spans-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"spans-1\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -9564,7 +9564,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-midctx-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-midctx-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"midctx-1\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -9608,7 +9608,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-completed-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-completed-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"completed-1\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -9653,7 +9653,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-goal-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-goal-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"goal-1\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -9746,7 +9746,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-goalnull-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-goalnull-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"gc-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"turn_context\",\"payload\":{\"model\":\"gpt-5-codex\"}}\n",
@@ -9809,7 +9809,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-puregoal-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-puregoal-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"pg-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Build a static test page\",\"status\":\"active\"}}}\n",
@@ -9882,7 +9882,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-goaltext-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-goaltext-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"gt-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"user_message\",\"message\":\"/goal Analyze the README\"}}\n",
@@ -9930,7 +9930,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-goaldup-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-goaldup-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"gd-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Investigate auth\",\"status\":\"active\"}}}\n",
@@ -9979,7 +9979,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-goalconfirm-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-goalconfirm-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"gc-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Build a static page\",\"status\":\"active\"}}}\n",
@@ -10048,7 +10048,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumconfirm-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumconfirm-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"sc-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Build a static page\",\"status\":\"active\"}}}\n",
@@ -10084,7 +10084,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumgoal-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumgoal-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"sg-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Build a static test page\",\"status\":\"active\"}}}\n",
@@ -10119,7 +10119,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumname-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumname-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"sn-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Build a static test page\",\"status\":\"active\"}}}\n",
@@ -10151,7 +10151,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumimg-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumimg-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"si-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Do the thing\",\"status\":\"active\"}}}\n",
@@ -10205,7 +10205,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumimg-bothchan-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumimg-bothchan-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"si-both\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"user_message\",\"message\":\"look at this\",\"images\":[\"data:image/png;base64,AAAA\"]}}\n",
@@ -10237,7 +10237,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumimg-parity-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumimg-parity-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"si-parity\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"response_item\",\"payload\":{\"type\":\"message\",\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":\"inspect this\"},{\"type\":\"input_image\",\"image_url\":\"data:image/png;base64,AAAA\"}]}}\n",
@@ -10271,7 +10271,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-{tag}-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-{tag}-{nanos}.jsonl"));
         fs::write(&path, content).expect("write test jsonl");
         let parser = CodexParser::new();
         let summary = parser
@@ -10465,7 +10465,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-sumnull-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-sumnull-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"snl-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":null}}\n",
@@ -10498,7 +10498,7 @@ mod tests {
             .expect("system time ok")
             .as_nanos();
         let path: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-gtxt-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-gtxt-{nanos}.jsonl"));
         let content = concat!(
             "{\"timestamp\":\"2026-03-01T10:00:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"gt2-1\",\"cwd\":\"/tmp/demo\"}}\n",
             "{\"timestamp\":\"2026-03-01T10:00:01Z\",\"type\":\"event_msg\",\"payload\":{\"type\":\"thread_goal_updated\",\"goal\":{\"objective\":\"Do X\",\"status\":\"active\"}}}\n",
@@ -10551,7 +10551,7 @@ mod tests {
 
         // (a) terminal-only goal → no capture, no synthetic count/title.
         let path_a: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-term-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-term-{nanos}.jsonl"));
         fs::write(
             &path_a,
             concat!(
@@ -10573,7 +10573,7 @@ mod tests {
         // (b) terminal THEN active → the active objective is captured (not the
         // terminal one), matching the detail parser's first-create_goal capture.
         let path_b: PathBuf =
-            env::temp_dir().join(format!("codeg-codex-termact-{nanos}.jsonl"));
+            env::temp_dir().join(format!("recur-code-codex-termact-{nanos}.jsonl"));
         fs::write(
             &path_b,
             concat!(
@@ -10615,7 +10615,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-img-dedupe-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-img-dedupe-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-05-05T12:35:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"ig-test\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -10669,7 +10669,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-img-mime-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-img-mime-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-05-05T12:35:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"ig-mime\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -10756,7 +10756,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-img-noprompt-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-img-noprompt-{nanos}.jsonl"));
 
         let content = concat!(
             "{\"timestamp\":\"2026-05-05T12:35:00Z\",\"type\":\"session_meta\",\"payload\":{\"id\":\"ig-noprompt\",\"cwd\":\"/tmp/demo\"}}\n",
@@ -10803,7 +10803,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-img-subagent-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-img-subagent-{nanos}.jsonl"));
 
         // Sequence:
         //   1. user msg
@@ -10869,7 +10869,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path = env::temp_dir().join(format!("codeg-codex-{tag}-{nanos}.jsonl"));
+        let path = env::temp_dir().join(format!("recur-code-codex-{tag}-{nanos}.jsonl"));
         let mut content = lines.join("\n");
         content.push('\n');
         fs::write(&path, content).expect("write test jsonl");
@@ -10888,7 +10888,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let dir = env::temp_dir().join(format!("codeg-codex-{tag}-{nanos}"));
+        let dir = env::temp_dir().join(format!("recur-code-codex-{tag}-{nanos}"));
         fs::create_dir_all(&dir).expect("create temp session dir");
         dir
     }
@@ -11830,7 +11830,7 @@ mod tests {
             .expect("wait capsule carrying A's result");
         assert!(a_cap.contains("agent_a"));
         // op-aware title source is present.
-        assert!(a_cap.contains("__codegCollabOp"));
+        assert!(a_cap.contains("__recur_codeCollabOp"));
 
         // The result text must NOT remain on the spawn execution capsules or any
         // tool result (it lives only in the wait capsules now).
@@ -13157,8 +13157,8 @@ mod tests {
         let script = concat!(
             "const wd=\"/tmp\";const taskA=\"A\";const taskB=\"B\";",
             "const [a,b]=await Promise.all([",
-            "tools.mcp__codeg_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskA}),",
-            "tools.mcp__codeg_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskB})",
+            "tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskA}),",
+            "tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskB})",
             "]);text(JSON.stringify({a,b}));"
         );
         assert!(
@@ -13191,7 +13191,7 @@ mod tests {
                         "item": {
                             "type": "McpToolCall",
                             "id": id,
-                            "server": "codeg-mcp",
+                            "server": "recur-code-mcp",
                             "tool": "delegate_to_agent",
                             "arguments": {"agent_type":"codex", "task":task},
                             "status": "completed",
@@ -13215,8 +13215,8 @@ mod tests {
                 .map(|(id, name, _)| (id.as_str(), name.as_str()))
                 .collect::<Vec<_>>(),
             vec![
-                ("exec-b", "mcp__codeg_mcp__delegate_to_agent"),
-                ("exec-a", "mcp__codeg_mcp__delegate_to_agent"),
+                ("exec-b", "mcp__recur_code_mcp__delegate_to_agent"),
+                ("exec-a", "mcp__recur_code_mcp__delegate_to_agent"),
             ],
             "semantic items replace the outer script with real MCP cards"
         );
@@ -13249,9 +13249,9 @@ mod tests {
         let sealed = format!("gAAAAAB{}", "qgWsi0g7nV3UTzqL".repeat(30));
         let native = native_team_0153_lines("FINAL_ANSWER", &sealed);
         let initial_script =
-            "const r = await tools.mcp__codeg_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic initial\"});text(JSON.stringify(r));";
+            "const r = await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic initial\"});text(JSON.stringify(r));";
         let continuation_script =
-            "const r = await tools.mcp__codeg_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic followup\",continue_from_task_id:\"task-semantic-initial\"});text(JSON.stringify(r));";
+            "const r = await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic followup\",continue_from_task_id:\"task-semantic-initial\"});text(JSON.stringify(r));";
         let initial_status = serde_json::json!({
             "task_id": "task-semantic-initial",
             "child_conversation_id": 901,
@@ -13282,7 +13282,7 @@ mod tests {
                     "item": {
                         "type": "McpToolCall",
                         "id": "mcp-semantic-initial",
-                        "server": "codeg-mcp",
+                        "server": "recur-code-mcp",
                         "tool": "delegate_to_agent",
                         "arguments": {
                             "agent_type": "codex",
@@ -13339,7 +13339,7 @@ mod tests {
                     "item": {
                         "type": "McpToolCall",
                         "id": "mcp-semantic-continuation",
-                        "server": "codeg-mcp",
+                        "server": "recur-code-mcp",
                         "tool": "delegate_to_agent",
                         "arguments": {
                             "agent_type": "codex",
@@ -13392,14 +13392,14 @@ mod tests {
             vec![
                 (
                     "mcp-semantic-initial",
-                    "mcp__codeg_mcp__delegate_to_agent",
+                    "mcp__recur_code_mcp__delegate_to_agent",
                     Some(
                         r#"{"agent_type":"codex","working_dir":"/tmp/mcp-worker","task":"semantic initial"}"#,
                     ),
                 ),
                 (
                     "mcp-semantic-continuation",
-                    "mcp__codeg_mcp__delegate_to_agent",
+                    "mcp__recur_code_mcp__delegate_to_agent",
                     Some(
                         r#"{"agent_type":"codex","working_dir":"/tmp/mcp-worker","task":"semantic followup","continue_from_task_id":"task-semantic-initial"}"#,
                     ),
@@ -13456,7 +13456,7 @@ mod tests {
 
     #[test]
     fn a_deferred_scripts_late_mcp_item_cannot_bind_to_the_next_script() {
-        let script = "const r=await tools.mcp__codeg_mcp__delegate_to_agent({agent_type:\"codex\",task:\"A\"});text(JSON.stringify(r));";
+        let script = "const r=await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",task:\"A\"});text(JSON.stringify(r));";
         let mut lines = code_mode_rollout(
             script,
             serde_json::json!("Script running with cell ID 34\nWall time 30.0 seconds\nOutput:\n"),
@@ -13475,7 +13475,7 @@ mod tests {
             serde_json::json!({
                 "type":"item_completed",
                 "item": {
-                    "type":"McpToolCall", "id":"exec-from-a", "server":"codeg-mcp",
+                    "type":"McpToolCall", "id":"exec-from-a", "server":"recur-code-mcp",
                     "tool":"delegate_to_agent", "arguments":{"task":"A"},
                     "status":"completed", "result":{"content":[], "isError":false}
                 }
@@ -13500,13 +13500,13 @@ mod tests {
     /// A refused MCP call still lets the SCRIPT finish, so the wrapper's own
     /// `Script completed` says nothing about the call inside it. The card has to
     /// settle on the semantic item's outcome or it contradicts the result block
-    /// written beside it. Shape taken verbatim from a real rollout: codeg-mcp
+    /// written beside it. Shape taken verbatim from a real rollout: recur-code-mcp
     /// refuses a `delegate_to_agent` past the delegation depth limit.
     #[test]
     fn a_failed_semantic_mcp_item_settles_its_card_as_failed() {
         let script = concat!(
             "const dir=\"/tmp/w\";",
-            "const res=await tools.mcp__codeg_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:dir,task:t});",
+            "const res=await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:dir,task:t});",
             "text(res.content[0].text);"
         );
         let mut lines = code_mode_rollout(
@@ -13526,7 +13526,7 @@ mod tests {
                     "item": {
                         "type": "McpToolCall",
                         "id": "exec-depth-limit",
-                        "server": "codeg-mcp",
+                        "server": "recur-code-mcp",
                         "tool": "delegate_to_agent",
                         "arguments": {"agent_type":"codex", "working_dir":"/tmp/w"},
                         "status": "failed",
@@ -13675,7 +13675,7 @@ mod tests {
             let mut lines = code_mode_rollout(
                 concat!(
                     "const rs = await Promise.all([\n",
-                    "  tools.mcp__codeg_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:30000}),\n",
+                    "  tools.mcp__recur_code_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:30000}),\n",
                     "  tools.write_stdin({session_id:480,chars:\"y\\n\"}),\n",
                     "]);\ntext(JSON.stringify(rs));"
                 ),
@@ -13695,7 +13695,7 @@ mod tests {
                             "item": {
                                 "type": "McpToolCall",
                                 "id": "exec-poll",
-                                "server": "codeg-mcp",
+                                "server": "recur-code-mcp",
                                 "tool": "get_delegation_status",
                                 "arguments": {"task_ids":["t1"], "wall_ms":30000},
                                 "status": "completed",
@@ -13733,7 +13733,7 @@ mod tests {
     #[test]
     fn a_thrown_script_keeps_its_own_card_over_a_matching_semantic_item() {
         let script = concat!(
-            "const r=await tools.mcp__codeg_mcp__task_progress({message:m});",
+            "const r=await tools.mcp__recur_code_mcp__task_progress({message:m});",
             "text(r.content[0].text.toUpperCase());"
         );
         let mut lines = code_mode_rollout(
@@ -13753,7 +13753,7 @@ mod tests {
                     "item": {
                         "type": "McpToolCall",
                         "id": "exec-progress",
-                        "server": "codeg-mcp",
+                        "server": "recur-code-mcp",
                         "tool": "task_progress",
                         "arguments": {"message":"halfway"},
                         "status": "completed",
@@ -14709,7 +14709,7 @@ mod tests {
     #[test]
     fn polling_a_background_session_appends_to_the_card_of_its_command() {
         let mut lines = background_session_head(serde_json::json!(
-            "Chunk ID: 523e44\nWall time: 30.0 seconds\nProcess running with session ID 22068\nOutput:\n   Compiling codeg"
+            "Chunk ID: 523e44\nWall time: 30.0 seconds\nProcess running with session ID 22068\nOutput:\n   Compiling RecurCode"
         ));
         // Nothing new yet, and the session says so by naming itself again.
         lines.extend(poll_lines(
@@ -14735,7 +14735,7 @@ mod tests {
         let results = tool_results(&detail);
         assert_eq!(results.len(), 1, "{results:?}");
         let output = results[0].1.clone().expect("output");
-        assert_eq!(output, "   Compiling codeg\ntest result: ok. 1 passed");
+        assert_eq!(output, "   Compiling RecurCode\ntest result: ok. 1 passed");
     }
 
     /// The poll ended the reasoning run when it was read, but it is folded away
@@ -14745,7 +14745,7 @@ mod tests {
     #[test]
     fn reasoning_on_both_sides_of_a_folded_poll_is_one_thinking_card() {
         let mut lines = background_session_head(serde_json::json!(
-            "Chunk ID: 523e44\nWall time: 30.0 seconds\nProcess running with session ID 22068\nOutput:\n   Compiling codeg"
+            "Chunk ID: 523e44\nWall time: 30.0 seconds\nProcess running with session ID 22068\nOutput:\n   Compiling RecurCode"
         ));
         lines.extend(announced_reasoning(
             "2026-07-20T08:40:02.500Z",
@@ -15031,7 +15031,7 @@ mod tests {
     /// terminal card further down the transcript.
     fn deferred_script_rollout(wait_output: serde_json::Value) -> Vec<String> {
         let mut lines = code_mode_rollout(
-            "const r = await tools.mcp__codeg_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:60000});\ntext(JSON.stringify(r));\n",
+            "const r = await tools.mcp__recur_code_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:60000});\ntext(JSON.stringify(r));\n",
             serde_json::json!("Script running with cell ID 34\nWall time 11.0 seconds\nOutput:\n"),
         );
         lines.push(rollout_line(
@@ -15060,7 +15060,7 @@ mod tests {
     fn a_deferred_script_completed_mcp_item_replaces_its_wrapper_card() {
         let script = concat!(
             "const task=\"t1\";",
-            "const r=await tools.mcp__codeg_mcp__get_delegation_status({task_ids:[task],wait_ms:60000});",
+            "const r=await tools.mcp__recur_code_mcp__get_delegation_status({task_ids:[task],wait_ms:60000});",
             "text(JSON.stringify(r));"
         );
         let mut lines = code_mode_rollout(
@@ -15075,7 +15075,7 @@ mod tests {
                 "item": {
                     "type": "McpToolCall",
                     "id": "mcp-deferred-status",
-                    "server": "codeg-mcp",
+                    "server": "recur-code-mcp",
                     "tool": "get_delegation_status",
                     "arguments": {"task_ids":["t1"], "wait_ms":60000},
                     "result": {
@@ -15110,7 +15110,7 @@ mod tests {
             tool_uses(&detail),
             vec![ (
                 "mcp-deferred-status".into(),
-                "mcp__codeg_mcp__get_delegation_status".into(),
+                "mcp__recur_code_mcp__get_delegation_status".into(),
                 Some(r#"{"task_ids":["t1"],"wait_ms":60000}"#.into()),
             ) ],
             "the completed semantic item replaces the parked script card"
@@ -15144,7 +15144,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![(
                 "call_1".to_string(),
-                "mcp__codeg_mcp__get_delegation_status".to_string()
+                "mcp__recur_code_mcp__get_delegation_status".to_string()
             )]
         );
         assert_eq!(
@@ -15252,7 +15252,7 @@ mod tests {
         // session map either: that cell is not a shell, and the long-running
         // call here is not even a command.
         let mut lines = code_mode_rollout(
-            "const r = await tools.mcp__codeg_mcp__ask_user_question({questions: []});\ntext(JSON.stringify(r));\n",
+            "const r = await tools.mcp__recur_code_mcp__ask_user_question({questions: []});\ntext(JSON.stringify(r));\n",
             serde_json::json!([
                 {"type": "input_text", "text": "Script running with cell ID 15\nWall time 11.0 seconds\nOutput:\n"},
             ]),
@@ -15277,7 +15277,7 @@ mod tests {
             uses.iter()
                 .map(|(id, name, _)| (id.as_str(), name.as_str()))
                 .collect::<Vec<_>>(),
-            vec![("call_1", "mcp__codeg_mcp__ask_user_question")]
+            vec![("call_1", "mcp__recur_code_mcp__ask_user_question")]
         );
 
         let _ = fs::remove_file(path);
@@ -15368,7 +15368,7 @@ mod tests {
             .filter_map(|b| match b {
                 ContentBlock::ToolUse { meta, .. } => Some(
                     meta.clone()
-                        .and_then(|m| m.get("codeg.codexScript").cloned())
+                        .and_then(|m| m.get("RecurCode.codexScript").cloned())
                         .unwrap_or(serde_json::Value::Null),
                 ),
                 _ => None,
@@ -15586,7 +15586,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let path: PathBuf = env::temp_dir().join(format!("codeg-codex-{label}-{nanos}.jsonl"));
+        let path: PathBuf = env::temp_dir().join(format!("recur-code-codex-{label}-{nanos}.jsonl"));
         fs::write(&path, content).expect("write test jsonl");
         let summary = CodexParser::new()
             .parse_jsonl_summary(&path)
@@ -15677,7 +15677,7 @@ mod tests {
     #[test]
     fn a_resumed_mixed_rollout_keeps_both_halves_exactly_once() {
         // The reported workflow: the session is created elsewhere, then resumed
-        // in codeg — which appends NATIVE `event_msg` turns to the SAME file.
+        // in RecurCode — which appends NATIVE `event_msg` turns to the SAME file.
         // A whole-file gate would drop the imported prefix the moment that
         // happened; the per-segment gate keeps it.
         let content = concat!(

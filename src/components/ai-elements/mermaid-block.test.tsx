@@ -85,7 +85,7 @@ describe("mermaidComponents.pre", () => {
 
     await waitFor(() =>
       expect(
-        container.querySelector('[data-codeg="mermaid-block"]')
+        container.querySelector('[data-RecurCode="mermaid-block"]')
       ).not.toBeNull()
     )
     expect(mocks.render).toHaveBeenCalledWith(expect.any(String), SOURCE)
@@ -112,7 +112,7 @@ describe("mermaidComponents.pre", () => {
 
     const code = container.querySelector("code")
     expect(code?.getAttribute("data-block")).toBe("true")
-    expect(container.querySelector('[data-codeg="mermaid-block"]')).toBeNull()
+    expect(container.querySelector('[data-RecurCode="mermaid-block"]')).toBeNull()
     expect(mocks.render).not.toHaveBeenCalled()
   })
 
@@ -194,7 +194,7 @@ describe("MermaidBlock errors", () => {
 
     await waitFor(() =>
       expect(
-        document.querySelector('[data-codeg="mermaid-block"]')
+        document.querySelector('[data-RecurCode="mermaid-block"]')
       ).not.toBeNull()
     )
   })

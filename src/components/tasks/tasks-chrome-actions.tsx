@@ -10,7 +10,7 @@ import type { WorkbenchChromeActionsProps } from "@/components/workbench/workben
  *  (and the folder filter that scopes it), so the button just asks it to open.
  *  Lives here rather than in tasks-page.tsx because the sender is in the window
  *  chrome and the receiver is the page — neither should import the other. */
-export const OPEN_TASK_SETTINGS_EVENT = "codeg:open-task-settings"
+export const OPEN_TASK_SETTINGS_EVENT = "RecurCode:open-task-settings"
 
 /**
  * The Tasks route's own entries in the window's top-right chrome cluster,

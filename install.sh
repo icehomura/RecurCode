@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Codeg Server installer
+# RecurCode Server installer
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/spacering-net/codeg/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/spacering-net/codeg/main/install.sh | bash -s -- --version v0.5.0
@@ -9,25 +9,25 @@
 set -euo pipefail
 
 REPO="spacering-net/codeg"
-INSTALL_DIR="${CODEG_INSTALL_DIR:-/usr/local/bin}"
-WEB_DIR="${CODEG_WEB_DIR:-/usr/local/share/codeg/web}"
+INSTALL_DIR="${RECUR_CODE_INSTALL_DIR:-/usr/local/bin}"
+WEB_DIR="${RECUR_CODE_WEB_DIR:-/usr/local/share/RecurCode/web}"
 VERSION=""
-# Stale codeg-server / codeg-mcp binaries elsewhere in PATH are removed by
-# default so the user's `codeg-server` command always runs the freshly
+# Stale recur-code-server / recur-code-mcp binaries elsewhere in PATH are removed by
+# default so the user's `recur-code-server` command always runs the freshly
 # installed binary AND the runtime locates the matching companion via the
-# exe-sibling lookup. Set CODEG_NO_CLEANUP=1 (or pass --no-cleanup) to
+# exe-sibling lookup. Set RECUR_CODE_NO_CLEANUP=1 (or pass --no-cleanup) to
 # disable.
 CLEANUP_CONFLICTS=1
-if [ "${CODEG_NO_CLEANUP:-0}" = "1" ]; then
+if [ "${RECUR_CODE_NO_CLEANUP:-0}" = "1" ]; then
   CLEANUP_CONFLICTS=0
 fi
 
-# Names of binaries this installer manages. `codeg-server` is the user-facing
-# entry point; `codeg-mcp` is the stdio MCP companion that the server's ACP
+# Names of binaries this installer manages. `recur-code-server` is the user-facing
+# entry point; `recur-code-mcp` is the stdio MCP companion that the server's ACP
 # layer spawns per session for delegation. Both must live in the same
-# directory — `locate_codeg_mcp_binary()` in src-tauri/src/acp/connection.rs
+# directory — `locate_recur_code_mcp_binary()` in src-tauri/src/acp/connection.rs
 # resolves the companion as a sibling of the running server executable.
-MANAGED_BINS=(codeg-server codeg-mcp)
+MANAGED_BINS=(recur-code-server recur-code-mcp)
 
 # ── Parse arguments ──
 
@@ -42,12 +42,12 @@ while [[ $# -gt 0 ]]; do
       echo "Options:"
       echo "  --version     Version to install (e.g. v0.5.0). Default: latest"
       echo "  --dir         Installation directory. Default: /usr/local/bin"
-      echo "  --no-cleanup  Keep stale codeg-server binaries found elsewhere in PATH"
+      echo "  --no-cleanup  Keep stale recur-code-server binaries found elsewhere in PATH"
       echo "                (default: remove them so the new install is what runs)"
       echo ""
       echo "Environment:"
-      echo "  CODEG_INSTALL_DIR  Same as --dir"
-      echo "  CODEG_NO_CLEANUP   Set to 1 to behave like --no-cleanup"
+      echo "  RECUR_CODE_INSTALL_DIR  Same as --dir"
+      echo "  RECUR_CODE_NO_CLEANUP   Set to 1 to behave like --no-cleanup"
       exit 0
       ;;
     *) echo "Unknown option: $1"; exit 1 ;;
@@ -71,7 +71,7 @@ case "$ARCH" in
   *)              echo "Error: unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
-ARTIFACT="codeg-server-${PLATFORM}-${ARCH_SUFFIX}"
+ARTIFACT="recur-code-server-${PLATFORM}-${ARCH_SUFFIX}"
 
 # ── Resolve version ──
 
@@ -100,7 +100,7 @@ canon_path() {
   fi
 }
 
-# Read the version of a codeg-server binary (with a 3s timeout for old binaries
+# Read the version of a recur-code-server binary (with a 3s timeout for old binaries
 # that lack --version support and would otherwise start the full server).
 read_bin_version() {
   local bin="$1"
@@ -143,8 +143,8 @@ if command -v sudo >/dev/null 2>&1; then
 fi
 
 # Walk up from $1 to the first ancestor that already exists, so writability can
-# be tested for a not-yet-created path (e.g. /usr/local/share/codeg/web, whose
-# parent /usr/local/share/codeg also doesn't exist on a fresh install).
+# be tested for a not-yet-created path (e.g. /usr/local/share/RecurCode/web, whose
+# parent /usr/local/share/RecurCode also doesn't exist on a fresh install).
 nearest_existing_ancestor() {
   local p="$1"
   while [ -n "$p" ] && [ "$p" != "/" ] && [ ! -e "$p" ]; do
@@ -178,20 +178,20 @@ priv_run() {
   fi
 }
 
-# ── Scan PATH for codeg-server binaries that shadow the target install ──
+# ── Scan PATH for recur-code-server binaries that shadow the target install ──
 #
 # A binary "shadows" the install only if it appears in PATH BEFORE the
-# destination directory: that's the binary `command -v codeg-server` would
+# destination directory: that's the binary `command -v recur-code-server` would
 # return after install. Walk PATH and stop at the destination directory —
 # anything past it cannot affect resolution today, so we leave it alone.
 
-DEST_BIN="${INSTALL_DIR}/codeg-server"
+DEST_BIN="${INSTALL_DIR}/recur-code-server"
 DEST_BIN_REAL="$(canon_path "$DEST_BIN")"
 INSTALL_DIR_REAL="$(canon_path "$INSTALL_DIR")"
 
-# Scan PATH for both managed binaries — a stale `codeg-mcp` in an earlier
+# Scan PATH for both managed binaries — a stale `recur-code-mcp` in an earlier
 # PATH entry would be picked by the runtime's `which` fallback once
-# `codeg-server` was upgraded out from under it, breaking delegation in
+# `recur-code-server` was upgraded out from under it, breaking delegation in
 # subtle ways. Track conflicts uniformly for cleanup.
 PATH_CONFLICTS=()
 DEST_IN_PATH=0
@@ -219,16 +219,16 @@ for _dir in "${_PATH_DIRS[@]}"; do
 done
 
 # If the destination directory isn't on PATH, nothing "shadows" the install —
-# the new binary just won't be reachable as `codeg-server`. Drop any collected
+# the new binary just won't be reachable as `recur-code-server`. Drop any collected
 # entries; the post-install check will tell the user to fix PATH instead.
 if [ "$DEST_IN_PATH" -eq 0 ]; then
   PATH_CONFLICTS=()
 fi
 
-# What does `codeg-server` actually resolve to right now in PATH?
+# What does `recur-code-server` actually resolve to right now in PATH?
 ACTIVE_BIN=""
-if command -v codeg-server >/dev/null 2>&1; then
-  ACTIVE_BIN="$(command -v codeg-server)"
+if command -v recur-code-server >/dev/null 2>&1; then
+  ACTIVE_BIN="$(command -v recur-code-server)"
 fi
 
 # ── Version detection — prefer the binary the user actually invokes ──
@@ -257,23 +257,23 @@ if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" = "$TARGET_VER" ] \
    && [ "${#PATH_CONFLICTS[@]}" -eq 0 ] \
    && [ -x "$DEST_BIN" ] \
    && [ -f "${WEB_DIR}/index.html" ]; then
-  echo "codeg-server is already at version ${TARGET_VER} with web assets in place, nothing to do."
+  echo "recur-code-server is already at version ${TARGET_VER} with web assets in place, nothing to do."
   exit 0
 fi
 
 if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" = "$TARGET_VER" ]; then
-  echo "codeg-server is already at ${TARGET_VER}; reinstalling to repair the existing install..."
+  echo "recur-code-server is already at ${TARGET_VER}; reinstalling to repair the existing install..."
 elif [ -n "$CURRENT_VERSION" ]; then
-  echo "Upgrading codeg-server: ${CURRENT_VERSION} -> ${TARGET_VER}..."
+  echo "Upgrading recur-code-server: ${CURRENT_VERSION} -> ${TARGET_VER}..."
 else
-  echo "Installing codeg-server ${VERSION} (${PLATFORM}/${ARCH_SUFFIX})..."
+  echo "Installing recur-code-server ${VERSION} (${PLATFORM}/${ARCH_SUFFIX})..."
 fi
 
-# ── Warn about codeg-server binaries shadowing the target install ──
+# ── Warn about recur-code-server binaries shadowing the target install ──
 
 if [ "${#PATH_CONFLICTS[@]}" -gt 0 ]; then
   echo ""
-  echo "Found other codeg-server binaries in PATH that may shadow ${DEST_BIN}:"
+  echo "Found other recur-code-server binaries in PATH that may shadow ${DEST_BIN}:"
   for _c in "${PATH_CONFLICTS[@]}"; do
     _cv="$(read_bin_version "$_c" 2>/dev/null || true)"
     if [ -n "$_cv" ]; then
@@ -286,56 +286,56 @@ if [ "${#PATH_CONFLICTS[@]}" -gt 0 ]; then
     echo "These will be removed after installation. Pass --no-cleanup to keep them."
   else
     echo "Keeping them (--no-cleanup). You may need to remove them manually so that"
-    echo "typing 'codeg-server' runs the new install at ${DEST_BIN}."
+    echo "typing 'recur-code-server' runs the new install at ${DEST_BIN}."
   fi
   echo ""
 fi
 
 # ── Stop running service before upgrade ──
 #
-# Stop codeg-mcp too: on Unix `cp` over a running binary succeeds (the
+# Stop recur-code-mcp too: on Unix `cp` over a running binary succeeds (the
 # kernel keeps the old inode alive for the running process), so this is
 # not required to make the install itself work — but stale companions
 # would keep talking to the OLD inode and never pick up the new logic.
 # Killing them lets the new server spawn a fresh, matching companion.
 
 RESTARTED_PIDS=""
-if pgrep -x codeg-server >/dev/null 2>&1; then
-  echo "Stopping running codeg-server process(es)..."
-  RESTARTED_PIDS=$(pgrep -x codeg-server || true)
+if pgrep -x recur-code-server >/dev/null 2>&1; then
+  echo "Stopping running recur-code-server process(es)..."
+  RESTARTED_PIDS=$(pgrep -x recur-code-server || true)
   if kill $RESTARTED_PIDS 2>/dev/null; then
     # Wait up to 10 seconds for graceful shutdown
     for i in $(seq 1 10); do
-      if ! pgrep -x codeg-server >/dev/null 2>&1; then
+      if ! pgrep -x recur-code-server >/dev/null 2>&1; then
         break
       fi
       sleep 1
     done
     # Force kill if still running
-    if pgrep -x codeg-server >/dev/null 2>&1; then
-      echo "Force stopping codeg-server..."
+    if pgrep -x recur-code-server >/dev/null 2>&1; then
+      echo "Force stopping recur-code-server..."
       kill -9 $RESTARTED_PIDS 2>/dev/null || true
       sleep 1
     fi
   fi
-  echo "codeg-server stopped."
+  echo "recur-code-server stopped."
 fi
 
-if pgrep -x codeg-mcp >/dev/null 2>&1; then
-  echo "Stopping running codeg-mcp companion process(es)..."
-  MCP_PIDS=$(pgrep -x codeg-mcp || true)
+if pgrep -x recur-code-mcp >/dev/null 2>&1; then
+  echo "Stopping running recur-code-mcp companion process(es)..."
+  MCP_PIDS=$(pgrep -x recur-code-mcp || true)
   if [ -n "$MCP_PIDS" ]; then
     kill $MCP_PIDS 2>/dev/null || true
     # Companions are short-lived; give them a brief moment to exit on
     # SIGTERM before we escalate.
     for i in $(seq 1 3); do
-      if ! pgrep -x codeg-mcp >/dev/null 2>&1; then
+      if ! pgrep -x recur-code-mcp >/dev/null 2>&1; then
         break
       fi
       sleep 1
     done
-    if pgrep -x codeg-mcp >/dev/null 2>&1; then
-      kill -9 $(pgrep -x codeg-mcp) 2>/dev/null || true
+    if pgrep -x recur-code-mcp >/dev/null 2>&1; then
+      kill -9 $(pgrep -x recur-code-mcp) 2>/dev/null || true
     fi
   fi
 fi
@@ -375,8 +375,8 @@ done
 # instead of crashing mid-install under `set -e`.
 if ! resolve_priv "$INSTALL_DIR"; then
   echo "Error: need elevated privileges to install to ${INSTALL_DIR}, but 'sudo' is not installed."
-  echo "       Re-run as root, install sudo, or set CODEG_INSTALL_DIR/CODEG_WEB_DIR to writable"
-  echo "       paths (e.g. \$HOME/.local/bin and \$HOME/.local/share/codeg/web)."
+  echo "       Re-run as root, install sudo, or set RECUR_CODE_INSTALL_DIR/RECUR_CODE_WEB_DIR to writable"
+  echo "       paths (e.g. \$HOME/.local/bin and \$HOME/.local/share/RecurCode/web)."
   exit 1
 fi
 if [ -n "$PRIV" ]; then
@@ -394,17 +394,17 @@ _install_one() {
 for _name in "${MANAGED_BINS[@]}"; do
   _install_one "$_name"
 done
-# codeg-computer-helper: computer use, which codeg-server offers only when
-# started with CODEG_COMPUTER_USE=1 in a desktop session. Installed when the
-# release ships it (older ones do not). It exits with the codeg-server that
+# recur-code-computer-helper: computer use, which recur-code-server offers only when
+# started with RECUR_CODE_COMPUTER_USE=1 in a desktop session. Installed when the
+# release ships it (older ones do not). It exits with the recur-code-server that
 # started it, but may still be on its way out — and `cp` onto a running
 # executable fails (text file busy) — so a copy is renamed over it instead:
 # the one still running keeps its old file to the end.
-if [ -f "${TMP_DIR}/${ARTIFACT}/codeg-computer-helper" ]; then
-  _helper_staged="${INSTALL_DIR}/.codeg-computer-helper.new"
-  priv_run cp "${TMP_DIR}/${ARTIFACT}/codeg-computer-helper" "$_helper_staged"
+if [ -f "${TMP_DIR}/${ARTIFACT}/recur-code-computer-helper" ]; then
+  _helper_staged="${INSTALL_DIR}/.recur-code-computer-helper.new"
+  priv_run cp "${TMP_DIR}/${ARTIFACT}/recur-code-computer-helper" "$_helper_staged"
   priv_run chmod +x "$_helper_staged"
-  priv_run mv -f "$_helper_staged" "${INSTALL_DIR}/codeg-computer-helper"
+  priv_run mv -f "$_helper_staged" "${INSTALL_DIR}/recur-code-computer-helper"
 fi
 
 # Re-canonicalize destination now that the file exists. Pre-install canon may
@@ -420,7 +420,7 @@ if [ -d "$WEB_SRC" ]; then
   echo "Installing web assets to ${WEB_DIR}..."
   if ! resolve_priv "$WEB_DIR"; then
     echo "Error: need elevated privileges to write ${WEB_DIR}, but 'sudo' is not installed."
-    echo "       Re-run as root, install sudo, or set CODEG_WEB_DIR to a writable path."
+    echo "       Re-run as root, install sudo, or set RECUR_CODE_WEB_DIR to a writable path."
     exit 1
   fi
   priv_run mkdir -p "$WEB_DIR"
@@ -433,7 +433,7 @@ EXIT_STATUS=0
 
 if [ "${#PATH_CONFLICTS[@]}" -gt 0 ] && [ "$CLEANUP_CONFLICTS" = "1" ]; then
   echo ""
-  echo "Removing stale codeg-server binaries..."
+  echo "Removing stale recur-code-server binaries..."
   for _c in "${PATH_CONFLICTS[@]}"; do
     _parent="$(dirname "$_c")"
     _rm_ok=0
@@ -445,7 +445,7 @@ if [ "${#PATH_CONFLICTS[@]}" -gt 0 ] && [ "$CLEANUP_CONFLICTS" = "1" ]; then
     if [ "$_rm_ok" -eq 1 ]; then
       echo "  removed $_c"
     else
-      echo "  failed to remove $_c (remove it manually so 'codeg-server' resolves to the new install)"
+      echo "  failed to remove $_c (remove it manually so 'recur-code-server' resolves to the new install)"
       EXIT_STATUS=1
     fi
   done
@@ -455,45 +455,45 @@ fi
 
 if [ -n "$RESTARTED_PIDS" ]; then
   echo ""
-  echo "Note: codeg-server was stopped for the upgrade."
-  echo "Please restart it manually to ensure your environment variables (CODEG_PORT, CODEG_TOKEN, etc.) are preserved:"
-  echo "  CODEG_STATIC_DIR=${WEB_DIR} codeg-server"
+  echo "Note: recur-code-server was stopped for the upgrade."
+  echo "Please restart it manually to ensure your environment variables (RECUR_CODE_PORT, RECUR_CODE_TOKEN, etc.) are preserved:"
+  echo "  RECUR_CODE_STATIC_DIR=${WEB_DIR} recur-code-server"
 fi
 
 # ── Done ──
 
 echo ""
-echo "codeg-server installed to ${INSTALL_DIR}/codeg-server"
-echo "codeg-mcp    installed to ${INSTALL_DIR}/codeg-mcp"
-INSTALLED_VER=$("${INSTALL_DIR}/codeg-server" --version 2>/dev/null || echo "${TARGET_VER}")
+echo "recur-code-server installed to ${INSTALL_DIR}/recur-code-server"
+echo "recur-code-mcp    installed to ${INSTALL_DIR}/recur-code-mcp"
+INSTALLED_VER=$("${INSTALL_DIR}/recur-code-server" --version 2>/dev/null || echo "${TARGET_VER}")
 echo "Version: ${INSTALLED_VER}"
 
-# Final smoke: codeg-mcp must exist next to codeg-server so the runtime's
-# `locate_codeg_mcp_binary()` exe-sibling lookup hits. A failure here means
+# Final smoke: recur-code-mcp must exist next to recur-code-server so the runtime's
+# `locate_recur_code_mcp_binary()` exe-sibling lookup hits. A failure here means
 # the tarball was malformed or a previous `_install_one` was silently
 # blocked — surface it loudly rather than ship a half-broken install.
-if [ ! -x "${INSTALL_DIR}/codeg-mcp" ]; then
+if [ ! -x "${INSTALL_DIR}/recur-code-mcp" ]; then
   echo ""
-  echo "Error: ${INSTALL_DIR}/codeg-mcp missing or not executable after install."
+  echo "Error: ${INSTALL_DIR}/recur-code-mcp missing or not executable after install."
   echo "       Delegation (sub-agent tooling) will not work. Re-run the installer."
   EXIT_STATUS=1
 fi
 
-# Verify the user's `codeg-server` command actually resolves to the new binary.
+# Verify the user's `recur-code-server` command actually resolves to the new binary.
 ACTIVE_BIN_AFTER=""
-if command -v codeg-server >/dev/null 2>&1; then
-  ACTIVE_BIN_AFTER="$(command -v codeg-server)"
+if command -v recur-code-server >/dev/null 2>&1; then
+  ACTIVE_BIN_AFTER="$(command -v recur-code-server)"
 fi
 ACTIVE_BIN_AFTER_REAL="$(canon_path "$ACTIVE_BIN_AFTER")"
 
 if [ -z "$ACTIVE_BIN_AFTER" ]; then
   echo ""
-  echo "Note: ${INSTALL_DIR} is not on your PATH. Add it so 'codeg-server' resolves directly:"
+  echo "Note: ${INSTALL_DIR} is not on your PATH. Add it so 'recur-code-server' resolves directly:"
   echo "  export PATH=\"${INSTALL_DIR}:\$PATH\""
   EXIT_STATUS=1
 elif [ "$ACTIVE_BIN_AFTER_REAL" != "$DEST_BIN_REAL" ]; then
   echo ""
-  echo "Warning: typing 'codeg-server' still runs ${ACTIVE_BIN_AFTER}, not ${DEST_BIN}."
+  echo "Warning: typing 'recur-code-server' still runs ${ACTIVE_BIN_AFTER}, not ${DEST_BIN}."
   echo "Another binary earlier in PATH is shadowing the new install. To fix, either:"
   echo "  - re-run without --no-cleanup (the default removes shadowing binaries), or"
   echo "  - remove the stale binary manually: rm '${ACTIVE_BIN_AFTER}', or"
@@ -502,16 +502,16 @@ elif [ "$ACTIVE_BIN_AFTER_REAL" != "$DEST_BIN_REAL" ]; then
 else
   # Same path: a previous shell session may have cached the old inode.
   echo ""
-  echo "Tip: if you ran codeg-server earlier in this shell, run 'hash -r' (bash/zsh) to clear the path cache."
+  echo "Tip: if you ran recur-code-server earlier in this shell, run 'hash -r' (bash/zsh) to clear the path cache."
 fi
 
 echo ""
 echo "Quick start:"
-echo "  CODEG_STATIC_DIR=${WEB_DIR} codeg-server"
+echo "  RECUR_CODE_STATIC_DIR=${WEB_DIR} recur-code-server"
 echo ""
 echo "Or with custom settings:"
-echo "  CODEG_PORT=3080 CODEG_TOKEN=your-secret CODEG_STATIC_DIR=${WEB_DIR} codeg-server"
+echo "  RECUR_CODE_PORT=3080 RECUR_CODE_TOKEN=your-secret RECUR_CODE_STATIC_DIR=${WEB_DIR} recur-code-server"
 echo ""
-echo "The auth token is printed to stderr on startup if not set via CODEG_TOKEN."
+echo "The auth token is printed to stderr on startup if not set via RECUR_CODE_TOKEN."
 
 exit "$EXIT_STATUS"

@@ -49,14 +49,14 @@ struct RegistryAgentItem {
 /// registry, and npm's for the newest release of an npx agent.
 ///
 /// Built per call rather than cached, because reqwest samples the proxy
-/// environment when a client is built and codeg rewrites that environment at
+/// environment when a client is built and RecurCode rewrites that environment at
 /// runtime when the user changes the proxy setting. The timeouts only cut off
 /// a stalled connection; a slow response that is still arriving completes.
 pub(crate) fn registry_http_client() -> Result<reqwest::Client, AppCommandError> {
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(10))
         .read_timeout(Duration::from_secs(30))
-        .user_agent(concat!("codeg/", env!("CARGO_PKG_VERSION")))
+        .user_agent(concat!("RecurCode/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| {
             AppCommandError::network(format!("failed to initialize registry HTTP client: {e}"))
@@ -121,8 +121,8 @@ pub async fn fetch_binary_release(
 
 /// One ACP-registry entry projected for the "add a custom agent" picker.
 ///
-/// This is the catalog codeg does NOT ship built-ins for: the registry lists
-/// far more agents than codeg has hand-written support for, and every one of
+/// This is the catalog RecurCode does NOT ship built-ins for: the registry lists
+/// far more agents than RecurCode has hand-written support for, and every one of
 /// them speaks the same protocol, so they only need launch metadata.
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -135,9 +135,9 @@ pub struct RegistryCatalogAgent {
     pub website: Option<String>,
     pub repository: Option<String>,
     pub license: Option<String>,
-    /// Channels this entry publishes, in codeg's preference order.
+    /// Channels this entry publishes, in RecurCode's preference order.
     pub distribution_kinds: Vec<String>,
-    /// codeg already ships a hand-written integration for this id.
+    /// RecurCode already ships a hand-written integration for this id.
     pub builtin: bool,
     /// The user already registered it as a custom agent.
     pub installed: bool,
@@ -220,7 +220,7 @@ pub fn effective_kind(
     }
 }
 
-/// Fetch the full ACP registry, annotated with what codeg can do with each
+/// Fetch the full ACP registry, annotated with what RecurCode can do with each
 /// entry. Built-ins are included (flagged) so the picker can explain why they
 /// are not addable rather than silently omitting them.
 pub async fn fetch_catalog(
@@ -259,21 +259,21 @@ pub async fn fetch_catalog(
     Ok(out)
 }
 
-/// Registry ids that name an agent codeg already ships, under a different id
-/// than codeg's own. Without this the picker would offer a second, redundant
+/// Registry ids that name an agent RecurCode already ships, under a different id
+/// than RecurCode's own. Without this the picker would offer a second, redundant
 /// integration of an agent the user already has — verified against the live
-/// registry, where Kimi is published as `kimi` while codeg's built-in registry
-/// id is `kimi-code`, and Qoder as `qoder` against codeg's `qoder-cli`.
+/// registry, where Kimi is published as `kimi` while RecurCode's built-in registry
+/// id is `kimi-code`, and Qoder as `qoder` against RecurCode's `qoder-cli`.
 ///
 /// Missing an alias is not merely redundant, it is a DEAD entry: the picker
 /// lists the agent as addable, and the add then fails validation because the
 /// id collides with a built-in wire name (`is_valid_custom_agent_id`).
 const BUILTIN_REGISTRY_ALIASES: &[&str] = &["kimi", "qoder"];
 
-/// Whether an id is one of codeg's hand-written built-in agents. Deliberately
+/// Whether an id is one of RecurCode's hand-written built-in agents. Deliberately
 /// does NOT consult the custom registry (unlike `registry::from_registry_id`,
-/// which resolves registered custom ids too) — the picker needs "codeg ships
-/// this natively", not "codeg can currently launch this".
+/// which resolves registered custom ids too) — the picker needs "RecurCode ships
+/// this natively", not "RecurCode can currently launch this".
 fn is_builtin_registry_id(id: &str) -> bool {
     BUILTIN_REGISTRY_ALIASES.contains(&id)
         || registry::builtin_acp_agents()
@@ -473,7 +473,7 @@ mod tests {
         assert!(is_builtin_registry_id("codex-acp"));
         assert!(is_builtin_registry_id("claude-acp"));
         assert!(is_builtin_registry_id("cursor"));
-        // Published under a different id than codeg's own (`kimi-code`), so
+        // Published under a different id than RecurCode's own (`kimi-code`), so
         // only the alias table catches it.
         assert!(is_builtin_registry_id("kimi"));
         assert!(is_builtin_registry_id("kimi-code"));
@@ -483,7 +483,7 @@ mod tests {
         // duplicate — see the assertion below.
         assert!(is_builtin_registry_id("qoder"));
         assert!(is_builtin_registry_id("qoder-cli"));
-        // Antigravity needs NO alias: codeg's registry id is byte-identical
+        // Antigravity needs NO alias: RecurCode's registry id is byte-identical
         // to the one the ACP registry publishes, so the picker resolves it
         // through the built-in table and never offers a duplicate entry.
         assert!(is_builtin_registry_id("antigravity-acp"));
@@ -494,10 +494,10 @@ mod tests {
     // Why a missing alias is a BUG and not just noise. The two entries in the
     // table fail differently, and Qoder is the worse of the two:
     //
-    // * `kimi` IS a legal custom-agent id (codeg's wire name is `kimi_code`),
+    // * `kimi` IS a legal custom-agent id (RecurCode's wire name is `kimi_code`),
     //   so without the alias the picker would let the user add a SECOND,
     //   redundant Kimi alongside the built-in.
-    // * `qoder` is NOT (it is codeg's wire name, blocked outright), so without
+    // * `qoder` is NOT (it is RecurCode's wire name, blocked outright), so without
     //   the alias the picker lists an entry whose "Add" button can only ever
     //   error — a dead end with no way for the user to understand it.
     #[test]

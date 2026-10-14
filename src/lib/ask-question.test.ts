@@ -113,7 +113,7 @@ describe("parseAskQuestionInput", () => {
     // CodexToolCallMapper.ts::createMcpToolCallUpdate. The questions live under
     // `arguments`, not the top level.
     const input = JSON.stringify({
-      server: "codeg-mcp",
+      server: "recur-code-mcp",
       tool: "ask_user_question",
       arguments: {
         questions: [
@@ -322,7 +322,7 @@ describe("parseAskQuestionOutcome", () => {
   it("parses codex request_user_input's object-keyed answers", () => {
     // Verbatim function_call_output shape from ~/.codex/sessions: answers are
     // keyed by the question id, each carrying its own `answers` array — NOT the
-    // codeg-mcp `{answers:[{…,selected}]}` envelope. Without this the card shows
+    // recur-code-mcp `{answers:[{…,selected}]}` envelope. Without this the card shows
     // "no selection" (the reported bug).
     const output = JSON.stringify({
       answers: { drink_preference: { answers: ["咖啡（推荐）"] } },
@@ -357,9 +357,9 @@ describe("parseAskQuestionOutcome", () => {
 
   it("decodes codex's note encoding to the text the user chose", () => {
     // codex writes a free-form note as a `user_note: ` entry next to the
-    // option labels. codex-acp 2.1.0 hands codex the free text codeg's card
+    // option labels. codex-acp 2.1.0 hands codex the free text RecurCode's card
     // sends as ["None of the above", "user_note: <text>"] (recorded on the
-    // adapter with codeg's capabilities). Codex's own TUI writes the same pair
+    // adapter with RecurCode's capabilities). Codex's own TUI writes the same pair
     // for its "None of the above" + notes, an option plus a note, and a
     // free-form question as the note alone.
     const output = JSON.stringify({
@@ -638,15 +638,15 @@ describe("parseAskQuestionOutcome", () => {
       // second question.
       const questions = asked(
         { question: "Tagline?", labels: ["Short", "Long"] },
-        { question: 'Name it "codeg"?', labels: ["Yes", "No"] }
+        { question: 'Name it "RecurCode"?', labels: ["Yes", "No"] }
       )
       const output = sentence(
         '"Tagline?"="say "a", "b""',
-        '"Name it "codeg"?"="Yes"'
+        '"Name it "RecurCode"?"="Yes"'
       )
       expect(parseAskQuestionOutcome(output, questions)?.answers).toEqual([
         { header: "", question: "Tagline?", selected: ['say "a", "b"'] },
-        { header: "", question: 'Name it "codeg"?', selected: ["Yes"] },
+        { header: "", question: 'Name it "RecurCode"?', selected: ["Yes"] },
       ])
     })
 
@@ -799,7 +799,7 @@ describe("parseAskQuestionOutcome", () => {
     })
   })
 
-  // codeg-mcp mirrors its "do not ask again to confirm" instruction into the
+  // recur-code-mcp mirrors its "do not ask again to confirm" instruction into the
   // structured envelope as `hint` (issue #861) and appends it to the text.
   // Neither may change what the card reads.
   const PROCEED_INSTRUCTION =

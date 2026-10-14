@@ -7,7 +7,7 @@
 import { useEffect, useState } from "react"
 
 const AUTO_PREVIEW_KEY = "workspace:office-auto-preview"
-const AUTO_PREVIEW_EVENT = "codeg:office-auto-preview-changed"
+const AUTO_PREVIEW_EVENT = "RecurCode:office-auto-preview-changed"
 
 export function loadOfficeAutoPreview(): boolean {
   if (typeof window === "undefined") return true

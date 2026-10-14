@@ -94,7 +94,7 @@ const CATEGORY_ORDER: Record<string, number> = { custom: 1 }
 // Built-in pack skill ids (experts / office / science / ui-render) — the same
 // union the backend treats as "reserved". When one of these packs is enabled for
 // an agent it's symlinked into the agent's skill directory, so it surfaces in
-// the agent's skill list; but it's codeg's OWN bundled skill, not the user's,
+// the agent's skill list; but it's RecurCode's OWN bundled skill, not the user's,
 // and is deliberately excluded from the custom central store. We hide them from
 // the import-from-agent picker so users only ever see (and re-import) their own
 // agent skills. The set is static per session (bundled at compile time), so it's
@@ -239,8 +239,8 @@ export function CustomSkillsBody({
       switch (state) {
         case "not_linked":
           return t("states.not_linked")
-        case "linked_to_codeg":
-          return t("states.linked_to_codeg")
+        case "linked_to_recur_code":
+          return t("states.linked_to_recur_code")
         case "linked_elsewhere":
           return t("states.linked_elsewhere")
         case "blocked_by_real_directory":
@@ -388,7 +388,7 @@ export function CustomSkillsBody({
         }
         // Only global-scope skills belong in the shared store (project skills
         // are workspace-specific). We pass no workspace, so the result is
-        // already global-only; filter defensively. Also drop codeg's own
+        // already global-only; filter defensively. Also drop RecurCode's own
         // built-in pack skills (experts / office / science / ui-render): once
         // enabled they symlink into the agent's dir and would otherwise appear
         // here, but they aren't the user's own skills to re-import.

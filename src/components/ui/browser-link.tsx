@@ -9,7 +9,7 @@ import { openUrl } from "@/lib/platform"
  *
  * A bare `<a target="_blank">` is a trap: it works in the browser (web mode,
  * `next dev`) and is DEAD in the desktop app. `target="_blank"` asks the
- * webview for a new window, and codeg registers no `on_new_window` handler, so
+ * webview for a new window, and RecurCode registers no `on_new_window` handler, so
  * wry answers the request with nil on macOS and cancels it outright on Windows
  * (`args.SetHandled(true)`). Either way the click does nothing at all — no
  * navigation, no error, no clue. An eslint rule bans the attribute outside this

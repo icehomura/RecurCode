@@ -54,7 +54,7 @@ describe("composer → bubble round-trip", () => {
           refType: "agent",
           id: "codex",
           label: "Codex",
-          uri: "codeg://agent/codex",
+          uri: "recurcode://agent/codex",
         })
       )
       .insertContent(" run ")
@@ -104,7 +104,7 @@ describe("composer → bubble round-trip", () => {
           refType: "file",
           id: "report.pdf",
           label: "report.pdf",
-          uri: "codeg://embedded/abc-123",
+          uri: "recurcode://embedded/abc-123",
         })
       )
       .insertContent(" please")

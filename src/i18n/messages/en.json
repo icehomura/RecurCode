@@ -136,7 +136,7 @@
       },
       "css": {
         "dialogTitle": "Custom CSS",
-        "dialogDescription": "Applies to every codeg window. Changes preview live; press Apply to save.",
+        "dialogDescription": "Applies to every RecurCode window. Changes preview live; press Apply to save.",
         "size": "{used} KB / {max} KB",
         "ruleCount": "{count} rules",
         "errorTooLarge": "Too large to save. Trim it below the limit.",
@@ -270,7 +270,7 @@
     "languageSaveSuccess": "Language settings saved",
     "languageSaveFailed": "Failed to save language settings: {message}",
     "dataTitle": "Data & sync",
-    "dataDescription": "Configuration sync carries your settings between machines; backup packs up all of this machine's codeg data.",
+    "dataDescription": "Configuration sync carries your settings between machines; backup packs up all of this machine's RecurCode data.",
     "updateTitle": "App Update",
     "versionTitle": "Software Update",
     "updateDescription": "Check the configured release source for newer versions and install directly when available.",
@@ -699,7 +699,7 @@
       "draftTitle": "New MCP",
       "draftDescription": "Provide a Server ID and configuration to create a local MCP server.",
       "suggestedLabel": "Start from a known server",
-      "suggestedChromeNote": "Fills the form with Google’s official chrome-devtools-mcp — the registry lists lookalikes under the same name, so this pins the real one. It drives a SEPARATE Chrome that codeg does not supervise: you get network and performance data the built-in browser tools do not offer, and none of their safeguards — no per-tab sharing, no activity strip, no approval per snippet. `npx` downloads the package from npm the first time it runs.",
+      "suggestedChromeNote": "Fills the form with Google’s official chrome-devtools-mcp — the registry lists lookalikes under the same name, so this pins the real one. It drives a SEPARATE Chrome that RecurCode does not supervise: you get network and performance data the built-in browser tools do not offer, and none of their safeguards — no per-tab sharing, no activity strip, no approval per snippet. `npx` downloads the package from npm the first time it runs.",
       "serverIdLabel": "Server ID",
       "serverIdPlaceholder": "Server ID (e.g. my-mcp)",
       "typeHint": "Supported types: stdio, http (aliases: streamable-http, streamableHttp), sse. env is only used by stdio; for remote MCPs use headers to carry auth tokens.",
@@ -740,7 +740,7 @@
     "envVars": "Environment Variables",
     "hostTools": {
       "label": "Let the agent handle files and commands",
-      "description": "codeg stops serving file access and terminal commands, so the agent runs them in its own process — where its own sandbox and permission rules apply. Delegating to other agents is also turned off, since that would route the same work back through codeg. codeg adds no sandbox itself, so turn this on only if the agent has one configured."
+      "description": "RecurCode stops serving file access and terminal commands, so the agent runs them in its own process — where its own sandbox and permission rules apply. Delegating to other agents is also turned off, since that would route the same work back through RecurCode. RecurCode adds no sandbox itself, so turn this on only if the agent has one configured."
     },
     "nativeJsonConfig": "Native JSON Config",
     "modelHintDefault": "Leave empty to use system default model.",
@@ -854,7 +854,7 @@
       "configTomlHint": "Saved verbatim as the whole ~/.grok/config.toml. Invalid TOML is rejected so a typo never truncates your file.",
       "configTomlPlaceholder": "# Keys other than the controls above, e.g.\n# [mcp_servers.*], [cli], [permission] rules.",
       "customModelTitle": "Custom model (BYO endpoint)",
-      "customModelHint": "Point Grok at a custom or self-hosted endpoint. codeg writes a per-model `[model.*]` block and makes it the default. Leave the Model ID empty to remove it.",
+      "customModelHint": "Point Grok at a custom or self-hosted endpoint. RecurCode writes a per-model `[model.*]` block and makes it the default. Leave the Model ID empty to remove it.",
       "customModelIdLabel": "Model ID",
       "customModelIdPlaceholder": "grok-4.5",
       "customModelIdHint": "Registered as a `[model.*]` block and sent to the API as the model name; also set as `[models].default`.",
@@ -872,7 +872,7 @@
       "autoCompactHint": "Compact the conversation when context usage reaches this percent (Grok default 85). Written to `[session]`."
     },
     "cursor": {
-      "configDescription": "Configure Cursor here. Choose an authentication method — official subscription (browser sign-in) or a Cursor API key for headless/server machines — then pick a model and edit the CLI's permission rules and sandbox. codeg writes them into ~/.cursor/cli-config.json, shared with the cursor-agent CLI.",
+      "configDescription": "Configure Cursor here. Choose an authentication method — official subscription (browser sign-in) or a Cursor API key for headless/server machines — then pick a model and edit the CLI's permission rules and sandbox. RecurCode writes them into ~/.cursor/cli-config.json, shared with the cursor-agent CLI.",
       "authTitle": "Authentication",
       "authChecking": "Checking…",
       "authNotInstalled": "cursor-agent is not installed",
@@ -882,7 +882,7 @@
       "authUnverifiedHint": "cursor-agent still has a login stored, but it could not be used against Cursor just now — usually an expired session. Sessions will fail with \"Authentication required\" until you sign in again; the CLI has no way to refresh a browser login on its own.",
       "authUnverifiedHintApiKey": "cursor-agent has an API key stored, but Cursor rejected it just now — usually a revoked, expired, or mistyped key. Sessions will fail with \"Authentication required\" until you save a working key below.",
       "loginHint": "Run this in a terminal to sign in with your Cursor account (a browser window opens), then hit refresh:",
-      "loginHintRemote": "Run this on the codeg host where cursor-agent is installed, not on this machine, then hit refresh. That host usually has no browser to open, so run it with NO_OPEN_BROWSER=1 — it prints a sign-in URL for you to open in your own browser instead. For an unattended server, switch the method above to API key.",
+      "loginHintRemote": "Run this on the RecurCode host where cursor-agent is installed, not on this machine, then hit refresh. That host usually has no browser to open, so run it with NO_OPEN_BROWSER=1 — it prints a sign-in URL for you to open in your own browser instead. For an unattended server, switch the method above to API key.",
       "apiKeyLabel": "Cursor API key",
       "apiKeyPlaceholder": "key from cursor.com/dashboard",
       "apiKeyHint": "CURSOR_API_KEY — a Cursor Dashboard account key, an alternative to browser login for headless/server machines. Not a third-party or OpenAI key.",
@@ -967,11 +967,11 @@
       "missingAgentPlatformConfig": "Enter an API key, or both a project and a location — sessions will fail to start without one of the two.",
       "missingEnterpriseConfig": "Gemini Enterprise needs both a project and a location.",
       "settingsFileHint": "Saved to auth.type in this file. Any other keys you put there are preserved.",
-      "syncSkipped": "Your choice was saved, but codeg could not write it to the ACP server's settings.json, so Antigravity will keep authenticating the way that file says. Set auth.type in it yourself, or move it aside and save again.",
+      "syncSkipped": "Your choice was saved, but RecurCode could not write it to the ACP server's settings.json, so Antigravity will keep authenticating the way that file says. Set auth.type in it yourself, or move it aside and save again.",
       "save": "Save",
       "headless": {
         "title": "Sign in without a browser on this machine",
-        "description": "Antigravity runs the Google sign-in itself, on the machine the agent runs on. When there is no browser there — codeg on a server with no desktop — the first session waits five minutes and then fails. Start the sign-in here instead: open the link on any device, then paste back the address you land on.",
+        "description": "Antigravity runs the Google sign-in itself, on the machine the agent runs on. When there is no browser there — RecurCode on a server with no desktop — the first session waits five minutes and then fails. Start the sign-in here instead: open the link on any device, then paste back the address you land on.",
         "start": "Get sign-in link",
         "saveFirst": "Save first — the sign-in uses the stored settings, not what is typed above.",
         "step1": "1. Open this link and sign in to Google.",
@@ -994,7 +994,7 @@
         "failed": "Could not sign out"
       },
       "tempReclaimTitle": "Leftover temp space",
-      "tempReclaimHint": "Older versions of codeg could not clean up the temporary directory this agent unpacks on every launch. This scans the system temp folder for those leftovers. That folder is shared with other applications, so nothing is deleted until you confirm, and anything still in use is skipped.",
+      "tempReclaimHint": "Older versions of RecurCode could not clean up the temporary directory this agent unpacks on every launch. This scans the system temp folder for those leftovers. That folder is shared with other applications, so nothing is deleted until you confirm, and anything still in use is skipped.",
       "tempReclaimScan": "Scan",
       "tempReclaimDelete": "Delete leftovers",
       "tempReclaimNone": "Nothing to reclaim.",
@@ -1044,7 +1044,7 @@
       "approvalPolicy_untrusted": "Untrusted — only known-safe read-only commands run unattended",
       "approvalPolicy_never": "Never — no approval prompts at all",
       "approvalPolicy_granular": "Granular — choose per prompt type",
-      "approvalPolicyUntrustedAcpWarning": "Untrusted has no equivalent in the ACP adapter's three approval presets, so codeg sessions fall back to \"on request\" — the model then decides when to ask, and commands the sandbox already allows stop prompting. Tighten the sandbox mode below instead.",
+      "approvalPolicyUntrustedAcpWarning": "Untrusted has no equivalent in the ACP adapter's three approval presets, so RecurCode sessions fall back to \"on request\" — the model then decides when to ask, and commands the sandbox already allows stop prompting. Tighten the sandbox mode below instead.",
       "granularHint": "Off means requests of that kind are auto-rejected instead of shown to you.",
       "granular_sandbox_approval": "Shell command escalations",
       "granular_rules": "Execpolicy rule prompts",
@@ -1056,9 +1056,9 @@
       "sandboxMode_read-only": "Read-only",
       "sandboxMode_workspace-write": "Workspace write",
       "sandboxMode_danger-full-access": "Full access (no sandbox)",
-      "sandboxModeReadOnlyAcpWarning": "codex-acp 1.7–1.13 ship no read-only sandbox: on those adapter versions a codeg session runs workspace-writable whatever this says, with every escalation still coming to you. codex-acp 2.0 restored it, so update the adapter if an older one is installed. codex CLI and IDE sessions always honor read-only.",
+      "sandboxModeReadOnlyAcpWarning": "codex-acp 1.7–1.13 ship no read-only sandbox: on those adapter versions a RecurCode session runs workspace-writable whatever this says, with every escalation still coming to you. codex-acp 2.0 restored it, so update the adapter if an older one is installed. codex CLI and IDE sessions always honor read-only.",
       "sandboxModeHint": "On Windows, workspace write is downgraded to read-only unless codex's experimental Windows sandbox is enabled.",
-      "sandboxModeSeedsPresetHint": "codeg also maps this onto the session's starting approval preset, so unlike approval policy it does reach ordinary prompts. read-only starts in \"Read-only\". With approval policy never, danger-full-access starts in \"Full access\" and workspace-write in \"Auto review\", where a model pre-screens escalations and forwards only what it judges unsafe. With any other approval policy, workspace-write and danger-full-access start in \"Workspace access\", which brings every escalation to you, on codex-acp 2.0 and later, and in \"Auto review\" on older adapters. Unset leaves the adapter's default, \"Auto review\". The composer's preset always overrides this.",
+      "sandboxModeSeedsPresetHint": "RecurCode also maps this onto the session's starting approval preset, so unlike approval policy it does reach ordinary prompts. read-only starts in \"Read-only\". With approval policy never, danger-full-access starts in \"Full access\" and workspace-write in \"Auto review\", where a model pre-screens escalations and forwards only what it judges unsafe. With any other approval policy, workspace-write and danger-full-access start in \"Workspace access\", which brings every escalation to you, on codex-acp 2.0 and later, and in \"Auto review\" on older adapters. Unset leaves the adapter's default, \"Auto review\". The composer's preset always overrides this.",
       "writableRootsLabel": "Extra writable folders",
       "writableRootsHint": "One absolute path per line, in addition to the working directory.",
       "sandboxRootsRelativeError": "Must be an absolute path — codex resolves relative entries against ~/.codex: {path}",
@@ -1171,7 +1171,7 @@
         "description": "Decide which actions run on their own, prompt you first, or are blocked. Written to the permission block of opencode.json and applied once you save below.",
         "docsLink": "Permissions docs",
         "unparsableConfig": "The native JSON below is not valid, so the visual editor is paused. Fix the JSON to resume.",
-        "invalidBlock": "The permission block has a shape codeg does not recognize. Edit it in the native JSON below, or use Reset to start over.",
+        "invalidBlock": "The permission block has a shape RecurCode does not recognize. Edit it in the native JSON below, or use Reset to start over.",
         "orderingUnsafe": "A wildcard rule is written after specific tools, so OpenCode applies it to them as well — the rows below are not what is in force. Fix order moves every wildcard back to the front of its scope without changing a single value.",
         "orderingUnsafeManual": "One rule is shadowed by a later, more general pattern, so OpenCode never applies it — the rows below are not what is in force. Two overlapping patterns have no single right order; reorder them in the native JSON so the general one comes first.",
         "fixOrder": "Fix order",
@@ -1267,7 +1267,7 @@
     },
     "hermes": {
       "configManagement": "Hermes Configuration",
-      "configDescription": "Hermes manages its own credentials in ~/.hermes/.env and settings in ~/.hermes/config.yaml. Pick a provider, then set the API key and model — codeg writes both files for you.",
+      "configDescription": "Hermes manages its own credentials in ~/.hermes/.env and settings in ~/.hermes/config.yaml. Pick a provider, then set the API key and model — RecurCode writes both files for you.",
       "providerLabel": "Provider",
       "providerHint": "The provider selects which API key variable and model.provider Hermes uses. OAuth providers are configured through the terminal setup below.",
       "groupApiKey": "API key providers",
@@ -1309,7 +1309,7 @@
     },
     "kimiCode": {
       "configManagement": "Kimi Code Configuration",
-      "configDescription": "`kimi acp` only accepts a stored login token, so codeg writes a managed provider into ~/.kimi-code/config.toml and seeds a local gate token — inference still runs on your own key.",
+      "configDescription": "`kimi acp` only accepts a stored login token, so RecurCode writes a managed provider into ~/.kimi-code/config.toml and seeds a local gate token — inference still runs on your own key.",
       "statusUnconfigured": "Not configured yet",
       "statusDirty": "Unsaved changes",
       "summaryLabel": "In effect",
@@ -1320,8 +1320,8 @@
       "authModeLabel": "Authentication method",
       "authModeApiKey": "API key",
       "authModeLogin": "Kimi account login (subscription)",
-      "authModeApiKeyHint": "Writes a codeg-managed provider into config.toml and seeds the gate token so sessions can open.",
-      "loginHint": "Run `kimi login` in a terminal to sign in with a Kimi subscription account — on Kimi 0.39.0+ add `--region global` for a kimi.ai account, since the default signs in to kimi.com. codeg stores nothing and reuses Kimi's own login. Saving here removes codeg's API-key gate token.",
+      "authModeApiKeyHint": "Writes a recur-code-managed provider into config.toml and seeds the gate token so sessions can open.",
+      "loginHint": "Run `kimi login` in a terminal to sign in with a Kimi subscription account — on Kimi 0.39.0+ add `--region global` for a kimi.ai account, since the default signs in to kimi.com. RecurCode stores nothing and reuses Kimi's own login. Saving here removes RecurCode's API-key gate token.",
       "credentialTitle": "Credential",
       "interfaceTypeLabel": "Provider type",
       "interfaceTypeHint": "The provider protocol Kimi speaks (config.toml `type`). Use Kimi / Moonshot for a Moonshot / platform.kimi.com key.",
@@ -1350,7 +1350,7 @@
       "modelNotInList": "This model is not in the list your key can access — Kimi will fail with “model not found”.",
       "reasoningTitle": "Reasoning",
       "reasoningEnableLabel": "Enable",
-      "reasoningDescription": "Kimi only shows a Thinking picker in the composer when the model declares a reasoning capability, so codeg writes one here. Takes effect on new sessions.",
+      "reasoningDescription": "Kimi only shows a Thinking picker in the composer when the model declares a reasoning capability, so RecurCode writes one here. Takes effect on new sessions.",
       "effortsLabel": "Levels offered",
       "effortsHint": "These become the rows of the composer's Thinking picker. Kimi forwards the level to the provider verbatim, so pick ones your model accepts.",
       "effortsEmptyHint": "With no levels chosen the composer falls back to a plain Off / On toggle.",
@@ -1376,7 +1376,7 @@
       "authTypeHint": "Where the API key is written inside config.toml.",
       "rawEditorLabel": "Edit config.toml directly",
       "rawEditorWarning": "Saving here overwrites the entire file verbatim, replacing the structured settings above.",
-      "rawEditorPlaceholder": "[providers.codeg]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "Official Subscription",
     "authModeCustomEndpoint": "Custom Endpoint",
@@ -1416,7 +1416,7 @@
       "customInstallInvalid": "Enter a valid version number, e.g. 1.2.3.",
       "customInstallSubmit": "Install",
       "confirmUpgradeToLatest": "Upgrade {name} to unreviewed {version}?",
-      "confirmUpgradeToLatestDescription": "This release hasn't been reviewed by codeg. It can break {name} in codeg, and occasionally a release is known broken. To go back, use Custom install to reinstall the recommended version {recommendedVersion}."
+      "confirmUpgradeToLatestDescription": "This release hasn't been reviewed by RecurCode. It can break {name} in RecurCode, and occasionally a release is known broken. To go back, use Custom install to reinstall the recommended version {recommendedVersion}."
     },
     "errors": {
       "windowsFileLocked": "{name}'s files are in use by a running session, so Windows can't replace them. Close all {name} sessions and try again.",
@@ -1520,18 +1520,18 @@
     "adapter": {
       "label": "ACP adapter",
       "badge": "ACP adapter",
-      "badgeHint": "For this agent Codeg installs an ACP adapter package, not the vendor CLI. The two are independent and share the same config.",
+      "badgeHint": "For this agent RecurCode installs an ACP adapter package, not the vendor CLI. The two are independent and share the same config.",
       "learnMore": "Learn more",
-      "missingWithNative": "Found your own {nativeLabel} at {nativePath}. Codeg drives agents over ACP and that CLI does not speak ACP, so Codeg needs a separate adapter package, {adapterPackage}, maintained by the Agent Client Protocol project (originally Zed). It ships its own runtime, never modifies or replaces your {nativeCmd} command, and reads the same {configDir} — your existing sign-in and settings carry over. Install it below.",
-      "missing": "Codeg drives agents over ACP and the {nativeLabel} does not speak ACP, so Codeg needs a separate adapter package, {adapterPackage}, maintained by the Agent Client Protocol project (originally Zed). It ships its own runtime, so the {nativeCmd} CLI is not required first; if you do have it, the two coexist and share the same {configDir} sign-in and settings. Install it below.",
-      "readyWithNative": "Adapter {adapterCmd} is installed — that is what Codeg launches, not your own {nativeCmd} at {nativePath}. They are separate packages that coexist, and both read {configDir}, so sign-in and settings are shared.",
-      "ready": "Adapter {adapterCmd} is installed — that is what Codeg launches. It ships its own runtime, so the {nativeLabel} is not required; install it later and the two coexist, sharing {configDir}."
+      "missingWithNative": "Found your own {nativeLabel} at {nativePath}. RecurCode drives agents over ACP and that CLI does not speak ACP, so RecurCode needs a separate adapter package, {adapterPackage}, maintained by the Agent Client Protocol project (originally Zed). It ships its own runtime, never modifies or replaces your {nativeCmd} command, and reads the same {configDir} — your existing sign-in and settings carry over. Install it below.",
+      "missing": "RecurCode drives agents over ACP and the {nativeLabel} does not speak ACP, so RecurCode needs a separate adapter package, {adapterPackage}, maintained by the Agent Client Protocol project (originally Zed). It ships its own runtime, so the {nativeCmd} CLI is not required first; if you do have it, the two coexist and share the same {configDir} sign-in and settings. Install it below.",
+      "readyWithNative": "Adapter {adapterCmd} is installed — that is what RecurCode launches, not your own {nativeCmd} at {nativePath}. They are separate packages that coexist, and both read {configDir}, so sign-in and settings are shared.",
+      "ready": "Adapter {adapterCmd} is installed — that is what RecurCode launches. It ships its own runtime, so the {nativeLabel} is not required; install it later and the two coexist, sharing {configDir}."
     },
     "cline": {
       "configDescription": "Configure Cline API provider and credentials. Settings are saved to ~/.cline/data/.",
       "signInGroup": "Sign in with Cline",
       "byoGroup": "Bring your own provider",
-      "externalGroup": "Configured outside codeg",
+      "externalGroup": "Configured outside RecurCode",
       "signInHint": "Cline holds this credential itself. Run the command below in a terminal to sign in — it prints a code and opens a browser page to confirm it."
     },
     "opencodePlugins": {
@@ -1607,7 +1607,7 @@
       "installing": "Installing…",
       "recheck": "Recheck",
       "configDirSkillsNote": "With a custom config directory, the Skills, Experts, and Office tools managed in Settings won't apply to this pi — manage its skills in that folder directly.",
-      "dirHistoryNote": "These directories reach the pi process only. codeg's conversation history reads pi's own default location, so sessions written to a custom directory here won't be listed.",
+      "dirHistoryNote": "These directories reach the pi process only. RecurCode's conversation history reads pi's own default location, so sessions written to a custom directory here won't be listed.",
       "projectTrustTitle": "Project trust",
       "projectTrustDescription": "Folders you allowed pi to load project files from. A trusted folder lets that repository's .pi/extensions run code when pi starts, applies to every folder inside it, and is also used when you run pi in a terminal.",
       "projectTrustLoading": "Loading…",
@@ -1630,7 +1630,7 @@
       "modelNotListed": "Pi doesn't list this model for this provider. Check the model ID — Pi only lists providers it has an API key or login for.",
       "catalogUnavailable": "Couldn't ask Pi which thinking levels this model offers.",
       "configLoadFailed": "Couldn't read Pi's settings: {message}",
-      "runtimeTooOld": "This Pi is too old: Codeg needs Pi {min} or newer to open a session. Update it first."
+      "runtimeTooOld": "This Pi is too old: RecurCode needs Pi {min} or newer to open a session. Update it first."
     },
     "recur_agent": {
       "configManagement": "Recur Agent Configuration",
@@ -1683,7 +1683,7 @@
       "installing": "Installing…",
       "recheck": "Recheck",
       "configDirSkillsNote": "With a custom config directory, the Skills, Experts, and Office tools managed in Settings won't apply to this pi — manage its skills in that folder directly.",
-      "dirHistoryNote": "These directories reach the pi process only. codeg's conversation history reads pi's own default location, so sessions written to a custom directory here won't be listed.",
+      "dirHistoryNote": "These directories reach the pi process only. RecurCode's conversation history reads pi's own default location, so sessions written to a custom directory here won't be listed.",
       "projectTrustTitle": "Project trust",
       "projectTrustDescription": "Folders you allowed pi to load project files from. A trusted folder lets that repository's .pi/extensions run code when pi starts, applies to every folder inside it, and is also used when you run pi in a terminal.",
       "projectTrustLoading": "Loading…",
@@ -1730,7 +1730,7 @@
     "customAgentEditNotFound": "Custom agent {id} was not found",
     "customAgentSaved": "Saved {name}",
     "customAgentVersionProbeLabel": "Version probe command (optional)",
-    "customAgentVersionProbeHint": "Command that prints the locally installed version. Left empty, codeg runs the agent command with --version.",
+    "customAgentVersionProbeHint": "Command that prints the locally installed version. Left empty, RecurCode runs the agent command with --version.",
     "customAgentRemove": "Remove agent",
     "customAgentRemoveHint": "Deletes the agent definition. Existing conversations keep their history; the agent just can no longer be launched.",
     "customAgentIconLabel": "Icon (optional)",
@@ -1743,7 +1743,7 @@
     "customAgentSkillsDirLabel": "Dedicated skills directory",
     "customAgentSkillsDirHint": "Absolute path of a directory this agent loads skills from — its own store, in addition to (or instead of) the shared one. ~ expands to your home directory; linked skills are placed here first.",
     "customAgentMcpLabel": "MCP support",
-    "customAgentMcpHint": "Sends codeg's built-in MCP companion to this agent when a session starts — the channel behind delegation, live feedback and task tools. Turn it off for an agent that rejects MCP servers and fails to connect; the change applies to the next connection.",
+    "customAgentMcpHint": "Sends RecurCode's built-in MCP companion to this agent when a session starts — the channel behind delegation, live feedback and task tools. Turn it off for an agent that rejects MCP servers and fails to connect; the change applies to the next connection.",
     "customAgentIconNotAnImage": "Pick an image file.",
     "customAgentIconTooLarge": "The icon must be smaller than {limit} KB.",
     "customAgentIconReadFailed": "Could not read that image.",
@@ -1787,22 +1787,22 @@
   "CloseBehaviorSettings": {
     "title": "Close Button Behavior",
     "description": "Choose what the main window's close button does.",
-    "trayUnavailable": "This system has no usable tray, so the close button always exits codeg.",
+    "trayUnavailable": "This system has no usable tray, so the close button always exits RecurCode.",
     "behaviorAsk": "Ask every time",
     "behaviorMinimize": "Minimize to tray",
-    "behaviorExit": "Exit codeg",
+    "behaviorExit": "Exit RecurCode",
     "saveFailed": "Failed to save close behavior: {message}"
   },
   "CloseRequestDialog": {
-    "askTitle": "Close codeg?",
-    "askDescription": "codeg can keep running in the tray so agents and terminals stay alive, or exit completely.",
-    "confirmExitTitle": "Exit codeg?",
-    "confirmExitDescription": "Closing the window is set to exit codeg.",
+    "askTitle": "Close RecurCode?",
+    "askDescription": "RecurCode can keep running in the tray so agents and terminals stay alive, or exit completely.",
+    "confirmExitTitle": "Exit RecurCode?",
+    "confirmExitDescription": "Closing the window is set to exit RecurCode.",
     "runningTerminals": "{count, plural, one {# terminal is still running and will be terminated on exit.} other {# terminals are still running and will be terminated on exit.}}",
     "remember": "Remember my choice",
     "cancel": "Cancel",
     "minimize": "Minimize to tray",
-    "exit": "Exit codeg",
+    "exit": "Exit RecurCode",
     "actionFailed": "Action failed: {message}"
   },
   "GeneralSettings": {
@@ -1810,7 +1810,7 @@
     "sectionTitle": "General",
     "sectionDescription": "Centralized preferences for the default terminal, rendering acceleration, window close behavior, notifications and sounds.",
     "terminalTitle": "Default Terminal",
-    "terminalDescription": "Choose the shell codeg launches for new terminal tabs and for whole command lines an agent asks codeg to run. Agents with a shell of their own (Codex, Claude Code) run commands inside their own process, where this setting cannot reach them.",
+    "terminalDescription": "Choose the shell RecurCode launches for new terminal tabs and for whole command lines an agent asks RecurCode to run. Agents with a shell of their own (Codex, Claude Code) run commands inside their own process, where this setting cannot reach them.",
     "terminalSystemDefault": "System default",
     "terminalPowerShell7": "PowerShell 7 (pwsh)",
     "terminalWindowsPowerShell": "Windows PowerShell",
@@ -1836,11 +1836,11 @@
   },
   "CollaborationSettings": {
     "sectionTitle": "Collaboration",
-    "sectionDescription": "How agents work with each other, and which of codeg's own tools they can reach from inside a conversation."
+    "sectionDescription": "How agents work with each other, and which of RecurCode's own tools they can reach from inside a conversation."
   },
   "LoginPage": {
-    "documentTitle": "Login - codeg",
-    "brand": "Codeg",
+    "documentTitle": "Login - RecurCode",
+    "brand": "RecurCode",
     "subtitle": "Enter your access token to connect to the desktop app",
     "tokenPlaceholder": "Access Token",
     "connect": "Connect",
@@ -1896,7 +1896,7 @@
     "onlyImportable": "Importable only",
     "includeDeleted": "Include deleted",
     "includeDeletedWithCount": "Include deleted ({count})",
-    "includeDeletedHint": "Deleting a session in codeg only hides it — the conversation and its history are still here. Turn this on to select deleted sessions and restore them in place.",
+    "includeDeletedHint": "Deleting a session in RecurCode only hides it — the conversation and its history are still here. Turn this on to select deleted sessions and restore them in place.",
     "selectAll": "Select all",
     "clearSelection": "Clear",
     "expandAll": "Expand all",
@@ -2284,7 +2284,7 @@
         "showPet": "Show pet"
       },
       "mcp": {
-        "title": "codeg-mcp service",
+        "title": "recur-code-mcp service",
         "state": {
           "running": "Running",
           "stopped": "Not running",
@@ -2293,10 +2293,10 @@
           "unknown": "Unknown"
         },
         "hint": {
-          "running": "Agents launched here can use codeg's own tools.",
+          "running": "Agents launched here can use RecurCode's own tools.",
           "stopped": "The broker socket is not answering.",
           "disabled": "Every tool group is off — nothing is injected.",
-          "unavailable": "The codeg-mcp binary is not on disk.",
+          "unavailable": "The recur-code-mcp binary is not on disk.",
           "unknown": "The status could not be read."
         },
         "socketPath": "Address",
@@ -3124,7 +3124,7 @@
         },
         "backendErrors": {
           "initializeTimeout": "{agent} connection handshake timed out after 60 seconds. Please open Settings to check Agent configuration and network settings.",
-          "mcpRejectedByAgent": "{agent} refused the session while codeg’s MCP companion was attached: {message} If this agent does not support MCP, turn off “MCP support” for it in Settings and connect again.",
+          "mcpRejectedByAgent": "{agent} refused the session while RecurCode’s MCP companion was attached: {message} If this agent does not support MCP, turn off “MCP support” for it in Settings and connect again.",
           "processExited": "{agent} process exited unexpectedly.",
           "spawnFailed": "Failed to start {agent}: {message}",
           "downloadFailed": "{agent} download failed: {message}",
@@ -3138,7 +3138,7 @@
           "turnFailedUnknown": "{agent} ended the turn with an unrecognized stop reason.",
           "turnFailedAuthRequired": "{agent} needs you to sign in again before it can run this turn. Sign in from Settings, then send the message again.",
           "agentAuthRequired": "{agent} could not start a session: it has no usable credential. Sign in again from Settings → Agents → {agent}, then reopen this conversation.",
-          "agentRuntimeOutdated": "{agent} is too old for this version of Codeg. Update it, then reopen this conversation.",
+          "agentRuntimeOutdated": "{agent} is too old for this version of RecurCode. Update it, then reopen this conversation.",
           "grokModelSwitchIncompatibleAgent": "{agent} can't switch to that model in an existing conversation. Start a new session to use it.",
           "setModeFailed": "{agent} couldn't switch modes.",
           "setConfigOptionFailed": "{agent} couldn't apply that setting.",
@@ -3146,7 +3146,7 @@
           "imageDropped": "{agent} didn't receive an attached image.",
           "sessionLoadFallback": "{agent} couldn't restore the previous session and started a new one — it no longer has the earlier context.",
           "turnFailedEmpty": "{agent} ended the turn without producing any response.",
-          "turnFailedEmptyProtocol": "{agent} produced output that codeg could not parse — the agent version may not match the protocol.",
+          "turnFailedEmptyProtocol": "{agent} produced output that RecurCode could not parse — the agent version may not match the protocol.",
           "turnFailedEmptyMetadata": "{agent} sent only status updates this turn (plan / mode / usage) and no reply."
         },
         "unableReadAgentConfig": "Unable to read Agent config: {message}",
@@ -3302,7 +3302,7 @@
           "shortcutsAuxPanel": "<shortcut>{toggleAuxPanel}</shortcut> toggles the right panel to view this session's touched files and Git changes.",
           "shortcutsTerminalSidebar": "<shortcut>{toggleTerminal}</shortcut> opens the built-in terminal, <shortcut>{toggleSidebar}</shortcut> toggles the sidebar.",
           "customShortcuts": "Every shortcut is fully remappable under Settings → Shortcuts.",
-          "webService": "Enable Settings → Web Service so teammates can reach the same codeg from a browser.",
+          "webService": "Enable Settings → Web Service so teammates can reach the same RecurCode from a browser.",
           "fusionMode": "Open a file or diff to automatically show it alongside the conversation.",
           "quickMessages": "Open the + button next to the input and pick Quick Messages to insert a saved snippet (manage them under Settings → Quick Messages).",
           "experts": "The + button has an Expert Skills menu — preload roles like Debug or Planning with one click.",
@@ -3312,7 +3312,7 @@
           "mentionTargets": "@ pulls in more than files — mention another agent to hand off a subtask, or reference a past session, a commit, or a skill.",
           "splitGroups": "Right-click a tab and pick Split Right or Split Down to keep two conversations open in their own panes.",
           "worktrees": "Open the branch button and pick New worktree so several agents can work the same repo without overwriting each other's files.",
-          "importSessions": "Already ran sessions in the terminal? A folder's menu has Import local sessions — bring that history into codeg.",
+          "importSessions": "Already ran sessions in the terminal? A folder's menu has Import local sessions — bring that history into RecurCode.",
           "subSessions": "When an agent delegates, the sub-session appears nested under it in the sidebar — expand the row to follow what each one did.",
           "liveFeedback": "Live feedback in the + menu drops a note into the turn the agent is already running, without interrupting it.",
           "skillPacks": "Settings → Skill Packs bundles coding experts, scientific research, and office skills — switch them on per agent.",
@@ -3883,7 +3883,7 @@
         "collapse": "Collapse",
         "errorTitle": "Feedback check failed"
       },
-      "codegMcpTool": {
+      "recurCodeMcpTool": {
         "getSessionInfo": "Reading session {session}",
         "getSessionInfoNoId": "Reading a session",
         "taskProgress": "Progress: {message}",
@@ -3941,7 +3941,7 @@
         "grantDescription": "pi loads this repository's own .pi files. Review what that allows.",
         "grantInheritedDescription": "A parent folder is trusted, so pi loads this repository's own .pi files. Review what that allows.",
         "grantDialogTitle": "This project's pi resources are trusted",
-        "grantDialogDescription": "pi is allowed to load this repository's own .pi files. Earlier codeg versions granted this automatically when you opened a folder, so you may not have been asked.",
+        "grantDialogDescription": "pi is allowed to load this repository's own .pi files. Earlier RecurCode versions granted this automatically when you opened a folder, so you may not have been asked.",
         "grantExecutionWarning": "Extensions are code. The repository runs them at pi startup with your permissions, before you send any message.",
         "inheritedFrom": "Trusted via",
         "revoke": "Revoke trust",
@@ -4153,11 +4153,11 @@
   "WebServiceSettings": {
     "addressSwitchHint": "Switching only changes the address shown and opened here — the service listens on all interfaces and stays reachable at every address.",
     "sectionTitle": "Web Service",
-    "sectionDescription": "Enable to access Codeg remotely via browser",
+    "sectionDescription": "Enable to access RecurCode remotely via browser",
     "port": "Port",
     "status": "Status",
     "autoStart": "Auto-start",
-    "autoStartHint": "Start the Web service when Codeg launches",
+    "autoStartHint": "Start the Web service when RecurCode launches",
     "running": "Running",
     "stopped": "Stopped",
     "processing": "Processing...",
@@ -4172,7 +4172,7 @@
     "copy": "Copy",
     "qrcode": "QR Code",
     "qrcodeTitle": "Scan to Open",
-    "qrcodeHint": "Scan with your phone to open Codeg in a browser",
+    "qrcodeHint": "Scan with your phone to open RecurCode in a browser",
     "addressLabel": "Access Address",
     "tokenLabel": "Access Token",
     "tokenHint": "Enter this token when accessing the Web client for the first time",
@@ -4180,7 +4180,7 @@
     "regenerate": "Regenerate",
     "stalePortOccupiedTitle": "Port {port} is held by another process",
     "stalePortUnknownTitle": "Port {port} status is unclear",
-    "stalePortHint": "Codeg can't bind here until the port is released. Change the port above, or close the process holding it.",
+    "stalePortHint": "RecurCode can't bind here until the port is released. Change the port above, or close the process holding it.",
     "errors": {
       "alreadyRunning": "Web service is already running",
       "invalidAddress": "Invalid host or port format",
@@ -4257,7 +4257,7 @@
     "tokenRequired": "Token is required.",
     "chatIdRequired": "Chat ID is required.",
     "topicMode": "Topic group mode",
-    "topicModeHint": "Route Telegram forum topics as separate Codeg sessions. The bot must be in a forum supergroup and be allowed to manage topics.",
+    "topicModeHint": "Route Telegram forum topics as separate RecurCode sessions. The bot must be in a forum supergroup and be allowed to manage topics.",
     "loadFailed": "Failed to load channels.",
     "saveFailed": "Failed to save changes.",
     "connectSuccess": "Channel connected.",
@@ -4455,7 +4455,7 @@
     },
     "confirm": {
       "disableTitle": "Disable these links?",
-      "disableBody": "This removes {count} codeg-managed skill link(s). Skills occupying a custom directory are left untouched. You can re-enable them anytime.",
+      "disableBody": "This removes {count} recur-code-managed skill link(s). Skills occupying a custom directory are left untouched. You can re-enable them anytime.",
       "cancel": "Cancel",
       "confirm": "Disable"
     },
@@ -4476,7 +4476,7 @@
   },
   "ExpertsSettings": {
     "title": "Expert Skills",
-    "description": "Enable curated, battle-tested skill workflows for your AI coding agents. Each expert is a standalone skill from the superpowers project — codeg manages the central copy and links it into the agents you choose.",
+    "description": "Enable curated, battle-tested skill workflows for your AI coding agents. Each expert is a standalone skill from the superpowers project — RecurCode manages the central copy and links it into the agents you choose.",
     "loading": "Loading experts…",
     "loadingContent": "Loading content…",
     "emptyExperts": "No experts available. Check the application logs.",
@@ -4485,7 +4485,7 @@
     "searchPlaceholder": "Search experts by name, id, or description",
     "enableForAgents": "Enable for agents",
     "noAgents": "No ACP agents detected.",
-    "copyModeWarning": "Copied (not linked). Re-enable after codeg updates to get the latest version.",
+    "copyModeWarning": "Copied (not linked). Re-enable after RecurCode updates to get the latest version.",
     "previewTitle": "SKILL.md preview",
     "categories": {
       "discovery": "Discovery & Design",
@@ -4498,7 +4498,7 @@
     },
     "states": {
       "not_linked": "Not enabled",
-      "linked_to_codeg": "Enabled",
+      "linked_to_recur_code": "Enabled",
       "linked_elsewhere": "Blocked — another link exists",
       "blocked_by_real_directory": "Blocked — a custom skill occupies this name",
       "broken": "Broken link"
@@ -4521,7 +4521,7 @@
   },
   "ScienceSettings": {
     "title": "Scientific Research Skills",
-    "description": "Enable curated scientific-research skills for your AI coding agents — hypothesis generation, experimental design, statistics, visualization, critical appraisal, and literature search. codeg manages a central copy and links each skill into the agents you choose.",
+    "description": "Enable curated scientific-research skills for your AI coding agents — hypothesis generation, experimental design, statistics, visualization, critical appraisal, and literature search. RecurCode manages a central copy and links each skill into the agents you choose.",
     "loading": "Loading science skills…",
     "emptySkills": "No science skills available. Check the application logs.",
     "searchPlaceholder": "Search science skills by name, id, or description",
@@ -4535,7 +4535,7 @@
     },
     "states": {
       "not_linked": "Not enabled",
-      "linked_to_codeg": "Enabled",
+      "linked_to_recur_code": "Enabled",
       "linked_elsewhere": "Blocked — another link exists",
       "blocked_by_real_directory": "Blocked — a custom skill occupies this name",
       "broken": "Broken link"
@@ -4585,7 +4585,7 @@
     },
     "states": {
       "not_linked": "Not enabled",
-      "linked_to_codeg": "Enabled",
+      "linked_to_recur_code": "Enabled",
       "linked_elsewhere": "Blocked — another link exists",
       "blocked_by_real_directory": "Blocked — a custom skill occupies this name",
       "broken": "Broken link"
@@ -4615,7 +4615,7 @@
   },
   "SkillPacksSettings": {
     "title": "Skill Packs",
-    "description": "Curated skill bundles that codeg manages centrally and links into your AI agents — coding experts, scientific research, and office document tools. Enable them per agent below.",
+    "description": "Curated skill bundles that RecurCode manages centrally and links into your AI agents — coding experts, scientific research, and office document tools. Enable them per agent below.",
     "tabs": {
       "experts": "Experts",
       "science": "Science",
@@ -4635,7 +4635,7 @@
     "loading": "Loading…",
     "category": "Generative UI",
     "skillName": "UI Render",
-    "skillDescription": "Lets the agent answer with interactive cards, tables and charts in Codeg's chat.",
+    "skillDescription": "Lets the agent answer with interactive cards, tables and charts in RecurCode's chat.",
     "usage": "Type /ui-render followed by your request, for example /ui-render list the changed files as a table. In Codex, use $ui-render. You can also just ask the agent to show something as cards, a table or a chart. An agent gets the skill in conversations started after you enable it.",
     "conflict": "Your central skills folder already has a skill of your own named ui-render. Rename it on the Custom tab to use the built-in one.",
     "notReadyHint": "Your own skill named ui-render is in the way. Rename it on the Custom tab.",
@@ -4644,7 +4644,7 @@
     },
     "states": {
       "not_linked": "Not enabled",
-      "linked_to_codeg": "Enabled",
+      "linked_to_recur_code": "Enabled",
       "linked_elsewhere": "Blocked — another link exists",
       "blocked_by_real_directory": "Blocked — a custom skill occupies this name",
       "broken": "Broken link"
@@ -5030,7 +5030,7 @@
       "restore": "Restore"
     },
     "export": {
-      "description": "Packs this machine's codeg data — the database and uploaded files — into one archive.",
+      "description": "Packs this machine's RecurCode data — the database and uploaded files — into one archive.",
       "includeExternal": "Include conversation content",
       "includeExternalHint": "Also archive agent CLI transcripts (Claude, Codex, Gemini, …). Increases size.",
       "passphrase": "Passphrase (optional)",
@@ -5053,7 +5053,7 @@
       }
     },
     "restore": {
-      "description": "Replaces this machine's codeg data with the contents of a backup archive.",
+      "description": "Replaces this machine's RecurCode data with the contents of a backup archive.",
       "selectFile": "Select backup file",
       "passphrasePrompt": "This backup is encrypted. Enter its passphrase.",
       "unlock": "Unlock",
@@ -5064,9 +5064,9 @@
         "incompatible": "Incompatible",
         "createdAt": "Created: {value}",
         "appVersion": "App version: {value}",
-        "incompatibleHint": "This backup was created by a newer version of codeg and cannot be restored."
+        "incompatibleHint": "This backup was created by a newer version of RecurCode and cannot be restored."
       },
-      "replaceWarning": "Restoring replaces all current codeg data (database and uploads). Your current data is snapshotted first so it can be recovered.",
+      "replaceWarning": "Restoring replaces all current RecurCode data (database and uploads). Your current data is snapshotted first so it can be recovered.",
       "keyringNote": "Desktop GitHub/chat tokens live in your OS keychain and are not included; re-enter them after restoring.",
       "button": "Restore",
       "staging": "Preparing restore…",
@@ -5075,7 +5075,7 @@
       "restartTimeout": "The server did not come back in time. Reload the page once it is up.",
       "externalSideLocation": "Conversation transcripts were restored to {path}",
       "confirmTitle": "Replace all data?",
-      "confirmBody": "This will replace your current codeg database and uploads with the backup, then restart. Your current data is snapshotted first.",
+      "confirmBody": "This will replace your current RecurCode database and uploads with the backup, then restart. Your current data is snapshotted first.",
       "cancel": "Cancel",
       "confirmAction": "Replace & restart",
       "external": {
@@ -5107,7 +5107,7 @@
         "later": "Later"
       }
     },
-    "remoteUnsupported": "Backup & restore acts on the data of the machine running codeg. You're connected to a remote workspace — manage its backups from that server directly.",
+    "remoteUnsupported": "Backup & restore acts on the data of the machine running RecurCode. You're connected to a remote workspace — manage its backups from that server directly.",
     "progress": {
       "cancel": "Cancel"
     },
@@ -5189,7 +5189,7 @@
     "plaintextWarning": "The snapshot is uploaded unencrypted and includes API keys, so use a WebDAV server only you can reach. The sync credentials themselves are never part of the snapshot.",
     "importConfirmTitle": "Import configuration?",
     "importConfirmBody": "Entries from this file will be added or updated on this machine. Existing entries that the file does not mention are kept.",
-    "restartHint": "Some changes — appearance, language, and the provider list — take effect after restarting codeg.",
+    "restartHint": "Some changes — appearance, language, and the provider list — take effect after restarting RecurCode.",
     "importConfirmAction": "Import",
     "restoreConfirmTitle": "Restore from remote?",
     "restoreConfirmBody": "The snapshot from {device}, taken {time}, will be applied to this machine. Existing entries that the snapshot does not mention are kept.",
@@ -5225,8 +5225,8 @@
       "error": {
         "badPassphrase": "Incorrect passphrase or corrupted backup.",
         "corrupted": "The backup archive is corrupted.",
-        "unknownFormat": "This file is not a recognized codeg backup.",
-        "newerVersion": "This backup was created by codeg {backupVersion}, newer than this version ({appVersion}).",
+        "unknownFormat": "This file is not a recognized RecurCode backup.",
+        "newerVersion": "This backup was created by RecurCode {backupVersion}, newer than this version ({appVersion}).",
         "alreadyPending": "A restore is already staged. Restart to apply it before staging another."
       }
     },
@@ -5237,9 +5237,9 @@
   },
   "configSync": {
     "error": {
-      "newerSchema": "This snapshot was created by a newer version of codeg (format {snapshotVersion}); this version understands up to format {appVersion}.",
+      "newerSchema": "This snapshot was created by a newer version of RecurCode (format {snapshotVersion}); this version understands up to format {appVersion}.",
       "checksum": "The snapshot does not match its checksum and may be incomplete.",
-      "invalidSnapshot": "This file is not a valid codeg configuration snapshot.",
+      "invalidSnapshot": "This file is not a valid RecurCode configuration snapshot.",
       "noRemoteSnapshot": "There is no configuration snapshot on the server yet.",
       "notConfigured": "Set up the WebDAV server before syncing.",
       "unauthorized": "The WebDAV server rejected the username or password.",
@@ -5285,7 +5285,7 @@
   },
   "AgentToolsSettings": {
     "title": "In-conversation tools",
-    "description": "Extra tools codeg gives an agent inside a conversation. Each is injected when the agent starts, so a change applies to agents started afterwards.",
+    "description": "Extra tools RecurCode gives an agent inside a conversation. Each is injected when the agent starts, so a change applies to agents started afterwards.",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Tool settings saved",
@@ -5326,7 +5326,7 @@
     "computer": {
       "label": "See and use your desktop's windows",
       "short": "List apps and windows; read the ones you share, act on the ones you allow.",
-      "hint": "Lets an agent list the applications and windows on your desktop, read the windows you share with it — a screenshot, its contents, whether it shows what it expects — and click, type and press keys in the ones you share for acting. Nothing is readable until you share a window from the Computer use panel in the status bar, and nothing can be acted on unless you also let agents act on it; sharing ends when the window closes, after a while unused, or when you stop it, and Stop agents in that panel halts every agent at once. Input goes to the window in the background; for an action that will not go in the background, an agent may bring the window to the front, which you can switch off in Computer use settings. Desktop app only; on macOS it needs permissions granted to codeg-computer-helper. Preview."
+      "hint": "Lets an agent list the applications and windows on your desktop, read the windows you share with it — a screenshot, its contents, whether it shows what it expects — and click, type and press keys in the ones you share for acting. Nothing is readable until you share a window from the Computer use panel in the status bar, and nothing can be acted on unless you also let agents act on it; sharing ends when the window closes, after a while unused, or when you stop it, and Stop agents in that panel halts every agent at once. Input goes to the window in the background; for an action that will not go in the background, an agent may bring the window to the front, which you can switch off in Computer use settings. Desktop app only; on macOS it needs permissions granted to recur-code-computer-helper. Preview."
     },
     "automations": {
       "label": "Create automations",
@@ -5348,21 +5348,21 @@
     "permissionDefault": "Not requested",
     "permissionUnsupported": "Unavailable",
     "permissionManagedByOs": "Managed by the system",
-    "permissionGrantedHint": "This browser will show notifications from Codeg.",
-    "permissionDeniedHint": "This browser is blocking notifications from Codeg. Only the browser's own site settings can undo that — a page cannot ask again.",
+    "permissionGrantedHint": "This browser will show notifications from RecurCode.",
+    "permissionDeniedHint": "This browser is blocking notifications from RecurCode. Only the browser's own site settings can undo that — a page cannot ask again.",
     "permissionDefaultHint": "This browser has not been asked yet. Notifications stay silent until you allow them.",
     "permissionUnsupportedHint": "Notifications need a secure context. Reach this server over HTTPS or on localhost.",
-    "permissionManagedByOsHint": "The desktop app posts through the system notification centre, which does not report back whether Codeg is allowed. Send a test to find out.",
+    "permissionManagedByOsHint": "The desktop app posts through the system notification centre, which does not report back whether RecurCode is allowed. Send a test to find out.",
     "identityTitle": "Delivered as",
     "identityHint": "The system files these notifications under this app — its own switches are the ones that apply.",
-    "identityDegradedHint": "Codeg's own identifier could not be claimed, so the system posts these as {bundleId} and that app's switches apply instead. Installing Codeg to your Applications folder restores its own identity.",
+    "identityDegradedHint": "RecurCode's own identifier could not be claimed, so the system posts these as {bundleId} and that app's switches apply instead. Installing RecurCode to your Applications folder restores its own identity.",
     "requestPermission": "Allow notifications",
     "permissionGrantedToast": "Notifications allowed.",
     "permissionDeniedToast": "Notifications were blocked. Re-enable them in your browser's site settings.",
     "openSystemSettings": "Open system settings",
     "openSystemSettingsFailed": "Could not open the system notification settings.",
     "sendTest": "Send a test",
-    "testTitle": "Codeg",
+    "testTitle": "RecurCode",
     "testBody": "Desktop notifications are working.",
     "testSent": "Test notification sent.",
     "testFailed": "The test notification could not be sent.",
@@ -5386,7 +5386,7 @@
     "preview": "Preview",
     "previewEvent": "Preview the {event} sound",
     "onlyWhenUnfocused": "Only when the window is not focused",
-    "onlyWhenUnfocusedHint": "Stay silent while you are looking at Codeg.",
+    "onlyWhenUnfocusedHint": "Stay silent while you are looking at RecurCode.",
     "eventsTitle": "Events",
     "eventsHint": "Pick a tone per event, or “Silent” to skip it. Repeats of the same event within a couple of seconds play once.",
     "toneNone": "Silent",
@@ -5400,7 +5400,7 @@
   "BrowserSettings": {
     "title": "Built-in browser",
     "description": "Web pages opened from conversations, tool results and the terminal can appear as tabs next to your files instead of leaving the app.",
-    "descriptionWeb": "In a browser session pages open in the browser you are already in. The exception is a server running on the codeg host, which is forwarded into a tab here. These are the settings that still decide something.",
+    "descriptionWeb": "In a browser session pages open in the browser you are already in. The exception is a server running on the RecurCode host, which is forwarded into a tab here. These are the settings that still decide something.",
     "defaultTargetTitle": "Where links open",
     "defaultTargetHint": "Set per source. ⌘/Ctrl-click a link to use the other one just this once.",
     "sourceTranscript": "Conversation messages",
@@ -5431,7 +5431,7 @@
     "proxyOn": "Using {url}",
     "proxyOff": "Direct connection",
     "proxyNextTab": "A changed proxy applies to tabs opened from now on.",
-    "proxyRestart": "Restart codeg for browser tabs to use the changed proxy.",
+    "proxyRestart": "Restart RecurCode for browser tabs to use the changed proxy.",
     "proxyUnsupported": "Not available on this version of macOS (14 or later is needed).",
     "proxyUnusable": "The configured proxy is not one browser tabs can use (http and socks5 only).",
     "suspendTitle": "Unload background tabs",
@@ -5509,7 +5509,7 @@
       "stop": "Stop sharing",
       "stopWithKey": "Stop sharing every window ({key})"
     },
-    "codegGranted": "codeg itself has Accessibility or Screen Recording, so agents' shells can use it without anything being shared. Unless you need it, turn it off for codeg in System Settings.",
+    "recurCodeGranted": "RecurCode itself has Accessibility or Screen Recording, so agents' shells can use it without anything being shared. Unless you need it, turn it off for RecurCode in System Settings.",
     "backend": {
       "idle": "Not started",
       "downloading": "Downloading the driver…",
@@ -5525,9 +5525,9 @@
       "screenRecording": "Screen Recording",
       "granted": "Granted",
       "request": "Grant…",
-      "why": "Turn on codeg-computer-helper in System Settings — not codeg. Screen Recording lets it see windows; Accessibility lets it read and act on them.",
-      "devRebuild": "Each rebuild of the helper voids its old grant: remove the old codeg-computer-helper from the list first, then grant again.",
-      "notListed": "If codeg-computer-helper isn't in the list, drag it in from the Finder:",
+      "why": "Turn on recur-code-computer-helper in System Settings — not RecurCode. Screen Recording lets it see windows; Accessibility lets it read and act on them.",
+      "devRebuild": "Each rebuild of the helper voids its old grant: remove the old recur-code-computer-helper from the list first, then grant again.",
+      "notListed": "If recur-code-computer-helper isn't in the list, drag it in from the Finder:",
       "reveal": "Show in Finder"
     },
     "shared": {
@@ -5580,13 +5580,13 @@
       "loading": "Loading windows…",
       "refresh": "Refresh",
       "empty": "No windows found. If you expected some, check the permissions in the Computer use panel.",
-      "noScreenRecording": "codeg-computer-helper doesn't have Screen Recording yet: window titles and pictures can't be shown, and agents can't read windows.",
+      "noScreenRecording": "recur-code-computer-helper doesn't have Screen Recording yet: window titles and pictures can't be shown, and agents can't read windows.",
       "unnamedApp": "Unknown app",
       "untitled": "Untitled window",
       "minimized": "Minimized",
       "hidden": "Hidden",
       "notGrantable": {
-        "codeg": "codeg's window",
+        "RecurCode": "RecurCode's window",
         "blocklisted": "On the never-share list",
         "unidentified": "Can't tell which app this is"
       },
@@ -5602,7 +5602,7 @@
       "appLevelLabel": "What agents may do with all of {app}",
       "viaApp": "With the app",
       "screenTitle": "Entire screen",
-      "screenHint": "Every window you can share, including ones that open later, and the desktop's own shortcuts. codeg's windows and the never-share list stay painted over.",
+      "screenHint": "Every window you can share, including ones that open later, and the desktop's own shortcuts. RecurCode's windows and the never-share list stay painted over.",
       "screenLevelLabel": "What agents may do with the entire screen",
       "viaScreen": "With the screen",
       "shareAll": "Share all",
@@ -5612,7 +5612,7 @@
       "skipped": "{count, plural, one {# window could not be shared; it may have closed.} other {# windows could not be shared; they may have closed.}}",
       "unshareable": "{count, plural, one {# window can't be shared} other {# windows can't be shared}}",
       "noneShareable": "None of these windows can be shared.",
-      "codegWhy": "codeg's windows are never shared: an agent that could operate codeg could approve its own requests or share more windows with itself. The same goes for other copies of codeg."
+      "recurCodeWhy": "RecurCode's windows are never shared: an agent that could operate RecurCode could approve its own requests or share more windows with itself. The same goes for other copies of RecurCode."
     },
     "settings": {
       "pageTitle": "Computer use",
@@ -5624,7 +5624,7 @@
       },
       "driver": {
         "title": "Driver",
-        "description": "Computer use reads and acts on windows through cua-driver, an open-source program. codeg runs only the release it has checked, {version}, and downloads it the first time it is needed.",
+        "description": "Computer use reads and acts on windows through cua-driver, an open-source program. RecurCode runs only the release it has checked, {version}, and downloads it the first time it is needed.",
         "loading": "Checking…",
         "unsupported": "cua-driver has no build for this platform.",
         "installing": "Installing…",
@@ -5632,7 +5632,7 @@
         "downloadingSoFar": "Downloading… {done} MB",
         "uninstalling": "Uninstalling…",
         "installed": "Installed · {version}",
-        "outdated": "{installed} is installed; this codeg runs {version}.",
+        "outdated": "{installed} is installed; this RecurCode runs {version}.",
         "notInstalled": "Not installed. It is downloaded the first time computer use needs it, or you can install it now.",
         "install": "Install",
         "upgrade": "Upgrade to {version}",
@@ -5645,7 +5645,7 @@
       },
       "permissions": {
         "title": "Permissions",
-        "description": "macOS asks for these for codeg-computer-helper. Grant one in System Settings and come back: this updates by itself.",
+        "description": "macOS asks for these for recur-code-computer-helper. Grant one in System Settings and come back: this updates by itself.",
         "off": "Switch computer use on to check and grant permissions.",
         "accessibilityHint": "Read windows' contents and act on them.",
         "screenRecordingHint": "Take screenshots and read window titles."
@@ -5682,7 +5682,7 @@
       },
       "stopKey": {
         "label": "Stop shortcut",
-        "hint": "Stops sharing every window from any app, like the Stop sharing button. While computer use is on these keys belong to codeg, so pick ones you don't use elsewhere.",
+        "hint": "Stops sharing every window from any app, like the Stop sharing button. While computer use is on these keys belong to RecurCode, so pick ones you don't use elsewhere.",
         "recording": "Press keys…",
         "recordHint": "Hold Ctrl and one more modifier (Alt or Shift), then press a key. Esc cancels.",
         "recordHintMac": "Hold ⌃ or ⌘ and one more modifier, then press a key. Esc cancels.",
@@ -5716,7 +5716,7 @@
       },
       "launch": {
         "label": "Let agents open applications and move windows",
-        "hint": "With this on, an agent may start an installed application in the background — never codeg or one of the apps that are never shared — and move or resize a window you let it act on. Starting an application shares none of its windows: that is still yours to decide."
+        "hint": "With this on, an agent may start an installed application in the background — never RecurCode or one of the apps that are never shared — and move or resize a window you let it act on. Starting an application shares none of its windows: that is still yours to decide."
       },
       "clipboard": {
         "label": "Let agents use the clipboard",
@@ -5724,9 +5724,9 @@
       },
       "screen": {
         "label": "Offer the entire screen",
-        "hint": "With this on, the share picker offers the entire screen: agents see one picture of all of it and can click anywhere on it, and every window you can share goes with it, along with the desktop's own shortcuts. codeg's windows and the never-share list stay painted over. Turning this off ends the screen's sharing."
+        "hint": "With this on, the share picker offers the entire screen: agents see one picture of all of it and can click anywhere on it, and every window you can share goes with it, along with the desktop's own shortcuts. RecurCode's windows and the never-share list stay painted over. Turning this off ends the screen's sharing."
       },
-      "boundary": "On macOS the permissions go to codeg-computer-helper, which only codeg can use, so agents' shells can't. Windows and Linux have no such separation: there these settings decide what agents get through codeg, not what programs on your computer can do.",
+      "boundary": "On macOS the permissions go to recur-code-computer-helper, which only RecurCode can use, so agents' shells can't. Windows and Linux have no such separation: there these settings decide what agents get through RecurCode, not what programs on your computer can do.",
       "save": "Save",
       "saving": "Saving…",
       "saved": "Computer use settings saved",
@@ -5775,9 +5775,9 @@
     "filesEmpty": "No log files yet.",
     "download": "Download",
     "downloadTruncated": "File is large; downloaded the latest {size}. The full file is in the logs directory.",
-    "captureEnvLocked": "Log level is controlled by the RUST_LOG / CODEG_LOG environment variable; change it there to take effect.",
+    "captureEnvLocked": "Log level is controlled by the RUST_LOG / RECUR_CODE_LOG environment variable; change it there to take effect.",
     "targetsTitle": "Per-module overrides",
-    "targetsDescription": "Set a different level for specific modules (e.g. codeg_lib::acp) without changing the global level.",
+    "targetsDescription": "Set a different level for specific modules (e.g. recur_code_lib::acp) without changing the global level.",
     "targetsAdd": "Add",
     "targetsRemove": "Remove override",
     "toggleDetails": "Toggle details"
@@ -6109,7 +6109,7 @@
     "settingsDeleteWorktreeHint": "Pre-selects the option in the merge dialog; you can still change it there.",
     "settingsWorktreeRoot": "Worktree location",
     "settingsWorktreeRootHint": "Directory new task worktrees are created in — one per task. Leave it empty to keep them next to the project folder; \"~\" is your home directory, and a relative path resolves against the project folder.",
-    "settingsWorktreeRootPlaceholder": "~/codeg-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
     "settingsWorktreeRootBrowse": "Choose the worktree directory",
     "settingsPreflight": "Preflight command",
     "settingsPreflightHint": "Runs in the worktree when a task reaches review.",
@@ -6213,7 +6213,7 @@
     "searchPlaceholder": "Search custom skills by name, id, or description",
     "states": {
       "not_linked": "Not enabled",
-      "linked_to_codeg": "Enabled",
+      "linked_to_recur_code": "Enabled",
       "linked_elsewhere": "Linked elsewhere",
       "blocked_by_real_directory": "Blocked by a real folder",
       "broken": "Broken link"
@@ -6236,7 +6236,7 @@
     "editor": {
       "createTitle": "New custom skill",
       "editTitle": "Edit custom skill",
-      "description": "Custom skills live in the shared store (~/.codeg/skills) and can be enabled for any agent.",
+      "description": "Custom skills live in the shared store (~/.recurcode/skills) and can be enabled for any agent.",
       "idLabel": "Skill id",
       "idPlaceholder": "e.g. my-workflow",
       "contentLabel": "SKILL.md",
@@ -6291,7 +6291,7 @@
     }
   },
   "CodexModelEditor": {
-    "customizedNotice": "You've customized the model list, so codeg now manages codex's full model table. Official models codex ships later won't appear automatically — click the refresh button below and save again to sync them. Clear your customizations to let codex update automatically.",
+    "customizedNotice": "You've customized the model list, so RecurCode now manages codex's full model table. Official models codex ships later won't appear automatically — click the refresh button below and save again to sync them. Clear your customizations to let codex update automatically.",
     "officialsTitle": "Official models",
     "officialsHint": "Auto-included from the codex you launch; remove any you don't want.",
     "officialsEmpty": "No official models available.",
@@ -6395,13 +6395,13 @@
       "npm_missing": "npm was not found on the app PATH.",
       "not_installed": "This agent does not appear to be installed.",
       "installed_but_unresolved": "The agent is recorded as installed, but the app cannot locate its executable.",
-      "user_prefix_not_on_path": "Installed into the fallback prefix (~/.codeg/npm-global), which is not on the app PATH. Fully restart the app and try again.",
+      "user_prefix_not_on_path": "Installed into the fallback prefix (~/.recurcode/npm-global), which is not on the app PATH. Fully restart the app and try again.",
       "homebrew_bin_not_on_path": "Installed under the Homebrew bin, which is not on the app PATH (Apple Silicon keg split).",
       "terminal_only_path": "The command resolves in your terminal but not in the app — a GUI PATH gap. Launch the app from a terminal, or reinstall from Agent Settings.",
       "npm_prefix_timeout": "npm prefix -g was too slow (over 1.5s), so fallback detection was skipped. Restart the app and try again.",
       "node_too_old": "Your active Node.js is older than this agent requires. Upgrade Node.js.",
-      "adapter_missing_native_present": "Your own {agent} CLI is installed, but Codeg launches a separate ACP adapter package — and that one isn't installed yet. Install it from Agent Settings; it won't touch your CLI and shares the same sign-in.",
-      "adapter_missing": "Codeg launches a separate ACP adapter package for {agent}, and it isn't installed yet. Install it from Agent Settings — installing the vendor CLI alone is not enough."
+      "adapter_missing_native_present": "Your own {agent} CLI is installed, but RecurCode launches a separate ACP adapter package — and that one isn't installed yet. Install it from Agent Settings; it won't touch your CLI and shares the same sign-in.",
+      "adapter_missing": "RecurCode launches a separate ACP adapter package for {agent}, and it isn't installed yet. Install it from Agent Settings — installing the vendor CLI alone is not enough."
     }
   },
   "TokenUsage": {
@@ -6435,7 +6435,7 @@
     "resetFilters": "Reset filters",
     "refresh": "Refresh",
     "rebuild": "Rebuild all",
-    "rebuildHint": "Re-reads every transcript from scratch. Use this if a session grew outside codeg.",
+    "rebuildHint": "Re-reads every transcript from scratch. Use this if a session grew outside RecurCode.",
     "syncing": "Counting sessions…",
     "syncProgress": "{done} / {total}",
     "syncDone": "Counted {synced} sessions",
@@ -6514,7 +6514,7 @@
     "cardHeading": "My AI coding stats",
     "cardRangeAll": "All time",
     "cardTotalLabel": "Tokens used",
-    "cardFooter": "Made with codeg",
+    "cardFooter": "Made with RecurCode",
     "cardTopModels": "Top models",
     "cardTopProjects": "Top projects",
     "archetypeNightOwl": "Night Owl",
@@ -6536,7 +6536,7 @@
     "archetypeSteady": "Steady Builder",
     "archetypeSteadyDesc": "{days} days of shipping.",
     "emptyTitle": "Nothing counted yet",
-    "emptyHint": "Codeg reads token counts straight from each agent's own transcript. Run a refresh to count what's already on this machine.",
+    "emptyHint": "RecurCode reads token counts straight from each agent's own transcript. Run a refresh to count what's already on this machine.",
     "emptyAction": "Count my sessions",
     "loadFailed": "Could not load usage",
     "truncatedNotice": "This range is very large — the numbers cover only the most recent slice of it.",
@@ -6551,7 +6551,7 @@
     "errors": {
       "noAccount": "No {provider} account is configured for {host}. Add one under Settings → Version Control to load this repository.",
       "unsupportedHost": "The repository panel supports GitHub, GitLab and Gitea only, and {host} is not recognized as any of them. If it is a self-hosted GitHub Enterprise, GitLab, Gitea or Forgejo instance, add an account for it under Settings → Version Control.",
-      "wrongForge": "{host} is a {provider}, not the forge codeg had it classified as. The detection has been corrected — reload to retry."
+      "wrongForge": "{host} is a {provider}, not the forge RecurCode had it classified as. The detection has been corrected — reload to retry."
     },
     "addAccount": "Add an account",
     "empty": "Nothing here",
@@ -6699,7 +6699,7 @@
     "dialogDescriptionMr": "Creates a to-do task in {repo}'s folder, with its worktree checked out at this merge request's head — the agent's commits go on top of it and are pushed back to the same merge request once you accept.",
     "instructionPlaceholder": "Optional extra instruction for the agent…",
     "writebackLabel": "Comment the outcome back on this item",
-    "writebackHint": "When the task finishes, codeg posts one comment on this item: the outcome, the link and the diff counters.",
+    "writebackHint": "When the task finishes, RecurCode posts one comment on this item: the outcome, the link and the diff counters.",
     "previewToggle": "Preview the issue content the task will carry",
     "previewEmpty": "(no description)",
     "duplicateBody": "An active task already handles this item: {title} ({status}). Create another one anyway?",
@@ -6915,7 +6915,7 @@
       "errorBlockedHint": "A site rule blocks this address. Rules are managed in Settings → Built-in browser.",
       "popupDeniedBlockedHost": "blocked by a site rule",
       "channelDegraded": "Pop-ups are blocked in this tab and the address bar can fall behind the page",
-      "channelDegradedHint": "codeg could not install its page script. Pop-ups this page opens are blocked, the address bar will not follow navigation inside the page, and the find shortcut pressed in the page will not open the find bar. Reopening the tab tries again.",
+      "channelDegradedHint": "RecurCode could not install its page script. Pop-ups this page opens are blocked, the address bar will not follow navigation inside the page, and the find shortcut pressed in the page will not open the find bar. Reopening the tab tries again.",
       "downloadsDenied": "Downloads blocked: {host}",
       "downloadsDeniedNoGesture": "several files, not started by a click",
       "agentGrantLost": "Sharing ended: the page left {origin}",
@@ -6927,7 +6927,7 @@
       "errorRemoteUnreachable": "The remote host can't reach this address",
       "errorRemoteUnreachableHint": "Seen from {host}, the name doesn't resolve or there is no route to it.",
       "errorRemoteNotAllowed": "The remote server doesn't open this address for the browser",
-      "errorRemoteNotAllowedHint": "The codeg-server on {host} only lets its browser tunnel reach private addresses (CODEG_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "The recur-code-server on {host} only lets its browser tunnel reach private addresses (RECUR_CODE_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "The remote host took too long to connect",
       "errorRemoteTimeoutHint": "{host} got no answer from this address in time. The server there may be busy or behind a firewall.",
       "errorTunnelDown": "The connection to the remote host is down",
@@ -6950,8 +6950,8 @@
       "copyAddress": "Copy address",
       "copied": "Address copied",
       "unreachableTitle": "The bridge port can't be reached",
-      "unreachableHint": "codeg's server put this page on {origin}, but your browser can't reach it. Publish that port (see CODEG_BRIDGE_PORTS) or set CODEG_BRIDGE_PUBLIC_HOST; if codeg is served over HTTPS, the bridge ports need HTTPS too.",
-      "unreachableHostHint": "codeg's server put this page on {origin}, but your browser can't reach it. That hostname has to resolve to the codeg server and reach it through whatever proxy is in front — a wildcard DNS record and a wildcard vhost (see CODEG_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "RecurCode's server put this page on {origin}, but your browser can't reach it. Publish that port (see RECUR_CODE_BRIDGE_PORTS) or set RECUR_CODE_BRIDGE_PUBLIC_HOST; if RecurCode is served over HTTPS, the bridge ports need HTTPS too.",
+      "unreachableHostHint": "RecurCode's server put this page on {origin}, but your browser can't reach it. That hostname has to resolve to the RecurCode server and reach it through whatever proxy is in front — a wildcard DNS record and a wildcard vhost (see RECUR_CODE_BRIDGE_HOST_PATTERN).",
       "errorTitle": "This page can't be shown here"
     },
     "remote": {
@@ -7158,9 +7158,9 @@
     "remote": {
       "error": {
         "unavailable": "Opening the remote host's addresses in the built-in browser needs macOS 14 or later.",
-        "unsupported": "The remote codeg-server is too old to carry browser traffic. Update it to open its addresses here.",
-        "disabled": "The remote codeg-server has its browser tunnel switched off (CODEG_BROWSER_TUNNEL).",
-        "unreachable": "Couldn't reach the remote codeg-server's browser tunnel ({reason}).",
+        "unsupported": "The remote recur-code-server is too old to carry browser traffic. Update it to open its addresses here.",
+        "disabled": "The remote recur-code-server has its browser tunnel switched off (RECUR_CODE_BROWSER_TUNNEL).",
+        "unreachable": "Couldn't reach the remote recur-code-server's browser tunnel ({reason}).",
         "bypassed": "This computer's browser engine sends some addresses around the tunnel, so the remote host's pages stay closed rather than load from this computer.",
         "probeFailed": "The built-in browser couldn't confirm that it reaches the remote host through the tunnel. Try again in a moment."
       }

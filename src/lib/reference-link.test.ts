@@ -70,8 +70,8 @@ describe("unwrapReferenceDestination", () => {
     expect(unwrapReferenceDestination("file:///x/foo.ts")).toBe(
       "file:///x/foo.ts"
     )
-    expect(unwrapReferenceDestination("  codeg://session/42  ")).toBe(
-      "codeg://session/42"
+    expect(unwrapReferenceDestination("  recurcode://session/42  ")).toBe(
+      "recurcode://session/42"
     )
     // Not angle-wrapped: a lone backslash is part of the uri, not an escape.
     expect(unwrapReferenceDestination("file:///x\\y")).toBe("file:///x\\y")

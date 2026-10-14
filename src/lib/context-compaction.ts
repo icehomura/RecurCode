@@ -47,7 +47,7 @@ export function isContextCompactionMeta(meta: unknown): boolean {
  * the summary from the transcript onto the divider's result (claude's
  * continuation record, codex's `compacted` record).
  */
-export const COMPACTION_SUMMARY_META_KEY = "codeg.compactionSummary"
+export const COMPACTION_SUMMARY_META_KEY = "RecurCode.compactionSummary"
 
 /**
  * The retained summary a compaction call carries, or `null`.

@@ -159,7 +159,7 @@ export interface ConversationRuntimeSession {
   detailLoading: boolean
   detailError: string | null
 
-  // ACP `session/load` failed in a way codeg cannot paper over: the agent
+  // ACP `session/load` failed in a way RecurCode cannot paper over: the agent
   // reports ResourceNotFound for the historical session_id, the session or
   // process died, or the session is archived. Set by the connections layer
   // via setAcpLoadError; cleared by the user pressing Reload, by a successful
@@ -398,7 +398,7 @@ type Action =
     }
   | {
       // An async sub-agent settled: flip its launch card in-memory by rewriting
-      // the launching tool_result's `[[codeg-background-task]]` marker. If the
+      // the launching tool_result's `[[recur-code-background-task]]` marker. If the
       // launching turn hasn't promoted into `localTurns` yet (settle precedes
       // turn completion under #870), queue it for `COMPLETE_TURN` to apply.
       type: "RESOLVE_BACKGROUND_TASK"
@@ -1441,7 +1441,7 @@ export function buildStreamingTurnsFromLiveMessage(
           // until an authoritative detail reload. See dropEmptyInFlightToolCalls.
           status: block.info.status ?? null,
           // Forward the ACP `meta` field downstream so the renderer can
-          // read delegation state (`meta["codeg.delegation"]`) for
+          // read delegation state (`meta["RecurCode.delegation"]`) for
           // pre-binding / post-refresh fallback rendering of
           // <DelegatedSubThread>. Opaque pass-through — adapter layer
           // does not interpret.
@@ -1872,7 +1872,7 @@ function steeredContentKey(
 }
 
 /**
- * Rewrite the launching tool call's `[[codeg-background-task]]` marker in a turn
+ * Rewrite the launching tool call's `[[recur-code-background-task]]` marker in a turn
  * list so `AgentToolCallPart` flips from "running in background" to its
  * completed/result form — the same marker shape the disk parser
  * (`apply_background_lifecycle`) produces, so live and cold-open render

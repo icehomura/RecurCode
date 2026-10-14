@@ -229,8 +229,8 @@ describe("the standing sharing default", () => {
     applyDefaultAgentGrant(
       state({
         kind: "document",
-        url: "https://codeg-doc.localhost/report.html",
-        origin: "https://codeg-doc.localhost",
+        url: "https://recur-code-doc.localhost/report.html",
+        origin: "https://recur-code-doc.localhost",
       })
     )
     expect(mocks.browserAgentGrant).not.toHaveBeenCalled()
@@ -269,7 +269,7 @@ describe("what can be shared at all", () => {
       "http://localhost:3000"
     )
     expect(shareableOrigin(state({ origin: null }))).toBeNull()
-    expect(shareableOrigin(state({ origin: "codeg-doc://x" }))).toBeNull()
+    expect(shareableOrigin(state({ origin: "recur-code-doc://x" }))).toBeNull()
     expect(shareableOrigin(state({ kind: "document" }))).toBeNull()
     expect(shareableOrigin(null)).toBeNull()
   })

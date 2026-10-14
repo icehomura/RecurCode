@@ -64,7 +64,7 @@ describe("browser wire types", () => {
       policy: {
         enabled: true,
         managedRules: [{ pattern: "*.internal.example", action: "block" }],
-        managedSource: "/etc/codeg/policy.json",
+        managedSource: "/etc/RecurCode/policy.json",
       },
     } satisfies BrowserCapabilities
     const popup = {

@@ -250,7 +250,7 @@ export function AddCustomAgentDialog({
   const [manualSkills, setManualSkills] = useState(false)
   const [manualSkillsDir, setManualSkillsDir] = useState("")
   const [manualVersionProbe, setManualVersionProbe] = useState("")
-  // Whether codeg may put MCP servers (its codeg-mcp companion) on the ACP
+  // Whether RecurCode may put MCP servers (its recur-code-mcp companion) on the ACP
   // wire for this agent. On by default — the value almost every agent works
   // with, and the one a new definition should start from.
   const [manualSupportsMcp, setManualSupportsMcp] = useState(true)
@@ -832,7 +832,7 @@ export function AddCustomAgentDialog({
                 )}
               </SettingCard>
 
-              {/* What codeg is allowed to hand this agent, and where it reads its
+              {/* What RecurCode is allowed to hand this agent, and where it reads its
                 skills from — the same three declarations the agent's own panel
                 in Settings shows, in the same order. */}
               <SettingCard>

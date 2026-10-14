@@ -1,14 +1,14 @@
 //! Built-in expert skills management.
 //!
-//! Experts are curated skills (from obra/superpowers) that codeg bundles
+//! Experts are curated skills (from obra/superpowers) that RecurCode bundles
 //! into its binary via `include_dir!`. On startup they are extracted to a
-//! central directory `~/.codeg/skills/<id>/`. Users can then enable an
+//! central directory `~/.recurcode/skills/<id>/`. Users can then enable an
 //! expert for any ACP agent by creating a symbolic link (or Windows
 //! junction) from the agent's skill directory into the central copy.
 //!
 //! The central store is the single source of truth. Enabling/disabling is
 //! purely "does a link exist in the agent's skill dir" — there is no
-//! database state, and updates propagate automatically when codeg upgrades
+//! database state, and updates propagate automatically when RecurCode upgrades
 //! and re-extracts the bundled files.
 //!
 //! `experts/skills/` is vendored from upstream `skills/` verbatim, so a
@@ -47,7 +47,7 @@ use crate::models::agent::AgentType;
 
 static EXPERTS_BUNDLE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/experts");
 
-const CENTRAL_DIR_NAME: &str = ".codeg";
+const CENTRAL_DIR_NAME: &str = ".recurcode";
 const CENTRAL_SKILLS_SUBDIR: &str = "skills";
 const MANIFEST_FILE: &str = ".manifest.json";
 const EXPERTS_TOML: &str = "experts.toml";
@@ -112,7 +112,7 @@ pub struct ExpertListItem {
 #[serde(rename_all = "snake_case")]
 pub enum ExpertLinkState {
     NotLinked,
-    LinkedToCodeg,
+    LinkedToRecurCode,
     LinkedElsewhere,
     BlockedByRealDirectory,
     Broken,
@@ -169,7 +169,7 @@ pub struct InstallReport {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct Manifest {
     #[serde(default)]
-    codeg_version: String,
+    recur_code_version: String,
     #[serde(default)]
     installed_at: String,
     #[serde(default)]
@@ -536,7 +536,7 @@ pub(crate) fn classify_link(link_path: &Path, expected_target: &Path) -> ExpertL
 
     match (resolved_link, resolved_expected) {
         (None, _) => ExpertLinkState::Broken,
-        (Some(l), Some(e)) if paths_equivalent(&l, &e) => ExpertLinkState::LinkedToCodeg,
+        (Some(l), Some(e)) if paths_equivalent(&l, &e) => ExpertLinkState::LinkedToRecurCode,
         _ => ExpertLinkState::LinkedElsewhere,
     }
 }
@@ -587,7 +587,7 @@ fn ensure_central_experts_installed_blocking() -> InstallReport {
         }
     }
 
-    manifest.codeg_version = env!("CARGO_PKG_VERSION").to_string();
+    manifest.recur_code_version = env!("CARGO_PKG_VERSION").to_string();
     manifest.installed_at = Utc::now().to_rfc3339();
     if let Err(e) = save_manifest(&manifest) {
         report.errors.push(format!("save manifest: {e}"));
@@ -850,7 +850,7 @@ fn link_one_locked(
         Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
             // Already exists — figure out what kind.
             match classify_link(&link_path, &central) {
-                ExpertLinkState::LinkedToCodeg => {
+                ExpertLinkState::LinkedToRecurCode => {
                     // Idempotent success.
                 }
                 ExpertLinkState::BlockedByRealDirectory => {
@@ -931,7 +931,7 @@ fn unlink_one_locked(expert_id: &str, agent_type: AgentType) -> Result<(), Exper
         let state = classify_link(&candidate, &central);
         if matches!(
             state,
-            ExpertLinkState::LinkedToCodeg | ExpertLinkState::Broken
+            ExpertLinkState::LinkedToRecurCode | ExpertLinkState::Broken
         ) {
             // Safe to remove a link to our central store or a broken link.
             remove_skill_entry(&candidate).map_err(|e| {
@@ -1129,12 +1129,12 @@ mod tests {
         // than a wedged CI run.
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-codeg-batch-test-absent-aaa".into(),
+                expert_id: "zzz-recur-code-batch-test-absent-aaa".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },
             LinkOp {
-                expert_id: "zzz-codeg-batch-test-absent-bbb".into(),
+                expert_id: "zzz-recur-code-batch-test-absent-bbb".into(),
                 agent_type: AgentType::Codex,
                 enable: false,
             },
@@ -1152,7 +1152,7 @@ mod tests {
     async fn apply_links_collects_per_op_results_without_aborting() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-codeg-batch-test-absent".into(),
+                expert_id: "zzz-recur-code-batch-test-absent".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },

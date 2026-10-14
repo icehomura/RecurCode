@@ -147,7 +147,7 @@ const EMPTY_BRANCH_LIST: GitBranchList = {
 // Recently-filtered authors, persisted per folder (IDEA-style "recent users").
 // We deliberately do NOT scan the whole repo for authors (slow); the dropdown is
 // seeded from this local history plus the current user, with free-text search.
-const RECENT_AUTHORS_KEY_PREFIX = "codeg:gitlog:recent-authors:"
+const RECENT_AUTHORS_KEY_PREFIX = "RecurCode:gitlog:recent-authors:"
 const RECENT_AUTHORS_MAX = 8
 
 function loadRecentAuthors(folderPath: string): string[] {
@@ -242,7 +242,7 @@ export function canResetFromSelection(
 // The last branch/author filter, persisted per folder path so the tab reopens on
 // the same view. No entry defaults to the live HEAD view; a saved null branch
 // means the user explicitly chose All branches.
-const SELECTION_KEY_PREFIX = "codeg:gitlog:selection:"
+const SELECTION_KEY_PREFIX = "RecurCode:gitlog:selection:"
 // Entries without this version predate the HEAD default. Their null branch was
 // the old default view (git log --all), not a choice — and it was only ever
 // saved next to an author filter, since a null/null entry was deleted — so it

@@ -40,7 +40,7 @@
 //! `task_id` by reloading the child's recorded agent session — a continuation
 //! of the original task, never a new iteration on it.
 //!
-//! Result durability: child output is NOT stored in codeg's DB, so the broker
+//! Result durability: child output is NOT stored in RecurCode's DB, so the broker
 //! caches the completed text in `completed` (parent-scoped, FIFO-capped). Once
 //! evicted, [`DelegationBroker::get_task_status`] falls back to the DB for the
 //! task's terminal STATUS (via [`ChildStatusLookup`]); the full output is always
@@ -111,7 +111,7 @@ pub trait ConversationDepthLookup: Send + Sync {
 
 /// Status-level facts the broker recovers from a child conversation row when a
 /// task's in-memory completed-cache entry was evicted. Carries NO result text —
-/// child output isn't stored in codeg's DB; the full result lives in the
+/// child output isn't stored in RecurCode's DB; the full result lives in the
 /// child's own session (viewable via the frontend's child-session sheet).
 #[derive(Debug, Clone)]
 pub struct ChildStatusRecord {
@@ -1017,7 +1017,7 @@ fn attach_blocked(report: &mut DelegationTaskReport, blocked: BlockedOn) {
     // step with the tool description in `tool_schema.json`.
     report.message = Some(format!(
         "Running.\n{BLOCKED_LINE_PREFIX} {what}\nThe sub-agent is parked until \
-         a human answers in Codeg — it is not making progress. Tell the user, \
+         a human answers in RecurCode — it is not making progress. Tell the user, \
          then wait again."
     ));
     report.blocked_on = Some(blocked);
@@ -1306,7 +1306,7 @@ struct PendingToolCall {
     /// True when the entry came from an identity-less MCP announcement
     /// (Cursor's `"MCP: tool"` + empty input — see
     /// `lifecycle::CURSOR_IDENTITYLESS_MCP_TITLE`). Such an id belongs to
-    /// *some* codeg-mcp call whose identity only the companion round-trip can
+    /// *some* recur-code-mcp call whose identity only the companion round-trip can
     /// reveal, so it is additionally claimable by
     /// [`DelegationBroker::rewrite_identityless_tool_call`] (the
     /// `get_delegation_status` / `cancel_delegation` call-time rename), and a
@@ -1396,7 +1396,7 @@ const IDENTITYLESS_RENAME_POLL_ATTEMPTS: usize = 30;
 pub struct DelegationBroker {
     spawner: Arc<dyn ConnectionSpawner>,
     depth_lookup: Arc<dyn ConversationDepthLookup>,
-    /// Writer for `meta["codeg.delegation"]` on the parent's active
+    /// Writer for `meta["RecurCode.delegation"]` on the parent's active
     /// `delegate_to_agent` ToolCallState. Defaults to a no-op so tests
     /// that aren't exercising the meta lifecycle don't need to wire
     /// anything; production constructs the broker with the
@@ -1807,7 +1807,7 @@ impl DelegationBroker {
     /// Restore the identity of a pending identity-less MCP tool call at
     /// companion round-trip time: claim the oldest such candidate for this
     /// parent and rewrite its live `title` + `raw_input` to the actual
-    /// codeg-mcp tool (`get_delegation_status` / `cancel_delegation`) with
+    /// recur-code-mcp tool (`get_delegation_status` / `cancel_delegation`) with
     /// its real arguments — flipping the card from the generic "MCP: tool"
     /// WHILE the call runs, instead of only at the completion-time result
     /// sniff (which, for a `wait_ms`-blocked status long-poll, can be minutes
@@ -4473,7 +4473,7 @@ impl DelegationBroker {
     }
 
     /// How many delegation calls are parked awaiting a child's `TurnComplete`
-    /// right now. Surfaced by the codeg-mcp service-status indicator so the
+    /// right now. Surfaced by the recur-code-mcp service-status indicator so the
     /// popover can say the service is actually carrying traffic, not just
     /// listening.
     pub async fn running_delegation_count(&self) -> usize {
@@ -4556,7 +4556,7 @@ impl ConversationDepthLookup for DbDepthLookup {
 }
 
 /// `ChildStatusLookup` over the live `AppDatabase`. Recovers a delegation
-/// task's terminal status (NOT its text — child output isn't in codeg's DB)
+/// task's terminal status (NOT its text — child output isn't in RecurCode's DB)
 /// from the child conversation row once its in-memory result was evicted.
 pub struct DbChildStatusLookup {
     pub db: Arc<crate::db::AppDatabase>,
@@ -7089,7 +7089,7 @@ mod tests {
         for call in &calls {
             let inner = call
                 .meta
-                .get("codeg.delegation")
+                .get("RecurCode.delegation")
                 .unwrap()
                 .as_object()
                 .unwrap();
@@ -7344,7 +7344,7 @@ mod tests {
         assert_eq!(first.parent_tool_use_id, "pt-real");
         let inner_first = first
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -7372,7 +7372,7 @@ mod tests {
         let second = &calls[1];
         let inner_second = second
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -7415,7 +7415,7 @@ mod tests {
         assert_eq!(calls.len(), 2);
         let inner = calls[1]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -7498,14 +7498,14 @@ mod tests {
         assert_eq!(calls.len(), 2);
         let running = calls[0]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
         assert_eq!(running.get("status").unwrap().as_str().unwrap(), "running");
         let failed = calls[1]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -7593,14 +7593,14 @@ mod tests {
         assert_eq!(calls.len(), 2);
         let running = calls[0]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
         assert_eq!(running.get("status").unwrap().as_str().unwrap(), "running");
         let completed = calls[1]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -7772,14 +7772,14 @@ mod tests {
         assert_eq!(calls.len(), 2);
         let running = calls[0]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
         assert_eq!(running.get("status").unwrap().as_str().unwrap(), "running");
         let failed = calls[1]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -8187,7 +8187,7 @@ mod tests {
         assert_eq!(calls.len(), 2);
         let inner = calls[1]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();
@@ -8821,7 +8821,7 @@ mod tests {
 
     #[tokio::test]
     async fn emitter_records_after_meta_write_on_complete_call() {
-        // Frontend's snapshot-recovery path reads `meta["codeg.delegation"]`
+        // Frontend's snapshot-recovery path reads `meta["RecurCode.delegation"]`
         // first and the live event second; if the emit lands before the
         // meta write, a snapshot taken between them would see "running"
         // meta paired with a "completed" event. Enforce meta-before-emit
@@ -8869,7 +8869,7 @@ mod tests {
         assert_eq!(event_calls.len(), 1);
         let inner_second = meta_calls[1]
             .meta
-            .get("codeg.delegation")
+            .get("RecurCode.delegation")
             .unwrap()
             .as_object()
             .unwrap();

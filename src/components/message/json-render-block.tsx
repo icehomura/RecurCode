@@ -9,11 +9,11 @@
  *
  * Everything here is json-render's own — its compiler, its provider and
  * renderer, its shadcn components — wired the way its chat examples wire
- * them. Codeg swaps two components. `Link`: json-render's is a bare
- * `<a href>`, and Codeg's main window has no navigation guard, so a click on
- * it would navigate the whole app away. Codeg's own Markdown link opens it
+ * them. RecurCode swaps two components. `Link`: json-render's is a bare
+ * `<a href>`, and RecurCode's main window has no navigation guard, so a click on
+ * it would navigate the whole app away. RecurCode's own Markdown link opens it
  * the way every other link in the chat opens. And `Card`, for one without
- * a shadow. The one thing Codeg adds is charts, which json-render leaves to
+ * a shadow. The one thing RecurCode adds is charts, which json-render leaves to
  * each app (`./json-render-charts.tsx`).
  */
 
@@ -47,7 +47,7 @@ import {
 import { cn } from "@/lib/utils"
 
 /**
- * json-render's Link semantics on Codeg's link: `press` fires first, and an
+ * json-render's Link semantics on RecurCode's link: `press` fires first, and an
  * `on.press` binding that asks to prevent the default keeps the link from
  * opening. Without an `href` there is nothing to open, so it is a button that
  * only fires `press` — still reachable from the keyboard.

@@ -20,7 +20,7 @@
 //! wrong it would measure 0, and the file would end up at seed + ceiling.
 //!
 //! One `#[test]` per file on purpose: installing a subscriber is a process-global
-//! one-shot, and the env vars this sets (`CODEG_HOME`, `CODEG_LOG_MAX_BYTES`) are
+//! one-shot, and the env vars this sets (`RECUR_CODE_HOME`, `RECUR_CODE_LOG_MAX_BYTES`) are
 //! read during that install.
 
 use std::io::Write;
@@ -37,18 +37,18 @@ const SEEDED: u64 = CEILING / 4 * 3;
 #[test]
 fn file_log_stops_growing_at_the_daily_ceiling() {
     let home = tempfile::tempdir().expect("tempdir");
-    // Both are read inside `init_desktop()` below: CODEG_HOME relocates
-    // `codeg_logs_root()`, CODEG_LOG_MAX_BYTES sets the ceiling. Set them before
+    // Both are read inside `init_desktop()` below: RECUR_CODE_HOME relocates
+    // `recur_code_logs_root()`, RECUR_CODE_LOG_MAX_BYTES sets the ceiling. Set them before
     // the install rather than via `temp_env`, because the guard returned by the
     // install must outlive the closure.
-    std::env::set_var("CODEG_HOME", home.path());
-    std::env::set_var("CODEG_LOG_MAX_BYTES", CEILING.to_string());
-    // A stray RUST_LOG/CODEG_LOG in the developer's shell would otherwise pick
+    std::env::set_var("RECUR_CODE_HOME", home.path());
+    std::env::set_var("RECUR_CODE_LOG_MAX_BYTES", CEILING.to_string());
+    // A stray RUST_LOG/RECUR_CODE_LOG in the developer's shell would otherwise pick
     // the level (and could filter our test events out entirely).
     std::env::remove_var("RUST_LOG");
-    std::env::remove_var("CODEG_LOG");
+    std::env::remove_var("RECUR_CODE_LOG");
 
-    let logs_dir = codeg_lib::paths::codeg_logs_root();
+    let logs_dir = recur_code_lib::paths::recur_code_logs_root();
     assert!(
         logs_dir.starts_with(home.path()),
         "the test must not write to the developer's real log dir: {}",
@@ -60,13 +60,13 @@ fn file_log_stops_growing_at_the_daily_ceiling() {
     // appender will append to this very file, and `resume_point` has to find it.
     std::fs::create_dir_all(&logs_dir).expect("create logs dir");
     let today_file = logs_dir.join(format!(
-        "codeg.{}.log",
+        "RecurCode.{}.log",
         chrono::Utc::now().format("%Y-%m-%d")
     ));
     std::fs::write(&today_file, vec![b'-'; SEEDED as usize]).expect("seed today's file");
 
     // Real subscriber: EnvFilter + stderr + buffer + the budgeted rolling file.
-    let guard = codeg_lib::logging::init::init_desktop();
+    let guard = recur_code_lib::logging::init::init_desktop();
 
     // ~1.2 KB of JSON per line × 300 lines ≈ 360 KB offered against a 32 KB
     // ceiling — the same shape as the reported storm, just compressed. Few, fat

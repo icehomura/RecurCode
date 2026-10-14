@@ -40,7 +40,7 @@ fn system_tag_regex() -> &'static Regex {
 /// (`lib/background-agent.ts`) splits on it and renders a lifecycle card;
 /// anything else renders the preview verbatim, so the prefix must never occur
 /// in organic tool output.
-pub(crate) const BACKGROUND_TASK_MARKER: &str = "[[codeg-background-task]]";
+pub(crate) const BACKGROUND_TASK_MARKER: &str = "[[recur-code-background-task]]";
 
 /// Cap for the folded `<result>` markdown carried on the lifecycle marker —
 /// generous for a sub-agent summary, bounded against a pathological one. Also
@@ -779,21 +779,21 @@ pub(crate) fn capture_title_record(
     }
 }
 
-/// A stored or published session title as codeg shows it: trimmed, without
+/// A stored or published session title as RecurCode shows it: trimmed, without
 /// JetBrains AIR's archive marker, and capped at 100 characters. `None` when
 /// nothing is left.
 ///
 /// AIR archives a Claude session by appending its title again with an
 /// `[archived] ` prefix (a `custom-title` record, plus an `agent-name` record
-/// codeg does not read). From claude-agent-acp 0.89.0 the adapter publishes
-/// such a title to an AIR client, which codeg is, with the marker removed
+/// RecurCode does not read). From claude-agent-acp 0.89.0 the adapter publishes
+/// such a title to an AIR client, which RecurCode is, with the marker removed
 /// once (`clientTitle`, AIR's `visibleTitle`), while the transcript keeps it.
-/// codeg has two producers for a Claude title, this transcript reader and the
+/// RecurCode has two producers for a Claude title, this transcript reader and the
 /// wire's `session_info_update.title`
 /// (`acp::session_title::native_title_from_session_info`), and
 /// `publish_native_title` only collapses identical strings. So both go
 /// through this one function; otherwise a session archived in AIR would flip
-/// between the two names on the sidebar while it is open in codeg.
+/// between the two names on the sidebar while it is open in RecurCode.
 ///
 /// The marker follows AIR's rule: `[archived]`, a run of ASCII white space,
 /// then a title. A bare `[archived]`, or one with no white space after it, is
@@ -2639,7 +2639,7 @@ impl ClaudeRecordAccumulator {
     /// `<task-notification>`:
     ///
     /// ```text
-    /// [[codeg-background-task]]{"task_id":…,"status":…,"summary":…,"result":…}
+    /// [[recur-code-background-task]]{"task_id":…,"status":…,"summary":…,"result":…}
     /// ```
     ///
     /// `status` is null while no notification was observed — the frontend
@@ -3564,7 +3564,7 @@ pub(crate) fn parse_subagent_tool_calls(path: &PathBuf) -> SubagentTranscript {
 /// The frame is model-directed provenance: it tells the MODEL that the text
 /// below is a subagent's words and carries no user authority. Over ACP,
 /// `claude-agent-acp` 0.81.0 strips it (`unwrapHandbackFrame`) before the
-/// report reaches a client — but codeg's history path parses the CLI's own
+/// report reaches a client — but RecurCode's history path parses the CLI's own
 /// JSONL, where the frame is still sitting on the tool_result, so without this
 /// every subagent card in history opens with the whole paragraph and shows the
 /// report indented two spaces underneath.
@@ -4537,7 +4537,7 @@ mod tests {
     }
 
     #[test]
-    /// The user typed `/compact`; the divider is what it produced. Live, codeg
+    /// The user typed `/compact`; the divider is what it produced. Live, RecurCode
     /// echoes the prompt above the divider — so history has to as well, and at
     /// the same place, which is NOT where the CLI wrote the echo.
     fn the_compact_prompt_is_emitted_above_the_divider_it_caused() {
@@ -5297,7 +5297,7 @@ mod tests {
     #[test]
     fn parse_detail_sets_claude_context_window_stats() {
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-parser-{}.jsonl",
+            "recur-code-claude-parser-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5359,7 +5359,7 @@ mod tests {
     #[test]
     fn parse_prefers_ai_title_over_first_user_message() {
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-aititle-{}.jsonl",
+            "recur-code-claude-aititle-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5417,7 +5417,7 @@ mod tests {
     #[test]
     fn parse_falls_back_to_user_message_when_ai_title_empty() {
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-aititle-empty-{}.jsonl",
+            "recur-code-claude-aititle-empty-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5470,7 +5470,7 @@ mod tests {
         lines: &[serde_json::Value],
     ) -> (Option<String>, Option<String>) {
         let path =
-            std::env::temp_dir().join(format!("codeg-claude-{tag}-{}.jsonl", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("recur-code-claude-{tag}-{}.jsonl", uuid::Uuid::new_v4()));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
         for line in lines {
             writeln!(file, "{line}").expect("write line");
@@ -5532,7 +5532,7 @@ mod tests {
     fn parse_shows_an_air_archived_title_without_its_marker() {
         // JetBrains AIR archives a session by appending the title again with
         // an `[archived] ` prefix, as this record pair. claude-agent-acp 0.89.0
-        // publishes the title to codeg without the marker, so the history
+        // publishes the title to RecurCode without the marker, so the history
         // reads it the same way rather than flipping the row between the two.
         let (detail, summary) = parse_both_titles(
             "customtitle-archived",
@@ -5615,7 +5615,7 @@ mod tests {
         // The record carries a timestamp and a sessionId, so it must stay a
         // metadata line — never a visible turn or a counted message.
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-customtitle-turn-{}.jsonl",
+            "recur-code-claude-customtitle-turn-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5657,7 +5657,7 @@ mod tests {
         // finished, i.e. the assistant event timestamp itself (or the
         // turn_duration system event's timestamp ≈ same instant).
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-completed-{}.jsonl",
+            "recur-code-claude-completed-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5745,7 +5745,7 @@ mod tests {
     #[test]
     fn synthetic_assistant_excluded_from_detail() {
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-synthetic-{}.jsonl",
+            "recur-code-claude-synthetic-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5865,7 +5865,7 @@ mod tests {
 
     fn parse_lines_into_detail(lines: &[String]) -> crate::models::ConversationDetail {
         let path = std::env::temp_dir().join(format!(
-            "codeg-claude-usage-{}.jsonl",
+            "recur-code-claude-usage-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5883,7 +5883,7 @@ mod tests {
         detail
     }
 
-    /// The fork point codeg sends must be the id the ADAPTER would look up.
+    /// The fork point RecurCode sends must be the id the ADAPTER would look up.
     /// claude-agent-acp's `messageIdForGrouping` takes the API message id when
     /// the record has one, so an assistant turn must carry that — not the
     /// record uuid `MessageTurn::id`-adjacent code uses everywhere else.
@@ -5909,7 +5909,7 @@ mod tests {
     }
 
     /// `messageIdForGrouping` falls back to the record uuid when the message
-    /// carries no id, and so must codeg — otherwise those turns would silently
+    /// carries no id, and so must RecurCode — otherwise those turns would silently
     /// lose their fork point.
     #[test]
     fn assistant_turns_fall_back_to_the_record_uuid() {
@@ -6384,7 +6384,7 @@ mod tests {
         lines: &[String],
         subagents: &[(&str, Vec<String>)],
     ) -> crate::models::ConversationDetail {
-        let stem = std::env::temp_dir().join(format!("codeg-claude-sub-{}", uuid::Uuid::new_v4()));
+        let stem = std::env::temp_dir().join(format!("recur-code-claude-sub-{}", uuid::Uuid::new_v4()));
         let path = stem.with_extension("jsonl");
         let mut file = fs::File::create(&path).expect("create session jsonl");
         for line in lines {
@@ -6666,7 +6666,7 @@ mod tests {
     #[test]
     fn slash_command_keeps_user_turn_between_assistant_turns() {
         let path =
-            std::env::temp_dir().join(format!("codeg-claude-slash-{}.jsonl", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("recur-code-claude-slash-{}.jsonl", uuid::Uuid::new_v4()));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
         // Client command /model: followed by stdout, no model turn -> stays hidden
         writeln!(

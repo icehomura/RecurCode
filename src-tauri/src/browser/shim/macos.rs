@@ -1,7 +1,7 @@
 //! macOS shim on top of `WKWebView` / `WKUserContentController` (objc2).
 //!
-//! The helper script and the `codegBrowser` message handler live in the
-//! `WKContentWorld` named `codeg`: a separate JavaScript global for the same
+//! The helper script and the `recurCodeBrowser` message handler live in the
+//! `WKContentWorld` named `RecurCode`: a separate JavaScript global for the same
 //! DOM, invisible to page scripts and immune to their prototype tampering.
 //! `WKContentWorld` needs macOS 11; older systems fall back to the page world
 //! (reported as `ChannelKind::Legacy`).
@@ -34,8 +34,8 @@ use super::super::channel::MessageSink;
 use super::super::hooks::{classify_load_error, LoadFailure};
 use super::super::profile::{self, BrowserProxy, ProxyScheme};
 
-pub const WORLD_NAME: &str = "codeg";
-pub const HANDLER_NAME: &str = "codegBrowser";
+pub const WORLD_NAME: &str = "RecurCode";
+pub const HANDLER_NAME: &str = "recurCodeBrowser";
 
 thread_local! {
     // Controllers that already carry our handler + scripts. A popup created
@@ -52,14 +52,14 @@ define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
     #[ivars = HandlerIvars]
-    pub struct CodegMessageHandler;
+    pub struct RecurCodeMessageHandler;
 
-    unsafe impl NSObjectProtocol for CodegMessageHandler {}
+    unsafe impl NSObjectProtocol for RecurCodeMessageHandler {}
 
-    unsafe impl WKScriptMessageHandler for CodegMessageHandler {
+    unsafe impl WKScriptMessageHandler for RecurCodeMessageHandler {
         #[unsafe(method(userContentController:didReceiveScriptMessage:))]
         fn did_receive(
-            this: &CodegMessageHandler,
+            this: &RecurCodeMessageHandler,
             _controller: &WKUserContentController,
             message: &WKScriptMessage,
         ) {
@@ -81,7 +81,7 @@ define_class!(
     }
 );
 
-impl CodegMessageHandler {
+impl RecurCodeMessageHandler {
     fn new(sink: MessageSink, mtm: MainThreadMarker) -> Retained<Self> {
         let this = mtm.alloc::<Self>().set_ivars(HandlerIvars { sink });
         // SAFETY: plain NSObject init.
@@ -94,7 +94,7 @@ fn mtm() -> Result<MainThreadMarker, String> {
 }
 
 /// Content worlds (macOS 11+): decided at runtime, not compile time, because
-/// codeg sets no minimumSystemVersion.
+/// RecurCode sets no minimumSystemVersion.
 pub fn supports_content_world(controller: &WKUserContentController) -> bool {
     controller.respondsToSelector(sel!(addScriptMessageHandler:contentWorld:name:))
 }
@@ -118,16 +118,16 @@ pub fn install_world(
         // place already, and the sink resolves the tab per message.
         return Ok(supports_content_world(&controller));
     }
-    let handler = CodegMessageHandler::new(sink, mtm);
+    let handler = RecurCodeMessageHandler::new(sink, mtm);
     let proto = ProtocolObject::from_ref(&*handler);
     // SAFETY: main thread, live controller; WebKit retains the handler.
     unsafe {
         if supports_content_world(&controller) {
-            let world = WKContentWorld::worldWithName(ns_string!("codeg"), mtm);
+            let world = WKContentWorld::worldWithName(ns_string!("RecurCode"), mtm);
             controller.addScriptMessageHandler_contentWorld_name(
                 proto,
                 &world,
-                ns_string!("codegBrowser"),
+                ns_string!("recurCodeBrowser"),
             );
             for source in scripts {
                 let script = WKUserScript::initWithSource_injectionTime_forMainFrameOnly_inContentWorld(
@@ -142,7 +142,7 @@ pub fn install_world(
             add_page_scripts(&controller, page_scripts, mtm);
             Ok(true)
         } else {
-            controller.addScriptMessageHandler_name(proto, ns_string!("codegBrowser"));
+            controller.addScriptMessageHandler_name(proto, ns_string!("recurCodeBrowser"));
             for source in scripts {
                 let script = WKUserScript::initWithSource_injectionTime_forMainFrameOnly(
                     mtm.alloc(),
@@ -181,7 +181,7 @@ unsafe fn add_page_scripts(
     }
 }
 
-/// Evaluate `expression` in the `codeg` world of the main frame. The result
+/// Evaluate `expression` in the `RecurCode` world of the main frame. The result
 /// arrives as the JSON string `{"ok":true,"value":…}` or
 /// `{"ok":false,"error":…}` so no platform value conversion is needed.
 pub fn eval_in_world(
@@ -214,7 +214,7 @@ pub fn eval_in_world(
     );
     // SAFETY: main thread, live webview.
     unsafe {
-        let world = WKContentWorld::worldWithName(ns_string!("codeg"), mtm);
+        let world = WKContentWorld::worldWithName(ns_string!("RecurCode"), mtm);
         wk.evaluateJavaScript_inFrame_inContentWorld_completionHandler(
             &NSString::from_str(&wrapped),
             None,
@@ -602,7 +602,7 @@ pub use super::{NavigationEvent, NavigationSink};
 thread_local! {
     /// Wrappers by `WKWebView` pointer, kept alive here (`navigationDelegate`
     /// is a weak property).
-    static NAV_DELEGATES: RefCell<HashMap<usize, Retained<CodegNavigationDelegate>>> =
+    static NAV_DELEGATES: RefCell<HashMap<usize, Retained<RecurCodeNavigationDelegate>>> =
         RefCell::new(HashMap::new());
     /// Whether the navigation action currently being decided targets the main
     /// frame. Set around the forward to wry, whose synchronous call into the
@@ -636,11 +636,11 @@ define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
     #[ivars = NavigationDelegateIvars]
-    pub struct CodegNavigationDelegate;
+    pub struct RecurCodeNavigationDelegate;
 
-    unsafe impl NSObjectProtocol for CodegNavigationDelegate {}
+    unsafe impl NSObjectProtocol for RecurCodeNavigationDelegate {}
 
-    impl CodegNavigationDelegate {
+    impl RecurCodeNavigationDelegate {
         #[unsafe(method(respondsToSelector:))]
         fn responds_to_selector(&self, selector: Sel) -> bool {
             self.class().responds_to(selector) || self.ivars().inner.respondsToSelector(selector)
@@ -652,7 +652,7 @@ define_class!(
         }
     }
 
-    unsafe impl WKNavigationDelegate for CodegNavigationDelegate {
+    unsafe impl WKNavigationDelegate for RecurCodeNavigationDelegate {
         #[unsafe(method(webView:decidePolicyForNavigationAction:decisionHandler:))]
         fn decide_policy(
             &self,
@@ -768,7 +768,7 @@ define_class!(
     }
 );
 
-impl CodegNavigationDelegate {
+impl RecurCodeNavigationDelegate {
     fn new(
         inner: Retained<ProtocolObject<dyn WKNavigationDelegate>>,
         sink: NavigationSink,
@@ -909,7 +909,7 @@ pub fn install_navigation_delegate(webview: &wry::WebView, sink: NavigationSink)
     // SAFETY: main thread, live webview.
     let inner = unsafe { wk.navigationDelegate() }
         .ok_or_else(|| "the webview has no navigation delegate to wrap".to_string())?;
-    let delegate = CodegNavigationDelegate::new(inner, sink, mtm);
+    let delegate = RecurCodeNavigationDelegate::new(inner, sink, mtm);
     // SAFETY: main thread; the wrapper is retained in `NAV_DELEGATES` below,
     // which is what keeps the weak `navigationDelegate` valid.
     unsafe { wk.setNavigationDelegate(Some(ProtocolObject::from_ref(&*delegate))) };
@@ -943,7 +943,7 @@ pub use super::PageCloseSink;
 thread_local! {
     /// Wrappers by `WKWebView` pointer, kept alive here (`UIDelegate` is a
     /// weak property). Dropped with the navigation wrapper above.
-    static UI_DELEGATES: RefCell<HashMap<usize, Retained<CodegUIDelegate>>> =
+    static UI_DELEGATES: RefCell<HashMap<usize, Retained<RecurCodeUIDelegate>>> =
         RefCell::new(HashMap::new());
 }
 
@@ -956,11 +956,11 @@ define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
     #[ivars = UIDelegateIvars]
-    pub struct CodegUIDelegate;
+    pub struct RecurCodeUIDelegate;
 
-    unsafe impl NSObjectProtocol for CodegUIDelegate {}
+    unsafe impl NSObjectProtocol for RecurCodeUIDelegate {}
 
-    impl CodegUIDelegate {
+    impl RecurCodeUIDelegate {
         #[unsafe(method(respondsToSelector:))]
         fn responds_to_selector(&self, selector: Sel) -> bool {
             self.class().responds_to(selector) || self.ivars().inner.respondsToSelector(selector)
@@ -972,7 +972,7 @@ define_class!(
         }
     }
 
-    unsafe impl WKUIDelegate for CodegUIDelegate {
+    unsafe impl WKUIDelegate for RecurCodeUIDelegate {
         #[unsafe(method(webViewDidClose:))]
         fn web_view_did_close(&self, _webview: &WKWebView) {
             (self.ivars().sink)();
@@ -980,7 +980,7 @@ define_class!(
     }
 );
 
-impl CodegUIDelegate {
+impl RecurCodeUIDelegate {
     fn new(
         inner: Retained<ProtocolObject<dyn WKUIDelegate>>,
         sink: PageCloseSink,
@@ -1006,7 +1006,7 @@ pub fn install_page_close_hook(webview: &wry::WebView, sink: PageCloseSink) -> R
     // SAFETY: main thread, live webview.
     let inner = unsafe { wk.UIDelegate() }
         .ok_or_else(|| "the webview has no UI delegate to wrap".to_string())?;
-    let delegate = CodegUIDelegate::new(inner, sink, mtm);
+    let delegate = RecurCodeUIDelegate::new(inner, sink, mtm);
     // SAFETY: main thread; the wrapper is retained in `UI_DELEGATES` above,
     // which is what keeps the weak `UIDelegate` valid.
     unsafe { wk.setUIDelegate(Some(ProtocolObject::from_ref(&*delegate))) };
@@ -1147,7 +1147,7 @@ pub fn document_configuration(mtm: MainThreadMarker) -> Retained<WKWebViewConfig
 // port of the same number is not.
 
 /// Identifier of the list in the app's content-rule-list store.
-const LOOPBACK_RULES_ID: &str = "codeg-remote-egress-loopback";
+const LOOPBACK_RULES_ID: &str = "recur-code-remote-egress-loopback";
 
 /// Everything addressed to this machine by a literal name, blocked: every
 /// resource type (no `resource-type`), so documents, frames, subresources and
@@ -1443,7 +1443,7 @@ mod network {
     type SetFailoverAllowed = unsafe extern "C" fn(*mut NSObject, bool);
 
     /// Connections to these hosts never go through the proxy: pages served
-    /// from this machine (dev servers, codeg's own bridges) are the point of
+    /// from this machine (dev servers, RecurCode's own bridges) are the point of
     /// the built-in browser and must keep working whatever the proxy would do
     /// with them — the exception every browser and the `NO_PROXY` convention
     /// make. A remote-egress profile wants the opposite, and gets none.

@@ -84,7 +84,7 @@ describe("RichComposer", () => {
     // Restored draft / queued message / injected template: seeded wire-format
     // text shows badges and re-serializes to exactly what was seeded.
     const { ref } = await mount()
-    const text = "续 [排查登录](codeg://session/42) 的问题"
+    const text = "续 [排查登录](recurcode://session/42) 的问题"
     act(() => {
       ref.current?.setText(text)
     })
@@ -641,7 +641,7 @@ describe("RichComposer prompt-history Arrow routing", () => {
 describe("RichComposer editable-area sizing (#746)", () => {
   it("grows the editable area off a content basis, never a zero basis", async () => {
     const { container } = await mount()
-    const scroll = container.querySelector(".codeg-composer-scroll")
+    const scroll = container.querySelector(".recur-code-composer-scroll")
     expect(scroll).not.toBeNull()
 
     const classes = scroll!.className.split(/\s+/)
@@ -656,7 +656,7 @@ describe("RichComposer editable-area sizing (#746)", () => {
 
   it("lets the contenteditable fill the editable area so taps land on it", async () => {
     const { container } = await mount()
-    const scroll = container.querySelector(".codeg-composer-scroll")
+    const scroll = container.querySelector(".recur-code-composer-scroll")
     const editable = container.querySelector('[contenteditable="true"]')
     expect(editable).not.toBeNull()
 

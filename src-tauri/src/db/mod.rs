@@ -23,9 +23,9 @@ pub struct AppDatabase {
 
 pub(crate) fn database_file_name() -> &'static str {
     if cfg!(all(debug_assertions, feature = "tauri-runtime")) {
-        "codeg-dev.db"
+        "recur-code-dev.db"
     } else {
-        "codeg.db"
+        "RecurCode.db"
     }
 }
 
@@ -37,7 +37,7 @@ pub async fn init_database(
     std::fs::create_dir_all(app_data_dir)?;
 
     // Apply any pending restore BEFORE opening a connection — swapping
-    // `codeg.db` under a live SQLite handle would corrupt it. A failure here
+    // `RecurCode.db` under a live SQLite handle would corrupt it. A failure here
     // aborts startup loudly (leaving the safety snapshot intact) rather than
     // booting a half-restored data dir.
     match crate::commands::backup::restore::apply_pending_restore_on_startup(app_data_dir) {

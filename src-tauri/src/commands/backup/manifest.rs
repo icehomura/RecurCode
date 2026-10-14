@@ -8,7 +8,7 @@
 //! Encryption metadata is deliberately NOT carried here — it is purely an
 //! outer-envelope concern fully described by [`crate::commands::backup::crypto::EnvelopeHeader`].
 //! Keeping the manifest crypto-agnostic means the same archive bytes are
-//! self-describing whether or not they end up wrapped in the `.codegbak`
+//! self-describing whether or not they end up wrapped in the `.recurcodebak`
 //! envelope.
 
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 /// Bumped only on an incompatible change to the archive layout / manifest
 /// shape. Restores reject any archive whose `format_version` exceeds this.
 ///
-/// **2** — the archive gained the codeg-owned sections beyond `uploads`
+/// **2** — the archive gained the recur-code-owned sections beyond `uploads`
 /// (`acp-transcripts/`, `pets/`, `skills/`, …) and one self-contained file per
 /// third-party SQLite store. Structurally a v1 reader could parse it: the new
 /// manifest fields are additive and serde ignores what it does not know. But
@@ -24,13 +24,13 @@ use serde::{Deserialize, Serialize};
 /// path for, delete staging, and report success — handing back conversations
 /// whose messages are gone, which is precisely the loss this format exists to
 /// fix. Bumping turns that into an up-front "this backup is newer than this
-/// version of codeg" refusal. Reading OLDER archives is unaffected; the gate
+/// version of RecurCode" refusal. Reading OLDER archives is unaffected; the gate
 /// is `manifest.format_version > BACKUP_FORMAT_VERSION`.
 pub const BACKUP_FORMAT_VERSION: u32 = 2;
 
 /// Magic discriminator stored in every manifest so a stray ZIP can't be
-/// mistaken for a codeg backup.
-pub const BACKUP_KIND: &str = "codeg-backup";
+/// mistaken for a RecurCode backup.
+pub const BACKUP_KIND: &str = "recur-code-backup";
 
 /// Fixed entry name of the manifest inside the archive.
 pub const MANIFEST_ENTRY_NAME: &str = "manifest.json";
@@ -71,7 +71,7 @@ pub struct BackupManifest {
     /// Always true today; drives the UI "contains secrets" warning when the
     /// backup is unencrypted.
     pub includes_secrets: bool,
-    /// Which codeg-owned sections (see
+    /// Which recur-code-owned sections (see
     /// [`crate::commands::backup::sections::MANAGED_SECTIONS`]) this archive
     /// claims to manage — i.e. which live trees a restore is allowed to
     /// replace wholesale. `None` on archives written before the field existed;
@@ -170,7 +170,7 @@ impl BackupProgress {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BackupPreview {
-    /// The archive is wrapped in the encrypted `.codegbak` envelope.
+    /// The archive is wrapped in the encrypted `.recurcodebak` envelope.
     pub encrypted: bool,
     /// Encrypted, but no (or no usable) passphrase was supplied, so the
     /// manifest could not be read yet. The UI should prompt for a passphrase.

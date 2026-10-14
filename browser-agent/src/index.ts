@@ -2,9 +2,9 @@
  * The agent-facing half of a browser tab, running in the isolated world.
  *
  * `channel.ts`'s primitive carries page state back to Rust. This bundle is the
- * other direction: Rust evaluates `__codegAgent.<fn>(...)` in the same world
+ * other direction: Rust evaluates `__recur_codeAgent.<fn>(...)` in the same world
  * and reads the JSON it returns. Nothing here is reachable from the page — the
- * world is separate, and the page never sees `__codegAgent`.
+ * world is separate, and the page never sees `__recur_codeAgent`.
  *
  * Two halves: reading the page into a tree of refs (`snapshot`), and acting on
  * an element by ref (`act`, and `locate` for a host that delivers its own
@@ -218,7 +218,7 @@ export type SnapshotOptions = {
    * page's own `history.pushState` is not observable from here: patching
    * `History.prototype` in an isolated world patches *this world's* prototype,
    * and the page calls a different function object — the same isolation that
-   * keeps `__codegAgent` out of the page's reach keeps the page's navigations
+   * keeps `__recur_codeAgent` out of the page's reach keeps the page's navigations
    * out of ours. Comparing `location.href` catches the settled result of most
    * of them, but an address is not an identity: a route that goes A → B → A
    * arrives back at a string that matches, on a page whose framework may have
@@ -673,7 +673,7 @@ export function truncate(
 }
 
 declare global {
-  var __codegAgent: {
+  var __recur_codeAgent: {
     snapshot: typeof snapshot
     elementForRef: typeof elementForRef
     act: typeof act
@@ -682,4 +682,4 @@ declare global {
   }
 }
 
-globalThis.__codegAgent = { snapshot, elementForRef, act, locate, rectOf }
+globalThis.__recur_codeAgent = { snapshot, elementForRef, act, locate, rectOf }

@@ -7,7 +7,7 @@
 // `acp/connection.rs` for the sibling *runtime* mitigation of the same frame.
 #![recursion_limit = "256"]
 // The unoptimized lib test binary trips the same harmless macOS
-// "__eh_frame section too large" linker warning as the `codeg` binary; see the
+// "__eh_frame section too large" linker warning as the `RecurCode` binary; see the
 // note at the top of `main.rs`.
 #![cfg_attr(debug_assertions, allow(linker_messages))]
 
@@ -75,7 +75,7 @@ pub fn sweep_acp_binary_trash() {
 ///
 /// Deletes only directories whose recorded owner is positively confirmed dead
 /// (or is this process and not live — see `acp::scratch_dir`), and never leaves
-/// codeg's own `codeg-acp/` subtree, so a peer codeg instance's work and any
+/// RecurCode's own `recur-code-acp/` subtree, so a peer RecurCode instance's work and any
 /// other application's temp files are both out of reach by construction.
 pub fn sweep_acp_scratch_dirs() {
     crate::acp::scratch_dir::sweep_foreign_orphans();
@@ -292,7 +292,7 @@ mod tauri_app {
             CloseWindowBehavior::Ask => {
                 let count = running_terminals(&app);
                 if !prompt("ask", count) {
-                    // Fall back to the behavior codeg has always had. Exiting
+                    // Fall back to the behavior RecurCode has always had. Exiting
                     // on a press the user never got to answer would discard
                     // work; hiding discards nothing.
                     hide();
@@ -327,7 +327,7 @@ mod tauri_app {
         );
         tauri::async_runtime::spawn(async move {
             let _ =
-                notification::send_notification(app, "Codeg Web service".to_string(), body).await;
+                notification::send_notification(app, "RecurCode Web service".to_string(), body).await;
         });
     }
 
@@ -371,11 +371,11 @@ mod tauri_app {
     /// take effect: the next launch would read `false`, do nothing, and still
     /// hand WebKitGTK/WebView2 the inherited flags.
     #[cfg(any(target_os = "windows", target_os = "linux"))]
-    const RENDERING_OVERRIDE_OWNED_ENV: &str = "CODEG_WEBVIEW_RENDERING_OVERRIDE";
+    const RENDERING_OVERRIDE_OWNED_ENV: &str = "RECUR_CODE_WEBVIEW_RENDERING_OVERRIDE";
 
     /// Opt-out users can disable webview hardware acceleration to work around
     /// GPU driver bugs that produce a black-screen or glitching webview. The
-    /// flag is stored in a tiny sidecar file at `~/.codeg/preferences.json` so
+    /// flag is stored in a tiny sidecar file at `~/.recurcode/preferences.json` so
     /// it can be read **before** anything else in `run()` — `set_var` is only
     /// sound while the process is single-threaded, and the logging init alone
     /// spawns a `tracing_appender` worker.
@@ -522,9 +522,9 @@ mod tauri_app {
         };
 
         // The data directory next, for the same reason, and before the logging
-        // init resolves the log directory from it — the order `codeg-server`
+        // init resolves the log directory from it — the order `recur-code-server`
         // keeps. When `setup` exported it, the logs of a launch from the Start
-        // menu or the Dock went to `~/.codeg/logs`, while an instance codeg
+        // menu or the Dock went to `~/.recurcode/logs`, while an instance RecurCode
         // restarted inherited the variable and wrote beside the database (see
         // `paths::desktop_data_dir`). Written back absolutized even when
         // preset, so subprocesses inherit an absolute path (a relative one
@@ -533,12 +533,12 @@ mod tauri_app {
         // returns.
         let context = tauri::generate_context!();
         if let Some(data_dir) = paths::desktop_data_dir(
-            std::env::var_os("CODEG_DATA_DIR").as_deref(),
+            std::env::var_os("RECUR_CODE_DATA_DIR").as_deref(),
             dirs::data_dir().as_deref(),
             &context.config().identifier,
         ) {
             // SAFETY: single-threaded as argued above.
-            unsafe { std::env::set_var("CODEG_DATA_DIR", &data_dir) };
+            unsafe { std::env::set_var("RECUR_CODE_DATA_DIR", &data_dir) };
         }
 
         // Install the logging subscriber next so it captures everything from
@@ -565,12 +565,12 @@ mod tauri_app {
         // initialization. The callback runs in the *original* process.
         //
         // Skipped in debug builds so a locally-built `cargo run` instance
-        // can run alongside an installed release build of codeg during
+        // can run alongside an installed release build of RecurCode during
         // development. Debug desktop builds use an isolated SQLite file, but
-        // they still share other `app.codeg` data-dir artifacts with release.
+        // they still share other `app.recurcode` data-dir artifacts with release.
         #[cfg(not(debug_assertions))]
         let builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-            // Second launches on Windows/Linux carry `codeg://…` on argv.
+            // Second launches on Windows/Linux carry `recurcode://…` on argv.
             // macOS delivers the same URL via the deep-link plugin instead.
             crate::deep_link::handle_argv(app, &argv);
         }));
@@ -584,7 +584,7 @@ mod tauri_app {
             // window is built and re-add the native title bar on top of the
             // app's own toolbar — the Linux "double title bar".
             //
-            // Computer use's strip and action marker are placed by codeg each
+            // Computer use's strip and action marker are placed by RecurCode each
             // time they are made and must never come back where (or as
             // visible as) a previous run left them.
             .plugin(
@@ -609,9 +609,9 @@ mod tauri_app {
             // webview is granted the plugin's commands.
             .plugin(tauri_plugin_global_shortcut::Builder::new().build())
             // "Launch at login". LaunchAgent rather than AppleScript on macOS:
-            // writing `~/Library/LaunchAgents/codeg.plist` needs no Automation
+            // writing `~/Library/LaunchAgents/recurcode.plist` needs no Automation
             // consent prompt, where scripting System Events does. No extra
-            // startup args — an auto-started codeg is the same app the user
+            // startup args — an auto-started RecurCode is the same app the user
             // would have launched by hand.
             //
             // Nothing rewrites the registration at startup, deliberately. The
@@ -621,7 +621,7 @@ mod tauri_app {
             // an entry in place: GNOME sets `X-GNOME-Autostart-enabled=false`
             // inside the .desktop file the plugin would overwrite from a fixed
             // template. Refreshing would therefore silently undo a disable the
-            // user made outside codeg. Re-toggling the setting rewrites the
+            // user made outside RecurCode. Re-toggling the setting rewrites the
             // path, which is the same repair with consent attached.
             //
             // Two accepted defects live in `auto-launch`, which this plugin
@@ -630,7 +630,7 @@ mod tauri_app {
             // the plugin requires) would not help:
             //   * Windows writes the Run value as `{app_path} {args}` with the
             //     path unquoted. Per-user installs land under
-            //     `C:\Users\<name>\AppData\Local\codeg\`, so a username with a
+            //     `C:\Users\<name>\AppData\Local\RecurCode\`, so a username with a
             //     space produces the classic unquoted-path value. Windows'
             //     successive-prefix parsing still resolves it; the residual
             //     risk is the usual hijack, which already requires the attacker
@@ -659,7 +659,7 @@ mod tauri_app {
             .manage(workspace_windows::WorkspaceWindowSession::new())
             .manage(web::WebServerState::new())
             // Remote-workspace IPC proxy. Routes HTTP / WS for windows
-            // opened against a remote codeg-server through Rust so we
+            // opened against a remote recur-code-server through Rust so we
             // bypass webview mixed-content blocking and can centrally
             // manage per-window subscriptions.
             .manage(std::sync::Arc::new(
@@ -691,7 +691,7 @@ mod tauri_app {
 
                 // Unify the data root across every consumer:
                 //   * SQLite database (initialised below)
-                //   * `paths::codeg_uploads_root` / `codeg_pets_root`
+                //   * `paths::recur_code_uploads_root` / `recur_code_pets_root`
                 //   * `AppState.data_dir` and every desktop command
                 //     that injects a git credential helper / askpass
                 //     into a subprocess (terminal, ACP, folder ops)
@@ -701,10 +701,10 @@ mod tauri_app {
                 // source of truth; every desktop call site that
                 // historically read `app.path().app_data_dir()` and
                 // passed it to a credential helper has been migrated
-                // to the same helper so a pre-set `CODEG_DATA_DIR` is
+                // to the same helper so a pre-set `RECUR_CODE_DATA_DIR` is
                 // honored end-to-end.
                 //
-                // `run()` exported the effective root as `CODEG_DATA_DIR`
+                // `run()` exported the effective root as `RECUR_CODE_DATA_DIR`
                 // before the logging init (see `paths::desktop_data_dir`),
                 // so this resolves to it; nothing writes the variable after
                 // that. The derivation `run()` falls back to is Tauri's own
@@ -730,21 +730,21 @@ mod tauri_app {
                     );
                 }
 
-                // `CODEG_HOME` overrides `CODEG_DATA_DIR` inside
-                // `paths::codeg_uploads_root` / `codeg_pets_root` for
-                // backwards-compatibility with the legacy `~/.codeg/`
+                // `RECUR_CODE_HOME` overrides `RECUR_CODE_DATA_DIR` inside
+                // `paths::recur_code_uploads_root` / `recur_code_pets_root` for
+                // backwards-compatibility with the legacy `~/.recurcode/`
                 // layout. If both are set and point at different roots,
-                // uploads/pets land on `CODEG_HOME` while the database
-                // lands on `CODEG_DATA_DIR` — a silent split. The
+                // uploads/pets land on `RECUR_CODE_HOME` while the database
+                // lands on `RECUR_CODE_DATA_DIR` — a silent split. The
                 // backup story here is "loud warning, no automatic
                 // override": the operator likely meant one of them, but
                 // we don't know which.
-                if let Some(home) = std::env::var_os("CODEG_HOME").filter(|s| !s.is_empty()) {
+                if let Some(home) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
                     let home_path = git_credential::absolutize(std::path::Path::new(&home));
                     if home_path != effective_data_dir {
                         tracing::warn!(
-                            "[paths][WARN] CODEG_HOME ({}) and CODEG_DATA_DIR ({}) point at different roots. \
-                             Uploads/pets follow CODEG_HOME; the database follows CODEG_DATA_DIR. \
+                            "[paths][WARN] RECUR_CODE_HOME ({}) and RECUR_CODE_DATA_DIR ({}) point at different roots. \
+                             Uploads/pets follow RECUR_CODE_HOME; the database follows RECUR_CODE_DATA_DIR. \
                              Unset one or align them to avoid split state.",
                             home_path.display(),
                             effective_data_dir.display()
@@ -809,13 +809,13 @@ mod tauri_app {
 
                 // Reclaim scratch directories this process loses track of
                 // mid-session. Its own timer on purpose: the ACP idle sweep is
-                // not spawned at all when `CODEG_ACP_IDLE_TIMEOUT_SECS=0`, and
+                // not spawned at all when `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS=0`, and
                 // turning off idle disconnects must not also turn off disk
                 // reclamation on a machine leaking gigabytes per launch.
                 tauri::async_runtime::spawn(crate::scratch_sweep_task());
 
                 // Install bundled expert skills into the central store
-                // (`~/.codeg/skills/`). Runs in the background and does
+                // (`~/.recurcode/skills/`). Runs in the background and does
                 // not block startup; failures are logged but non-fatal.
                 tauri::async_runtime::spawn(async move {
                     let report = crate::commands::experts::ensure_central_experts_installed().await;
@@ -836,7 +836,7 @@ mod tauri_app {
                 });
 
                 // Install bundled scientific-research skills into the same
-                // central store (`~/.codeg/skills/`). Background, non-blocking;
+                // central store (`~/.recurcode/skills/`). Background, non-blocking;
                 // failures are logged but non-fatal.
                 tauri::async_runtime::spawn(async move {
                     let report = crate::commands::science::ensure_central_science_installed().await;
@@ -1271,7 +1271,7 @@ mod tauri_app {
                 // Spawn the idle sweep so connections abandoned without an
                 // explicit disconnect (e.g. window/tab closed without
                 // teardown, panic survivors) are reaped. Override the
-                // 60-second default via `CODEG_ACP_IDLE_TIMEOUT_SECS`
+                // 60-second default via `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS`
                 // (set to `0` to disable).
                 if let Some(idle_timeout) = crate::acp::idle_timeout_from_env() {
                     let cm = app.state::<ConnectionManager>().clone_ref();
@@ -1284,7 +1284,7 @@ mod tauri_app {
 
                 // Office watch preview servers: reap dead children + ref0
                 // stragglers (live previews are never swept). Override via
-                // `CODEG_OFFICE_WATCH_IDLE_TIMEOUT_SECS` (`0` disables).
+                // `RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS` (`0` disables).
                 if let Some(idle_timeout) = crate::office_watch::idle_timeout_from_env() {
                     tauri::async_runtime::spawn(crate::office_watch::office_watch_idle_sweep_task(
                         idle_timeout,
@@ -1294,7 +1294,7 @@ mod tauri_app {
 
                 // Automation engine: drives manual + scheduled fires, settles
                 // runs off the event bus, reconciles, and recovers on boot. One
-                // per process; mirrored in `bin/codeg_server.rs`.
+                // per process; mirrored in `bin/recur_code_server.rs`.
                 if let Some(engine) = crate::automation::build_engine(
                     crate::db::AppDatabase {
                         conn: app.state::<crate::db::AppDatabase>().conn.clone(),
@@ -1311,7 +1311,7 @@ mod tauri_app {
 
                 // Work-task engine: drives the todo→…→done pipeline, settles
                 // runs off the event bus, recovers merges from git truth on
-                // boot. One per process; mirrored in `bin/codeg_server.rs`.
+                // boot. One per process; mirrored in `bin/recur_code_server.rs`.
                 if let Some(engine) = crate::work_task::build_task_engine(
                     crate::db::AppDatabase {
                         conn: app.state::<crate::db::AppDatabase>().conn.clone(),
@@ -1326,7 +1326,7 @@ mod tauri_app {
                     tauri::async_runtime::spawn(crate::work_task::run_task_engine(engine));
                 }
 
-                // OS `codeg://` URLs. Register the listener after the DB is
+                // OS `recurcode://` URLs. Register the listener after the DB is
                 // live so a warm-start click can look the conversation up.
                 // Cold-start URLs are also read here and baked into the main
                 // window path — an event emitted before the webview subscribes
@@ -1344,7 +1344,7 @@ mod tauri_app {
                     });
                     // The Linux bundler writes a `.desktop` whose `Exec` has no
                     // `%u` field code (tauri#16014), so an installed deb/rpm/
-                    // AppImage is advertised as the `x-scheme-handler/codeg`
+                    // AppImage is advertised as the `x-scheme-handler/RecurCode`
                     // owner but is launched with no argument at all. The
                     // plugin's own registration writes a handler entry that
                     // does pass `%u`; on Windows it adds the HKCU class key a
@@ -1389,7 +1389,7 @@ mod tauri_app {
 
                 // The workspace windows open at the last quit come back: the
                 // local one (`main`) and every remote workspace window (see
-                // `workspace_windows`). A `codeg://` link on the command line
+                // `workspace_windows`). A `recurcode://` link on the command line
                 // asks for the local workspace, which then opens in front
                 // whatever the last session left.
                 let restore = tauri::async_runtime::block_on(workspace_windows::load_restore(
@@ -1405,13 +1405,13 @@ mod tauri_app {
                 // `list_open_folder_details` / `list_opened_tabs` inside it. It
                 // starts hidden only when it was hidden to the tray at quit and
                 // other workspace windows are coming back in its place; the
-                // tray, a `codeg://` link and the other explicit local-workspace
+                // tray, a `recurcode://` link and the other explicit local-workspace
                 // actions still bring it up, and so do the Dock and a second
                 // launch once no other workspace is open or on its way back.
                 if app.get_webview_window("main").is_none() {
                     let url = tauri::WebviewUrl::App(workspace_path.into());
                     let builder = tauri::WebviewWindowBuilder::new(app, "main", url)
-                        .title("Codeg")
+                        .title("RecurCode")
                         .inner_size(1260.0, 860.0)
                         .min_inner_size(400.0, 600.0)
                         .visible(restore.show_local());
@@ -1909,9 +1909,9 @@ mod tauri_app {
                 logging_commands::open_logs_dir,
                 delegation_commands::get_delegation_settings,
                 delegation_commands::set_delegation_settings,
-                crate::commands::mcp_service::get_codeg_mcp_service_status,
-                crate::commands::mcp_service::start_codeg_mcp_service,
-                crate::commands::mcp_service::set_codeg_mcp_tool_group,
+                crate::commands::mcp_service::get_recur_code_mcp_service_status,
+                crate::commands::mcp_service::start_recur_code_mcp_service,
+                crate::commands::mcp_service::set_recur_code_mcp_tool_group,
                 feedback_commands::get_feedback_settings,
                 feedback_commands::set_feedback_settings,
                 feedback_commands::submit_session_feedback,

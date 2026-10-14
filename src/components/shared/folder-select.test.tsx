@@ -11,7 +11,7 @@ vi.mock("next-intl", () => ({
 }))
 
 const FOLDERS: FolderSelectOption[] = [
-  { id: 1, name: "codeg", alias: "My Project", path: "/work/codeg" },
+  { id: 1, name: "RecurCode", alias: "My Project", path: "/work/RecurCode" },
   { id: 2, name: "other-repo", alias: null, path: "/work/other-repo" },
 ]
 
@@ -39,10 +39,10 @@ describe("FolderSelect", () => {
     // `alias [ name ]` — the alias leads, but the on-disk name is still there,
     // which is the whole point: two folders aliased alike stay distinguishable.
     const row = screen
-      .getByText("[ codeg ]")
+      .getByText("[ RecurCode ]")
       .closest("[data-slot=command-item]")
     expect(row?.textContent).toContain("My Project")
-    expect(row?.textContent).toContain("/work/codeg")
+    expect(row?.textContent).toContain("/work/RecurCode")
     // An un-aliased folder shows its bare name (no empty brackets).
     expect(screen.getByText("other-repo")).toBeTruthy()
   })
@@ -50,9 +50,9 @@ describe("FolderSelect", () => {
   it("finds an aliased folder by its real directory name", async () => {
     const { user } = open()
     await user.click(screen.getByRole("button"))
-    await user.type(screen.getByPlaceholderText("searchFolder"), "codeg")
+    await user.type(screen.getByPlaceholderText("searchFolder"), "RecurCode")
 
-    expect(screen.getByText("[ codeg ]")).toBeTruthy()
+    expect(screen.getByText("[ RecurCode ]")).toBeTruthy()
     expect(screen.queryByText("other-repo")).toBeNull()
   })
 
@@ -62,13 +62,13 @@ describe("FolderSelect", () => {
     const search = screen.getByPlaceholderText("searchFolder")
 
     await user.type(search, "My Proj")
-    expect(screen.getByText("[ codeg ]")).toBeTruthy()
+    expect(screen.getByText("[ RecurCode ]")).toBeTruthy()
     expect(screen.queryByText("other-repo")).toBeNull()
 
     await user.clear(search)
     await user.type(search, "/work/other")
     expect(screen.getByText("other-repo")).toBeTruthy()
-    expect(screen.queryByText("[ codeg ]")).toBeNull()
+    expect(screen.queryByText("[ RecurCode ]")).toBeNull()
   })
 
   it("reports the picked folder's id and closes", async () => {
@@ -107,14 +107,14 @@ describe("FolderSelect", () => {
     )
     const trigger = screen.getByRole("button")
     expect(trigger.textContent).toContain("My Project")
-    expect(trigger.textContent).toContain("[ codeg ]")
+    expect(trigger.textContent).toContain("[ RecurCode ]")
     // The hover hint is a tooltip, not a native `title`, and it carries the
     // path — the one thing the trigger never shows. The folder's own name is
     // NOT repeated there: it is the trigger's own text.
     expect(trigger).not.toHaveAttribute("title")
     await user.hover(trigger)
     const tip = await screen.findByRole("tooltip")
-    expect(tip).toHaveTextContent("/work/codeg")
+    expect(tip).toHaveTextContent("/work/RecurCode")
     expect(tip).not.toHaveTextContent("My Project")
   })
 
@@ -134,7 +134,7 @@ describe("FolderSelect", () => {
     )
     expect(screen.getByRole("button")).toHaveAttribute(
       "title",
-      "Working folder · /work/codeg"
+      "Working folder · /work/RecurCode"
     )
   })
 

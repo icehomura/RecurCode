@@ -1,4 +1,4 @@
-//! What `tauri build` puts in the desktop bundle besides codeg.
+//! What `tauri build` puts in the desktop bundle besides RecurCode.
 //!
 //! The Tauri CLI bundles every binary target whose `required-features` are
 //! all among the features it builds with — its own `--features`,
@@ -7,7 +7,7 @@
 //! requires no feature is bundled, compiled with the desktop's features: the
 //! standalone server would ride along whole, and the MCP companion's desktop
 //! build would replace the sidecar meant to ship in its place. So every binary
-//! target but codeg must require a feature `tauri build` is never given.
+//! target but RecurCode must require a feature `tauri build` is never given.
 
 use std::path::Path;
 
@@ -50,14 +50,14 @@ fn features_tauri_build_is_given() -> Vec<String> {
 }
 
 #[test]
-fn only_codeg_is_a_binary_target_tauri_build_bundles() {
+fn only_recur_code_is_a_binary_target_tauri_build_bundles() {
     let manifest: toml::Table = std::fs::read_to_string(root().join("Cargo.toml"))
         .unwrap()
         .parse()
         .unwrap();
     assert_eq!(
         manifest["package"]["default-run"].as_str(),
-        Some("codeg"),
+        Some("RecurCode"),
         "the binary tauri build bundles as the app"
     );
     let defaults = strings(manifest["features"].get("default"));
@@ -66,7 +66,7 @@ fn only_codeg_is_a_binary_target_tauri_build_bundles() {
     let mut others = 0;
     for bin in bins {
         let name = bin["name"].as_str().unwrap();
-        if name == "codeg" {
+        if name == "RecurCode" {
             continue;
         }
         others += 1;
@@ -79,7 +79,7 @@ fn only_codeg_is_a_binary_target_tauri_build_bundles() {
              compiled with the desktop's features and put in the desktop bundle"
         );
     }
-    assert!(others >= 3, "codeg-server, codeg-mcp and the helper");
+    assert!(others >= 3, "recur-code-server, recur-code-mcp and the helper");
 }
 
 /// The release workflow gives `tauri build` no features of its own: one named

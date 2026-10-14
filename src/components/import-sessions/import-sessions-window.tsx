@@ -97,7 +97,7 @@ export function ImportSessionsWindow({
   const [search, setSearch] = useState("")
   const [agentFilter, setAgentFilter] = useState<AgentType | "all">("all")
   const [onlyImportable, setOnlyImportable] = useState(false)
-  // Deleting a conversation in codeg is a soft delete, so a deleted session can
+  // Deleting a conversation in RecurCode is a soft delete, so a deleted session can
   // be brought back by importing it again. Off by default: the deletion was
   // deliberate, and select-all must never resurrect a whole history by
   // accident. Turning it on folds deleted rows into every selection helper.

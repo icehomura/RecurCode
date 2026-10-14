@@ -1,4 +1,4 @@
-//! Wire format for `codeg-mcp` companion ↔ main process round-trip over UDS
+//! Wire format for `recur-code-mcp` companion ↔ main process round-trip over UDS
 //! (Unix) or named pipe (Windows).
 //!
 //! The frame is dead simple: a little-endian `u32` byte length followed by
@@ -41,11 +41,11 @@
 //!
 //! ### Version coupling
 //!
-//! The companion (`codeg-mcp`) and the listener (inside the codeg main
+//! The companion (`recur-code-mcp`) and the listener (inside the RecurCode main
 //! process) ship in the SAME release artifact — the Tauri bundle, the
 //! server Docker image, and the standalone binary tree all install both
 //! binaries at the same path. The MCP config pointing the agent CLI at
-//! `codeg-mcp` uses an absolute path that is replaced atomically by the
+//! `recur-code-mcp` uses an absolute path that is replaced atomically by the
 //! upgrade, so an old-version companion talking to a new-version listener
 //! is not a supported configuration. As a consequence this protocol does
 //! NOT carry a version field and the tagged-enum cutover from the older
@@ -71,7 +71,7 @@ pub struct BrokerRequest {
     /// the agent passes it through to the companion via `--token`. Rejects
     /// anything else.
     pub token: String,
-    /// codeg-internal ACP connection UUID for the parent session.
+    /// recur-code-internal ACP connection UUID for the parent session.
     pub parent_connection_id: String,
     /// The MCP `tool_use_id` for the LLM-issued `delegate_to_agent` call.
     /// Used to bind the eventual child outcome back to the parent's
@@ -187,16 +187,16 @@ pub struct BrokerAskRequest {
     pub questions: Vec<QuestionSpec>,
 }
 
-/// Resolve a session the user referenced (`codeg://session/<id>`) into its
+/// Resolve a session the user referenced (`recurcode://session/<id>`) into its
 /// metadata + stats, optionally with its recent messages. Backs the
 /// `get_session_info` MCP tool. Authenticated by the same per-launch `token`; the
-/// lookup is by codeg's internal conversation id (the number in the reference),
+/// lookup is by RecurCode's internal conversation id (the number in the reference),
 /// so — unlike the delegation arms — it is NOT scoped to the parent connection
 /// (any non-deleted session the user references can be read).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BrokerSessionRequest {
     pub token: String,
-    /// codeg's internal conversation PK (the number in `codeg://session/<id>`).
+    /// RecurCode's internal conversation PK (the number in `recurcode://session/<id>`).
     pub session_id: i32,
     /// How many of the most recent turns to include as compacted text. `None` /
     /// `0` → metadata only (no transcript parse); a positive value is clamped to
@@ -341,7 +341,7 @@ pub struct BrokerComputerAppsRequest {
 
 /// Start an installed application. Backs `computer_launch_app`. Token-scoped
 /// like the listing; whether it may be done at all is the person's switch,
-/// read on the codeg side.
+/// read on the RecurCode side.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BrokerComputerLaunchRequest {
     pub token: String,
@@ -353,7 +353,7 @@ pub struct BrokerComputerLaunchRequest {
 
 /// Read back, or write, the clipboard. Backs `computer_clipboard_read` and
 /// `computer_clipboard_write`; the person's switch for them and whose the
-/// clipboard's content is are judged on the codeg side.
+/// clipboard's content is are judged on the RecurCode side.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BrokerComputerClipboardRequest {
     pub token: String,
@@ -447,7 +447,7 @@ pub enum BrokerMessage {
     ComputerLaunch(BrokerComputerLaunchRequest),
     ComputerClipboard(BrokerComputerClipboardRequest),
     /// Liveness probe. Unlike every other variant this one is NOT sent by a
-    /// companion — it comes from codeg's own service-status check
+    /// companion — it comes from RecurCode's own service-status check
     /// (`acp::delegation::service`), which is why it carries no `token`: a
     /// `{"ok": true}` answer reveals nothing beyond "the socket is being
     /// served", which the connect itself already proved. Answering it end to
@@ -783,7 +783,7 @@ pub async fn client_computer_act_round_trip(
 }
 
 /// Probe the listener: write a [`BrokerMessage::Ping`] and read the
-/// `{"ok": true}` answer back. Used by the codeg-mcp service-status indicator
+/// `{"ok": true}` answer back. Used by the recur-code-mcp service-status indicator
 /// to tell "listening" from "socket file exists but nobody is accepting".
 /// Callers should wrap this in their own timeout — a socket whose peer accepts
 /// but never answers would otherwise park here.
@@ -977,7 +977,7 @@ mod tests {
         // PID + nanosecond suffix keeps the pipe name unique across parallel
         // tests and avoids collisions with a live listener on the same box.
         let pipe_name = format!(
-            r"\\.\pipe\codeg-mcp-test-{}-{}",
+            r"\\.\pipe\recur-code-mcp-test-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -1025,11 +1025,11 @@ mod tests {
         use tokio::net::UnixListener;
 
         // `/tmp`, not `$TMPDIR`: a socket path has ~104 bytes of `sun_path` to
-        // live in, and codeg exports a 72-byte per-session `TMPDIR` to the
+        // live in, and RecurCode exports a 72-byte per-session `TMPDIR` to the
         // agents it launches. Under `tempdir()` this lands at 99 bytes there —
         // green, but one directory level from an unexplainable red.
         let dir = tempfile::tempdir_in("/tmp").unwrap();
-        let path = dir.path().join("codeg-mcp.sock");
+        let path = dir.path().join("recur-code-mcp.sock");
         let listener = UnixListener::bind(&path).unwrap();
         let server_path = path.to_string_lossy().to_string();
 

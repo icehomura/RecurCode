@@ -204,7 +204,7 @@ describe("inline local images in real chat Markdown", () => {
 
   it("leaves an author-written span with no destination as plain text", async () => {
     const { container } = render(
-      preview("<span data-codeg-local-image>important text</span>")
+      preview("<span data-recur-code-local-image>important text</span>")
     )
     await waitFor(() =>
       expect(container.textContent).toContain("important text")

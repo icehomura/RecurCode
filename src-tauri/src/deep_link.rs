@@ -1,32 +1,32 @@
-//! OS-level `codeg://` URL scheme.
+//! OS-level `recurcode://` URL scheme.
 //!
-//! In-app markdown already uses `codeg://session/<id>` and `codeg://agent/<type>`
+//! In-app markdown already uses `recurcode://session/<id>` and `recurcode://agent/<type>`
 //! as reference links. Those stay in-process badges. This module is the
-//! **system** handler: a click in another app, `open codeg://…`, or a browser
+//! **system** handler: a click in another app, `open recurcode://…`, or a browser
 //! custom-scheme navigation should bring the desktop workspace forward and
 //! focus the named conversation.
 //!
 //! Supported forms:
 //!
-//! - `codeg://session/<id>` — Codeg's numeric conversation PK, or an agent's
+//! - `recurcode://session/<id>` — RecurCode's numeric conversation PK, or an agent's
 //!   `external_id` (Grok UUID, Codex thread id, …)
-//! - `codeg://workspace?conversationId=<id>` — same lookup; `folderId` and
+//! - `recurcode://workspace?conversationId=<id>` — same lookup; `folderId` and
 //!   `agent` are optional and filled from the row when omitted
-//! - `codeg://open` / `codeg://` — just show the main window
+//! - `recurcode://open` / `recurcode://` — just show the main window
 //!
-//! `codeg://agent/…`, `codeg://commit/…`, and `codeg://embedded/…` are
+//! `recurcode://agent/…`, `recurcode://commit/…`, and `recurcode://embedded/…` are
 //! in-app mention badges, not OS navigation, and are ignored here.
 
 use crate::db::service::conversation_service;
 use crate::db::AppDatabase;
 use crate::models::DbConversationSummary;
 
-/// What a parsed `codeg://` URL wants the desktop app to do.
+/// What a parsed `recurcode://` URL wants the desktop app to do.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeepLink {
     /// Bring the workspace forward without targeting a conversation.
     Open,
-    /// Focus a conversation looked up by `codeg://session/<ref>`.
+    /// Focus a conversation looked up by `recurcode://session/<ref>`.
     Session { session_ref: String },
     /// Explicit workspace query. `conversation_id` is required; folder and
     /// agent are filled from the database when omitted.
@@ -37,7 +37,7 @@ pub enum DeepLink {
     },
 }
 
-/// A `codeg://` link resolved to a conversation the workspace can open.
+/// A `recurcode://` link resolved to a conversation the workspace can open.
 ///
 /// Serializes as the payload of [`take_pending_deep_link`], in the same
 /// camelCase shape as the `workspace://focus-conversation` event so both
@@ -71,13 +71,13 @@ impl FocusTarget {
     }
 }
 
-/// Parse a `codeg:` / `codeg://` URL. Returns `None` for a different scheme
+/// Parse a `RecurCode:` / `recurcode://` URL. Returns `None` for a different scheme
 /// or for in-app mention badges that must not navigate the workspace.
 pub fn parse_deep_link(raw: &str) -> Option<DeepLink> {
     let raw = raw.trim();
     let rest = raw
-        .strip_prefix("codeg://")
-        .or_else(|| raw.strip_prefix("codeg:"))?;
+        .strip_prefix("recurcode://")
+        .or_else(|| raw.strip_prefix("RecurCode:"))?;
     let rest = rest.trim_start_matches('/');
     if rest.is_empty() {
         return Some(DeepLink::Open);
@@ -207,7 +207,7 @@ pub async fn resolve_deep_link(
 #[cfg(feature = "tauri-runtime")]
 pub const PENDING_EVENT: &str = "workspace://deep-link-pending";
 
-/// The one channel a resolved `codeg://` target travels on.
+/// The one channel a resolved `recurcode://` target travels on.
 ///
 /// The obvious design — emit the target like the pet panel does — cannot work
 /// here, in both directions. An emit reaches only webviews that *already*
@@ -228,7 +228,7 @@ pub const PENDING_EVENT: &str = "workspace://deep-link-pending";
 /// the frontend gets to, which is all a focus operation can mean anyway.
 static PENDING_FOCUS: std::sync::Mutex<Option<FocusTarget>> = std::sync::Mutex::new(None);
 
-/// Only the desktop URL handler parks targets; `codeg-server` compiles the
+/// Only the desktop URL handler parks targets; `recur-code-server` compiles the
 /// parser and the lookup but has no OS scheme to feed them.
 #[cfg(any(feature = "tauri-runtime", test))]
 fn set_pending_focus(target: FocusTarget) {
@@ -244,7 +244,7 @@ pub fn take_pending_deep_link() -> Option<FocusTarget> {
     PENDING_FOCUS.lock().ok().and_then(|mut slot| slot.take())
 }
 
-/// Collect `codeg:` URLs from a process argv (Windows / Linux second launch).
+/// Collect `RecurCode:` URLs from a process argv (Windows / Linux second launch).
 pub fn urls_from_argv(argv: &[impl AsRef<str>]) -> Vec<String> {
     argv.iter()
         .map(|arg| arg.as_ref().to_string())
@@ -350,19 +350,19 @@ mod tests {
     #[test]
     fn parses_session_numeric_id() {
         assert_eq!(
-            parse_deep_link("codeg://session/214"),
+            parse_deep_link("recurcode://session/214"),
             Some(DeepLink::Session {
                 session_ref: "214".into()
             })
         );
         assert_eq!(
-            parse_deep_link("codeg:session/214"),
+            parse_deep_link("RecurCode:session/214"),
             Some(DeepLink::Session {
                 session_ref: "214".into()
             })
         );
         assert_eq!(
-            parse_deep_link("codeg://session/214/"),
+            parse_deep_link("recurcode://session/214/"),
             Some(DeepLink::Session {
                 session_ref: "214".into()
             })
@@ -372,13 +372,13 @@ mod tests {
     #[test]
     fn parses_session_external_id() {
         assert_eq!(
-            parse_deep_link("codeg://session/0193c0de-aaaa-7bbb-8ccc-ddddeeeeffff"),
+            parse_deep_link("recurcode://session/0193c0de-aaaa-7bbb-8ccc-ddddeeeeffff"),
             Some(DeepLink::Session {
                 session_ref: "0193c0de-aaaa-7bbb-8ccc-ddddeeeeffff".into()
             })
         );
         assert_eq!(
-            parse_deep_link("codeg://session/codex_abc%20123"),
+            parse_deep_link("recurcode://session/codex_abc%20123"),
             Some(DeepLink::Session {
                 session_ref: "codex_abc 123".into()
             })
@@ -392,9 +392,9 @@ mod tests {
     #[test]
     fn session_segment_is_case_insensitive_but_the_ref_is_not() {
         for raw in [
-            "codeg://SESSION/Codex_AbC",
-            "codeg://Session/Codex_AbC",
-            "codeg://sEsSiOn/Codex_AbC",
+            "recurcode://SESSION/Codex_AbC",
+            "recurcode://Session/Codex_AbC",
+            "recurcode://sEsSiOn/Codex_AbC",
         ] {
             assert_eq!(
                 parse_deep_link(raw),
@@ -408,19 +408,19 @@ mod tests {
 
     #[test]
     fn rejects_path_traversal_and_in_app_badges() {
-        assert_eq!(parse_deep_link("codeg://session/../etc/passwd"), None);
-        assert_eq!(parse_deep_link("codeg://session/"), None);
-        assert_eq!(parse_deep_link("codeg://agent/grok"), None);
-        assert_eq!(parse_deep_link("codeg://commit/abc"), None);
+        assert_eq!(parse_deep_link("recurcode://session/../etc/passwd"), None);
+        assert_eq!(parse_deep_link("recurcode://session/"), None);
+        assert_eq!(parse_deep_link("recurcode://agent/grok"), None);
+        assert_eq!(parse_deep_link("recurcode://commit/abc"), None);
         assert_eq!(parse_deep_link("https://example.com/session/1"), None);
     }
 
     #[test]
     fn parses_open_and_workspace_query() {
-        assert_eq!(parse_deep_link("codeg://"), Some(DeepLink::Open));
-        assert_eq!(parse_deep_link("codeg://open"), Some(DeepLink::Open));
+        assert_eq!(parse_deep_link("recurcode://"), Some(DeepLink::Open));
+        assert_eq!(parse_deep_link("recurcode://open"), Some(DeepLink::Open));
         assert_eq!(
-            parse_deep_link("codeg://workspace?conversationId=9&folderId=3&agent=grok"),
+            parse_deep_link("recurcode://workspace?conversationId=9&folderId=3&agent=grok"),
             Some(DeepLink::Workspace {
                 folder_id: Some(3),
                 conversation_id: 9,
@@ -428,30 +428,30 @@ mod tests {
             })
         );
         assert_eq!(
-            parse_deep_link("codeg://workspace?conversationId=9"),
+            parse_deep_link("recurcode://workspace?conversationId=9"),
             Some(DeepLink::Workspace {
                 folder_id: None,
                 conversation_id: 9,
                 agent: None,
             })
         );
-        assert_eq!(parse_deep_link("codeg://workspace"), None);
+        assert_eq!(parse_deep_link("recurcode://workspace"), None);
     }
 
     #[test]
-    fn argv_keeps_only_codeg_urls() {
+    fn argv_keeps_only_recur_code_urls() {
         let argv = [
-            "/Applications/codeg.app/Contents/MacOS/codeg",
-            "codeg://session/12",
+            "/Applications/RecurCode.app/Contents/MacOS/RecurCode",
+            "recurcode://session/12",
             "--flag",
         ];
-        assert_eq!(urls_from_argv(&argv), vec!["codeg://session/12".to_string()]);
+        assert_eq!(urls_from_argv(&argv), vec!["recurcode://session/12".to_string()]);
     }
 
     #[tokio::test]
     async fn resolves_numeric_and_external_ids() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/codeg-deep-link").await;
+        let folder = seed_folder(&db, "/tmp/recur-code-deep-link").await;
         let id = seed_conversation(&db, folder, AgentType::Grok).await;
 
         let by_pk = resolve_deep_link(
@@ -508,7 +508,7 @@ mod tests {
     #[tokio::test]
     async fn numeric_ref_falls_back_to_external_id() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/codeg-deep-link-numeric").await;
+        let folder = seed_folder(&db, "/tmp/recur-code-deep-link-numeric").await;
         let id = seed_conversation(&db, folder, AgentType::Codex).await;
 
         // An external id that can never collide with a live PK.
@@ -572,16 +572,16 @@ mod tests {
     #[tokio::test]
     async fn startup_path_resolves_first_session_url_else_plain_workspace() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/codeg-deep-link-startup").await;
+        let folder = seed_folder(&db, "/tmp/recur-code-deep-link-startup").await;
         let id = seed_conversation(&db, folder, AgentType::Grok).await;
 
         assert_eq!(startup_workspace_path(&db, &[]).await, "workspace");
         assert_eq!(
-            startup_workspace_path(&db, &["codeg://open".into()]).await,
+            startup_workspace_path(&db, &["recurcode://open".into()]).await,
             "workspace"
         );
         assert_eq!(
-            startup_workspace_path(&db, &["codeg://session/999999".into()]).await,
+            startup_workspace_path(&db, &["recurcode://session/999999".into()]).await,
             "workspace"
         );
         assert_eq!(
@@ -589,8 +589,8 @@ mod tests {
                 &db,
                 &[
                     "--some-flag".into(),
-                    "codeg://open".into(),
-                    format!("codeg://session/{id}"),
+                    "recurcode://open".into(),
+                    format!("recurcode://session/{id}"),
                 ]
             )
             .await,
@@ -601,7 +601,7 @@ mod tests {
     #[tokio::test]
     async fn workspace_query_fills_agent_and_rejects_mismatch() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/codeg-deep-link-ws").await;
+        let folder = seed_folder(&db, "/tmp/recur-code-deep-link-ws").await;
         let id = seed_conversation(&db, folder, AgentType::Grok).await;
 
         let filled = resolve_deep_link(

@@ -1,12 +1,12 @@
 //! Spawning an external ACP agent as a child process and connecting to it
 //! over stdio.
 //!
-//! codeg's own copy of the `AcpAgent` transport. It started life as the
-//! `sacp-tokio` crate (vendored with codeg's patches) and moved in-tree when
-//! codeg switched to the official `agent-client-protocol` runtime. That crate
+//! RecurCode's own copy of the `AcpAgent` transport. It started life as the
+//! `sacp-tokio` crate (vendored with RecurCode's patches) and moved in-tree when
+//! RecurCode switched to the official `agent-client-protocol` runtime. That crate
 //! ships an `AcpAgent` too — built on `async-process`; on Unix it starts the
 //! child in its own process group and kills the group on drop — but it has no
-//! room for the rest of what codeg depends on:
+//! room for the rest of what RecurCode depends on:
 //!
 //! * the whole process TREE is killed on drop (`kill_tree`), on every platform
 //!   and including descendants that left the child's process group, so an
@@ -389,7 +389,7 @@ impl AcpAgent {
                     command
                 };
                 for env_var in &stdio.env {
-                    // codeg convention: an empty value means "ensure this var is
+                    // RecurCode convention: an empty value means "ensure this var is
                     // ABSENT from the child" (strip an inherited value) rather
                     // than setting it empty. The child otherwise inherits this
                     // process's environment, so this lets the launch layer
@@ -1009,7 +1009,7 @@ mod tests {
         // before that point would hit the default disposition and the test would
         // "fail" for a reason it isn't testing.
         let ready = std::env::temp_dir().join(format!(
-            "codeg-agent-process-trap-ready-{}-{:p}",
+            "recur-code-agent-process-trap-ready-{}-{:p}",
             std::process::id(),
             &calls
         ));
@@ -1091,7 +1091,7 @@ mod tests {
         assert!(is_windows_unc_path(r"\\?\UNC\server\share\repo"));
         assert!(!is_windows_unc_path(r"C:\Users\user\repo"));
         assert!(!is_windows_unc_path(r"\\?\C:\Users\user\repo"));
-        assert!(!is_windows_unc_path(r"\\.\pipe\codeg"));
+        assert!(!is_windows_unc_path(r"\\.\pipe\RecurCode"));
     }
 
     #[test]

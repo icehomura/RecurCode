@@ -3,7 +3,7 @@
 //! Two operations are exposed:
 //! - `list(...)` — proxies the public `GET /api/pets` listing endpoint and
 //!   annotates each entry with `alreadyInstalled` based on what is already
-//!   under `~/.codeg/pets/`.
+//!   under `~/.recurcode/pets/`.
 //! - `install(...)` — downloads `GET /api/pets/{id}/download` (a zip
 //!   containing `pet.json` + `spritesheet.webp`), validates the contents
 //!   with the same rules as a manual `pet_add`, and atomically renames the
@@ -11,7 +11,7 @@
 //!
 //! All HTTP traffic uses a process-wide `reqwest::Client` configured with a
 //! short timeout and a stable user-agent so the upstream service can spot
-//! codeg traffic distinctly from `codex` traffic.
+//! RecurCode traffic distinctly from `codex` traffic.
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -70,7 +70,7 @@ static MARKETPLACE_HTTP_CLIENT: LazyLock<Result<reqwest::Client, String>> = Lazy
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(8))
         .timeout(Duration::from_secs(30))
-        .user_agent("codeg-pet-market/1.0")
+        .user_agent("recur-code-pet-market/1.0")
         .build()
         .map_err(|e| format!("failed to initialize pet marketplace HTTP client: {e}"))
 });

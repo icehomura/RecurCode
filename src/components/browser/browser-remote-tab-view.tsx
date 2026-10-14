@@ -22,7 +22,7 @@ const ACTION_BTN =
  * The same address on the remote host's own name instead of `localhost` —
  * worth a try when the page there listens on every interface and its port is
  * reachable from this computer. Null when there is nothing to try: no explicit
- * port (the default port of the remote's name is whatever fronts codeg there),
+ * port (the default port of the remote's name is whatever fronts RecurCode there),
  * or no name of the remote host to put in its place.
  */
 function onRemoteHostName(url: string, host: string | null): string | null {
@@ -38,7 +38,7 @@ function onRemoteHostName(url: string, host: string | null): string | null {
 }
 
 /**
- * A browser tab on an address of the remote codeg host — a loopback or
+ * A browser tab on an address of the remote RecurCode host — a loopback or
  * private address seen from a window bound to that host (see
  * `BrowserTabSeed.remote`) — that could not be opened through that host
  * (`reason` says why). There is no page here, on purpose: loaded from this

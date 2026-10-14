@@ -1004,7 +1004,7 @@ mod tests {
                     tool_name: "Bash".into(),
                     input_preview: Some("{\"command\":\"pnpm build\"}".into()),
                     status: None,
-                    meta: Some(serde_json::json!({"codeg.delegation": {"status": "running"}})),
+                    meta: Some(serde_json::json!({"RecurCode.delegation": {"status": "running"}})),
                 },
                 ContentBlock::ToolResult {
                     tool_use_id: Some("toolu_01ABC".into()),

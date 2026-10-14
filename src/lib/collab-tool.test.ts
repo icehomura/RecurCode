@@ -316,6 +316,6 @@ describe("shortAgentId", () => {
 describe("constants", () => {
   it("exposes the canonical tool name and op key", () => {
     expect(COLLAB_AGENT_TOOL_NAME).toBe("collab_agent")
-    expect(COLLAB_OP_KEY).toBe("__codegCollabOp")
+    expect(COLLAB_OP_KEY).toBe("__recur_codeCollabOp")
   })
 })

@@ -10,22 +10,22 @@
 //! The shape of this module is decided by one fact about macOS: TCC charges
 //! "Accessibility" and "Screen Recording" to a process's *responsible*
 //! process, and every process in an agent's tree (the ACP adapter, the agent
-//! CLI, its shell, the scripts it runs) reports codeg as its responsible
-//! process. A grant given to codeg would therefore be given to every agent's
+//! CLI, its shell, the scripts it runs) reports RecurCode as its responsible
+//! process. A grant given to RecurCode would therefore be given to every agent's
 //! shell, where `screencapture` and `osascript` walk straight past every gate
 //! in here. So:
 //!
-//! * **codeg never holds either grant, and never calls an API governed by
+//! * **RecurCode never holds either grant, and never calls an API governed by
 //!   them.** Nothing in this crate that links into the main binary touches
 //!   Accessibility, event posting or screen capture. The two read-only
 //!   preflight queries in [`tcc`] are the only exception, and they exist so
-//!   codeg can notice that it *has* been granted one by mistake.
-//! * **The executor is `codeg-computer-helper`**, a separately signed binary
-//!   that codeg launches as its own responsible process and that refuses to
-//!   serve anything but a code-signature-verified codeg ([`helper`]). On
-//!   macOS it is an app of its own, run from a copy outside codeg's bundle:
+//!   RecurCode can notice that it *has* been granted one by mistake.
+//! * **The executor is `recur-code-computer-helper`**, a separately signed binary
+//!   that RecurCode launches as its own responsible process and that refuses to
+//!   serve anything but a code-signature-verified RecurCode ([`helper`]). On
+//!   macOS it is an app of its own, run from a copy outside RecurCode's bundle:
 //!   Screen Recording is charged to the outermost app of the same team around
-//!   an executable, which inside the bundle is codeg (`helper_app`).
+//!   an executable, which inside the bundle is RecurCode (`helper_app`).
 //! * **The driver (cua-driver) runs as the helper's child** without
 //!   disclaiming, so its TCC requests are charged to the helper. It lives in a
 //!   user-writable cache, so the helper launches it under a launch requirement
@@ -46,9 +46,9 @@
 //! - `keys`      — the keys an agent may press, and which a window grant
 //!   allows
 //! - `stop_shortcut` — the global shortcut that stops every agent at once
-//! - `targets`   — codeg's table of windows it has told an agent about, with
+//! - `targets`   — RecurCode's table of windows it has told an agent about, with
 //!   the grant on each entry
-//! - `protocol`  — frames between codeg and the helper
+//! - `protocol`  — frames between RecurCode and the helper
 //! - `driver`    — the pinned cua-driver release and its trust anchors
 //! - `backend`   — the trait the tool surface calls, and its errors
 //! - `codesign`  — macOS code-signature checks (Security.framework)
@@ -60,9 +60,9 @@
 //! - `appident`  — which application a process is, read off the process; a
 //!   frame on Windows is the one drawing inside it
 //! - `helper`    — the helper process's own logic (runs in the helper binary)
-//! - `helper_app` — the helper app's copy outside codeg's bundle, which is
-//!   what codeg runs on macOS
-//! - `local`     — codeg's side of the helper: launch, verify, talk
+//! - `helper_app` — the helper app's copy outside RecurCode's bundle, which is
+//!   what RecurCode runs on macOS
+//! - `local`     — RecurCode's side of the helper: launch, verify, talk
 //! - `events`    — what the frontend is told
 //! - `driver_admin` — the driver as Settings manages it: install, clear, remove
 //! - `stop_key`  — the stop shortcut as the OS holds it
@@ -90,9 +90,9 @@ pub mod spawn;
 #[cfg(target_os = "macos")]
 pub mod tcc;
 
-// codeg's side of the helper and the events it raises: the desktop app's,
-// and codeg-server's where the person who runs it lets it share the screen
-// it runs on (`CODEG_COMPUTER_USE`).
+// RecurCode's side of the helper and the events it raises: the desktop app's,
+// and recur-code-server's where the person who runs it lets it share the screen
+// it runs on (`RECUR_CODE_COMPUTER_USE`).
 pub mod driver_admin;
 pub mod events;
 #[cfg(target_os = "macos")]

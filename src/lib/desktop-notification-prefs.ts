@@ -7,7 +7,7 @@
  *
  * Same storage shape and reactive plumbing as `notification-sound-prefs.ts`,
  * for the same reason: where a notification lands is a per-device concern. A
- * phone browser attached to the same `codeg-server` must not start buzzing
+ * phone browser attached to the same `recur-code-server` must not start buzzing
  * because the desktop was configured to.
  *
  * The event catalogue is deliberately NOT identical to the sound one. Sounds
@@ -22,7 +22,7 @@
 import { useSyncExternalStore } from "react"
 
 const PREFS_KEY = "settings:desktop-notification:v1"
-const PREFS_EVENT = "codeg:desktop-notification-changed"
+const PREFS_EVENT = "RecurCode:desktop-notification-changed"
 
 /** Events that can raise an OS notification, in display order. */
 export const NOTIFY_EVENT_IDS = [

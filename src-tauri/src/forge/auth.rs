@@ -134,7 +134,7 @@ pub async fn resolve_forge_auth(
                 // `host_profile` marks a detected GitLab `recognized`, which is
                 // what lets the panel spend a request on it, and this function
                 // would then answer that request with "not a forge we speak" —
-                // about an instance codeg positively identified. What such a
+                // about an instance RecurCode positively identified. What such a
                 // user is missing is an ACCOUNT, and that is what to say.
                 //
                 // Only a POSITIVE verdict counts. `Some(None)` is "asked, and
@@ -177,7 +177,7 @@ fn serves(account: &GitHubAccount, provider: ForgeProvider) -> bool {
     }
 }
 
-/// What codeg knows about a host, from the accounts configured for it.
+/// What RecurCode knows about a host, from the accounts configured for it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HostProfile {
     pub provider: ForgeProvider,
@@ -186,7 +186,7 @@ pub struct HostProfile {
     /// root" (`https://host/gitlab`), and where one is in use EVERY repository
     /// path in a git remote carries that prefix while no API path does.
     pub base_path: String,
-    /// Whether `provider` is something codeg actually KNOWS about this host —
+    /// Whether `provider` is something RecurCode actually KNOWS about this host —
     /// an account configured for it, or a hostname that names one of the
     /// supported forges — as opposed to the last-resort GitHub guess.
     ///
@@ -301,7 +301,7 @@ pub fn host_profile_in(server_host: &str, accounts: &[GitHubAccount]) -> HostPro
 
 /// Which forge a HOSTNAME names, when nobody has said. `None` means the name
 /// carries no claim either way — which, for a host with no account behind it,
-/// is as close as codeg gets to "this is not a forge we speak".
+/// is as close as RecurCode gets to "this is not a forge we speak".
 ///
 /// A whole label, never a substring: `mygitlabhost.com` is somebody's domain,
 /// and matching it would send their repository to a GitLab that is not there.
@@ -429,7 +429,7 @@ pub(crate) fn forget_forge(host: &str) {
 
 /// A path no forge routes. Asking for it is how "this host serves the GitLab
 /// API" is told apart from "this host answers everything the same way".
-const NONEXISTENT_PATH: &str = "__codeg_forge_probe";
+const NONEXISTENT_PATH: &str = "__recur_code_forge_probe";
 
 /// What one probe request came back as. Only the facts a verdict needs: the
 /// status, whether the answer claimed to be JSON, and the first few bytes of it
@@ -450,7 +450,7 @@ const PROBE_BODY_CAP: usize = 4096;
 
 /// Statuses that mean "ask again later", not "this is not a GitLab". A GitLab
 /// mid-deploy is a 502 from its own reverse proxy; recording that as a verdict
-/// would pin the host to the hostname guess until codeg restarts, which is the
+/// would pin the host to the hostname guess until RecurCode restarts, which is the
 /// very failure this path exists to remove.
 fn is_transient(status: u16) -> bool {
     status >= 500 || status == 408 || status == 429
@@ -459,7 +459,7 @@ fn is_transient(status: u16) -> bool {
 async fn ask(client: &reqwest::Client, url: String) -> Option<Answer> {
     let mut response = client
         .get(url)
-        .header("User-Agent", "codeg")
+        .header("User-Agent", "RecurCode")
         .header("Accept", "application/json")
         // Short on purpose: this runs before the panel can draw, and a slow
         // answer is worth less than falling back to the guess immediately.
@@ -565,7 +565,7 @@ async fn detect_forge(host: &str, origin: &str) -> Option<ForgeProvider> {
     // actually answered: "it is not a GitLab, and we never heard back about
     // Gitea" is not the "asked and answered: neither" this cache records, and
     // pinning it would keep a Gitea that was merely restarting unrecognised
-    // until codeg does.
+    // until RecurCode does.
     if verdict.is_none() && !gitea_answered {
         return None;
     }
@@ -810,7 +810,7 @@ mod tests {
     }
 
     /// The GitHub fallback is a GUESS, and a host it was guessed for is not a
-    /// host codeg can read. Saying which is which is the whole point of
+    /// host RecurCode can read. Saying which is which is the whole point of
     /// `recognized`: a Bitbucket or Gitee remote resolves to the same
     /// well-formed `(github, host, owner/repo)` triple a GitHub Enterprise
     /// does, and only this flag separates "your account is missing" from "that
@@ -922,7 +922,7 @@ mod tests {
     /// forge-claiming name does. Without this the two halves of the forge work
     /// contradict each other on the SAME host: `host_profile` marks a detected
     /// GitLab `recognized` — which is what lets the panel spend a request on it
-    /// — and this function then answers that request with "not a forge codeg
+    /// — and this function then answers that request with "not a forge RecurCode
     /// speaks", about an instance the probe positively identified. What the
     /// user is actually missing is an account, and that is the actionable
     /// thing to say.
@@ -1066,7 +1066,7 @@ mod tests {
         let db = crate::db::test_helpers::fresh_in_memory_db().await;
         let db_conn = db.conn.clone();
         let dir = tmp.path().to_string_lossy().to_string();
-        temp_env::async_with_vars([("CODEG_DATA_DIR", Some(dir.as_str()))], async move {
+        temp_env::async_with_vars([("RECUR_CODE_DATA_DIR", Some(dir.as_str()))], async move {
             let db = db_conn;
             resolution_happy_path(&db).await;
         })
@@ -1133,7 +1133,7 @@ mod tests {
             Err(ForgeError::NoAccount { .. })
         ));
         // A host that claims neither forge and that nothing is configured for
-        // is not a missing account, it is a forge codeg does not speak — and
+        // is not a missing account, it is a forge RecurCode does not speak — and
         // "add a GitHub account for nowhere.example" would be advice that
         // cannot work.
         assert!(matches!(
@@ -1261,7 +1261,7 @@ mod tests {
 
     /// A GitLab that is mid-deploy answers 502 through its own reverse proxy.
     /// That is "ask again later", NOT "not a GitLab" — recording it would pin
-    /// the host to the hostname guess until codeg restarts, which is the exact
+    /// the host to the hostname guess until RecurCode restarts, which is the exact
     /// failure this detection exists to remove.
     #[tokio::test]
     async fn a_transient_server_error_is_not_a_verdict() {

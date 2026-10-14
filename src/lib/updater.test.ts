@@ -414,12 +414,12 @@ describe("describeAppUpdateError", () => {
     // Older servers only send the string; the path keeps its own spaces.
     expect(
       describeAppUpdateError(
-        "Update target is not writable: /opt/My Apps/codeg",
+        "Update target is not writable: /opt/My Apps/RecurCode",
         "install"
       )
     ).toEqual({
       key: "updateErrors.permissionDenied",
-      values: { path: "/opt/My Apps/codeg" },
+      values: { path: "/opt/My Apps/RecurCode" },
     })
   })
 

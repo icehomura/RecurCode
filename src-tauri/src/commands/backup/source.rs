@@ -7,7 +7,7 @@
 //! dir and hands back a handle the later steps reuse.
 //!
 //! The trade is that the plaintext archive sits on disk for as long as the
-//! user takes to work through the restore dialog. That is accepted in codeg's
+//! user takes to work through the restore dialog. That is accepted in RecurCode's
 //! local-data threat model — the same directory already holds `tokens.json`
 //! and the database, mode `0700` — and it is bounded three ways, all of which
 //! are real code rather than intentions: released the moment staging succeeds,
@@ -34,7 +34,7 @@ use super::manifest::BackupPreview;
 
 /// Holds decrypted archives awaiting inspect/scan/stage. Wiped at startup by
 /// [`super::restore::cleanup_transient_dirs`].
-pub const PREPARED_DIR: &str = ".codeg-restore-prepared";
+pub const PREPARED_DIR: &str = ".recur-code-restore-prepared";
 const META_FILE: &str = "meta.json";
 const PLAIN_ZIP: &str = "plain.zip";
 /// How long a prepared source may sit unused before it is reaped. Refreshed on
@@ -292,12 +292,12 @@ mod tests {
     fn plaintext_archive(dir: &Path) -> PathBuf {
         use crate::commands::backup::manifest::{BackupManifest, BACKUP_FORMAT_VERSION, BACKUP_KIND};
         use sea_orm_migration::MigratorTrait;
-        let zip = dir.join("backup.codeg.zip");
+        let zip = dir.join("backup.recurcode.zip");
         let db = dir.join("db.bin");
         std::fs::write(&db, b"DB").unwrap();
         let mut b = archive::ArchiveBuilder::create(&zip).unwrap();
         b.add_file(
-            "db/codeg.db",
+            "db/RecurCode.db",
             &db,
             &CancellationToken::new(),
             &mut archive::null_progress(),
@@ -350,7 +350,7 @@ mod tests {
         let data_dir = dir.path().join("data");
         std::fs::create_dir_all(&data_dir).unwrap();
         let plain = plaintext_archive(dir.path());
-        let enc = dir.path().join("backup.codegbak");
+        let enc = dir.path().join("backup.recurcodebak");
         crypto::encrypt_file(&plain, &enc, "s3cret", &CancellationToken::new()).unwrap();
 
         // No passphrase: nothing is decrypted and no handle is issued.
@@ -397,7 +397,7 @@ mod tests {
         let data_dir = dir.path().join("data");
         std::fs::create_dir_all(&data_dir).unwrap();
         let plain = plaintext_archive(dir.path());
-        let enc = dir.path().join("backup.codegbak");
+        let enc = dir.path().join("backup.recurcodebak");
         crypto::encrypt_file(&plain, &enc, "s3cret", &CancellationToken::new()).unwrap();
         let prepared = prepare_source_core(&enc, &data_dir, Some("s3cret"), false)
             .await

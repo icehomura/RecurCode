@@ -37,7 +37,7 @@ export const COLLAB_AGENT_TOOL_NAME = "collab_agent"
  * (the ACP `title`, e.g. `spawnAgent`/`wait`/`closeAgent`) through to the card,
  * since the title is otherwise dropped. Not a codex field.
  */
-export const COLLAB_OP_KEY = "__codegCollabOp"
+export const COLLAB_OP_KEY = "__recur_codeCollabOp"
 
 /** Live state of a single sub-agent, from one entry of `agentsStates`. */
 export interface CollabAgentState {

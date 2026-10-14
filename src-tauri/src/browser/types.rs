@@ -15,7 +15,7 @@ pub enum SurfaceKind {
 }
 
 /// What a tab shows: a web page, or a local HTML document served through the
-/// `codeg-doc:` guest (see `doc_guest`).
+/// `recur-code-doc:` guest (see `doc_guest`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 pub enum TabKind {
@@ -74,7 +74,7 @@ pub enum BrowserErrorKind {
     /// route to it, or no such name there).
     RemoteUnreachable,
     /// A remote tab's page: the remote server's policy keeps its tunnel off
-    /// that address (`CODEG_BROWSER_TUNNEL=private`).
+    /// that address (`RECUR_CODE_BROWSER_TUNNEL=private`).
     RemoteNotAllowed,
     /// A remote tab's page: the remote host did not get through in time.
     RemoteTimeout,
@@ -165,7 +165,7 @@ pub struct BrowserCapabilities {
     /// The administrator's policy in force (rules shown read-only, and
     /// whether the browser is enabled at all).
     pub policy: crate::browser::policy::BrowserPolicyStatus,
-    /// Local HTML files can be shown through the `codeg-doc:` document guest
+    /// Local HTML files can be shown through the `recur-code-doc:` document guest
     /// (an embedded surface with a handler for that scheme).
     pub doc_guest: bool,
     /// More than the default browser profile can exist (macOS 14+, Windows,
@@ -181,7 +181,7 @@ pub struct BrowserCapabilities {
     /// the host does not hold that window's webview.
     pub owned_window_controls: bool,
     /// A remote-workspace window's tabs can reach the remote host through
-    /// its codeg-server (`browser::remote`): a profile of their own to proxy
+    /// its recur-code-server (`browser::remote`): a profile of their own to proxy
     /// (macOS 14+), and on macOS the embedded surface. Whether a given remote
     /// server carries the traffic is only known when a tab asks.
     pub remote_egress: bool,
@@ -310,7 +310,7 @@ pub struct BrowserConsoleErrorsPayload {
     pub errors: bool,
 }
 
-/// A local server codeg started has just announced its address; the workspace
+/// A local server RecurCode started has just announced its address; the workspace
 /// decides what to do about it (`browser:service-auto-open`).
 ///
 /// Broadcast to every window like the rest of these; only the one named by
@@ -323,9 +323,9 @@ pub const SERVICE_DETECTED_EVENT: &str = "browser://service-detected";
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum ServiceSource {
-    /// A codeg terminal: the terminal panel, or a canvas terminal card.
+    /// A RecurCode terminal: the terminal panel, or a canvas terminal card.
     Terminal,
-    /// A terminal an agent asked codeg to run (ACP `terminal/create`).
+    /// A terminal an agent asked RecurCode to run (ACP `terminal/create`).
     Agent,
 }
 
@@ -342,7 +342,7 @@ pub struct DetectedService {
     /// Window whose workspace this belongs to; `web` in server mode.
     pub owner_window: String,
     pub source: ServiceSource,
-    /// The terminal that printed it — a codeg terminal id, or an ACP one.
+    /// The terminal that printed it — a RecurCode terminal id, or an ACP one.
     ///
     /// Not a title: the backend's terminal title is a placeholder, and the
     /// name a person sees on a terminal tab only exists in the frontend. The

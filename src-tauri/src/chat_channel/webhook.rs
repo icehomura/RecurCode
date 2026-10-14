@@ -62,7 +62,7 @@ pub fn build_webhook_payload(
         "body": msg.body,
         "fields": fields,
         "connection_id": connection_id,
-        "source": "codeg",
+        "source": "RecurCode",
     })
 }
 
@@ -162,7 +162,7 @@ mod tests {
         assert_eq!(payload["title"], "Turn Complete");
         assert_eq!(payload["body"], "Claude Code finished its turn.");
         assert_eq!(payload["connection_id"], "conn-abc");
-        assert_eq!(payload["source"], "codeg");
+        assert_eq!(payload["source"], "RecurCode");
         assert_eq!(payload["fields"][0]["label"], "Stop Reason");
         assert_eq!(payload["fields"][0]["value"], "End Turn");
     }

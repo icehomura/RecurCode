@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useHistoryBackDismiss } from "./use-history-back-dismiss"
 
-const DEPTH_KEY = "codegBackDismissDepth"
+const DEPTH_KEY = "recurCodeBackDismissDepth"
 
 function depthOf(state: unknown): unknown {
   return (state as Record<string, unknown> | null)?.[DEPTH_KEY]

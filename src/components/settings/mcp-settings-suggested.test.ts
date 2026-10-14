@@ -5,7 +5,7 @@ import { SUGGESTED_SERVERS } from "./mcp-settings"
 /**
  * The one thing about a suggested server that is worth a test.
  *
- * A suggestion is codeg naming a package for someone who is adding a browser
+ * A suggestion is RecurCode naming a package for someone who is adding a browser
  * tool by hand — which is exactly the person who cannot tell the official
  * `chrome-devtools-mcp` from the lookalikes the registry carries under the
  * same name and description with a different owner. So the package string is

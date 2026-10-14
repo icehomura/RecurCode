@@ -456,7 +456,7 @@ describe("wildcard ordering", () => {
     expect(view.orderingUnsafe).toBe(true)
   })
 
-  it("is clean for the order codeg writes", () => {
+  it("is clean for the order RecurCode writes", () => {
     const view = readOpenCodePermissions(
       '{"permission":{"*":"ask","bash":{"*":"ask","git *":"allow"}}}'
     )

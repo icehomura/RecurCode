@@ -143,7 +143,7 @@ function useRenderedDiagram(
     if (!active || !ready || !mermaid) return
     let cancelled = false
     renderSeq += 1
-    const id = `codeg-mermaid-${renderSeq}`
+    const id = `recur-code-mermaid-${renderSeq}`
     void (async () => {
       try {
         const { svg } = await mermaid.getMermaid(config).render(id, source)
@@ -437,7 +437,7 @@ function MermaidCanvas({
       // flip, which puts the diagram somewhere the pan clamp does not expect.
       // The direction has to sit on the panning surface itself.
       dir="ltr"
-      data-codeg="mermaid-canvas"
+      data-RecurCode="mermaid-canvas"
       className={cn(
         "relative overflow-hidden",
         // `touch-none` only while there is something to pan, or a touch scroll
@@ -751,7 +751,7 @@ function MermaidBlockImpl({ source }: { source: string }) {
   return (
     <div
       className="relative my-4 overflow-hidden rounded-xl border border-border bg-card"
-      data-codeg="mermaid-block"
+      data-RecurCode="mermaid-block"
       ref={setRoot}
     >
       {/* The height comes from the fit factor, not from the current zoom:

@@ -101,7 +101,7 @@ describe("commits branch selection per worktree", () => {
       author: null,
     })
     expect(
-      window.localStorage.getItem("codeg:gitlog:selection:/worktrees/a")
+      window.localStorage.getItem("RecurCode:gitlog:selection:/worktrees/a")
     ).not.toBeNull()
   })
 
@@ -142,7 +142,7 @@ describe("commits branch selection per worktree", () => {
     // Exactly what the old writer stored for an author picked on the then
     // default all-branches view: an unversioned null that was never a choice.
     window.localStorage.setItem(
-      "codeg:gitlog:selection:/worktrees/a",
+      "RecurCode:gitlog:selection:/worktrees/a",
       JSON.stringify({ branch: null, author: "Alice" })
     )
     expect(loadSelection("/worktrees/a")).toEqual({
@@ -151,7 +151,7 @@ describe("commits branch selection per worktree", () => {
     })
     // A branch that was picked back then is still honoured.
     window.localStorage.setItem(
-      "codeg:gitlog:selection:/worktrees/b",
+      "RecurCode:gitlog:selection:/worktrees/b",
       JSON.stringify({ branch: "feature/x", author: null })
     )
     expect(loadSelection("/worktrees/b").branch).toBe("feature/x")
@@ -159,7 +159,7 @@ describe("commits branch selection per worktree", () => {
 
   it("treats a saved filter without a branch as the HEAD view", () => {
     window.localStorage.setItem(
-      "codeg:gitlog:selection:/worktrees/a",
+      "RecurCode:gitlog:selection:/worktrees/a",
       JSON.stringify({ author: "Alice" })
     )
     expect(loadSelection("/worktrees/a")).toEqual({
@@ -170,7 +170,7 @@ describe("commits branch selection per worktree", () => {
 
   it("treats corrupt saved filters as a fresh HEAD view", () => {
     window.localStorage.setItem(
-      "codeg:gitlog:selection:/worktrees/a",
+      "RecurCode:gitlog:selection:/worktrees/a",
       "{invalid"
     )
     expect(loadSelection("/worktrees/a").branch).toBe("HEAD")

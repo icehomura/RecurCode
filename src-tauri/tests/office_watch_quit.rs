@@ -14,7 +14,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::time::Duration;
 
-use codeg_lib::office_watch::{start_office_watch_core, stop_all_office_watches};
+use recur_code_lib::office_watch::{start_office_watch_core, stop_all_office_watches};
 
 /// An `officecli` that records its pid and then never announces readiness.
 const FAKE_OFFICECLI: &str = "#!/bin/sh\necho $$ > \"$0.pid\"\nexec sleep 600\n";

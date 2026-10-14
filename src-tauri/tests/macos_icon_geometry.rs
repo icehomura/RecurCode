@@ -3,7 +3,7 @@
 //! macOS draws `CFBundleIconFile` into a fixed tile, so the *artwork* — not the
 //! canvas — decides how big the app reads in the Dock. Apple's grid puts an
 //! 824x824 body in a 1024x1024 canvas, a 100px transparent margin on every
-//! side; Keynote, Pages, Maps, Chrome, Edge, OBS all measure exactly that. codeg
+//! side; Keynote, Pages, Maps, Chrome, Edge, OBS all measure exactly that. RecurCode
 //! shipped a full-bleed squircle through 0.29.0, which rendered ~1.24x wider
 //! than its neighbours — visibly "a size bigger" (issue #610).
 //!

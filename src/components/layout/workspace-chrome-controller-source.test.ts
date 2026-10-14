@@ -47,7 +47,7 @@ describe("tab close/navigation shortcuts live in the always-mounted controller",
     expect(controllerSource).toMatch(/closeAllFileTabs\(/)
   })
 
-  // A closed remote tab (an address of the remote codeg host) must reopen as
+  // A closed remote tab (an address of the remote RecurCode host) must reopen as
   // one: reopened as an ordinary tab it would load this machine's port.
   it("reopens a remote browser tab as remote", () => {
     expect(controllerSource).toMatch(

@@ -64,7 +64,7 @@ export interface OpenCodePermissionKeyMeta {
    * get a fine-grained rule editor.
    *
    * NOTE: the prose docs describe `webfetch`/`websearch` as matched by URL and
-   * query, but the published schema types both as action-only — so codeg keeps
+   * query, but the published schema types both as action-only — so RecurCode keeps
    * them action-only rather than emit config the `$schema` would reject. The
    * raw-JSON editor remains available for anyone who wants to try patterns.
    */
@@ -733,7 +733,7 @@ function patchPermissionObject(
 /**
  * Move every `"*"` — the block's own and each key's — back to the front of its
  * scope, so the rules the UI shows are the rules OpenCode will apply. Offered
- * as an explicit repair for a document codeg did not write; no value changes.
+ * as an explicit repair for a document RecurCode did not write; no value changes.
  */
 export function normalizeOpenCodePermissionOrder(configText: string): string {
   return patchPermissionObject(configText, (permission) => {

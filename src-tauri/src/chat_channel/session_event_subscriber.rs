@@ -134,7 +134,7 @@ async fn handle_acp_envelope(
                 // Guarded bind — the bridge registers `conversation_id` up
                 // front, so this writes onto an ALREADY-bound row and would
                 // otherwise overwrite the id its history hangs off if the
-                // session was re-minted (codeg#500). Whichever of this
+                // session was re-minted (RecurCode#500). Whichever of this
                 // subscriber and the lifecycle one wins the race, the loser
                 // gets `None` and the row is preserved exactly once.
                 let continues =
@@ -1105,9 +1105,9 @@ mod delegation_relay_tests {
         assert!(is_delegation_title("Delegate To Agent"));
         assert!(is_delegation_title("delegate-to-agent"));
         assert!(is_delegation_title(
-            "mcp__codeg-mcp__delegate_to_agent"
+            "mcp__recur-code-mcp__delegate_to_agent"
         ));
-        assert!(is_delegation_title("Run mcp__codeg__delegate_to_agent"));
+        assert!(is_delegation_title("Run mcp__recur_code__delegate_to_agent"));
         assert!(!is_delegation_title("agent"));
         assert!(!is_delegation_title("write"));
     }
@@ -1681,7 +1681,7 @@ mod error_terminal_gate_tests {
     #[tokio::test]
     async fn session_started_preserves_history_and_broadcasts_it_without_a_manager_entry() {
         // Two things at once, because they are the same bug seen from two
-        // angles (codeg#500).
+        // angles (RecurCode#500).
         //
         // 1. This subscriber writes onto an ALREADY-bound `conversation_id`
         //    (the bridge registers it up front), so a re-minted session would

@@ -52,7 +52,7 @@ vi.mock("@/contexts/active-folder-context", () => ({
     activeFolder:
       h.activeFolderId == null
         ? null
-        : { id: h.activeFolderId, path: "/tmp/codeg-749" },
+        : { id: h.activeFolderId, path: "/tmp/recur-code-749" },
     activeFolderId: h.activeFolderId,
   }),
 }))
@@ -88,7 +88,7 @@ function Probe() {
       </button>
       <button
         onClick={() => {
-          void terminal.createTerminalInDirectory("/tmp/codeg-749-other", "Dir")
+          void terminal.createTerminalInDirectory("/tmp/recur-code-749-other", "Dir")
         }}
       >
         Open dir
@@ -199,7 +199,7 @@ describe("TerminalProvider reload recovery", () => {
     expect(screen.getByTestId("command")).toHaveTextContent("sleep 120")
     const originalId = screen.getByTestId("active").textContent
 
-    expect(sessionStorage.getItem("codeg:terminal-session:v1")).not.toContain(
+    expect(sessionStorage.getItem("RecurCode:terminal-session:v1")).not.toContain(
       "sleep 120"
     )
     first.unmount()
@@ -228,7 +228,7 @@ describe("TerminalProvider reload recovery", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close" }))
     expect(h.terminalKill).toHaveBeenCalledWith(id)
     expect(screen.getByTestId("tabs")).toHaveTextContent("0")
-    expect(sessionStorage.getItem("codeg:terminal-session:v1")).not.toContain(
+    expect(sessionStorage.getItem("RecurCode:terminal-session:v1")).not.toContain(
       id
     )
   })
@@ -241,7 +241,7 @@ describe("TerminalProvider reload recovery", () => {
     const id = "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098"
     window.name = "host-window"
     sessionStorage.setItem(
-      "codeg:terminal-session:v1",
+      "RecurCode:terminal-session:v1",
       JSON.stringify({
         version: 1,
         scope: JSON.stringify(["main", null]),
@@ -267,14 +267,14 @@ describe("TerminalProvider reload recovery", () => {
       </TerminalProvider>
     )
     fireEvent.click(screen.getByRole("button", { name: "Run" }))
-    const copiedStorage = sessionStorage.getItem("codeg:terminal-session:v1")
+    const copiedStorage = sessionStorage.getItem("RecurCode:terminal-session:v1")
     expect(copiedStorage).toBeTruthy()
     first.unmount()
 
     // New browsing context: the opener's sessionStorage is cloned, but the
     // browser gives this tab its own window.name.
     window.name = ""
-    sessionStorage.setItem("codeg:terminal-session:v1", copiedStorage!)
+    sessionStorage.setItem("RecurCode:terminal-session:v1", copiedStorage!)
     render(
       <TerminalProvider>
         <Probe />
@@ -352,7 +352,7 @@ describe("TerminalProvider reload recovery", () => {
     expect(screen.getByTestId("titles")).toHaveTextContent("300")
     // Clamped on the way in, not only on the way back out.
     const stored = JSON.parse(
-      sessionStorage.getItem("codeg:terminal-session:v1") ?? "{}"
+      sessionStorage.getItem("RecurCode:terminal-session:v1") ?? "{}"
     )
     expect(stored.tabs[0].title).toHaveLength(256)
     first.unmount()
@@ -369,9 +369,9 @@ describe("TerminalProvider reload recovery", () => {
   it("drops only the stored tab it cannot validate, and clamps a long title", () => {
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
     const goodId = "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098"
-    window.name = `codeg-terminal-page:${pageId}`
+    window.name = `recur-code-terminal-page:${pageId}`
     sessionStorage.setItem(
-      "codeg:terminal-session:v1",
+      "RecurCode:terminal-session:v1",
       JSON.stringify({
         version: 1,
         scope: JSON.stringify(["main", null]),
@@ -470,7 +470,7 @@ describe("TerminalProvider reload recovery", () => {
       </TerminalProvider>
     )
     expect(useCommandTerminalLinkStore.getState().links).toEqual({ 42: id })
-    expect(sessionStorage.getItem("codeg:terminal-session:v1")).not.toContain(
+    expect(sessionStorage.getItem("RecurCode:terminal-session:v1")).not.toContain(
       "sleep 120"
     )
   })
@@ -478,9 +478,9 @@ describe("TerminalProvider reload recovery", () => {
   it("restores a tab whose stored command link is unusable, without the link", () => {
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
     const id = "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098"
-    window.name = `codeg-terminal-page:${pageId}`
+    window.name = `recur-code-terminal-page:${pageId}`
     sessionStorage.setItem(
-      "codeg:terminal-session:v1",
+      "RecurCode:terminal-session:v1",
       JSON.stringify({
         version: 1,
         scope: JSON.stringify(["main", null]),
@@ -509,9 +509,9 @@ describe("TerminalProvider reload recovery", () => {
 
   function storeCommandTab(id: string) {
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
-    window.name = `codeg-terminal-page:${pageId}`
+    window.name = `recur-code-terminal-page:${pageId}`
     sessionStorage.setItem(
-      "codeg:terminal-session:v1",
+      "RecurCode:terminal-session:v1",
       JSON.stringify({
         version: 1,
         scope: JSON.stringify(["main", null]),
@@ -609,14 +609,14 @@ describe("TerminalProvider reload recovery", () => {
     // Neither ever launches anything for a restored tab, so no bound on them
     // protects a thing — while each one cost a tab its way back.
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
-    window.name = `codeg-terminal-page:${pageId}`
+    window.name = `recur-code-terminal-page:${pageId}`
     const ids = [
       "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098",
       "4e3d2c1b-0a9f-4e8d-b7c6-d5e4f3a2b109",
       "5f4e3d2c-1b0a-4f9e-8d7c-b6a5f4e3d2c1",
     ]
     sessionStorage.setItem(
-      "codeg:terminal-session:v1",
+      "RecurCode:terminal-session:v1",
       JSON.stringify({
         version: 1,
         scope: JSON.stringify(["main", null]),

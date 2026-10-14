@@ -66,16 +66,16 @@ pub fn build_router(
             post(handlers::delegation::set_delegation_settings),
         )
         .route(
-            "/get_codeg_mcp_service_status",
-            post(handlers::mcp_service::get_codeg_mcp_service_status),
+            "/get_recur_code_mcp_service_status",
+            post(handlers::mcp_service::get_recur_code_mcp_service_status),
         )
         .route(
-            "/start_codeg_mcp_service",
-            post(handlers::mcp_service::start_codeg_mcp_service),
+            "/start_recur_code_mcp_service",
+            post(handlers::mcp_service::start_recur_code_mcp_service),
         )
         .route(
-            "/set_codeg_mcp_tool_group",
-            post(handlers::mcp_service::set_codeg_mcp_tool_group),
+            "/set_recur_code_mcp_tool_group",
+            post(handlers::mcp_service::set_recur_code_mcp_tool_group),
         )
         .route(
             "/get_feedback_settings",
@@ -129,7 +129,7 @@ pub fn build_router(
             "/set_computer_tools_preferences",
             post(handlers::computer_tools::set_computer_tools_preferences),
         )
-        // Computer use itself: answered only by a codeg-server let share the
+        // Computer use itself: answered only by a recur-code-server let share the
         // screen it runs on (see `handlers::computer`).
         .route(
             "/computer_available",
@@ -679,7 +679,7 @@ pub fn build_router(
         )
         // ─── Workspace files (web upload/download) ───
         //
-        // Issue #179: when codeg runs in server mode the user has no
+        // Issue #179: when RecurCode runs in server mode the user has no
         // native file dialog, so they need HTTP endpoints to move files
         // between the browser and the workspace. The upload handler
         // streams to a same-dir staging file then renames into place;
@@ -2133,10 +2133,10 @@ pub fn build_router(
         // `web::compression`.
         .layer(crate::web::compression::compression_layer())
         // Outermost, and outside everything above on purpose: a request
-        // addressed to a bridge hostname is a dev server's, not codeg's, and
+        // addressed to a bridge hostname is a dev server's, not RecurCode's, and
         // is answered by the bridge exactly as a listener of its own would —
         // no CORS, no compression, no body limit, no static fallback. Only
-        // when `CODEG_BRIDGE_HOST_PATTERN` is set; every other request goes
+        // when `RECUR_CODE_BRIDGE_HOST_PATTERN` is set; every other request goes
         // straight through. See `web::browser_bridge`.
         .layer(middleware::from_fn(
             crate::web::browser_bridge::route_by_host,

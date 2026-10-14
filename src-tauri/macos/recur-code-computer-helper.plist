@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>codeg-computer-helper</string>
+	<string>recur-code-computer-helper</string>
 	<key>CFBundleExecutable</key>
-	<string>codeg-computer-helper</string>
+	<string>recur-code-computer-helper</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>app.codeg.computer-helper</string>
+	<string>app.recurcode.computer-helper</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>codeg-computer-helper</string>
+	<string>recur-code-computer-helper</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

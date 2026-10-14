@@ -115,7 +115,7 @@ describe("ModelOptionList", () => {
 
   // codex-acp 1.11.0 names a recommended value per select
   // (`_meta.jetbrains.air.recommendedValue`). It is worth its own row marker
-  // precisely because it is NOT the selection: codeg replays a persisted
+  // precisely because it is NOT the selection: RecurCode replays a persisted
   // per-agent preference into every new session, so the selected model is
   // routinely one the agent no longer defaults to.
   it("badges the recommended row, independently of the selected one", () => {

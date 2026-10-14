@@ -405,12 +405,12 @@ describe("Pi native config source", () => {
 
   it("shows why Pi's settings could not be read", async () => {
     api.loadPiConfig.mockRejectedValue(
-      new Error("Cannot read Pi agent settings from the Codeg database: boom")
+      new Error("Cannot read Pi agent settings from the RecurCode database: boom")
     )
     await renderPanel({}, null)
     expect(
       await screen.findByText(
-        "Couldn't read Pi's settings: Cannot read Pi agent settings from the Codeg database: boom"
+        "Couldn't read Pi's settings: Cannot read Pi agent settings from the RecurCode database: boom"
       )
     ).toBeInTheDocument()
   })
@@ -426,7 +426,7 @@ describe("Pi runtime minimum", () => {
     await renderPanel({ PI_ACP_PI_COMMAND: "/tmp/old-pi" })
     expect(api.acpValidatePiCommand).toHaveBeenCalledWith("/tmp/old-pi")
     expect(
-      await screen.findByText(/Codeg needs Pi 0\.81\.0 or newer/)
+      await screen.findByText(/RecurCode needs Pi 0\.81\.0 or newer/)
     ).toBeInTheDocument()
   })
 

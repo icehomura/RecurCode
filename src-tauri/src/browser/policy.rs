@@ -311,21 +311,21 @@ impl Default for ManagedBrowserSection {
     }
 }
 
-/// `CODEG_POLICY_FILE` when set (tests, unusual deployments), else the
+/// `RECUR_CODE_POLICY_FILE` when set (tests, unusual deployments), else the
 /// machine-wide location for the platform. The file is optional.
 pub fn managed_policy_path() -> PathBuf {
-    if let Some(explicit) = std::env::var_os("CODEG_POLICY_FILE") {
+    if let Some(explicit) = std::env::var_os("RECUR_CODE_POLICY_FILE") {
         return PathBuf::from(explicit);
     }
     if cfg!(target_os = "macos") {
-        PathBuf::from("/Library/Application Support/codeg/policy.json")
+        PathBuf::from("/Library/Application Support/RecurCode/policy.json")
     } else if cfg!(target_os = "windows") {
         let base = std::env::var_os("PROGRAMDATA")
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from(r"C:\ProgramData"));
-        base.join("codeg").join("policy.json")
+        base.join("RecurCode").join("policy.json")
     } else {
-        PathBuf::from("/etc/codeg/policy.json")
+        PathBuf::from("/etc/RecurCode/policy.json")
     }
 }
 
@@ -501,7 +501,7 @@ mod tests {
             "about:srcdoc",
             "blob:null/abc",
             "blob:file:///x",
-            "codeg-doc://grant/index.html",
+            "recur-code-doc://grant/index.html",
             "ftp://example.com/",
             "vscode://file/x",
         ] {
@@ -523,7 +523,7 @@ mod tests {
         ] {
             assert!(subframe_navigation_allowed(&u(ok)), "{ok}");
         }
-        for bad in ["file:///etc/passwd", "tauri://localhost/", "codeg-doc://g/x", "about:config"] {
+        for bad in ["file:///etc/passwd", "tauri://localhost/", "recur-code-doc://g/x", "about:config"] {
             assert!(!subframe_navigation_allowed(&u(bad)), "{bad}");
         }
     }
@@ -761,11 +761,11 @@ mod tests {
         let json = serde_json::to_value(BrowserPolicyStatus {
             enabled: true,
             managed_rules: vec![rule("a.example", HostRuleAction::Block)],
-            managed_source: Some("/etc/codeg/policy.json".into()),
+            managed_source: Some("/etc/RecurCode/policy.json".into()),
         })
         .unwrap();
         assert_eq!(json["managedRules"][0]["action"], "block");
-        assert_eq!(json["managedSource"], "/etc/codeg/policy.json");
+        assert_eq!(json["managedSource"], "/etc/RecurCode/policy.json");
         let rule: HostRule = serde_json::from_str(r#"{"pattern":"*","action":"builtin"}"#).unwrap();
         assert_eq!(rule.action, HostRuleAction::Builtin);
     }

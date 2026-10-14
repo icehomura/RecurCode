@@ -202,7 +202,7 @@ pub struct CustomAgentDef {
     /// User declaration that this agent reads the shared `.agents/skills`
     /// store (`~/.agents/skills` plus project-local `.agents/skills`) — the
     /// cross-agent convention OpenCode, Gemini, Cline, Codex, pi, and Cursor
-    /// already follow. codeg cannot detect where an arbitrary ACP agent loads
+    /// already follow. RecurCode cannot detect where an arbitrary ACP agent loads
     /// skills from, so this stays off until the user turns it on; together
     /// with [`Self::skills_dir`] it is the gate that puts the agent into
     /// every skills matrix (see `skill_storage_spec`).
@@ -230,10 +230,10 @@ pub struct CustomAgentDef {
     pub version_probe: Option<String>,
     /// User declaration that the agent accepts MCP servers over the ACP wire
     /// (`session/new`'s `mcpServers`) — which, for a custom agent, means the
-    /// built-in codeg-mcp companion (delegation, live feedback, task tools).
+    /// built-in recur-code-mcp companion (delegation, live feedback, task tools).
     ///
     /// Not every ACP agent does: some reject any entry in that field and fail
-    /// session creation outright, so a custom agent that codeg cannot connect
+    /// session creation outright, so a custom agent that RecurCode cannot connect
     /// to at all is turned off here (OpenClaw is the built-in precedent — see
     /// [`AcpAgentMeta::supports_mcp`], the single gate both feed).
     ///
@@ -361,7 +361,7 @@ impl std::error::Error for CustomAgentError {}
 /// Whether `s` is usable as ONE directory name.
 ///
 /// The version label becomes a path segment of the binary cache
-/// (`binary_cache::binary_dir`), which codeg also *deletes* when reinstalling —
+/// (`binary_cache::binary_dir`), which RecurCode also *deletes* when reinstalling —
 /// so a definition must not be able to steer it out of the cache. Mirrors
 /// `acp_transcript::safe_component`, and deliberately rejects a Windows drive
 /// or alternate-data-stream prefix (`C:`, `f:s`) too, which `Path::is_absolute`
@@ -552,7 +552,7 @@ pub fn build_meta(def: &CustomAgentDef) -> Result<AcpAgentMeta, CustomAgentError
     Ok(AcpAgentMeta {
         agent_type,
         // MCP is forwarded over the ACP wire (`session/new`'s `mcpServers`) —
-        // for a custom agent, the codeg-mcp companion is the whole of it. On
+        // for a custom agent, the recur-code-mcp companion is the whole of it. On
         // by default; the user turns it off for an agent that rejects server
         // entries and fails to connect (see `CustomAgentDef::supports_mcp`).
         // Built-ins declare the same flag as a constant, where OpenClaw is the
@@ -641,7 +641,7 @@ fn build_binary_distribution(
         Some(BinaryDirEntry {
             unix: intern(&unix),
             windows: intern(&windows),
-            // The ACP registry has no field for this, and codeg cannot know
+            // The ACP registry has no field for this, and RecurCode cannot know
             // which files an arbitrary agent's entry execs — so a custom
             // agent's tree is validated by its entry alone.
             required_siblings: crate::acp::registry::PlatformFiles::NONE,
@@ -1423,7 +1423,7 @@ mod tests {
         let _guard = hydrate_guard();
         let mut def = npx_def("mcp-flag-agent");
         // On unless the user says otherwise: this is the gate
-        // `connection.rs` reads to decide whether codeg-mcp goes out on
+        // `connection.rs` reads to decide whether recur-code-mcp goes out on
         // `session/new`.
         assert!(build_meta(&def).expect("valid").supports_mcp);
 

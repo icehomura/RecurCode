@@ -4,7 +4,7 @@
 //! almost verbatim. Science skills (curated from
 //! K-Dense-AI/scientific-agent-skills) are bundled into the binary via
 //! `include_dir!` and, on startup, extracted into the same central store as
-//! experts — `~/.codeg/skills/<id>/`. Users enable a science skill for any ACP
+//! experts — `~/.recurcode/skills/<id>/`. Users enable a science skill for any ACP
 //! agent by symlinking (or Windows-junctioning) the agent's skill dir into the
 //! central copy.
 //!
@@ -135,7 +135,7 @@ pub struct InstallReport {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct Manifest {
     #[serde(default)]
-    codeg_version: String,
+    recur_code_version: String,
     #[serde(default)]
     installed_at: String,
     #[serde(default)]
@@ -160,7 +160,7 @@ fn mutation_lock() -> &'static Mutex<()> {
 }
 
 // ─── Paths ──────────────────────────────────────────────────────────────
-// The central store is shared with experts (`~/.codeg/skills/`); only the
+// The central store is shared with experts (`~/.recurcode/skills/`); only the
 // manifest file differs, so the two sources never clobber each other's state.
 
 fn manifest_path() -> PathBuf {
@@ -404,7 +404,7 @@ fn ensure_central_science_installed_blocking() -> InstallReport {
         }
     }
 
-    manifest.codeg_version = env!("CARGO_PKG_VERSION").to_string();
+    manifest.recur_code_version = env!("CARGO_PKG_VERSION").to_string();
     manifest.installed_at = Utc::now().to_rfc3339();
     if let Err(e) = save_manifest(&manifest) {
         report.errors.push(format!("save manifest: {e}"));
@@ -672,7 +672,7 @@ fn link_one_locked(
         }
         Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
             match classify_link(&link_path, &central) {
-                ExpertLinkState::LinkedToCodeg => {
+                ExpertLinkState::LinkedToRecurCode => {
                     // Idempotent success.
                 }
                 ExpertLinkState::BlockedByRealDirectory => {
@@ -752,7 +752,7 @@ fn unlink_one_locked(skill_id: &str, agent_type: AgentType) -> Result<(), Scienc
         let state = classify_link(&candidate, &central);
         if matches!(
             state,
-            ExpertLinkState::LinkedToCodeg | ExpertLinkState::Broken
+            ExpertLinkState::LinkedToRecurCode | ExpertLinkState::Broken
         ) {
             remove_skill_entry(&candidate).map_err(|e| {
                 ScienceError::Io(format!("remove link {}: {e}", candidate.display()))
@@ -936,12 +936,12 @@ mod tests {
     async fn apply_links_does_not_deadlock() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-codeg-science-batch-absent-aaa".into(),
+                expert_id: "zzz-recur-code-science-batch-absent-aaa".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },
             LinkOp {
-                expert_id: "zzz-codeg-science-batch-absent-bbb".into(),
+                expert_id: "zzz-recur-code-science-batch-absent-bbb".into(),
                 agent_type: AgentType::Codex,
                 enable: false,
             },
@@ -958,7 +958,7 @@ mod tests {
     async fn apply_links_collects_per_op_results_without_aborting() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-codeg-science-batch-absent".into(),
+                expert_id: "zzz-recur-code-science-batch-absent".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },

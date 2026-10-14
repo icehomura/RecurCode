@@ -202,7 +202,7 @@ beforeEach(() => {
   useForgeRefreshStore.setState({ refresh: null, busy: false })
   useAppWorkspaceStore.setState({
     folders: [
-      { id: 1, name: "codeg", parent_id: null, kind: "regular" },
+      { id: 1, name: "RecurCode", parent_id: null, kind: "regular" },
     ] as never,
   })
   window.localStorage.clear()
@@ -273,7 +273,7 @@ describe("ForgePage list failures", () => {
   })
 
   /**
-   * Issue #611: a self-hosted GitLab that codeg had classified as a GitHub
+   * Issue #611: a self-hosted GitLab that RecurCode had classified as a GitHub
    * Enterprise. The backend recognises GitLab's "API V3 is no longer supported"
    * 410 and CORRECTS ITSELF before returning, so `wrongForge` describes
    * bookkeeping that is already fixed — putting it on screen would report our
@@ -307,7 +307,7 @@ describe("ForgePage list failures", () => {
     // The retry's rows, not the failure.
     expect(await screen.findByText("Login times out")).toBeInTheDocument()
     expect(
-      screen.queryByText(/not the forge codeg had it classified as/)
+      screen.queryByText(/not the forge RecurCode had it classified as/)
     ).not.toBeInTheDocument()
     // Re-derived, so the panel now calls them merge requests. The accessible
     // name carries the count badge too, hence the regex.
@@ -335,7 +335,7 @@ describe("ForgePage list failures", () => {
 
     expect(
       await screen.findByText(
-        "git.corp.com is a GitLab, not the forge codeg had it classified as. The detection has been corrected — reload to retry."
+        "git.corp.com is a GitLab, not the forge RecurCode had it classified as. The detection has been corrected — reload to retry."
       )
     ).toBeInTheDocument()
   })
@@ -407,7 +407,7 @@ describe("ForgePage sort control", () => {
 })
 
 /**
- * A repository codeg cannot read at all — Bitbucket, Gitee, an unrecognized
+ * A repository RecurCode cannot read at all — Bitbucket, Gitee, an unrecognized
  * self-hosted instance.
  *
  * Its remote parses perfectly well and resolves to a provider, because the
@@ -730,7 +730,7 @@ describe("ForgePage settings button", () => {
     // Opened on the folder whose list is on screen, not on the global row —
     // that is the scope the gear beside THIS list is about.
     expect(
-      await screen.findByText("How issues and changes in codeg are handled.")
+      await screen.findByText("How issues and changes in RecurCode are handled.")
     ).toBeInTheDocument()
   })
 
@@ -790,7 +790,7 @@ describe("ForgePage header", () => {
     mount()
     // The host is the same for every row on the page; it only ever pushed the
     // part that identifies the project out of view. It survives in the tooltip.
-    const repo = await screen.findByRole("button", { name: /xintaofei\/codeg/ })
+    const repo = await screen.findByRole("button", { name: /xintaofei\/RecurCode/ })
     expect(repo).toHaveAccessibleName("xintaofei/codeg")
     expect(repo).toHaveAttribute(
       "title",
@@ -806,10 +806,10 @@ describe("ForgePage header", () => {
     listing()
     mount()
     const repo = await screen.findByRole("button", {
-      name: /xintaofei\/codeg/,
+      name: /xintaofei\/RecurCode/,
     })
     const folder = screen.getByRole("button", {
-      name: /codeg/,
+      name: /RecurCode/,
       expanded: false,
     })
     expect(folder).not.toBe(repo)
@@ -822,10 +822,10 @@ describe("ForgePage header", () => {
     vi.mocked(folderForgeRemote).mockResolvedValue(null)
     mount()
     expect(
-      await screen.findByRole("button", { name: /codeg/, expanded: false })
+      await screen.findByRole("button", { name: /RecurCode/, expanded: false })
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: /xintaofei\/codeg/ })
+      screen.queryByRole("button", { name: /xintaofei\/RecurCode/ })
     ).toBeNull()
   })
 
@@ -1379,23 +1379,23 @@ describe("ForgePage loading coordination", () => {
     const user = userEvent.setup()
     useAppWorkspaceStore.setState({
       folders: [
-        { id: 1, name: "codeg", parent_id: null, kind: "regular" },
+        { id: 1, name: "RecurCode", parent_id: null, kind: "regular" },
         { id: 2, name: "other-project", parent_id: null, kind: "regular" },
       ] as never,
     })
     const settle = deferredListing()
     mount()
-    await settle(listOf([issue(1, "row from codeg")]))
-    await screen.findByText("row from codeg")
+    await settle(listOf([issue(1, "row from RecurCode")]))
+    await screen.findByText("row from RecurCode")
 
     await user.click(
-      screen.getByRole("button", { name: /codeg/, expanded: false })
+      screen.getByRole("button", { name: /RecurCode/, expanded: false })
     )
     await user.click(
       await screen.findByRole("option", { name: /other-project/ })
     )
 
-    expect(screen.queryByText("row from codeg")).toBeNull()
+    expect(screen.queryByText("row from RecurCode")).toBeNull()
     expect(screen.getByTestId("forge-list-skeleton")).toBeInTheDocument()
   })
 
@@ -1483,15 +1483,15 @@ describe("ForgePage detail panel", () => {
   it("closes when the folder changes", async () => {
     useAppWorkspaceStore.setState({
       folders: [
-        { id: 1, name: "codeg", parent_id: null, kind: "regular" },
+        { id: 1, name: "RecurCode", parent_id: null, kind: "regular" },
         { id: 2, name: "other-project", parent_id: null, kind: "regular" },
       ] as never,
     })
     vi.mocked(forgeListIssues).mockResolvedValue(
-      listOf([withBody(1, "row from codeg", "body")])
+      listOf([withBody(1, "row from RecurCode", "body")])
     )
     mount()
-    await openDetail("row from codeg")
+    await openDetail("row from RecurCode")
     expect(screen.getByRole("dialog")).toBeInTheDocument()
 
     // The folder changes out from under the page — the FALLBACK path the page
@@ -1518,10 +1518,10 @@ describe("ForgePage detail panel", () => {
    *  a folder, and so did nothing at all when pressed. */
   it("closes when the last folder leaves the workspace", async () => {
     vi.mocked(forgeListIssues).mockResolvedValue(
-      listOf([withBody(1, "row from codeg", "body")])
+      listOf([withBody(1, "row from RecurCode", "body")])
     )
     mount()
-    await openDetail("row from codeg")
+    await openDetail("row from RecurCode")
     expect(screen.getByRole("dialog")).toBeInTheDocument()
 
     await act(async () => {
@@ -1530,7 +1530,7 @@ describe("ForgePage detail panel", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
     // The rows go with it, so nothing of the old repository is left on screen.
     expect(
-      screen.queryByRole("button", { name: "row from codeg" })
+      screen.queryByRole("button", { name: "row from RecurCode" })
     ).not.toBeInTheDocument()
   })
 

@@ -151,7 +151,7 @@ fn is_exec_busy(err: &std::io::Error) -> bool {
 /// exec fails with `ETXTBSY` while *any* process holds the target file open for
 /// writing, so a multi-threaded process that writes an executable and then runs
 /// it races itself. Rust opens files `O_CLOEXEC`, but `CLOEXEC` only takes
-/// effect at exec: a `fork()` on another thread — codeg forks constantly, for
+/// effect at exec: a `fork()` on another thread — RecurCode forks constantly, for
 /// git, agents, and other terminals — copies the fd table while the write
 /// descriptor is still open, and that inherited copy keeps the file busy until
 /// the forked child reaches its own exec. An agent that writes `build.sh` and
@@ -595,12 +595,12 @@ pub(crate) fn prepend_to_path(dir: &std::path::Path) {
     std::env::set_var("PATH", new_path);
 }
 
-/// Return the user-local npm prefix directory (`~/.codeg/npm-global/`).
+/// Return the user-local npm prefix directory (`~/.recurcode/npm-global/`).
 ///
 /// Used as a fallback when `npm install -g` fails with EACCES because the
 /// system global prefix (e.g. `/usr/local/lib/node_modules/`) is not writable.
 pub(crate) fn user_npm_prefix() -> Option<PathBuf> {
-    dirs::home_dir().map(|h| h.join(".codeg").join("npm-global"))
+    dirs::home_dir().map(|h| h.join(".recurcode").join("npm-global"))
 }
 
 /// Ensure the user-local npm prefix `bin/` directory is in `PATH` so that

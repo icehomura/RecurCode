@@ -31,8 +31,8 @@ struct CommandConfigCache {
     /// `Instant::now() - Duration::from_secs(TTL + 1)`, which is a panic, not a
     /// saturating subtraction: `Sub<Duration> for Instant` is a `checked_sub`
     /// plus `expect`. On Windows an `Instant` is the QPC reading, i.e. time
-    /// since boot, so starting codeg inside the first 31 seconds of a boot
-    /// aborted the process here. codeg ships an autostart plugin, so launching
+    /// since boot, so starting RecurCode inside the first 31 seconds of a boot
+    /// aborted the process here. RecurCode ships an autostart plugin, so launching
     /// at login is an ordinary case, and this runs inside a long-lived spawned
     /// task with nobody at the keyboard.
     last_refresh: Option<Instant>,
@@ -503,7 +503,7 @@ mod tests {
     async fn callback_data_dispatches_without_command_prefix() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/codeg-dispatch-callback").await;
+        let folder_id = seed_folder(&db, "/tmp/recur-code-dispatch-callback").await;
         let target = ChannelMessageTarget::telegram_general(channel_id, "-100123");
         let bridge = Arc::new(Mutex::new(SessionBridge::new()));
 
@@ -515,7 +515,7 @@ mod tests {
             &ConnectionManager::new(),
             &EventEmitter::Noop,
             &bridge,
-            std::path::Path::new("/tmp/codeg-dispatch-data"),
+            std::path::Path::new("/tmp/recur-code-dispatch-data"),
             channel_id,
             "sender-1",
             &target,
@@ -546,7 +546,7 @@ mod tests {
             &ConnectionManager::new(),
             &EventEmitter::Noop,
             &bridge,
-            std::path::Path::new("/tmp/codeg-dispatch-data"),
+            std::path::Path::new("/tmp/recur-code-dispatch-data"),
             channel_id,
             "sender-1",
             &target,

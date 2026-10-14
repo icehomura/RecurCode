@@ -12,7 +12,7 @@ import type { WorkbenchChromeActionsProps } from "@/components/workbench/workben
  *  the reload handler next to it: this direction is one-way — there is no
  *  "nothing to configure yet" state for the button to read back, because the
  *  global row exists before any repository is picked. */
-export const OPEN_FORGE_SETTINGS_EVENT = "codeg:open-forge-settings"
+export const OPEN_FORGE_SETTINGS_EVENT = "RecurCode:open-forge-settings"
 
 /**
  * The forge route's entries in the window's top-right chrome cluster, drawn

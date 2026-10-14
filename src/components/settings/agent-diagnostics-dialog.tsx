@@ -78,7 +78,7 @@ const VERDICT_CODES = [
   "terminal_only_path",
   "npm_prefix_timeout",
   "node_too_old",
-  // Adapter agents (Claude Code, Codex): the vendor CLI is not what codeg
+  // Adapter agents (Claude Code, Codex): the vendor CLI is not what RecurCode
   // launches, so "not installed" needs a different explanation.
   "adapter_missing_native_present",
   "adapter_missing",

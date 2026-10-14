@@ -61,7 +61,7 @@ const MODIFIER_CODES = new Set([
 ])
 
 /** A letter, a digit, F1–F12, Escape or a punctuation key — never a media
- *  key (on macOS watching one takes a permission codeg must not hold). */
+ *  key (on macOS watching one takes a permission RecurCode must not hold). */
 export function isAllowedStopKey(code: string): boolean {
   return (
     /^Key[A-Z]$/.test(code) ||

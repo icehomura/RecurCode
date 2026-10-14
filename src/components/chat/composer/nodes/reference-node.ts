@@ -23,7 +23,7 @@ function parseRefType(raw: string | null): ReferenceKind {
 // Only schemes the composer itself emits. Reference URIs parsed from pasted
 // HTML are an untrusted input, so anything else (javascript:, data:, http:, …)
 // is dropped to null rather than carried into a ResourceLink on send.
-const ALLOWED_URI_SCHEMES = ["file:", "codeg:"]
+const ALLOWED_URI_SCHEMES = ["file:", "RecurCode:"]
 
 /** Keep a parsed reference URI only if it uses a scheme the composer emits. */
 function parseUri(raw: string | null): string | null {

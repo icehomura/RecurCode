@@ -1,5 +1,5 @@
 //! A hostname-addressed port bridge behind a declared reverse proxy
-//! (`CODEG_BRIDGE_PUBLIC_HOST` set), where `X-Forwarded-Host` is believed.
+//! (`RECUR_CODE_BRIDGE_PUBLIC_HOST` set), where `X-Forwarded-Host` is believed.
 //!
 //! Its own test binary: the bridge's configuration is one process-wide
 //! thing, and `browser_bridge_host.rs` runs the same bridge with no proxy
@@ -11,13 +11,13 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::Response;
 use axum::routing::get;
 use axum::Router;
-use codeg_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
+use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
 
-/// The hostname the proxy in front publishes codeg at.
-const PUBLIC: &str = "codeg.test";
+/// The hostname the proxy in front publishes RecurCode at.
+const PUBLIC: &str = "RecurCode.test";
 /// What the proxy puts in `Host` when it forwards: its own upstream address,
 /// which names no bridge target.
-const INTERNAL: &str = "codeg-internal";
+const INTERNAL: &str = "recur-code-internal";
 
 fn configure_once() {
     static ONCE: OnceLock<()> = OnceLock::new();
@@ -49,9 +49,9 @@ async fn spawn_upstream() -> u16 {
     port
 }
 
-async fn spawn_codeg() -> u16 {
+async fn spawn_recur_code() -> u16 {
     let app = Router::new()
-        .fallback(|| async { "codeg's own page" })
+        .fallback(|| async { "RecurCode's own page" })
         .layer(axum::middleware::from_fn(browser_bridge::route_by_host));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -74,14 +74,14 @@ fn cookie_for(grant: &BridgeGrant) -> String {
         .entry_path
         .strip_prefix(browser_bridge::ENTER_PREFIX)
         .unwrap();
-    format!("codeg-bridge-{}={cap}", grant.target_port)
+    format!("recur-code-bridge-{}={cap}", grant.target_port)
 }
 
 #[tokio::test]
 async fn the_proxys_forwarded_host_routes_and_a_pages_cannot_escape() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let codeg = spawn_codeg().await;
+    let RecurCode = spawn_recur_code().await;
     let grant = browser_bridge::open(upstream, "tab-proxy", None).await.unwrap();
     // Behind a declared proxy the public hostname is what a target is named
     // after, whether or not the request carried a name of its own.
@@ -90,7 +90,7 @@ async fn the_proxys_forwarded_host_routes_and_a_pages_cannot_escape() {
 
     let get = |host: String, forwarded: Option<String>| {
         let mut request = client()
-            .get(format!("http://127.0.0.1:{codeg}/hello"))
+            .get(format!("http://127.0.0.1:{RecurCode}/hello"))
             .header(header::HOST, host)
             .header("sec-fetch-site", "same-origin")
             .header(header::COOKIE, cookie_for(&grant));
@@ -115,13 +115,13 @@ async fn the_proxys_forwarded_host_routes_and_a_pages_cannot_escape() {
 
     // A page on the target's origin adding a forwarding header of its own:
     // it cannot drop the `Host` that names the target, so the request stays
-    // the bridge's and never becomes codeg's pages on the target's origin.
+    // the bridge's and never becomes RecurCode's pages on the target's origin.
     let response = get(target, Some(PUBLIC.to_string())).await.unwrap();
     assert_eq!(response.text().await.unwrap(), "hello from upstream");
 
-    // And codeg's own public name is still codeg's, from either header.
+    // And RecurCode's own public name is still RecurCode's, from either header.
     let response = get(PUBLIC.to_string(), None).await.unwrap();
-    assert_eq!(response.text().await.unwrap(), "codeg's own page");
+    assert_eq!(response.text().await.unwrap(), "RecurCode's own page");
     let response = get(PUBLIC.to_string(), Some(PUBLIC.to_string())).await.unwrap();
-    assert_eq!(response.text().await.unwrap(), "codeg's own page");
+    assert_eq!(response.text().await.unwrap(), "RecurCode's own page");
 }

@@ -52,7 +52,7 @@ vi.mock("@/contexts/terminal-context", () => ({
   useTerminalContext: () => terminalContext,
 }))
 
-const STORAGE_KEY = "codeg:term-keybar"
+const STORAGE_KEY = "RecurCode:term-keybar"
 const DESKTOP_WIDTH = 1280
 /** The width the app's mobile shell starts at — `useIsMobile()` is max-width 767px. */
 const MOBILE_WIDTH = 767

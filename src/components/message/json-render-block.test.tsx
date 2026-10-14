@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-// Codeg's Markdown link, reduced to what matters here: it opens its href on
+// RecurCode's Markdown link, reduced to what matters here: it opens its href on
 // click, and — like its real context menu — owns a control rendered in a
 // portal.
 const { opened, copied } = vi.hoisted(() => ({
@@ -84,7 +84,7 @@ beforeEach(() => {
   copied.mockClear()
 })
 
-describe("json-render Link in Codeg", () => {
+describe("json-render Link in RecurCode", () => {
   it("opens the way every chat link opens", () => {
     render(
       <JsonRenderBlock
@@ -151,7 +151,7 @@ describe("json-render Link in Codeg", () => {
   })
 })
 
-describe("json-render Card in Codeg", () => {
+describe("json-render Card in RecurCode", () => {
   it("draws no shadow, whatever classes the spec gives it", () => {
     const card = (key: string, props: object, children: string[] = []) =>
       line({

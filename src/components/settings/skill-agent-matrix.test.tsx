@@ -59,7 +59,7 @@ const enableable = () => true
 describe("computeLinkDelta", () => {
   it("emits only cells that actually change when enabling", () => {
     const statuses = makeMap([
-      makeStatus("a", "claude_code", "linked_to_codeg"), // already on
+      makeStatus("a", "claude_code", "linked_to_recur_code"), // already on
       makeStatus("a", "codex", "not_linked"), // needs enabling
     ])
     const ops = computeLinkDelta(
@@ -75,7 +75,7 @@ describe("computeLinkDelta", () => {
   })
 
   it("returns [] when nothing needs to change (idempotent)", () => {
-    const statuses = makeMap([makeStatus("a", "codex", "linked_to_codeg")])
+    const statuses = makeMap([makeStatus("a", "codex", "linked_to_recur_code")])
     expect(
       computeLinkDelta(
         [{ skillId: "a", agentType: "codex" }],
@@ -111,7 +111,7 @@ describe("computeLinkDelta", () => {
 
   it("disabling only emits currently-enabled cells", () => {
     const statuses = makeMap([
-      makeStatus("a", "claude_code", "linked_to_codeg"),
+      makeStatus("a", "claude_code", "linked_to_recur_code"),
       makeStatus("a", "codex", "not_linked"),
       makeStatus("a", "gemini", "blocked_by_real_directory"),
     ])
@@ -168,7 +168,7 @@ function renderMatrix(overrides: Partial<SkillAgentMatrixProps> = {}) {
         expertId: "brainstorming",
         agentType: "claude_code",
         ok: true,
-        status: makeStatus("brainstorming", "claude_code", "linked_to_codeg"),
+        status: makeStatus("brainstorming", "claude_code", "linked_to_recur_code"),
         error: null,
       },
     ]),

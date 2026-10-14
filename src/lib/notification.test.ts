@@ -74,13 +74,13 @@ describe("getNotificationPermission", () => {
   it("reports the desktop as OS-managed rather than inventing a state", () => {
     // Neither notification backend exposes one: the Tauri plugin hard-codes
     // `Granted` on desktop and mac-notification-sys has no permission API at
-    // all. Claiming "granted" here would tell a user with Codeg switched off
+    // all. Claiming "granted" here would tell a user with RecurCode switched off
     // in System Settings that everything is fine.
     expect(getNotificationPermission()).toBe("managed_by_os")
   })
 
   it("reports `unsupported` when the browser has no Notification API", () => {
-    // The shape of a `codeg-server` reached over plain http:// on a LAN
+    // The shape of a `recur-code-server` reached over plain http:// on a LAN
     // address: not a secure context, so the constructor is simply absent.
     desktop.mockReturnValue(false)
     expect(getNotificationPermission()).toBe("unsupported")
@@ -126,7 +126,7 @@ describe("deliverSystemNotification", () => {
   it("posts through the LOCAL shell transport, never the remote one", async () => {
     // Regression: this used `getTransport()`, which in a remote-desktop window
     // is the remote HTTP transport — and `send_notification` is a
-    // `tauri-runtime`-only command the `codeg-server` binary never registers.
+    // `tauri-runtime`-only command the `recur-code-server` binary never registers.
     // Every notification in those windows failed on the far end and was
     // swallowed by the caller's `.catch()`.
     await deliverSystemNotification("t", "b")
@@ -183,14 +183,14 @@ describe("getNotificationIdentity", () => {
     // points at a host that never registers this command, and the identity we
     // want to report is the one on the screen in front of the user.
     shellCall.mockResolvedValueOnce({
-      bundleId: "app.codeg",
-      requestedBundleId: "app.codeg",
+      bundleId: "app.recurcode",
+      requestedBundleId: "app.recurcode",
       degraded: false,
     })
 
     await expect(getNotificationIdentity()).resolves.toEqual({
-      bundleId: "app.codeg",
-      requestedBundleId: "app.codeg",
+      bundleId: "app.recurcode",
+      requestedBundleId: "app.recurcode",
       degraded: false,
     })
     expect(shellCall).toHaveBeenCalledWith("notification_identity")
@@ -199,11 +199,11 @@ describe("getNotificationIdentity", () => {
 
   it("reports a degraded identity verbatim", async () => {
     // The case this whole surface exists for: notifications posted under an
-    // app the user never configured, while codeg's own switches govern
+    // app the user never configured, while RecurCode's own switches govern
     // nothing.
     shellCall.mockResolvedValueOnce({
       bundleId: "com.apple.Terminal",
-      requestedBundleId: "app.codeg",
+      requestedBundleId: "app.recurcode",
       degraded: true,
     })
 

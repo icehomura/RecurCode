@@ -1,6 +1,6 @@
 {
-  "name": "codeg",
-  "short_name": "codeg",
+  "name": "RecurCode",
+  "short_name": "RecurCode",
   "description": "AI Coding Agent Conversation Manager",
   "id": "/",
   "start_url": "/",

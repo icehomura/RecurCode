@@ -1,7 +1,7 @@
-//! One-way import: Codex pets → codeg pets.
+//! One-way import: Codex pets → RecurCode pets.
 //!
 //! Codex stores pets at `${CODEX_HOME:-~/.codex}/pets/<id>/` with the same
-//! `pet.json` + `spritesheet.webp` layout codeg uses. We copy the directory
+//! `pet.json` + `spritesheet.webp` layout RecurCode uses. We copy the directory
 //! tree verbatim so users can move a `/hatch`-ed pet over without losing
 //! anything. We never write back to the Codex tree.
 
@@ -82,7 +82,7 @@ pub fn list_importable_codex_pets() -> Result<Vec<ImportablePet>, AppCommandErro
     Ok(out)
 }
 
-/// Copy selected Codex pets into `~/.codeg/pets/`. Each entry copies the full
+/// Copy selected Codex pets into `~/.recurcode/pets/`. Each entry copies the full
 /// source directory; we deliberately re-validate nothing — Codex already
 /// produced a working pet, and we want round-trip fidelity.
 pub fn import_codex_pets(
@@ -109,7 +109,7 @@ pub fn import_codex_pets(
             if !request.overwrite_with_suffix {
                 skipped.push(ImportSkipped {
                     source_id: pet.id.clone(),
-                    reason: "Pet with this id already exists in codeg.".to_string(),
+                    reason: "Pet with this id already exists in RecurCode.".to_string(),
                 });
                 continue;
             }

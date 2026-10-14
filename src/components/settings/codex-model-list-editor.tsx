@@ -237,7 +237,7 @@ export function CodexModelListEditor({
   const { catalog, refreshing, refresh } = useCodexCatalog()
 
   // Heal ghost exclusions (officials codex has since retired to `hide`) on the
-  // way out: they are invisible here yet would keep codeg replacing codex's
+  // way out: they are invisible here yet would keep RecurCode replacing codex's
   // whole model table. Pruning on emit — not on mount — keeps an untouched form
   // byte-identical to what was stored, so nothing reports a spurious change.
   const onChange = useCallback(
@@ -251,7 +251,7 @@ export function CodexModelListEditor({
     () => new Set(value.excludedOfficials ?? []),
     [value.excludedOfficials]
   )
-  // Once the user adds a custom or removes an official, codeg writes codex's
+  // Once the user adds a custom or removes an official, RecurCode writes codex's
   // whole `model_catalog_json` (a full-table replace), so officials codex ships
   // later stop appearing on their own until this list is refreshed + re-saved.
   // Surface that caveat wherever this editor is mounted — but only for removals

@@ -3,7 +3,7 @@
 /**
  * Skills declaration card on a custom agent's settings page.
  *
- * codeg cannot detect where an arbitrary ACP agent loads skills from, so the
+ * RecurCode cannot detect where an arbitrary ACP agent loads skills from, so the
  * user declares it: the agent reads the shared `.agents/skills` store, a
  * dedicated directory of its own, or both. The declarations live on the
  * stored definition (`skills_shared_store` / `skills_dir`), which is why every

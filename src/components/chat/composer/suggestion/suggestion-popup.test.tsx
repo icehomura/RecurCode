@@ -29,7 +29,7 @@ const agentRef = {
   refType: "agent" as const,
   id: "codex",
   label: "Codex Helper",
-  uri: "codeg://agent/codex",
+  uri: "recurcode://agent/codex",
   meta: { agentType: "codex" as const },
 }
 const agentRef2 = {
@@ -38,7 +38,7 @@ const agentRef2 = {
   // Label must differ from the AgentIcon's <title> ("Claude Code") so a plain
   // text query is unambiguous (the title text is in the DOM even when decorative).
   label: "Claude Helper",
-  uri: "codeg://agent/claude_code",
+  uri: "recurcode://agent/claude_code",
   meta: { agentType: "claude_code" as const },
 }
 

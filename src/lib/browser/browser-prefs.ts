@@ -58,7 +58,7 @@ export const BROWSER_EVAL_APPROVALS: readonly BrowserEvalApproval[] = [
   "silent",
 ]
 
-/** What happens when a server codeg started announces its address.
+/** What happens when a server RecurCode started announces its address.
  *
  *  The same three answers VS Code offers for an auto-forwarded port
  *  (`silent` / `notify` / `openPreview`), under the names they have here. */
@@ -175,8 +175,8 @@ export interface BrowserPrefsSnapshot {
    *  are not reachable from here. Every silent run is still recorded on that
    *  tab's agent activity strip, so "without asking" does not mean unseen. */
   evalApproval: BrowserEvalApproval
-  /** What to do when a server started in a codeg terminal (or in a terminal
-   *  an agent asked codeg to run) prints its loopback address.
+  /** What to do when a server started in a RecurCode terminal (or in a terminal
+   *  an agent asked RecurCode to run) prints its loopback address.
    *
    *  `notify` by default, which is VS Code's default for the same situation:
    *  a tab appearing on its own is a surprise the first time it happens to
@@ -217,7 +217,7 @@ export const DEFAULT_BROWSER_PREFS: BrowserPrefsSnapshot = Object.freeze({
 }) as BrowserPrefsSnapshot
 
 const KEY_PREFIX = "browser:"
-const CHANGE_EVENT = "codeg:browser-prefs-changed"
+const CHANGE_EVENT = "RecurCode:browser-prefs-changed"
 
 function targetKey(source: LinkSource): string {
   return `${KEY_PREFIX}default-target:${source}`

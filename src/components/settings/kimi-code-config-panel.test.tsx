@@ -133,7 +133,7 @@ describe("kimiInitialMode", () => {
     expect(
       kimiInitialMode({ credentialPresent: true, credentialSynthetic: false })
     ).toBe("login")
-    // codeg's own synthetic gate token is not a "login" → default to api-key.
+    // RecurCode's own synthetic gate token is not a "login" → default to api-key.
     expect(
       kimiInitialMode({ credentialPresent: true, credentialSynthetic: true })
     ).toBe("apikey")
@@ -498,7 +498,7 @@ describe("KimiCodeConfigPanel", () => {
   })
 
   it("reports an unconfigured agent rather than a seeded gate token", () => {
-    // credentialPresent goes true after ANY save (codeg seeds the token), so
+    // credentialPresent goes true after ANY save (RecurCode seeds the token), so
     // the status must key on the managed block, not on the token file.
     renderPanel(
       makeAgent(

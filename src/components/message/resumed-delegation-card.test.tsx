@@ -158,7 +158,7 @@ describe("ResumedDelegationCard", () => {
         output={PERSISTED_ACK}
         state="output-available"
         meta={{
-          "codeg.delegation": {
+          "RecurCode.delegation": {
             status: "completed",
             child_conversation_id: 9,
             agent_type: "codex",
@@ -228,7 +228,7 @@ describe("ResumedDelegationCard", () => {
   })
 
   // A refused resume revived nothing, so there is no sub-agent card to draw —
-  // only a reason to read. The caller's `CodegMcpToolCard` takes over.
+  // only a reason to read. The caller's `RecurCodeMcpToolCard` takes over.
   //
   // The realistic refusal is the dangerous one: `not_resumable_report` answers
   // with the task's ACTUAL status and its full identity, so it is

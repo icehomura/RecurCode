@@ -1,6 +1,6 @@
 //! Transcript-tail watcher: surfaces Claude Code's OUT-OF-TURN activity.
 //!
-//! Claude Code produces activity outside any codeg-driven prompt turn:
+//! Claude Code produces activity outside any recur-code-driven prompt turn:
 //! `<task-notification>` completions of async sub-agents (`Agent` launched in
 //! the background) and background shell tasks, the agent's continued work
 //! after such a notification (which can run for many minutes), and cron//loop
@@ -27,11 +27,11 @@
 //!   dies with it.
 //!
 //! * **Rendering** — new transcript records that do NOT belong to a
-//!   codeg-sent prompt turn are assembled into turns with the SAME Stage-A/
+//!   recur-code-sent prompt turn are assembled into turns with the SAME Stage-A/
 //!   Stage-B code the detail parser uses ([`ClaudeRecordAccumulator`] +
 //!   [`group_into_turns`]) and emitted as `AcpEvent::BackgroundActivity`
 //!   upserts for the frontend's overlay slice. Foreground turns are excluded
-//!   by the **prompt ledger**: every prompt codeg sends is fingerprinted, and
+//!   by the **prompt ledger**: every prompt RecurCode sends is fingerprinted, and
 //!   a transcript turn whose initiating user record matches an unconsumed
 //!   fingerprint is the wire-rendered foreground turn (each fingerprint is
 //!   consumed exactly once, so a cron//loop re-fire of the SAME text later
@@ -194,7 +194,7 @@ fn claude_uri_link(uri: &str) -> String {
     }
 }
 
-/// Fingerprints of prompts codeg itself sent on this connection, so the
+/// Fingerprints of prompts RecurCode itself sent on this connection, so the
 /// watcher can tell wire-rendered foreground turns apart from out-of-turn
 /// activity. Shared between the connection loop (writer, on every
 /// `ConnectionCommand::Prompt`) and the watcher tick (consumer). A std mutex
@@ -250,7 +250,7 @@ impl PromptLedger {
     /// no reference to the file it replaced), so without this the only
     /// available evidence — "a sibling with a `/clear` head appeared right
     /// about when our file went quiet" — is equally true of every OTHER
-    /// conversation open on the same folder. codeg is a multi-agent
+    /// conversation open on the same folder. RecurCode is a multi-agent
     /// workbench; two Claude sessions in one project directory is the normal
     /// case, not the exotic one. Knowing that WE asked for the clear is what
     /// keeps this session from adopting a stranger's transcript.
@@ -302,7 +302,7 @@ impl PromptLedger {
             Some((Instant::now(), std::time::SystemTime::now()));
     }
 
-    /// Record the fingerprint of a prompt codeg is about to send: the first
+    /// Record the fingerprint of a prompt RecurCode is about to send: the first
     /// text the Claude adapter writes into the transcript's user record for
     /// it, trimmed — which is what that record's initiating text starts with.
     ///
@@ -322,7 +322,7 @@ impl PromptLedger {
         };
         // `/clear` is a CLI-local command: the adapter forwards it like any
         // other prompt and Claude answers it by starting a new session on a
-        // new transcript file. This is the only notice codeg gets.
+        // new transcript file. This is the only notice RecurCode gets.
         if fingerprint == "/clear" || fingerprint.starts_with("/clear ") {
             *self.clear_sent_at.lock().unwrap_or_else(|p| p.into_inner()) =
                 Some((Instant::now(), std::time::SystemTime::now()));
@@ -608,7 +608,7 @@ struct TaskEntry {
 }
 
 /// The current out-of-turn episode: a contiguous run of transcript records
-/// not belonging to any codeg-sent prompt turn, assembled into turns via the
+/// not belonging to any recur-code-sent prompt turn, assembled into turns via the
 /// detail parser's own Stage A/B.
 struct Episode {
     /// Byte offset of the episode's initiating record — the stable base of
@@ -627,7 +627,7 @@ struct Episode {
 }
 
 enum Mode {
-    /// Records belong to a codeg-sent prompt turn — the wire renders them.
+    /// Records belong to a recur-code-sent prompt turn — the wire renders them.
     Foreground,
     /// Records are out-of-turn — the overlay renders them.
     Background,
@@ -674,7 +674,7 @@ pub(crate) struct WatchState {
     /// `Prompting` state observed at the previous tick — the edge detector for
     /// `current_turn_launched_ids` above.
     was_prompting: bool,
-    /// A codeg-sent prompt has been matched in the transcript and the model has
+    /// A recur-code-sent prompt has been matched in the transcript and the model has
     /// not answered it yet. Within that window the CLI writes the rest of the
     /// SUBMISSION — a slash command's `<local-command-stdout>`, the `isMeta`
     /// instruction `/goal` injects for the model, image metadata — and
@@ -804,9 +804,9 @@ impl WatchState {
     /// Whether this watch reads the session's transcript, the file whose title
     /// records the history parser resolves too: it has the file and its last
     /// read of it did not fail. Until it does (it retries the lookup every
-    /// tick), or for good when the agent writes where codeg does not look, or
+    /// tick), or for good when the agent writes where RecurCode does not look, or
     /// while the file cannot be read, the adapter's wire title is the only one
-    /// codeg has (`session_title::release_held_wire_title`).
+    /// RecurCode has (`session_title::release_held_wire_title`).
     pub(crate) fn reads_transcript(&self) -> bool {
         self.file.is_some() && !self.read_failed
     }
@@ -1500,10 +1500,10 @@ impl WatchState {
         }
 
         // A message folded into the running turn continues that turn and never
-        // starts one. Matched against the ledger — a prompt codeg sent that
+        // starts one. Matched against the ledger — a prompt RecurCode sent that
         // Claude Code folded into a turn it started on its own, or a steer — it
         // hands the rest of the turn to the wire, so an open episode closes as
-        // for any codeg-sent prompt. Unmatched, it stays with whatever turn is
+        // for any recur-code-sent prompt. Unmatched, it stays with whatever turn is
         // running, the overlay's or the wire's. The steer arm records its
         // fingerprint only once the adapter answers `injected`, so the CLI can
         // write the attachment before the ledger has it; taken for an
@@ -1524,7 +1524,7 @@ impl WatchState {
         if let Some(initiator) = turn_initiator_text(value) {
             let initiator_text = initiator.as_str();
             if ledger.consume_matching(&initiator) {
-                // A codeg-sent prompt: the wire renders this turn. Close any
+                // A recur-code-sent prompt: the wire renders this turn. Close any
                 // open episode first (flush its final state) and go silent.
                 tracing::debug!("[bg-watch] foreground turn matched ledger");
                 self.collect_changed_turns(cwd, changed_turns);
@@ -1722,7 +1722,7 @@ fn turn_initiator_text(value: &serde_json::Value) -> Option<TurnInitiatorText> {
         if s.starts_with(CONTEXT_CONTINUATION_PREFIX) {
             return None;
         }
-        // A slash command persists as command tags; codeg sent the display
+        // A slash command persists as command tags; RecurCode sent the display
         // form ("/name args"), so match the ledger against that.
         if let Some(display) = slash_command_display(s) {
             return Some(TurnInitiatorText::ReconstructedSlashCommand(display));
@@ -2487,7 +2487,7 @@ mod tests {
         let event = tick_prompting(&mut ws, &ledger);
         assert!(
             event.is_none() || unpack(event.unwrap()).0.is_empty(),
-            "the codeg-sent prompt classifies foreground"
+            "the recur-code-sent prompt classifies foreground"
         );
 
         // Mid-turn steer: the connection is STILL prompting, and the arm
@@ -2536,7 +2536,7 @@ mod tests {
     /// recorded as an attachment. It matches the ledger like the user-record
     /// shape and consumes its fingerprint. Left standing, the entry took an
     /// autonomous re-fire of the same words within the ledger's lifetime for
-    /// codeg's own, and that turn never surfaced.
+    /// RecurCode's own, and that turn never surfaced.
     #[test]
     fn a_steer_folded_into_the_running_turn_classifies_foreground() {
         let dir = tempfile::tempdir().unwrap();
@@ -2658,7 +2658,7 @@ mod tests {
     /// A folded message the ledger does not hold continues whatever turn is
     /// running. The steer arm records a steer only once the adapter answers
     /// `injected`, so the CLI can write the attachment first: inside a
-    /// codeg-sent turn the rest of that turn stays the wire's instead of being
+    /// recur-code-sent turn the rest of that turn stays the wire's instead of being
     /// drawn in the overlay too. Inside an overlay episode it is part of the
     /// episode, drawn as the user turn it is.
     #[test]
@@ -2737,7 +2737,7 @@ mod tests {
         }
     }
 
-    /// A slash command sent from codeg writes MORE than its own record: the
+    /// A slash command sent from RecurCode writes MORE than its own record: the
     /// command, then `<local-command-stdout>`, then (for `/goal`) the `isMeta`
     /// STRING instruction Claude Code injects for the model — and only then the
     /// reply. Those side records are user records carrying text, so
@@ -3000,7 +3000,7 @@ mod tests {
         let ledger = PromptLedger::shared();
         ledger.record_text("do the thing");
 
-        // On disk before discovery: codeg's first prompt, the reply, an ack.
+        // On disk before discovery: RecurCode's first prompt, the reply, an ack.
         write_lines(
             &path,
             &[
@@ -3022,7 +3022,7 @@ mod tests {
         assert!(settled.is_empty());
         assert!(
             turns.is_empty(),
-            "the codeg-sent prompt classifies foreground — the wire renders it"
+            "the recur-code-sent prompt classifies foreground — the wire renders it"
         );
 
         // Its fingerprint was consumed, so a same-text out-of-turn refire
@@ -3542,7 +3542,7 @@ mod tests {
     }
 
     #[test]
-    fn codeg_sent_prompt_is_foreground_and_not_surfaced() {
+    fn recur_code_sent_prompt_is_foreground_and_not_surfaced() {
         let dir = tempfile::tempdir().unwrap();
         let path = temp_session(&dir);
         write_lines(&path, &[]);
@@ -3565,7 +3565,7 @@ mod tests {
 
     #[test]
     fn same_text_refire_without_ledger_entry_is_background() {
-        // The /loop case: codeg sent the text once (consumed), the scheduler
+        // The /loop case: RecurCode sent the text once (consumed), the scheduler
         // re-fires the SAME text later — second occurrence must surface.
         let dir = tempfile::tempdir().unwrap();
         let path = temp_session(&dir);
@@ -3892,7 +3892,7 @@ mod tests {
         assert_eq!(outstanding, 1, "resumed sub-agent re-arms the keep-alive");
     }
 
-    /// A page the built-in browser handed over, as codeg sends it with nothing
+    /// A page the built-in browser handed over, as RecurCode sends it with nothing
     /// typed: the page's block as an embedded resource, its screenshot after.
     fn page_prompt(uri: &str) -> Vec<crate::acp::types::PromptInputBlock> {
         use crate::acp::types::PromptInputBlock;
@@ -3943,7 +3943,7 @@ mod tests {
         write_lines(&path, &refs);
         assert!(
             tick_now(&mut ws, &ledger).is_none(),
-            "the prompt codeg sent must not come back as an overlay turn"
+            "the prompt RecurCode sent must not come back as an overlay turn"
         );
 
         // The same records with nothing recorded are what the watcher treats
@@ -4188,7 +4188,7 @@ mod tests {
 
     /// A transcript that exists but cannot be read titles nothing (the history
     /// parser cannot read it either), so it does not count as read and the
-    /// held wire title stays the only title codeg has. The read is retried
+    /// held wire title stays the only title RecurCode has. The read is retried
     /// every tick, so the file counts again on the tick after it becomes
     /// readable, even when only its permissions changed (its length and mtime
     /// did not, so the stat gate alone would never read it again).
@@ -4335,7 +4335,7 @@ mod tests {
         );
     }
 
-    /// With no transcript to read, the held wire title is the only one codeg
+    /// With no transcript to read, the held wire title is the only one RecurCode
     /// gets, so the watch publishes it.
     #[tokio::test]
     async fn a_tick_without_a_transcript_publishes_the_held_wire_title() {

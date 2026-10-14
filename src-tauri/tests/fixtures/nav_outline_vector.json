@@ -175,7 +175,7 @@
           "tool_name": "MultiEdit",
           "input_preview": "{\"file_path\":\"/repo/src/b.ts\",\"edits\":[{\"old_string\":\"x\",\"new_string\":\"y\"}]}",
           "status": "completed",
-          "meta": { "codeg.note": "kept as-is" }
+          "meta": { "RecurCode.note": "kept as-is" }
         },
         { "type": "image", "data": "aGVsbG8=", "mime_type": "image/png" },
         { "type": "text", "text": "Done." }
@@ -300,7 +300,7 @@
           "tool_name": "MultiEdit",
           "input_preview": "{\"file_path\":\"/repo/src/b.ts\",\"edits\":[{\"old_string\":\"x\",\"new_string\":\"y\"}]}",
           "status": "completed",
-          "meta": { "codeg.note": "kept as-is" }
+          "meta": { "RecurCode.note": "kept as-is" }
         }
       ]
     },

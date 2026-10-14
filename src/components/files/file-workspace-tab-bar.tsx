@@ -226,7 +226,7 @@ export function FileWorkspaceTabBar() {
  * was no way to simply open a page. The blank page is exactly that (see
  * `BLANK_PAGE_URL`): an empty tab with a focused address bar.
  *
- * The local servers below them are the ones codeg has watched start in its
+ * The local servers below them are the ones RecurCode has watched start in its
  * terminals (`browser::services`), listed fresh every time the menu opens:
  * the backend connects to each one while answering, so an address here is an
  * address that was answering a moment ago. This is the entry point for
@@ -269,7 +269,7 @@ function FileTabAddMenu() {
   const handleOpenChange = useCallback(
     (open: boolean) => {
       // The servers this computer's terminals started. A window bound to a
-      // remote codeg-server runs its terminals there, so none of these is
+      // remote recur-code-server runs its terminals there, so none of these is
       // one of its own — and `localhost` in its list would be ambiguous.
       if (!open || !canOpenBrowser || isRemoteDesktopMode()) return
       void browserListServices()

@@ -6,7 +6,7 @@ import {
   isRemoteDesktopMode,
   notifyRemoteDesktopUnauthorized,
 } from "./transport"
-import { getCodegToken } from "./transport/web-auth"
+import { getRecurCodeToken } from "./transport/web-auth"
 import { notifyWebUnauthorized } from "./transport/web-connection-store"
 import { getCurrentEffectiveAppLocale } from "./i18n"
 import {
@@ -560,7 +560,7 @@ export async function acpDetectAgentLocalVersion(
 }
 
 /**
- * The newest upstream release of an agent that is newer than codeg's pinned
+ * The newest upstream release of an agent that is newer than RecurCode's pinned
  * version and that Custom install can fetch; `null` when there is none. Hits
  * npm or the ACP registry, so callers ask once per visit, not per render.
  */
@@ -730,7 +730,7 @@ export async function acpUpdateHermesConfig(params: {
 
 /**
  * Persist a Kimi Code config update, keeping exactly one source authoritative.
- * `mode` "apikey" writes the codeg-managed ~/.kimi-code/config.toml provider/model
+ * `mode` "apikey" writes the recur-code-managed ~/.kimi-code/config.toml provider/model
  * block AND seeds a synthetic gate token so the API key authenticates `kimi acp`
  * (its session gate only checks for a stored token); "login" clears the managed
  * block + removes our synthetic token so a real OAuth login governs; "raw" writes
@@ -945,7 +945,7 @@ export type PiProjectTrustState = {
   decidedAt: string | null
   trustFile: string
   /**
-   * Whether the user has confirmed this folder's grant in codeg. A trusted but
+   * Whether the user has confirmed this folder's grant in RecurCode. A trusted but
    * unacknowledged folder is one an older build auto-trusted without asking, so
    * the backend refuses to launch pi there until it is answered.
    */
@@ -1018,13 +1018,13 @@ export type AntigravityLoginOutcome = {
   /** The agent's own words when it refused; `null` on success. */
   message: string | null
   /**
-   * Whether the same link still works. True only when codeg rejected the paste
+   * Whether the same link still works. True only when RecurCode rejected the paste
    * itself — the agent never saw it, so the consent already given is still good
    * and only the paste needs fixing. False once the redirect went out: the
    * agent's listener answers exactly one request.
    */
   retryable: boolean
-  /** Where the credential landed, when codeg can name the file. */
+  /** Where the credential landed, when RecurCode can name the file. */
   credentialPath: string | null
 }
 
@@ -1032,7 +1032,7 @@ export type AntigravityLoginOutcome = {
  * Begin signing in to Antigravity on a machine with no browser.
  *
  * Antigravity authenticates through a loopback browser flow the AGENT runs, so
- * on a headless server (codeg deployed on Linux, no desktop) the first session
+ * on a headless server (RecurCode deployed on Linux, no desktop) the first session
  * opens a browser that does not exist and then blocks for five minutes. This
  * runs the same flow out of band and hands back the link, so the consent can
  * happen in whatever browser the user does have.
@@ -1056,9 +1056,9 @@ export async function acpAntigravityLoginStart(
  * Finish that sign-in with the address the browser was redirected to.
  *
  * That address points at `127.0.0.1` on the *server*, which the user's browser
- * cannot reach — codeg can, so it performs the redirect on their behalf. Only
+ * cannot reach — RecurCode can, so it performs the redirect on their behalf. Only
  * the OAuth parameters are taken from the paste; the target itself comes from
- * the link codeg issued.
+ * the link RecurCode issued.
  */
 export async function acpAntigravityLoginFinish(
   handle: string,
@@ -1139,7 +1139,7 @@ export type PiTrustEntry = {
 /**
  * Record that the user reviewed an existing grant and chose to keep it, which
  * clears the launch gate for that folder. Leaves pi's `trust.json` alone — the
- * grant itself isn't changing, only codeg's record that it was confirmed.
+ * grant itself isn't changing, only RecurCode's record that it was confirmed.
  */
 export async function acpPiAcknowledgeProjectTrust(
   workspace: string
@@ -1194,7 +1194,7 @@ export async function acpReorderAgents(agentTypes: AgentType[]): Promise<void> {
 
 // ---------------------------------------------------------------------------
 // Custom ACP agents — agents the user registers from ACP registry information
-// instead of ones codeg ships hand-written support for.
+// instead of ones RecurCode ships hand-written support for.
 // ---------------------------------------------------------------------------
 
 /** One platform's binary release inside a custom agent's distribution spec. */
@@ -1255,7 +1255,7 @@ export interface CustomAgentInfo {
   versionProbe: string | null
   /**
    * User declaration that the agent accepts MCP servers on the ACP wire —
-   * for a custom agent, codeg's built-in codeg-mcp companion. Off means the
+   * for a custom agent, RecurCode's built-in recur-code-mcp companion. Off means the
    * connection is made without it, for agents that fail `session/new` when
    * any server is sent.
    */
@@ -1276,7 +1276,7 @@ export interface RegistryCatalogAgent {
   repository: string | null
   license: string | null
   distributionKinds: string[]
-  /** codeg already ships hand-written support for this agent. */
+  /** RecurCode already ships hand-written support for this agent. */
   builtin: boolean
   /** Already registered as a custom agent. */
   installed: boolean
@@ -1450,7 +1450,7 @@ export async function opencodeProviderCatalog(
 }
 
 /** The official codex model catalog (full ModelInfo entries), sourced at runtime
- *  from the codex codeg actually launches (cache + bundled fallback). Used for
+ *  from the codex RecurCode actually launches (cache + bundled fallback). Used for
  *  the official list, "quick-add official", and as the clone template for custom
  *  entries. Pass `forceRefresh` to bypass the cache and re-run codex. */
 export async function codexBundledCatalog(
@@ -3451,7 +3451,7 @@ export async function createShadcnProject(params: {
 }
 
 /**
- * Detect, per codeg-supported agent, whether the HyperFrames skills are already
+ * Detect, per recur-code-supported agent, whether the HyperFrames skills are already
  * installed globally. Cheap filesystem check, so no long timeout is needed.
  */
 export async function detectHyperframesSkills(): Promise<
@@ -3686,7 +3686,7 @@ export async function tokenUsageStatus(): Promise<TokenUsageSyncStatus> {
 }
 
 /** `full` drops every stored fact and re-parses every transcript — the escape
- *  hatch for a session file the agent's own CLI grew behind codeg's back. */
+ *  hatch for a session file the agent's own CLI grew behind RecurCode's back. */
 export async function tokenUsageSync(
   mode: "incremental" | "full" = "incremental"
 ): Promise<TokenUsageSyncResult> {
@@ -4275,7 +4275,7 @@ export async function uploadAttachment(
   if (file.size === 0) {
     // Skip empty files at the entry — both the web and remote-desktop
     // transports would otherwise dutifully POST a zero-byte multipart part
-    // (the server records it under `~/.codeg/uploads/<bucket>/...`), and
+    // (the server records it under `~/.recurcode/uploads/<bucket>/...`), and
     // we'd attach a ResourceLink to an empty file. Throw the sentinel and
     // let the pool's catch block log + continue.
     throw new EmptyAttachmentError(file.name)
@@ -4299,7 +4299,7 @@ export async function uploadAttachment(
     )
   }
 
-  const token = getCodegToken()
+  const token = getRecurCodeToken()
   const form = new FormData()
   form.append("file", file, file.name)
   if (sessionId) form.append("session_id", sessionId)
@@ -4324,7 +4324,7 @@ export async function uploadAttachment(
 }
 
 // Upload a file picked from the desktop machine's filesystem to the remote
-// codeg-server bound to the current window. The Tauri-native drag-drop event
+// recur-code-server bound to the current window. The Tauri-native drag-drop event
 // hands us OS paths (not `File` objects), so we read the bytes via Rust,
 // then reuse the same `remote_upload_attachment` channel. Only callable from
 // a window that has a remote workspace attached; non-remote callers should
@@ -4399,7 +4399,7 @@ async function workspaceFileFetch(
   body: BodyInit,
   isMultipart: boolean
 ): Promise<Response> {
-  const token = getCodegToken()
+  const token = getRecurCodeToken()
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
   }
@@ -4467,7 +4467,7 @@ export async function uploadWorkspaceFile(
   }
 
   return new Promise<UploadWorkspaceFileResult>((resolve, reject) => {
-    const token = getCodegToken()
+    const token = getRecurCodeToken()
     const xhr = new XMLHttpRequest()
     xhr.open("POST", `${window.location.origin}/api/upload_workspace_file`)
     xhr.setRequestHeader("Authorization", `Bearer ${token}`)
@@ -5315,7 +5315,7 @@ export interface DelegationSettings {
   /** Per-parent byte budget (in MB) for the broker's in-memory cache of
    * completed sub-agent result text. `0` = unlimited. */
   completed_cache_max_mb: number
-  /** Optional per-agent overrides applied when codeg-mcp spawns a subagent.
+  /** Optional per-agent overrides applied when recur-code-mcp spawns a subagent.
    * Keyed by `agent_type`. Missing entries mean "use agent defaults." */
   agent_defaults?: Partial<Record<AgentType, AgentDelegationDefaults>>
 }
@@ -5330,18 +5330,18 @@ export async function setDelegationSettings(
   return getTransport().call("set_delegation_settings", { settings })
 }
 
-// ─── codeg-mcp service status ──────────────────────────────────────────
+// ─── recur-code-mcp service status ──────────────────────────────────────────
 
-/** Headline verdict from Rust `CodegMcpServiceState`. Ordered by which problem
+/** Headline verdict from Rust `RecurCodeMcpServiceState`. Ordered by which problem
  * to solve first: only `stopped` is repairable from this process. */
-export type CodegMcpServiceState =
+export type RecurCodeMcpServiceState =
   | "stopped"
   | "unavailable"
   | "disabled"
   | "running"
 
 /** One toggleable companion tool group, named by its `--features` slug. */
-export interface CodegMcpToolGroup {
+export interface RecurCodeMcpToolGroup {
   key: string
   enabled: boolean
   /** The group this one lives inside, when it lives inside one
@@ -5351,15 +5351,15 @@ export interface CodegMcpToolGroup {
   requires?: string | null
 }
 
-/** Mirror of Rust `CodegMcpServiceStatus`. */
-export interface CodegMcpServiceStatus {
-  state: CodegMcpServiceState
+/** Mirror of Rust `RecurCodeMcpServiceStatus`. */
+export interface RecurCodeMcpServiceStatus {
+  state: RecurCodeMcpServiceState
   /** Whether the broker socket answered a liveness ping just now. */
   listening: boolean
   socket_path: string
-  /** Resolved `codeg-mcp` path; `null` when the lookup came up empty. */
+  /** Resolved `recur-code-mcp` path; `null` when the lookup came up empty. */
   binary_path: string | null
-  tool_groups: CodegMcpToolGroup[]
+  tool_groups: RecurCodeMcpToolGroup[]
   companion_count: number
   session_count: number
   active_delegations: number
@@ -5372,23 +5372,23 @@ export interface CodegMcpServiceStatus {
   can_start: boolean
 }
 
-export async function getCodegMcpServiceStatus(): Promise<CodegMcpServiceStatus> {
-  return getTransport().call("get_codeg_mcp_service_status")
+export async function getRecurCodeMcpServiceStatus(): Promise<RecurCodeMcpServiceStatus> {
+  return getTransport().call("get_recur_code_mcp_service_status")
 }
 
 /** Bind the broker socket if it isn't already answering. Idempotent. */
-export async function startCodegMcpService(): Promise<void> {
-  return getTransport().call("start_codeg_mcp_service")
+export async function startRecurCodeMcpService(): Promise<void> {
+  return getTransport().call("start_recur_code_mcp_service")
 }
 
 /** Flip one tool group by the slug the status report uses. The backend
  * dispatches to that feature's own settings writer, so this is the same write
  * the settings window performs — sibling fields and change events included. */
-export async function setCodegMcpToolGroup(
+export async function setRecurCodeMcpToolGroup(
   key: string,
   enabled: boolean
 ): Promise<void> {
-  return getTransport().call("set_codeg_mcp_tool_group", { key, enabled })
+  return getTransport().call("set_recur_code_mcp_tool_group", { key, enabled })
 }
 
 // ─── Generative UI (the ui-render skill) ────────────────────────────────
@@ -5400,7 +5400,7 @@ export interface GenerativeUiSkillInfo {
   /** The skill's name: its folder, and what the user types (`/ui-render`). */
   id: string
   /** The central skill store holds a skill of that name the user made, so
-   *  Codeg leaves the skill alone until it is renamed. */
+   *  RecurCode leaves the skill alone until it is renamed. */
   conflict: boolean
 }
 
@@ -5558,7 +5558,7 @@ export async function setChatAuthoringSettings(
 /** Live probe — opens a transient ACP connection to `agent_type`, reads what
  * it advertises (modes / config_options), and tears down. Used by the
  * delegation-settings UI so the option set on screen matches exactly what
- * codeg-mcp will receive when a subagent is spawned for delegation.
+ * recur-code-mcp will receive when a subagent is spawned for delegation.
  *
  * Does NOT touch chat-side `selectorsCache` or `localStorage` preferences. */
 export async function describeAgentOptions(
@@ -5621,7 +5621,7 @@ export interface BackupManifest {
   runtime: string
   includesExternalTranscripts: boolean
   includesSecrets: boolean
-  /** Which codeg-owned sections this archive claims to manage. */
+  /** Which recur-code-owned sections this archive claims to manage. */
   managedSections?: string[] | null
   /** Stores that could not be snapshotted cleanly. */
   degradedSqlite?: DegradedSqlite[]
@@ -5724,11 +5724,11 @@ export async function exportBackupDesktop(
 ): Promise<BackupManifest | null> {
   const { save } = await import("@tauri-apps/plugin-dialog")
   const encrypted = !!opts.passphrase
-  const ext = encrypted ? "codegbak" : "codeg.zip"
+  const ext = encrypted ? "recurcodebak" : "recurcode.zip"
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")
   const destPath = await save({
-    defaultPath: `codeg-backup-${stamp}.${ext}`,
-    filters: [{ name: "Codeg backup", extensions: [ext] }],
+    defaultPath: `recur-code-backup-${stamp}.${ext}`,
+    filters: [{ name: "RecurCode backup", extensions: [ext] }],
   })
   if (!destPath) return null
   return getTransport().call<BackupManifest>("backup_create", {
@@ -5782,7 +5782,7 @@ export async function uploadBackupWeb(
   onProgress?: (loaded: number, total: number) => void
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const token = getCodegToken()
+    const token = getRecurCodeToken()
     const xhr = new XMLHttpRequest()
     xhr.open("POST", `${window.location.origin}/api/backup_upload`)
     xhr.setRequestHeader("Authorization", `Bearer ${token}`)

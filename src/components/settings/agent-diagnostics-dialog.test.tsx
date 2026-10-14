@@ -55,7 +55,7 @@ const REPORT: AgentDiagnosticsReport = {
     },
   ],
   plain_text:
-    "===== Codeg environment diagnostics =====\nverdict [user_prefix_not_on_path]",
+    "===== RecurCode environment diagnostics =====\nverdict [user_prefix_not_on_path]",
 }
 
 afterEach(() => {

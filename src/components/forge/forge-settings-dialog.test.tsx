@@ -92,7 +92,7 @@ beforeEach(() => {
   resetAppWorkspaceStore()
   useAppWorkspaceStore.setState({
     folders: [
-      { id: 4, name: "codeg", parent_id: null, kind: "regular" },
+      { id: 4, name: "RecurCode", parent_id: null, kind: "regular" },
     ] as never,
   })
   forgeSettingsGet.mockResolvedValue(STORED)
@@ -263,7 +263,7 @@ describe("ForgeSettingsDialog folder scope", () => {
     await mountLoaded({ folderId: 4 })
 
     expect(
-      screen.getByText("How issues and changes in codeg are handled.")
+      screen.getByText("How issues and changes in RecurCode are handled.")
     ).toBeInTheDocument()
     expect(
       screen.getByRole("tab", { name: "Global defaults" })
@@ -365,7 +365,7 @@ describe("ForgeSettingsDialog folder scope", () => {
 
     // The picker's accessible name is whatever it currently shows — the
     // folder — because a button's own text outranks its `title`.
-    await user.click(screen.getByRole("button", { name: "codeg" }))
+    await user.click(screen.getByRole("button", { name: "RecurCode" }))
     await user.click(await screen.findByText("All folders (global defaults)"))
     await waitFor(() =>
       expect(

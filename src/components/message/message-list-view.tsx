@@ -43,7 +43,7 @@ import { AgentPlanOverlay } from "@/components/chat/agent-plan-overlay"
 import { SubAgentOverlay } from "@/components/chat/sub-agent-overlay"
 import { SessionViewerHost } from "@/components/message/session-viewer-host"
 import { normalizeToolName } from "@/lib/tool-call-normalization"
-import { parseResumeTaskId } from "@/lib/codeg-mcp-tool"
+import { parseResumeTaskId } from "@/lib/recur-code-mcp-tool"
 import {
   isDelegateToAgentToolName,
   isRefusedResume,

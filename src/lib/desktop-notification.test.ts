@@ -68,12 +68,12 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-const PAYLOAD = { title: "proj - Codeg", body: "Claude has finished" }
+const PAYLOAD = { title: "proj - RecurCode", body: "Claude has finished" }
 
 /** Titled with a session's own title, as `sessionNotificationPayload` builds. */
 const SESSION_PAYLOAD = {
   title: "Fix the login bug",
-  redactedTitle: "proj - Codeg",
+  redactedTitle: "proj - RecurCode",
   body: "proj · Agent: needs permission",
   redactedBody: "Agent: needs permission",
 }
@@ -81,7 +81,7 @@ const SESSION_PAYLOAD = {
 describe("preference gates", () => {
   it("delivers when everything is on", async () => {
     await expect(notifyDesktop("turn_complete", PAYLOAD)).resolves.toBe(true)
-    expect(deliver).toHaveBeenCalledWith("proj - Codeg", "Claude has finished")
+    expect(deliver).toHaveBeenCalledWith("proj - RecurCode", "Claude has finished")
   })
 
   it("drops everything when the master switch is off", async () => {
@@ -151,7 +151,7 @@ describe("hidden contents", () => {
     await notifyDesktop("permission_request", SESSION_PAYLOAD)
 
     expect(deliver).toHaveBeenCalledWith(
-      "proj - Codeg",
+      "proj - RecurCode",
       "Agent: needs permission"
     )
   })
@@ -172,7 +172,7 @@ describe("hidden contents", () => {
 
     await notifyDesktop("turn_complete", PAYLOAD)
 
-    expect(deliver).toHaveBeenCalledWith("proj - Codeg", "Claude has finished")
+    expect(deliver).toHaveBeenCalledWith("proj - RecurCode", "Claude has finished")
   })
 })
 

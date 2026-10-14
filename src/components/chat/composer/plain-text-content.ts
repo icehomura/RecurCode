@@ -49,7 +49,7 @@ function isSendDroppedReference(attrs: ReferenceAttrs): boolean {
 /**
  * Parse pasted plain text back into badge-hydrated inline content: the same
  * wire format the transcript renders ({@link parseUserMessageSegments} —
- * `[label](file:·codeg:…)` links and bare `/cmd`·`$skill` tokens) becomes
+ * `[label](file:·RecurCode:…)` links and bare `/cmd`·`$skill` tokens) becomes
  * reference nodes, the prose between them literal text with `\n` → hardBreak.
  * The hydrated badges re-serialize (via `referenceToMarkdown`) to exactly the
  * text that was pasted, so send output is unchanged — only the composer now
@@ -62,7 +62,7 @@ function isSendDroppedReference(attrs: ReferenceAttrs): boolean {
  * the invocations the agent advertises right now. The default is none: a badge
  * in the composer claims the text IS a command, and a claim nothing backs is
  * exactly the one this argument exists to stop. Reference LINKS hydrate
- * regardless; they carry a `file:`/`codeg:` destination and were deliberately
+ * regardless; they carry a `file:`/`RecurCode:` destination and were deliberately
  * inserted.
  */
 export function textToHydratedInlineContent(
@@ -97,7 +97,7 @@ export function textToHydratedInlineContent(
  *
  * Same reasoning as the paste path: seeded text is stored in the wire format a
  * sent message uses (it usually *came from* `getText()`), so
- * `[label](file:·codeg:…)` links and bare `/cmd`·`$skill` tokens must show as
+ * `[label](file:·RecurCode:…)` links and bare `/cmd`·`$skill` tokens must show as
  * badges immediately instead of only after the message is sent. Hydration is
  * lossless — the badges re-serialize to exactly the seeded text — so what gets
  * sent is unchanged either way.
@@ -155,7 +155,7 @@ export interface ClipboardTextSnapshot {
  *   `text/html`, drops the href, and keeps the anchor **text** — so a copied
  *   URL would paste as the page's `<title>`. Force the `text/plain` flavor.
  * - A pure `text/plain` paste whose text contains serialized references
- *   (`[label](file:·codeg:…)` links, `/cmd`·`$skill` tokens). Left to
+ *   (`[label](file:·RecurCode:…)` links, `/cmd`·`$skill` tokens). Left to
  *   ProseMirror they insert as literal text that only turns into badges after
  *   sending; hydrating on paste shows the same badges immediately. Plain text
  *   with no references stays with ProseMirror (`null`) — its default multi-line

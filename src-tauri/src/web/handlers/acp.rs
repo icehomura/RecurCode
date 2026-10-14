@@ -1,4 +1,4 @@
-use crate::acp::temp_reclaim as codeg_temp_reclaim;
+use crate::acp::temp_reclaim as recur_code_temp_reclaim;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
@@ -219,7 +219,7 @@ pub async fn acp_clear_binary_cache(
 }
 
 pub async fn acp_scan_leaked_temp(
-) -> Result<Json<codeg_temp_reclaim::LeakedTempScan>, AppCommandError> {
+) -> Result<Json<recur_code_temp_reclaim::LeakedTempScan>, AppCommandError> {
     let result = acp_commands::acp_scan_leaked_temp()
         .await
         .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
@@ -234,7 +234,7 @@ pub struct AcpReclaimLeakedTempParams {
 
 pub async fn acp_reclaim_leaked_temp(
     Json(params): Json<AcpReclaimLeakedTempParams>,
-) -> Result<Json<codeg_temp_reclaim::LeakedTempReclaim>, AppCommandError> {
+) -> Result<Json<recur_code_temp_reclaim::LeakedTempReclaim>, AppCommandError> {
     let result = acp_commands::acp_reclaim_leaked_temp(params.paths)
         .await
         .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
@@ -1087,7 +1087,7 @@ pub async fn acp_pi_project_trust_state(
 #[serde(rename_all = "camelCase")]
 pub struct AcpPiSetProjectTrustParams {
     pub workspace: String,
-    /// `null` clears codeg's entry for this exact folder (revoke), rather than
+    /// `null` clears RecurCode's entry for this exact folder (revoke), rather than
     /// recording a verdict — matching the command's `Option<bool>`.
     #[serde(default)]
     pub trusted: Option<bool>,
@@ -1513,7 +1513,7 @@ mod tests {
             "connectionId": "conn-1",
             "blocks": [{
                 "type": "text",
-                "text": "ask [@Antigravity](codeg://agent/antigravity)"
+                "text": "ask [@Antigravity](recurcode://agent/antigravity)"
             }],
             "agentMentions": [{"agentType": "codex", "proof": "whatever"}]
         }))

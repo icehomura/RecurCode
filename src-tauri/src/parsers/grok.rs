@@ -1055,7 +1055,7 @@ fn update_text(update: &Value) -> String {
 
 /// Classify a `user_message_chunk`'s `content` into a display block.
 ///
-/// Grok sends prose as `{type:"text"}`. Current codeg prompts send a native
+/// Grok sends prose as `{type:"text"}`. Current RecurCode prompts send a native
 /// `{type:"image"}` chunk (so grok's describe sidecar runs). Older transcripts
 /// still carry the embedded `{type:"resource", resource:{blob, mimeType, uri}}`
 /// shape from when we followed grok's `image:false` advertisement.
@@ -1167,7 +1167,7 @@ fn read_grok_ask_answers(
     out
 }
 
-/// Parse a grok `ask_user_question` `tool_result` content string into the codeg
+/// Parse a grok `ask_user_question` `tool_result` content string into the RecurCode
 /// `{answers, declined}` envelope (the shape `parseAskQuestionOutcome` reads).
 ///
 /// Verified against grok-0.2.101. The accepted template is `User has answered
@@ -2514,7 +2514,7 @@ mod tests {
     }
 
     /// No catalog on disk (the common case for a machine that only ever ran
-    /// grok through codeg) → the name heuristic still supplies a window.
+    /// grok through RecurCode) → the name heuristic still supplies a window.
     #[test]
     fn context_window_falls_back_to_the_name_heuristic() {
         let (_tmp, sessions) = fixture(SUMMARY, RING_UPDATES);
@@ -2592,8 +2592,8 @@ mod tests {
         // task_id, in an MCP `rawOutput`) surfaces as the tool result.
         let updates = concat!(
             r#"{"method":"session/update","params":{"sessionId":"s","update":{"sessionUpdate":"user_message_chunk","content":{"type":"text","text":"委派构建"}}},"timestamp":1783584019}"#, "\n",
-            r#"{"method":"session/update","params":{"sessionId":"s","update":{"sessionUpdate":"tool_call","toolCallId":"call-d","title":"use_tool","rawInput":{"tool_name":"codeg-mcp__delegate_to_agent","tool_input":{"agent_type":"codex","working_dir":"/w","task":"run build"}},"_meta":{"x.ai/tool":{"name":"use_tool"}}}},"timestamp":1783584029}"#, "\n",
-            r#"{"method":"session/update","params":{"sessionId":"s","update":{"sessionUpdate":"tool_call_update","toolCallId":"call-d","status":"completed","rawOutput":{"type":"MCP","tool_name":"delegate_to_agent","server_name":"codeg-mcp","output":{"OkayOutput":"Delegation successful. task_id=2dc85849-5426-44f7."}}}},"timestamp":1783584122}"#, "\n",
+            r#"{"method":"session/update","params":{"sessionId":"s","update":{"sessionUpdate":"tool_call","toolCallId":"call-d","title":"use_tool","rawInput":{"tool_name":"recur-code-mcp__delegate_to_agent","tool_input":{"agent_type":"codex","working_dir":"/w","task":"run build"}},"_meta":{"x.ai/tool":{"name":"use_tool"}}}},"timestamp":1783584029}"#, "\n",
+            r#"{"method":"session/update","params":{"sessionId":"s","update":{"sessionUpdate":"tool_call_update","toolCallId":"call-d","status":"completed","rawOutput":{"type":"MCP","tool_name":"delegate_to_agent","server_name":"recur-code-mcp","output":{"OkayOutput":"Delegation successful. task_id=2dc85849-5426-44f7."}}}},"timestamp":1783584122}"#, "\n",
             r#"{"method":"session/update","params":{"sessionId":"s","update":{"sessionUpdate":"turn_completed","stop_reason":"end_turn"}},"timestamp":1783584129}"#, "\n",
         );
         let (_tmp, sessions) = fixture(SUMMARY, updates);
@@ -2616,7 +2616,7 @@ mod tests {
             })
             .expect("tool use present");
         // Tool name unwrapped to the MCP tool, not the "use_tool" wrapper.
-        assert_eq!(tool_name, "codeg-mcp__delegate_to_agent");
+        assert_eq!(tool_name, "recur-code-mcp__delegate_to_agent");
         // Input preview is the inner tool_input (carries the task); wrapper gone.
         let input = input_preview.expect("input preview present");
         assert!(
@@ -2650,7 +2650,7 @@ mod tests {
         let updates = format!(
             concat!(
                 r#"{{"method":"session/update","params":{{"sessionId":"s","update":{{"sessionUpdate":"user_message_chunk","content":{{"type":"text","text":"go"}}}}}},"timestamp":1783584019}}"#, "\n",
-                r#"{{"method":"session/update","params":{{"sessionId":"s","update":{{"sessionUpdate":"tool_call","toolCallId":"call-d","title":"use_tool","rawInput":{{"tool_name":"codeg-mcp__delegate_to_agent","tool_input":{{"agent_type":"codex","task":"{}"}}}}}}}},"timestamp":1783584029}}"#, "\n",
+                r#"{{"method":"session/update","params":{{"sessionId":"s","update":{{"sessionUpdate":"tool_call","toolCallId":"call-d","title":"use_tool","rawInput":{{"tool_name":"recur-code-mcp__delegate_to_agent","tool_input":{{"agent_type":"codex","task":"{}"}}}}}}}},"timestamp":1783584029}}"#, "\n",
                 r#"{{"method":"session/update","params":{{"sessionId":"s","update":{{"sessionUpdate":"turn_completed","stop_reason":"end_turn"}}}},"timestamp":1783584129}}"#, "\n",
             ),
             long_task

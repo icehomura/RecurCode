@@ -499,7 +499,7 @@ export function QuickActions({ onSelect, agentType }: QuickActionsProps) {
 
   // Hidden when the user has turned off the welcome-page mode selection area
   // (Settings › Appearance), or when a custom-dir pi can't have skills managed
-  // by codeg's default-dir store — in the latter case we hide the shortcut
+  // by RecurCode's default-dir store — in the latter case we hide the shortcut
   // cards rather than show ones that lock with a Settings path the
   // Experts/Office matrices also hide for this agent.
   if (!supported || !showWelcomeQuickActions) return null

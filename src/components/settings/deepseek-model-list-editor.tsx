@@ -340,7 +340,7 @@ export function DeepSeekModelListEditor({
   // The bridge advertises the model config option only when it has more than
   // one route, so a one-entry catalog removes the composer's dropdown. (A
   // deployment that hand-configures a SECOND provider in the same document
-  // still has routes from it — but codeg does not drive that plane, so for
+  // still has routes from it — but RecurCode does not drive that plane, so for
   // everything it configures, one entry means no picker.)
   const hidesSelector = draft.length === 1
   // What a new session actually opens on, whether or not the raw env sets it.

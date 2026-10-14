@@ -29,14 +29,14 @@ fn linux_browser_regressions() {
     .unwrap();
     temp_env::with_vars(
         [
-            ("CODEG_HOME", None),
-            ("CODEG_DATA_DIR", Some(root.to_str().unwrap())),
+            ("RECUR_CODE_HOME", None),
+            ("RECUR_CODE_DATA_DIR", Some(root.to_str().unwrap())),
             ("XDG_CONFIG_HOME", Some(config.to_str().unwrap())),
             ("GTK_IM_MODULE", Some("simple")),
         ],
         || {
             let mut context = tauri::generate_context!();
-            context.config_mut().identifier = "app.codeg.linux-browser-test".into();
+            context.config_mut().identifier = "app.recurcode.linux-browser-test".into();
             let mut app = tauri::Builder::default()
                 .any_thread()
                 .manage(BrowserRegistry::default())
@@ -297,11 +297,11 @@ fn frame_denials_stay_quiet(app: &mut tauri::App, owner: &tauri::WebviewWindow) 
         notices.lock().unwrap().is_empty(),
         "iframe denials must not produce a top-level blocked notice"
     );
-    view.load_uri("file:///codeg-test-denied");
+    view.load_uri("file:///recur-code-test-denied");
     pump_until(app, "top-level scheme refusal", || {
         !notices.lock().unwrap().is_empty()
     });
-    assert!(notices.lock().unwrap()[0].contains("file:///codeg-test-denied"));
+    assert!(notices.lock().unwrap()[0].contains("file:///recur-code-test-denied"));
     app.unlisten(listener);
     close_tab(app, "frame-tab");
 }

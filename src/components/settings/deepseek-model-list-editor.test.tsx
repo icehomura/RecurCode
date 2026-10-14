@@ -282,7 +282,7 @@ describe("DeepSeekModelListEditor", () => {
       })
     )
     expect(screen.getByText(/cannot be edited from here/i)).toBeInTheDocument()
-    // No editor, no save button: overwriting would replace a document codeg
+    // No editor, no save button: overwriting would replace a document RecurCode
     // never understood.
     expect(
       screen.queryByRole("button", { name: /save model list/i })

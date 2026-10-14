@@ -26,7 +26,7 @@ use crate::parsers::{
 /// Resolve Qoder's global config dir the way Qoder itself does.
 ///
 /// The resolver is three env vars deep, and reading only the first of them
-/// puts codeg in a different directory than the CLI it just launched —
+/// puts RecurCode in a different directory than the CLI it just launched —
 /// sessions vanish from the list, and skills install where nothing loads them:
 ///
 /// ```js
@@ -53,7 +53,7 @@ use crate::parsers::{
 /// Re-checked against the pinned 1.1.45 bundle: same precedence, same keys,
 /// same `.qoder` config-dir name.)
 ///
-/// Not mirrored, deliberately: the `--config-dir` FLAG, which codeg never
+/// Not mirrored, deliberately: the `--config-dir` FLAG, which RecurCode never
 /// passes, and the `QODERCN_*` twin, which belongs to the separate `.qoder-cn`
 /// distribution rather than the `@qoder-ai/qodercli` package pinned here.
 pub(crate) fn resolve_qoder_config_dir() -> PathBuf {
@@ -298,7 +298,7 @@ impl ReportedContext {
 ///
 /// Same correction `parsers::codex::codex_usage_counters` applies for the same
 /// reason. This is what `FACT_SCHEMA_VERSION` 3 exists for: sessions with real
-/// counters are not only the ones codeg launched with the usage launch env —
+/// counters are not only the ones RecurCode launched with the usage launch env —
 /// a custom/BYO model has always exposed them, and the parser reads every
 /// session under `~/.qoder/projects` — so stored rows need a full rebuild
 /// under the new rule.
@@ -1032,7 +1032,7 @@ impl QoderAskQuestion {
     /// A single-select answer is one pick, verbatim: an offered label or the
     /// user's own text. A multi-select answer reaches Qoder as a list, but
     /// Qoder keeps it as one string, `values.join(", ")`, with the user's own
-    /// "Other" text in that same list (codeg's card writes it after the chosen
+    /// "Other" text in that same list (RecurCode's card writes it after the chosen
     /// labels; see `crate::acp::question::build_elicitation_response`). So:
     ///
     /// - read exactly one way as offered labels joined by ", " → those labels;
@@ -1043,7 +1043,7 @@ impl QoderAskQuestion {
     ///   → the literal text if it is no label, and no pick at all if it is
     ///   one, since the card would show that label as chosen.
     ///
-    /// A live call codeg answered itself does not need this: it renders the
+    /// A live call RecurCode answered itself does not need this: it renders the
     /// reply as sent, before Qoder flattened it (see
     /// [`qoder_ask_envelope_from_reply`]).
     fn picks(&self, answer: &str) -> Vec<String> {
@@ -1133,11 +1133,11 @@ enum LabelReading {
     Ambiguous,
 }
 
-/// The answers codeg itself sent back for a Qoder `AskUserQuestion`, as the
+/// The answers RecurCode itself sent back for a Qoder `AskUserQuestion`, as the
 /// envelope the question card reads.
 ///
 /// This is the one source that is exact: Qoder's form keys question `n` as
-/// `q<n>` and codeg's reply writes a multi-select's chosen labels and the
+/// `q<n>` and RecurCode's reply writes a multi-select's chosen labels and the
 /// user's own text as separate entries, before Qoder flattens them into one
 /// string for everything it records or streams (see [`QoderAskQuestion::picks`]).
 /// `questions` are the call's own, in order, as its opening `tool_call`
@@ -1166,9 +1166,9 @@ pub(crate) fn qoder_ask_envelope_from_reply(
     (!answered.is_empty()).then(|| qoder_ask_envelope(answered))
 }
 
-/// The answer envelope codeg's question card reads (`parseAskQuestionOutcome`
+/// The answer envelope RecurCode's question card reads (`parseAskQuestionOutcome`
 /// in `src/lib/ask-question.ts`): the `{answers: [{header, question, selected}],
-/// declined}` shape codeg-mcp's `ask_user_question` records, and the one the
+/// declined}` shape recur-code-mcp's `ask_user_question` records, and the one the
 /// OpenCode and Grok history parsers rebuild for their own native asks.
 fn qoder_ask_envelope(answered: Vec<(&QoderAskQuestion, Vec<String>)>) -> String {
     let answers: Vec<Value> = answered
@@ -1230,7 +1230,7 @@ const QODER_ANSWERED_SUFFIX: &str = ". You can now continue with these answers i
 /// The answers in the result text Qoder's completion frame carries for an
 /// `AskUserQuestion` call, read against the questions the call was opened
 /// with, as the envelope the question card reads: the live path's fallback
-/// for a call codeg did not answer itself (when it did, the reply it sent is
+/// for a call RecurCode did not answer itself (when it did, the reply it sent is
 /// exact; see [`qoder_ask_envelope_from_reply`]).
 ///
 /// That frame's `rawOutput` and `content` are both the sentence handed to the
@@ -1765,12 +1765,12 @@ mod tests {
     const SIDECHAIN_LINE: &str = r#"{"type":"assistant","uuid":"sc1","timestamp":"2026-08-16T15:45:35.000Z","message":{"role":"assistant","model":"qmodel_38max","content":[{"type":"text","text":"sub-agent internal output"}]},"parentUuid":null,"isSidechain":true,"cwd":"/private/tmp/probe","sessionId":"s1","userType":"external","entrypoint":"cli","version":"1.1.23","gitBranch":"main"}"#;
 
     // The shape a REAL ACP-entrypoint session writes (captured from
-    // `~/.qoder/projects/*/*.jsonl` on a machine codeg drove): the human prompt
+    // `~/.qoder/projects/*/*.jsonl` on a machine RecurCode drove): the human prompt
     // is a block ARRAY, not a string, and there is no `gitBranch`.
-    const ACP_USER_LINE: &str = r#"{"type":"user","uuid":"au1","timestamp":"2026-07-25T12:08:58.095Z","message":{"role":"user","content":[{"type":"text","text":"hi"}]},"permissionMode":"bypassPermissions","origin":{"kind":"human"},"promptId":"351c","parentUuid":null,"isSidechain":false,"cwd":"/Users/x/work/codeg","sessionId":"s2","userType":"external","entrypoint":"acp","version":"unknown"}"#;
+    const ACP_USER_LINE: &str = r#"{"type":"user","uuid":"au1","timestamp":"2026-07-25T12:08:58.095Z","message":{"role":"user","content":[{"type":"text","text":"hi"}]},"permissionMode":"bypassPermissions","origin":{"kind":"human"},"promptId":"351c","parentUuid":null,"isSidechain":false,"cwd":"/Users/x/work/RecurCode","sessionId":"s2","userType":"external","entrypoint":"acp","version":"unknown"}"#;
     // …and a failed turn is a real assistant record carrying the raw provider
     // payload under `<synthetic>` + `isApiErrorMessage`.
-    const ACP_ERROR_LINE: &str = r#"{"type":"assistant","uuid":"aa1","timestamp":"2026-07-25T12:09:00.807Z","message":{"id":"eb4c","type":"message","role":"assistant","model":"<synthetic>","stop_reason":"stop_sequence","content":[{"type":"text","text":"{\"pricingUrl\":\"https://qoder.com/pricing?client=qoder\"}"}]},"isApiErrorMessage":true,"error":"unknown","displayErrorCode":"112","parentUuid":"au1","isSidechain":false,"cwd":"/Users/x/work/codeg","sessionId":"s2","userType":"external","entrypoint":"acp","version":"unknown"}"#;
+    const ACP_ERROR_LINE: &str = r#"{"type":"assistant","uuid":"aa1","timestamp":"2026-07-25T12:09:00.807Z","message":{"id":"eb4c","type":"message","role":"assistant","model":"<synthetic>","stop_reason":"stop_sequence","content":[{"type":"text","text":"{\"pricingUrl\":\"https://qoder.com/pricing?client=qoder\"}"}]},"isApiErrorMessage":true,"error":"unknown","displayErrorCode":"112","parentUuid":"au1","isSidechain":false,"cwd":"/Users/x/work/RecurCode","sessionId":"s2","userType":"external","entrypoint":"acp","version":"unknown"}"#;
 
     #[test]
     fn summary_reads_real_layout() {
@@ -2673,7 +2673,7 @@ mod tests {
         // The consequence, named on purpose: with no content record left there
         // is no `started_at`, so a cleared session drops out of the SCAN list —
         // the same path every content-free transcript already takes. It is not a
-        // deletion: an already-imported session keeps its row in codeg's DB, and
+        // deletion: an already-imported session keeps its row in RecurCode's DB, and
         // the file itself is untouched.
         assert!(parse_summary(&path).is_none());
     }
@@ -2702,7 +2702,7 @@ mod tests {
         assert!(!detail.turns.is_empty(), "missing key is not an empty branch");
     }
 
-    // The ACP entrypoint — the one codeg itself drives — writes the human
+    // The ACP entrypoint — the one RecurCode itself drives — writes the human
     // prompt as a block ARRAY. Reading only `content.as_str()` dropped the whole
     // user turn AND left the session untitled.
     #[test]
@@ -3363,10 +3363,10 @@ mod tests {
         assert_eq!(questions[0].picks("A"), ["A"]);
     }
 
-    // What codeg itself sent back is exact: each question's own entry, chosen
+    // What RecurCode itself sent back is exact: each question's own entry, chosen
     // labels and the user's own text kept apart.
     #[test]
-    fn the_reply_codeg_sent_is_read_as_sent() {
+    fn the_reply_recur_code_sent_is_read_as_sent() {
         let questions = ask_questions(serde_json::json!([
             {"question": "Pick A or B?", "header": "Choice", "options": [{"label": "A"}, {"label": "B"}]},
             {"question": "Skipped?", "header": "Skip", "options": [{"label": "No"}]},

@@ -62,12 +62,12 @@ import { cn } from "@/lib/utils"
 const CURSOR_API_KEY_ENV = "CURSOR_API_KEY"
 const CURSOR_API_BASE_URL_ENV = "CURSOR_API_BASE_URL"
 const CURSOR_MODEL_ENV = "CURSOR_MODEL"
-/** codeg-side launch knob: "1" inserts the CLI's root `--force` flag (Run
+/** recur-code-side launch knob: "1" inserts the CLI's root `--force` flag (Run
  * Everything) before the `acp` subcommand, "0" leaves it off. The CLI reads no
  * such env var. Off is written explicitly rather than by deleting the key —
  * see [`buildCursorEnv`]. */
 const CURSOR_FORCE_ENV = "CURSOR_FORCE"
-/** codeg-side knob recording the chosen authentication method. Read by the
+/** recur-code-side knob recording the chosen authentication method. Read by the
  * launch path (`apply_cursor_env_policy`): in `subscription` mode it clears any
  * inherited CURSOR_API_KEY/BASE_URL so the CLI uses the browser-login
  * credential. The CLI itself ignores this var. */
@@ -188,20 +188,20 @@ export function cursorAuthState(
   return auth.credential_verified === false ? "stale" : "ok"
 }
 
-/** A resolved binary path that says the codeg host runs Windows (`C:\…`, or a
+/** A resolved binary path that says the RecurCode host runs Windows (`C:\…`, or a
  * UNC `\\server\share`). */
 const WINDOWS_HOST_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
 
 /** Whether the login has to run on a machine other than the one showing this
  * panel.
  *
- * `login` opens a browser on the machine that RUNS it, which is the codeg host
+ * `login` opens a browser on the machine that RUNS it, which is the RecurCode host
  * — where cursor-agent lives. A web page and a remote-desktop window both talk
- * to a codeg server somewhere else, and a server usually has no display at
+ * to a RecurCode server somewhere else, and a server usually has no display at
  * all: that is the reported case where the offered command "just cannot be
  * run". The instructions have to say where to run it and how to get through it
  * without a browser. */
-export function cursorLoginRunsOnCodegHost(
+export function cursorLoginRunsOnRecurCodeHost(
   desktop: boolean,
   remoteDesktop: boolean
 ): boolean {
@@ -211,7 +211,7 @@ export function cursorLoginRunsOnCodegHost(
 /** Whether `NO_OPEN_BROWSER=1` — Cursor's documented way to print the sign-in
  * URL instead of opening a browser — can be put in front of the command.
  *
- * Deliberately narrower than [`cursorLoginRunsOnCodegHost`]: the prefix is
+ * Deliberately narrower than [`cursorLoginRunsOnRecurCodeHost`]: the prefix is
  * POSIX shell syntax, so on a Windows host cmd/PowerShell would read it as the
  * program name and the command would fail outright. Those users still get the
  * remote wording, which tells them to set the variable themselves. */
@@ -220,12 +220,12 @@ export function cursorLoginIsHeadless(
   desktop: boolean,
   remoteDesktop: boolean
 ): boolean {
-  if (!cursorLoginRunsOnCodegHost(desktop, remoteDesktop)) return false
+  if (!cursorLoginRunsOnRecurCodeHost(desktop, remoteDesktop)) return false
   return !WINDOWS_HOST_PATH.test((binaryPath ?? "").trim())
 }
 
 /** The copy-pasteable login command. The managed cursor-agent binary lives in
- * codeg's cache (not on PATH), so a bare `cursor-agent login` fails — use the
+ * RecurCode's cache (not on PATH), so a bare `cursor-agent login` fails — use the
  * resolved absolute path, quoted when it contains whitespace. */
 export function cursorLoginCommand(
   binaryPath?: string | null,
@@ -485,7 +485,7 @@ export function CursorConfigPanel({
 
   // Two decisions, not one: WHERE the command runs drives the wording, and
   // only a POSIX host can carry the env prefix.
-  const remoteLogin = cursorLoginRunsOnCodegHost(
+  const remoteLogin = cursorLoginRunsOnRecurCodeHost(
     isDesktop(),
     isRemoteDesktopMode()
   )

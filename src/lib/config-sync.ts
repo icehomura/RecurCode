@@ -165,13 +165,13 @@ export interface DownloadOutcome {
  *  result directly, so the UI never has to guess what a status refers to. */
 export const CONFIG_SYNC_STATUS_EVENT = "config-sync://status"
 
-export const CONFIG_EXPORT_EXTENSION = "codegcfg.json"
+export const CONFIG_EXPORT_EXTENSION = "recurcodecfg.json"
 
-/** `codeg-config-2026-05-04-11-32-07.codegcfg.json` — sortable, and obvious
+/** `recur-code-config-2026-05-04-11-32-07.recurcodecfg.json` — sortable, and obvious
  *  in a downloads folder six months later. */
 export function defaultExportFileName(now: Date = new Date()): string {
   const stamp = now.toISOString().slice(0, 19).replace(/[:T]/g, "-")
-  return `codeg-config-${stamp}.${CONFIG_EXPORT_EXTENSION}`
+  return `recur-code-config-${stamp}.${CONFIG_EXPORT_EXTENSION}`
 }
 
 /** Where an import's bytes are coming from. A local desktop window names a
@@ -209,7 +209,7 @@ export async function exportConfigToFile(): Promise<ConfigExportSummary | null> 
   const { save } = await import("@tauri-apps/plugin-dialog")
   const destPath = await save({
     defaultPath: fileName,
-    filters: [{ name: "Codeg config", extensions: ["json"] }],
+    filters: [{ name: "RecurCode config", extensions: ["json"] }],
   })
   if (!destPath) return null
   return getTransport().call<ConfigExportSummary>("config_sync_export_file", {
@@ -235,7 +235,7 @@ export async function pickConfigFileToImport(): Promise<PickedConfigImport | nul
   const picked = await open({
     multiple: false,
     directory: false,
-    filters: [{ name: "Codeg config", extensions: ["json"] }],
+    filters: [{ name: "RecurCode config", extensions: ["json"] }],
   })
   const srcPath = typeof picked === "string" ? picked : null
   if (!srcPath) return null

@@ -26,7 +26,7 @@ const call = vi.fn()
 const desktop = vi.mocked(isLocalDesktop)
 
 // jsdom implements neither half of the Blob-download dance.
-const createObjectURL = vi.fn(() => "blob:codeg/1")
+const createObjectURL = vi.fn(() => "blob:RecurCode/1")
 const revokeObjectURL = vi.fn()
 
 beforeEach(() => {
@@ -40,7 +40,7 @@ describe("defaultExportFileName", () => {
   it("is filesystem-safe and sorts chronologically", () => {
     const name = defaultExportFileName(new Date("2026-05-04T11:32:07.456Z"))
     expect(name).toBe(
-      `codeg-config-2026-05-04-11-32-07.${CONFIG_EXPORT_EXTENSION}`
+      `recur-code-config-2026-05-04-11-32-07.${CONFIG_EXPORT_EXTENSION}`
     )
     // Windows rejects ':' in file names — the timestamp must not smuggle one in.
     expect(name).not.toMatch(/[:]/)
@@ -85,11 +85,11 @@ describe("local file transfer picks its runtime", () => {
     // than leaked for the life of the document.
     expect(createObjectURL).toHaveBeenCalledTimes(1)
     await vi.waitFor(() =>
-      expect(revokeObjectURL).toHaveBeenCalledWith("blob:codeg/1")
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:RecurCode/1")
     )
     // The browser owns the destination, so the reported "path" is the offered
     // file name rather than anything on a disk.
-    expect(summary?.path).toMatch(/^codeg-config-.*\.json$/)
+    expect(summary?.path).toMatch(/^recur-code-config-.*\.json$/)
   })
 
   it("uses the native save dialog on a local desktop window", async () => {

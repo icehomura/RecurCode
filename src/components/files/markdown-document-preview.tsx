@@ -255,7 +255,7 @@ export function MarkdownDocumentPreview({
   const plugins = useStreamdownPlugins(preprocessed)
   // Web links go through the app's link decision like every other click on
   // an address (the built-in browser, the system browser, or — in a browser
-  // — a dev server on the codeg host through the port bridge), under the
+  // — a dev server on the RecurCode host through the port bridge), under the
   // editor's preference.
   const openUrlTarget = useOpenUrlTarget()
 

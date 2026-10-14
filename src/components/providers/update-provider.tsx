@@ -49,7 +49,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 const IDLE_STATE: AppUpdateState = { seq: 0, status: "idle" }
 
 /** How long a completed check stays fresh. Also the polling period for a
- * long-lived window — codeg workspaces are commonly left open for days, so a
+ * long-lived window — RecurCode workspaces are commonly left open for days, so a
  * check-on-boot alone would never surface a release. */
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
 /** Delay before the first automatic check, so the manifest fetch doesn't
@@ -650,7 +650,7 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
     if (state.status === "error") void refreshLocalStatus()
   }, [state.status, refreshLocalStatus])
 
-  // What blocks an in-place update gets fixed outside codeg (a chown, a
+  // What blocks an in-place update gets fixed outside RecurCode (a chown, a
   // remount), typically in another window. Look again when the user comes
   // back, rather than keeping the manual route up until a reconnect or reload.
   useEffect(() => {

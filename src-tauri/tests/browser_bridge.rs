@@ -10,7 +10,7 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::Response;
 use axum::routing::{get, post};
 use axum::Router;
-use codeg_lib::web::browser_bridge::{self, BridgeConfig, BridgeError, BridgeGrant};
+use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeError, BridgeGrant};
 use futures_util::{SinkExt, StreamExt};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
@@ -30,7 +30,7 @@ fn configure_once() {
 }
 
 /// Runs `task` on a runtime that lasts as long as the process, the way
-/// codeg's own does. What a `#[tokio::test]` spawns stops when its test
+/// RecurCode's own does. What a `#[tokio::test]` spawns stops when its test
 /// ends, but the bridge's table of listeners is process-wide: a listener
 /// bound from inside a test would stay in it afterwards, dead, under its
 /// target port — and that port, its upstream's, would go back to the OS,
@@ -48,7 +48,7 @@ async fn on_process_runtime<T: Send + 'static>(
     RUNTIME.spawn(task).await.unwrap()
 }
 
-/// `browser_bridge::open` from that runtime, as codeg's API handler calls it
+/// `browser_bridge::open` from that runtime, as RecurCode's API handler calls it
 /// from its own: the listener it binds is served where it was bound.
 async fn open(target_port: u16, tab_id: &'static str) -> Result<BridgeGrant, BridgeError> {
     on_process_runtime(browser_bridge::open(target_port, tab_id, None)).await
@@ -168,7 +168,7 @@ fn port_of(grant: &BridgeGrant) -> u16 {
 }
 
 fn cookie_for(grant: &BridgeGrant) -> String {
-    format!("codeg-bridge-{}={}", port_of(grant), cap_of(grant))
+    format!("recur-code-bridge-{}={}", port_of(grant), cap_of(grant))
 }
 
 fn base(grant: &BridgeGrant) -> String {
@@ -284,7 +284,7 @@ async fn requests_need_this_listeners_cookie() {
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
     let response = client()
         .get(&url)
-        .header(header::COOKIE, format!("codeg-bridge-{}=wrong", port_of(&grant)))
+        .header(header::COOKIE, format!("recur-code-bridge-{}=wrong", port_of(&grant)))
         .send()
         .await
         .unwrap();
@@ -293,27 +293,27 @@ async fn requests_need_this_listeners_cookie() {
         .get(&url)
         .header(
             header::COOKIE,
-            format!("codeg-bridge-{}={}", port_of(&grant) + 1, cap_of(&grant)),
+            format!("recur-code-bridge-{}={}", port_of(&grant) + 1, cap_of(&grant)),
         )
         .send()
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
     let forbidden = response.text().await.unwrap();
-    assert!(forbidden.contains("Reopen the page from codeg"));
+    assert!(forbidden.contains("Reopen the page from RecurCode"));
 
     // With the cookie the page comes through, without the anti-framing
     // header and with its own cookies; the request the upstream saw looked
     // like a direct one.
     let response = client()
         .get(&url)
-        .header(header::COOKIE, format!("{}; codeg.locale=zh-CN; sid=abc", cookie_for(&grant)))
+        .header(header::COOKIE, format!("{}; RecurCode.locale=zh-CN; sid=abc", cookie_for(&grant)))
         .header("sec-fetch-site", "same-origin")
         // The page's own request: an Origin on this listener's port (the
         // public hostname may differ from the bind address).
         .header(
             header::ORIGIN,
-            format!("http://codeg.example:{}", port_of(&grant)),
+            format!("http://RecurCode.example:{}", port_of(&grant)),
         )
         .header(header::REFERER, format!("{}/from/here?tab=2", base(&grant)))
         .header(header::ACCEPT_ENCODING, "gzip, br")
@@ -384,7 +384,7 @@ async fn only_the_pages_own_requests_pass() {
         StatusCode::FORBIDDEN
     );
     assert_eq!(
-        send(None, Some(format!("http://codeg.example:{}", port_of(&grant)))).await.unwrap().status(),
+        send(None, Some(format!("http://RecurCode.example:{}", port_of(&grant)))).await.unwrap().status(),
         StatusCode::FORBIDDEN
     );
     // Else the Referer; nothing at all is refused (a page cannot forge a
@@ -443,7 +443,7 @@ async fn redirects_and_bodies_pass_through() {
 
     // A path outside the page's space on the bridge itself.
     let response = client()
-        .get(format!("{}/__codeg_bridge/other", base(&grant)))
+        .get(format!("{}/__recur_code_bridge/other", base(&grant)))
         .header(header::COOKIE, cookie_for(&grant))
         .header("sec-fetch-site", "same-origin")
         .send()
@@ -571,7 +571,7 @@ async fn tabs_share_a_listener_per_target_port() {
         .get(format!("{}/hello", base(&other)))
         .header(
             header::COOKIE,
-            format!("codeg-bridge-{}={}", port_of(&other), cap_of(&first)),
+            format!("recur-code-bridge-{}={}", port_of(&other), cap_of(&first)),
         )
         .send()
         .await
@@ -580,7 +580,7 @@ async fn tabs_share_a_listener_per_target_port() {
 }
 
 #[tokio::test]
-async fn codegs_own_port_is_refused() {
+async fn RecurCodes_own_port_is_refused() {
     configure_once();
     let err = open(RESERVED_PORT, "tab-reserved").await.unwrap_err();
     assert!(matches!(err, BridgeError::Reserved(p) if p == RESERVED_PORT));

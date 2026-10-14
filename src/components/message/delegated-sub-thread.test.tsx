@@ -178,7 +178,7 @@ describe("DelegatedSubThread", () => {
         parentToolUseId="pt-1"
         input="{}"
         meta={{
-          "codeg.delegation": {
+          "RecurCode.delegation": {
             status: "completed",
             child_conversation_id: 321,
             task_preview: "执行 pnpm build",

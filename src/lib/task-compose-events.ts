@@ -6,7 +6,7 @@
  * already-mounted fast path. Mirrors the session-attachment-events idiom.
  */
 
-export const CREATE_TASK_FROM_TEXT_EVENT = "codeg:create-task-from-text"
+export const CREATE_TASK_FROM_TEXT_EVENT = "RecurCode:create-task-from-text"
 
 export interface CreateTaskFromTextDetail {
   /** Message text to seed the task description with. */

@@ -15,23 +15,23 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use codeg_lib::acp::delegation::broker::{
+use recur_code_lib::acp::delegation::broker::{
     ConversationDepthLookup, DelegationBroker, DelegationConfig,
 };
-use codeg_lib::acp::delegation::listener::{
+use recur_code_lib::acp::delegation::listener::{
     DelegationListener, ParentSessionLookup, TokenEntry, TokenRegistry,
 };
-use codeg_lib::acp::delegation::spawner::{mock::MockSpawner, ConnectionSpawner};
-use codeg_lib::acp::delegation::transport::{
+use recur_code_lib::acp::delegation::spawner::{mock::MockSpawner, ConnectionSpawner};
+use recur_code_lib::acp::delegation::transport::{
     client_ask_round_trip, client_round_trip, client_status_round_trip, BrokerAskRequest,
     BrokerRequest, BrokerStatusRequest,
 };
-use codeg_lib::acp::delegation::types::{DelegationError, DelegationOutcome, DelegationSuccess};
-use codeg_lib::acp::question::{
+use recur_code_lib::acp::delegation::types::{DelegationError, DelegationOutcome, DelegationSuccess};
+use recur_code_lib::acp::question::{
     QuestionAnsweredItem, QuestionOption, QuestionOutcome, QuestionSpec, RegisteredQuestion,
     SessionQuestionAccess,
 };
-use codeg_lib::models::AgentType;
+use recur_code_lib::models::AgentType;
 use serde_json::json;
 use tokio::sync::oneshot;
 
@@ -39,10 +39,10 @@ use tokio::sync::oneshot;
 /// `$TMPDIR` happens to be.
 ///
 /// `tempfile::tempdir()` honours `$TMPDIR`, and these tests then add
-/// `/.tmpXXXXXX/codeg-e2e-*.sock` on top. That is fine against the ~20-byte
-/// default and fatal against codeg's own per-session `TMPDIR`, which is 72
-/// bytes: `codeg-e2e-batch.sock` composed to exactly 104 there, and `sun_path`
-/// caps at 104 on macOS. Three of these tests went red inside a codeg session
+/// `/.tmpXXXXXX/recur-code-e2e-*.sock` on top. That is fine against the ~20-byte
+/// default and fatal against RecurCode's own per-session `TMPDIR`, which is 72
+/// bytes: `recur-code-e2e-batch.sock` composed to exactly 104 there, and `sun_path`
+/// caps at 104 on macOS. Three of these tests went red inside a RecurCode session
 /// and green outside it, for reasons having nothing to do with the code under
 /// test.
 ///
@@ -71,11 +71,11 @@ impl ParentSessionLookup for FixedParent {
 /// No-op feedback access — this e2e suite exercises delegation, not feedback.
 struct NoFeedback;
 #[async_trait]
-impl codeg_lib::acp::feedback::SessionFeedbackAccess for NoFeedback {
+impl recur_code_lib::acp::feedback::SessionFeedbackAccess for NoFeedback {
     async fn read_pending_feedback(
         &self,
         _parent_connection_id: &str,
-    ) -> Vec<codeg_lib::acp::feedback::PendingFeedback> {
+    ) -> Vec<recur_code_lib::acp::feedback::PendingFeedback> {
         Vec::new()
     }
     async fn commit_feedback_delivered(&self, _parent_connection_id: &str, _ids: Vec<String>) {}
@@ -84,34 +84,34 @@ impl codeg_lib::acp::feedback::SessionFeedbackAccess for NoFeedback {
 /// No-op session-info access — this e2e suite never drives `get_session_info`.
 struct NoSessionInfo;
 #[async_trait]
-impl codeg_lib::acp::session_info::SessionInfoAccess for NoSessionInfo {
+impl recur_code_lib::acp::session_info::SessionInfoAccess for NoSessionInfo {
     async fn resolve(
         &self,
         session_id: i32,
         _max_messages: u32,
-    ) -> codeg_lib::acp::session_info::SessionInfo {
-        codeg_lib::acp::session_info::SessionInfo::not_found(session_id)
+    ) -> recur_code_lib::acp::session_info::SessionInfo {
+        recur_code_lib::acp::session_info::SessionInfo::not_found(session_id)
     }
 }
 
 /// Task-tool stub: the e2e delegation tests never exercise the task arms.
 struct NoTaskTools;
 #[async_trait::async_trait]
-impl codeg_lib::acp::work_task_tools::WorkTaskToolAccess for NoTaskTools {
+impl recur_code_lib::acp::work_task_tools::WorkTaskToolAccess for NoTaskTools {
     async fn report_progress(
         &self,
         _parent: &str,
         _message: &str,
-    ) -> codeg_lib::acp::work_task_tools::TaskReportAck {
-        codeg_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
+    ) -> recur_code_lib::acp::work_task_tools::TaskReportAck {
+        recur_code_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
     }
     async fn complete(
         &self,
         _parent: &str,
         _verdict: &str,
         _summary: Option<&str>,
-    ) -> codeg_lib::acp::work_task_tools::TaskReportAck {
-        codeg_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
+    ) -> recur_code_lib::acp::work_task_tools::TaskReportAck {
+        recur_code_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
     }
 }
 
@@ -119,20 +119,20 @@ impl codeg_lib::acp::work_task_tools::WorkTaskToolAccess for NoTaskTools {
 /// arms.
 struct NoAuthoring;
 #[async_trait::async_trait]
-impl codeg_lib::acp::chat_authoring::ChatAuthoringAccess for NoAuthoring {
+impl recur_code_lib::acp::chat_authoring::ChatAuthoringAccess for NoAuthoring {
     async fn create_automation(
         &self,
-        _ctx: codeg_lib::acp::chat_authoring::AuthoringContext,
-        _spec: codeg_lib::acp::chat_authoring::NewAutomationSpec,
-    ) -> codeg_lib::acp::chat_authoring::AuthoringOutcome {
-        codeg_lib::acp::chat_authoring::AuthoringOutcome::rejected("automation", "no authoring")
+        _ctx: recur_code_lib::acp::chat_authoring::AuthoringContext,
+        _spec: recur_code_lib::acp::chat_authoring::NewAutomationSpec,
+    ) -> recur_code_lib::acp::chat_authoring::AuthoringOutcome {
+        recur_code_lib::acp::chat_authoring::AuthoringOutcome::rejected("automation", "no authoring")
     }
     async fn create_work_task(
         &self,
-        _ctx: codeg_lib::acp::chat_authoring::AuthoringContext,
-        _spec: codeg_lib::acp::chat_authoring::NewWorkTaskSpec,
-    ) -> codeg_lib::acp::chat_authoring::AuthoringOutcome {
-        codeg_lib::acp::chat_authoring::AuthoringOutcome::rejected("work_task", "no authoring")
+        _ctx: recur_code_lib::acp::chat_authoring::AuthoringContext,
+        _spec: recur_code_lib::acp::chat_authoring::NewWorkTaskSpec,
+    ) -> recur_code_lib::acp::chat_authoring::AuthoringOutcome {
+        recur_code_lib::acp::chat_authoring::AuthoringOutcome::rejected("work_task", "no authoring")
     }
 }
 
@@ -220,20 +220,20 @@ async fn end_to_end_uds_happy_path() {
         broker.clone(),
         tokens,
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn codeg_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
         Arc::new(StubQuestions::default()) as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn codeg_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn codeg_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn codeg_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(codeg_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn codeg_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(codeg_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn codeg_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     // Freshly-named directory per test — no clashes across test bins.
     let dir = socket_dir();
-    let socket = dir.path().join("codeg-e2e.sock");
+    let socket = dir.path().join("recur-code-e2e.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -341,19 +341,19 @@ async fn end_to_end_uds_batch_status() {
         broker.clone(),
         tokens,
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn codeg_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
         Arc::new(StubQuestions::default()) as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn codeg_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn codeg_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn codeg_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(codeg_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn codeg_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(codeg_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn codeg_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("codeg-e2e-batch.sock");
+    let socket = dir.path().join("recur-code-e2e-batch.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -433,19 +433,19 @@ async fn end_to_end_uds_invalid_token_rejected() {
         broker,
         tokens,
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn codeg_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
         Arc::new(StubQuestions::default()) as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn codeg_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn codeg_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn codeg_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(codeg_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn codeg_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(codeg_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn codeg_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("codeg-e2e-reject.sock");
+    let socket = dir.path().join("recur-code-e2e-reject.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -504,19 +504,19 @@ async fn end_to_end_uds_ask_question_round_trip() {
         broker.clone(),
         tokens,
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn codeg_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
         questions.clone() as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn codeg_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn codeg_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn codeg_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(codeg_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn codeg_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(codeg_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn codeg_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("codeg-e2e-ask.sock");
+    let socket = dir.path().join("recur-code-e2e-ask.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -649,19 +649,19 @@ async fn end_to_end_uds_ask_revoked_after_register_declines() {
         broker.clone(),
         tokens.clone(),
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn codeg_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
         questions as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn codeg_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn codeg_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn codeg_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(codeg_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn codeg_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(codeg_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn codeg_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("codeg-e2e-ask-revoked.sock");
+    let socket = dir.path().join("recur-code-e2e-ask-revoked.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;

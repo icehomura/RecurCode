@@ -292,13 +292,13 @@ describe("TaskSettingsDialog worktree tab", () => {
     await openTab(user, "Worktree")
     const box = screen.getByRole("textbox", { name: "Worktree location" })
     expect(box).toHaveValue("")
-    await user.type(box, "  ~/codeg-worktrees  ")
+    await user.type(box, "  ~/recur-code-worktrees  ")
     await user.click(save)
 
     await waitFor(() => expect(setMock).toHaveBeenCalled())
     const [, saved] = setMock.mock.calls[0] as [number, WorkTaskFolderSettings]
     // Trimmed: a stray space would become part of the directory name.
-    expect(saved.worktree_root).toBe("~/codeg-worktrees")
+    expect(saved.worktree_root).toBe("~/recur-code-worktrees")
 
     // Clearing the box is how you go back to "next to the project folder",
     // which the engine reads off an absent value — not an empty one.

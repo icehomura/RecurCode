@@ -13,7 +13,7 @@ import { SettingsSection } from "@/components/shared/settings-section"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 /**
- * Everything that moves codeg data in or out of this machine, in one card:
+ * Everything that moves RecurCode data in or out of this machine, in one card:
  * configuration sync between machines, a whole-machine backup, and restoring
  * from one. They used to be three stacked cards — two of them titled, the third
  * ("pre-restore snapshots") a top-level card for what is really the undo button

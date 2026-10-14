@@ -4,7 +4,7 @@
 // and the only one that shares a world with an agent's own code.
 //
 // It runs there because a snippet must not: an agent's code is inlined as
-// source text and can do anything, and codeg's isolated world is where every
+// source text and can do anything, and RecurCode's isolated world is where every
 // other browser tool's answer is built, out of that world's `JSON.stringify`
 // and prototypes. One snippet replacing those would let a later snapshot
 // claim the origin a grant covers for a page nobody shared.
@@ -12,7 +12,7 @@
 // The cost is that everything here is the page's: its intrinsics, its
 // prototypes, its `JSON.stringify`. A hostile page can make all of it lie,
 // which is fine, because nothing the host decides rests on what it says —
-// where the page IS comes from a separate evaluation in codeg's own world.
+// where the page IS comes from a separate evaluation in RecurCode's own world.
 // What this owes is only that an answer comes back at all, bounded, and
 // parseable: hence the caps, the surrogate rule, and a `try` around every
 // property read.
@@ -20,7 +20,7 @@
 // The names below are called by the wrapper the host appends after this file.
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-var __codegEvalClip = function (text, limit) {
+var __recur_codeEvalClip = function (text, limit) {
   if (typeof text !== "string") text = String(text)
   if (text.length <= limit) return [text, false]
   var end = limit
@@ -30,8 +30,8 @@ var __codegEvalClip = function (text, limit) {
   if (last >= 0xd800 && last <= 0xdbff) end -= 1
   return [text.slice(0, end), true]
 }
-var __codegEvalEnvelope = function (kind, text) {
-  var clipped = __codegEvalClip(text, 4000)
+var __recur_codeEvalEnvelope = function (kind, text) {
+  var clipped = __recur_codeEvalClip(text, 4000)
   return JSON.stringify({
     ok: true,
     kind: kind,
@@ -39,7 +39,7 @@ var __codegEvalEnvelope = function (kind, text) {
     truncated: clipped[1],
   })
 }
-var __codegEvalError = function (e) {
+var __recur_codeEvalError = function (e) {
   var text
   try {
     // V8 begins a stack with the `Name: message` line; JavaScriptCore's is
@@ -72,35 +72,35 @@ var __codegEvalError = function (e) {
   } catch {
     text = "the page threw something that cannot be described"
   }
-  var clipped = __codegEvalClip(text, 4000)
+  var clipped = __recur_codeEvalClip(text, 4000)
   return JSON.stringify({
     ok: false,
     error: clipped[0],
     truncated: clipped[1],
   })
 }
-var __codegEvalRender = function (v) {
-  if (v === undefined) return __codegEvalEnvelope("undefined", "undefined")
-  if (v === null) return __codegEvalEnvelope("null", "null")
+var __recur_codeEvalRender = function (v) {
+  if (v === undefined) return __recur_codeEvalEnvelope("undefined", "undefined")
+  if (v === null) return __recur_codeEvalEnvelope("null", "null")
   var kind = typeof v
-  if (kind === "string") return __codegEvalEnvelope("string", v)
+  if (kind === "string") return __recur_codeEvalEnvelope("string", v)
   if (kind === "boolean" || kind === "number" || kind === "bigint") {
-    return __codegEvalEnvelope(kind, String(v))
+    return __recur_codeEvalEnvelope(kind, String(v))
   }
-  if (kind === "symbol") return __codegEvalEnvelope("symbol", String(v))
+  if (kind === "symbol") return __recur_codeEvalEnvelope("symbol", String(v))
   if (kind === "function") {
     var name = ""
     try {
       name = String(v.name || "")
     } catch {}
-    return __codegEvalEnvelope(
+    return __recur_codeEvalEnvelope(
       "function",
       "function " + (name || "(anonymous)")
     )
   }
   try {
     if (typeof v.then === "function") {
-      return __codegEvalEnvelope(
+      return __recur_codeEvalEnvelope(
         "promise",
         "a promise. This evaluates one expression and does not wait: return the " +
           "settled state instead, or read it back with browser_eval once it has settled."
@@ -117,7 +117,7 @@ var __codegEvalRender = function (v) {
           described += "." + cls.trim().split(/\s+/).slice(0, 3).join(".")
         }
       } catch {}
-      return __codegEvalEnvelope("node", "<" + described + ">")
+      return __recur_codeEvalEnvelope("node", "<" + described + ">")
     }
   } catch {}
   var text
@@ -135,5 +135,5 @@ var __codegEvalRender = function (v) {
   try {
     array = Array.isArray(v)
   } catch {}
-  return __codegEvalEnvelope(array ? "array" : "object", text)
+  return __recur_codeEvalEnvelope(array ? "array" : "object", text)
 }

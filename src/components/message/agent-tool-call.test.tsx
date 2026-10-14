@@ -200,7 +200,7 @@ describe("AgentToolCallPart title", () => {
           prompt: "",
           description: "",
           agent_id: "01a0098a-7e8a-72d3-b7c0-2df130c84063",
-          __codegCodexSubagentLaunch: true,
+          __recur_codeCodexSubagentLaunch: true,
         }),
         "output-available"
       )
@@ -242,7 +242,7 @@ describe("AgentToolCallPart title", () => {
       basePart(
         JSON.stringify({
           subagent_type: "pnpm_build",
-          __codegCodexSubagentLaunch: true,
+          __recur_codeCodexSubagentLaunch: true,
         }),
         "input-available"
       )
@@ -266,8 +266,8 @@ describe("AgentToolCallPart title", () => {
         basePart(
           JSON.stringify({
             subagent_type: "pnpm_build",
-            __codegCodexSubagentLaunch: true,
-            __codegCodexSubagentState: state,
+            __recur_codeCodexSubagentLaunch: true,
+            __recur_codeCodexSubagentState: state,
           }),
           "output-available"
         )
@@ -291,8 +291,8 @@ describe("AgentToolCallPart title", () => {
         JSON.stringify({
           subagent_type: "pnpm_build",
           agent_id: "01a08145-db62-78b3-9762-9cb2540216c2",
-          __codegCodexSubagentLaunch: true,
-          __codegCodexSubagentState: "completed",
+          __recur_codeCodexSubagentLaunch: true,
+          __recur_codeCodexSubagentState: "completed",
         }),
         "output-available"
       )
@@ -316,8 +316,8 @@ describe("AgentToolCallPart title", () => {
         JSON.stringify({
           subagent_type: "history_limits",
           agent_id: "01a07fc2-db62-78b3-9762-9cb2540216c2",
-          __codegCodexSubagentLaunch: true,
-          __codegCodexSubagentState: "completed",
+          __recur_codeCodexSubagentLaunch: true,
+          __recur_codeCodexSubagentState: "completed",
         }),
         "output-available"
       ),

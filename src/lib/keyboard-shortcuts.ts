@@ -169,7 +169,7 @@ export const DEFAULT_SHORTCUTS: ShortcutSettings = {
 }
 
 export const SHORTCUTS_STORAGE_KEY = "settings:shortcuts:v1"
-export const SHORTCUTS_UPDATED_EVENT = "codeg:shortcuts-updated"
+export const SHORTCUTS_UPDATED_EVENT = "RecurCode:shortcuts-updated"
 
 const FUNCTION_KEY_PATTERN = /^f\d{1,2}$/
 const DIGIT_KEY_PATTERN = /^[0-9]$/

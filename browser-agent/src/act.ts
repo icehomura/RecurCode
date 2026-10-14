@@ -1,6 +1,6 @@
 /**
  * Acting on an element an agent named in a snapshot — the other half of
- * `__codegAgent`, and the reason refs exist at all.
+ * `__recur_codeAgent`, and the reason refs exist at all.
  *
  * Everything here is JavaScript dispatching events at the element, which the
  * host reports as `synthetic` fidelity. A page cannot tell these apart from a
@@ -419,7 +419,7 @@ function obstructionAt(x: number, y: number, target: Element): Element | null {
   // A property read rather than a platform fact, but not one a page can
   // arrange: the prototype this resolves against is *this world's*, and a
   // page defining its own reaches only its own — the isolation that keeps
-  // `__codegAgent` out of the page's reach, read from the other side.
+  // `__recur_codeAgent` out of the page's reach, read from the other side.
   if (typeof document.elementFromPoint !== "function") return null
   const hit = deepElementFromPoint(x, y)
   if (!hit) return document.documentElement
@@ -1268,7 +1268,7 @@ function scrollByKey(from: Element, key: string, named: boolean): ScrollReport {
  * honour the page's `scroll-behavior` and a page that asked for `smooth`
  * would still be gliding when the agent reads the page back in its next call.
  * The setter is the fallback for an engine without CSSOM-View's methods:
- * every engine codeg ships on has them, and a throw from in here would come
+ * every engine RecurCode ships on has them, and a throw from in here would come
  * back as a broken evaluation rather than as one of this file's refusals,
  * which is a bad trade for one line.
  */

@@ -67,7 +67,7 @@ export function kimiMaxContextForModel(modelId: string): number | null {
 }
 
 /**
- * Kimi credential mode. `apikey` writes a codeg-managed config.toml provider/model
+ * Kimi credential mode. `apikey` writes a recur-code-managed config.toml provider/model
  * block AND seeds a synthetic gate token, so the API key actually authenticates
  * `kimi acp` — whose session gate only checks for a stored token and rejects an
  * API key on its own. `login` clears the managed block and removes our synthetic
@@ -202,7 +202,7 @@ export interface KimiManagedConfig {
   hasManagedBlock?: boolean
   /** Whether `kimi acp`'s session gate is satisfied (a token file is present). */
   credentialPresent?: boolean
-  /** Whether that gate token is codeg's synthetic one (vs a real OAuth login). */
+  /** Whether that gate token is RecurCode's synthetic one (vs a real OAuth login). */
   credentialSynthetic?: boolean
   rawConfigToml?: string
 }
@@ -219,7 +219,7 @@ export function parseKimiManagedConfig(
 }
 
 /**
- * Initial panel mode: the codeg-managed API-key block wins; otherwise, when a
+ * Initial panel mode: the recur-code-managed API-key block wins; otherwise, when a
  * real (non-synthetic) OAuth login is already present, show login; else default
  * to the API-key form.
  */
@@ -236,7 +236,7 @@ const KIMI_ALWAYS_THINKING_CAPABILITY = "always_thinking"
 const KIMI_EFFORT_UNSET = "__unset__"
 
 /**
- * Reasoning levels offered as one-click chips. NOT an enum codeg enforces —
+ * Reasoning levels offered as one-click chips. NOT an enum RecurCode enforces —
  * kimi forwards the string to the provider unmapped, so the right set depends
  * on the model. These cover what kimi itself ships: Anthropic's budget
  * (low/medium/high) and adaptive (+max) profiles, the latest-Opus profile
@@ -423,7 +423,7 @@ export function kimiOverridingEnvKeys(env: Record<string, string>): string[] {
 }
 
 /** Human-readable one-line summary of what is actually on disk, or null when
- * no codeg-managed block exists. Built from the projection (never the draft) so
+ * no recur-code-managed block exists. Built from the projection (never the draft) so
  * it always answers "what did my last save write?". */
 export function kimiConfigSummary(config: KimiManagedConfig): string | null {
   if (!config.hasManagedBlock) return null
@@ -449,12 +449,12 @@ type ProbeResult = { baseUrl: string; apiKey: string } & (
  * Settings panel for Kimi Code (Moonshot AI).
  *
  * `kimi acp` gates every session on a stored OAuth-style token and rejects API
- * keys on their own, so to support API-key users codeg manages BOTH a
+ * keys on their own, so to support API-key users RecurCode manages BOTH a
  * `~/.kimi-code/config.toml` provider/model block (routing inference to the key)
  * AND a synthetic gate token under `credentials/` (so the session opens). The
  * panel keeps exactly one source authoritative (enforced server-side by
  * `acpUpdateKimiCodeConfig`):
- *   • apikey — write the codeg-managed config.toml block (any of the six
+ *   • apikey — write the recur-code-managed config.toml block (any of the six
  *     interface types) + seed the gate token. The working path for a plain key.
  *   • login — clear the managed block + remove our synthetic token, so a real
  *     OAuth login (`kimi login`, needs a Kimi subscription) governs.

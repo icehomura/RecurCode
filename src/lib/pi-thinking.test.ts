@@ -12,7 +12,7 @@ import {
 
 /**
  * The read half has to agree with pi's `getSupportedThinkingLevels` byte for byte —
- * a level codeg shows but pi refuses is exactly the "picker snaps back" bug this
+ * a level RecurCode shows but pi refuses is exactly the "picker snaps back" bug this
  * whole feature exists to kill.
  */
 describe("levelsFromMap", () => {

@@ -13,7 +13,7 @@
 
 /** Private MIME type carrying the JSON {@link FileTreeDragPayload}. Lowercase to
  * match how `DataTransfer.types` normalizes custom types. */
-export const FILE_TREE_DND_MIME = "application/x-codeg-tree-entry"
+export const FILE_TREE_DND_MIME = "application/x-recur-code-tree-entry"
 
 /** The five kinds of inline reference the composer can embed — mirrors the
  * tree node kinds it can carry. */

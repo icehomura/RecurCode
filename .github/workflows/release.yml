@@ -76,7 +76,7 @@ jobs:
             const tag = context.ref.replace("refs/tags/", "");
             const { owner, repo } = context.repo;
             const prerelease = process.env.PRERELEASE === "true";
-            const releaseName = `codeg ${tag}`;
+            const releaseName = `RecurCode ${tag}`;
             const { data: tagRef } = await github.rest.git.getRef({
               owner,
               repo,
@@ -300,17 +300,17 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      # Computer use on macOS: codeg and codeg-computer-helper each check the
+      # Computer use on macOS: RecurCode and recur-code-computer-helper each check the
       # other's code signature at run time, against a designated requirement
       # compiled into the binary (never read from the bundle, which the user
-      # can write to), and codeg launches the helper under a launch
+      # can write to), and RecurCode launches the helper under a launch
       # requirement naming this Team ID, so the kernel runs nothing else from
       # the helper's path. All of it names this release's Team ID, so it is
       # pinned here, before anything is compiled, for every later step: the
-      # helper is built by prepare-sidecars (it checks codeg), codeg by
+      # helper is built by prepare-sidecars (it checks RecurCode), RecurCode by
       # tauri-action (it checks and launches the helper). A helper built
       # without its requirement refuses to start once it is Developer-ID
-      # signed, and codeg will not build with one pin and not the other.
+      # signed, and RecurCode will not build with one pin and not the other.
       - name: Pin computer-use trust anchors (macOS)
         if: contains(matrix.target, 'apple-darwin')
         shell: bash
@@ -322,22 +322,22 @@ jobs:
             exit 1
           fi
           anchor="anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = \"${APPLE_TEAM_ID}\""
-          echo "CODEG_COMPUTER_PEER_REQUIREMENT=identifier \"app.codeg\" and ${anchor}" >> "$GITHUB_ENV"
-          echo "CODEG_COMPUTER_HELPER_REQUIREMENT=identifier \"app.codeg.computer-helper\" and ${anchor}" >> "$GITHUB_ENV"
-          echo "CODEG_COMPUTER_TEAM_ID=${APPLE_TEAM_ID}" >> "$GITHUB_ENV"
+          echo "RECUR_CODE_COMPUTER_PEER_REQUIREMENT=identifier \"app.recurcode\" and ${anchor}" >> "$GITHUB_ENV"
+          echo "RECUR_CODE_COMPUTER_HELPER_REQUIREMENT=identifier \"app.recurcode.computer-helper\" and ${anchor}" >> "$GITHUB_ENV"
+          echo "RECUR_CODE_COMPUTER_TEAM_ID=${APPLE_TEAM_ID}" >> "$GITHUB_ENV"
 
-      # Build the sidecars — the `codeg-mcp` companion and the
-      # `codeg-computer-helper` computer-use executor — for the matrix target
+      # Build the sidecars — the `recur-code-mcp` companion and the
+      # `recur-code-computer-helper` computer-use executor — for the matrix target
       # and stage them at `src-tauri/binaries/<bin>-<triple>{.exe}`.
       # `tauri-action` (below) then bundles them via the `bundle.externalBin`
       # entries in `tauri.conf.json` — Tauri installs them next to the main
       # executable (install root on Linux/Windows) where the runtime finds
       # them via `current_exe` sibling lookup. On macOS the helper is no
-      # sidecar: it is staged as `src-tauri/binaries/codeg-computer-helper.app`
-      # and bundled as `Contents/Helpers/codeg-computer-helper.app`
+      # sidecar: it is staged as `src-tauri/binaries/recur-code-computer-helper.app`
+      # and bundled as `Contents/Helpers/recur-code-computer-helper.app`
       # (`tauri.macos.conf.json`), since macOS charges an executable's
       # permissions to the app bundle it sits in — a helper in Contents/MacOS
-      # would hold codeg's. The Linux arm64 cross env vars set above also
+      # would hold RecurCode's. The Linux arm64 cross env vars set above also
       # apply to this cargo invocation.
       - name: Stage sidecars for Tauri bundle
         shell: bash
@@ -350,7 +350,7 @@ jobs:
           case "${{ matrix.target }}" in
             *windows*) ext=".exe" ;;
           esac
-          for bin in codeg-mcp codeg-computer-helper; do
+          for bin in recur-code-mcp recur-code-computer-helper; do
             file="src-tauri/binaries/${bin}-${{ matrix.target }}${ext}"
             if [ ! -s "$file" ]; then
               echo "FATAL: sidecar $file missing or empty after prepare-sidecars"
@@ -360,7 +360,7 @@ jobs:
           done
           case "${{ matrix.target }}" in
             *apple-darwin*)
-              helper="src-tauri/binaries/codeg-computer-helper.app/Contents/MacOS/codeg-computer-helper"
+              helper="src-tauri/binaries/recur-code-computer-helper.app/Contents/MacOS/recur-code-computer-helper"
               if [ ! -s "$helper" ]; then
                 echo "FATAL: helper app executable $helper missing or empty after prepare-sidecars"
                 exit 1
@@ -400,9 +400,9 @@ jobs:
             exit 1
           fi
 
-          keychain_path="$RUNNER_TEMP/codeg-signing.keychain-db"
+          keychain_path="$RUNNER_TEMP/recur-code-signing.keychain-db"
           certificate_path="$RUNNER_TEMP/developer-id.p12"
-          keychain_search_list_path="$RUNNER_TEMP/codeg-keychains.txt"
+          keychain_search_list_path="$RUNNER_TEMP/recur-code-keychains.txt"
           original_default_keychain="$(
             security default-keychain -d user \
               | sed -e 's/^[[:space:]]*//' -e 's/^"//' -e 's/"$//'
@@ -476,10 +476,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          helper_app="src-tauri/binaries/codeg-computer-helper.app"
+          helper_app="src-tauri/binaries/recur-code-computer-helper.app"
           codesign --force --options runtime --timestamp \
             --sign "$APPLE_SIGNING_IDENTITY" "$helper_app"
-          codesign --verify --strict -R="${CODEG_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
+          codesign --verify --strict -R="${RECUR_CODE_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
           codesign -dv "$helper_app" 2>&1 | grep -E '^(Identifier|TeamIdentifier)='
 
       - name: Build and upload to draft release (Linux arm64)
@@ -489,7 +489,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          CODEG_SKIP_SIDECAR: "1"
+          RECUR_CODE_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -521,7 +521,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          CODEG_SKIP_SIDECAR: "1"
+          RECUR_CODE_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -546,7 +546,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          CODEG_SKIP_SIDECAR: "1"
+          RECUR_CODE_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -568,7 +568,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          CODEG_SKIP_SIDECAR: "1"
+          RECUR_CODE_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -593,26 +593,26 @@ jobs:
       # `runtime` flag prove neither of the things that matter here, so each is
       # checked on the bundle that was just built and signed:
       #   * the helper is an app of its own, `Contents/Helpers/
-      #     codeg-computer-helper.app`, and no bare copy of it is in
+      #     recur-code-computer-helper.app`, and no bare copy of it is in
       #     `Contents/MacOS/`: macOS charges an executable's permissions to the
-      #     app bundle it sits in, so a helper there would hold codeg's;
-      #   * codeg, codeg-mcp and codeg-computer-helper carry NO entitlements —
+      #     app bundle it sits in, so a helper there would hold RecurCode's;
+      #   * RecurCode, recur-code-mcp and recur-code-computer-helper carry NO entitlements —
       #     in particular none that let another process load code into them
-      #     (library-validation / dyld / get-task-allow exemptions), and codeg
-      #     never Apple Events: every agent's shell runs as codeg for TCC.
+      #     (library-validation / dyld / get-task-allow exemptions), and RecurCode
+      #     never Apple Events: every agent's shell runs as RecurCode for TCC.
       #   * each has the hardened runtime;
-      #   * codeg satisfies the requirement compiled into the helper, and the
-      #     helper the one compiled into codeg — otherwise the two refuse each
+      #   * RecurCode satisfies the requirement compiled into the helper, and the
+      #     helper the one compiled into RecurCode — otherwise the two refuse each
       #     other and computer use cannot start;
-      #   * codeg and codeg-mcp reference no Accessibility / event-posting /
+      #   * RecurCode and recur-code-mcp reference no Accessibility / event-posting /
       #     screen-capture API: holding or using those is the helper's job
       #     alone. `AXIsProcessTrusted` is the one allowed read-only query.
-      #     codeg alone may also import `CGEventTapCreate`: global-hotkey,
-      #     behind the stop shortcut, links it to watch media keys, and codeg
+      #     RecurCode alone may also import `CGEventTapCreate`: global-hotkey,
+      #     behind the stop shortcut, links it to watch media keys, and RecurCode
       #     never asks it to — `StopShortcut` names no media key and no webview
       #     is given the shortcut plugin, both held by tests. Nothing else is
       #     let through.
-      #   * the bundle carries no `codeg-server`, and its `codeg-mcp` is the
+      #   * the bundle carries no `recur-code-server`, and its `recur-code-mcp` is the
       #     sidecar built without the desktop features (no WebKit): the copies
       #     `tauri build` compiles itself stay out (`server-bin` / `mcp-bin`).
       - name: Verify computer-use signing and symbols (macOS)
@@ -620,51 +620,51 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          app="src-tauri/target/${{ matrix.target }}/release/bundle/macos/codeg.app"
+          app="src-tauri/target/${{ matrix.target }}/release/bundle/macos/RecurCode.app"
           if [ ! -d "$app" ]; then
             echo "FATAL: $app not found"
             exit 1
           fi
           codesign --verify --strict --deep "$app"
-          helper_app="$app/Contents/Helpers/codeg-computer-helper.app"
-          if [ -e "$app/Contents/MacOS/codeg-computer-helper" ]; then
-            echo "FATAL: codeg-computer-helper is in Contents/MacOS, where macOS charges it to codeg"
+          helper_app="$app/Contents/Helpers/recur-code-computer-helper.app"
+          if [ -e "$app/Contents/MacOS/recur-code-computer-helper" ]; then
+            echo "FATAL: recur-code-computer-helper is in Contents/MacOS, where macOS charges it to RecurCode"
             exit 1
           fi
           if [ ! -d "$helper_app" ]; then
             echo "FATAL: $helper_app not found"
             exit 1
           fi
-          if [ -e "$app/Contents/MacOS/codeg-server" ]; then
-            echo "FATAL: codeg-server is in the desktop bundle; its binary target must need server-bin"
+          if [ -e "$app/Contents/MacOS/recur-code-server" ]; then
+            echo "FATAL: recur-code-server is in the desktop bundle; its binary target must need server-bin"
             exit 1
           fi
-          if otool -L "$app/Contents/MacOS/codeg-mcp" | grep -q 'WebKit'; then
-            echo "FATAL: codeg-mcp links WebKit: tauri build's own copy replaced the sidecar"
+          if otool -L "$app/Contents/MacOS/recur-code-mcp" | grep -q 'WebKit'; then
+            echo "FATAL: recur-code-mcp links WebKit: tauri build's own copy replaced the sidecar"
             exit 1
           fi
-          for path in "$app/Contents/MacOS/codeg" "$app/Contents/MacOS/codeg-mcp" "$helper_app"; do
+          for path in "$app/Contents/MacOS/RecurCode" "$app/Contents/MacOS/recur-code-mcp" "$helper_app"; do
             name="$(basename "$path")"
             if ! codesign -dv "$path" 2>&1 | grep -q 'flags=0x[0-9a-f]*(runtime)'; then
               echo "FATAL: $name is not signed with the hardened runtime"
               exit 1
             fi
             if codesign -d --entitlements - --xml "$path" 2>/dev/null | grep -q '<key>'; then
-              echo "FATAL: $name carries entitlements; codeg's executables must carry none"
+              echo "FATAL: $name carries entitlements; RecurCode's executables must carry none"
               codesign -d --entitlements - "$path" || true
               exit 1
             fi
           done
-          codesign --verify --strict -R="${CODEG_COMPUTER_PEER_REQUIREMENT}" "$app/Contents/MacOS/codeg"
-          codesign --verify --strict -R="${CODEG_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
+          codesign --verify --strict -R="${RECUR_CODE_COMPUTER_PEER_REQUIREMENT}" "$app/Contents/MacOS/RecurCode"
+          codesign --verify --strict -R="${RECUR_CODE_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
           deny='^_(CGEventPost|CGEventPostToPid|CGEventPostToPSN|CGEventTapCreate|CGEventTapCreateForPid|CGEventTapCreateForPSN|CGWindowListCreateImage|CGWindowListCreateImageFromArray|CGDisplayCreateImage|CGDisplayCreateImageForRect|CGDisplayStreamCreate|CGDisplayStreamCreateWithDispatchQueue|CGRequestScreenCaptureAccess|CGRequestPostEventAccess|AXIsProcessTrustedWithOptions|AXUIElement[A-Za-z]*|AXObserver[A-Za-z]*)$|^_OBJC_CLASS_\$_SC(ShareableContent|Stream|ScreenshotManager|ContentFilter|ContentSharingPicker)$'
-          for bin in codeg codeg-mcp; do
+          for bin in RecurCode recur-code-mcp; do
             hits="$(nm -u "$app/Contents/MacOS/$bin" | grep -E "$deny" || true)"
-            if [ "$bin" = codeg ]; then
+            if [ "$bin" = RecurCode ]; then
               hits="$(printf '%s\n' "$hits" | grep -vx '_CGEventTapCreate' || true)"
             fi
             if [ -n "$hits" ]; then
-              echo "FATAL: $bin references APIs only codeg-computer-helper may use:"
+              echo "FATAL: $bin references APIs only recur-code-computer-helper may use:"
               echo "$hits"
               exit 1
             fi
@@ -717,23 +717,23 @@ jobs:
           - name: "Linux x64"
             runner: "ubuntu-22.04"
             target: "x86_64-unknown-linux-gnu"
-            artifact: "codeg-server-linux-x64"
+            artifact: "recur-code-server-linux-x64"
           - name: "Linux arm64"
             runner: "ubuntu-22.04"
             target: "aarch64-unknown-linux-gnu"
-            artifact: "codeg-server-linux-arm64"
+            artifact: "recur-code-server-linux-arm64"
           - name: "macOS x64"
             runner: "macos-latest"
             target: "x86_64-apple-darwin"
-            artifact: "codeg-server-darwin-x64"
+            artifact: "recur-code-server-darwin-x64"
           - name: "macOS arm64"
             runner: "macos-latest"
             target: "aarch64-apple-darwin"
-            artifact: "codeg-server-darwin-arm64"
+            artifact: "recur-code-server-darwin-arm64"
           - name: "Windows x64"
             runner: "windows-2022"
             target: "x86_64-pc-windows-msvc"
-            artifact: "codeg-server-windows-x64"
+            artifact: "recur-code-server-windows-x64"
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -802,29 +802,29 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm build
 
-      - name: Build server + codeg-mcp companion + computer-use helper
+      - name: Build server + recur-code-mcp companion + computer-use helper
         working-directory: src-tauri
-        # `codeg-mcp` is the stdio MCP companion the runtime injects per
+        # `recur-code-mcp` is the stdio MCP companion the runtime injects per
         # session (see acp/delegation/companion.rs). Built with the same
         # `--no-default-features --target` flags as the server so it shares
         # the cross-compile env (Linux arm64) without dragging in tauri
         # runtime deps. Each binary target needs its own feature (Cargo.toml).
-        # `codeg-computer-helper` serves computer use, which the server
-        # offers only when started with CODEG_COMPUTER_USE=1 in a desktop
+        # `recur-code-computer-helper` serves computer use, which the server
+        # offers only when started with RECUR_CODE_COMPUTER_USE=1 in a desktop
         # session; it ships beside the server, where the server looks for it.
         run: |
-          cargo build --release --bin codeg-server --no-default-features --features server-bin --target ${{ matrix.target }}
-          cargo build --release --bin codeg-mcp --no-default-features --features mcp-bin --target ${{ matrix.target }}
-          cargo build --release --bin codeg-computer-helper --no-default-features --features computer-helper --target ${{ matrix.target }}
+          cargo build --release --bin recur-code-server --no-default-features --features server-bin --target ${{ matrix.target }}
+          cargo build --release --bin recur-code-mcp --no-default-features --features mcp-bin --target ${{ matrix.target }}
+          cargo build --release --bin recur-code-computer-helper --no-default-features --features computer-helper --target ${{ matrix.target }}
 
       - name: Package (Unix)
         if: runner.os != 'Windows'
         run: |
           mkdir -p dist/${{ matrix.artifact }}
-          cp src-tauri/target/${{ matrix.target }}/release/codeg-server dist/${{ matrix.artifact }}/
-          cp src-tauri/target/${{ matrix.target }}/release/codeg-mcp dist/${{ matrix.artifact }}/
-          cp src-tauri/target/${{ matrix.target }}/release/codeg-computer-helper dist/${{ matrix.artifact }}/
-          chmod +x dist/${{ matrix.artifact }}/codeg-server dist/${{ matrix.artifact }}/codeg-mcp dist/${{ matrix.artifact }}/codeg-computer-helper
+          cp src-tauri/target/${{ matrix.target }}/release/recur-code-server dist/${{ matrix.artifact }}/
+          cp src-tauri/target/${{ matrix.target }}/release/recur-code-mcp dist/${{ matrix.artifact }}/
+          cp src-tauri/target/${{ matrix.target }}/release/recur-code-computer-helper dist/${{ matrix.artifact }}/
+          chmod +x dist/${{ matrix.artifact }}/recur-code-server dist/${{ matrix.artifact }}/recur-code-mcp dist/${{ matrix.artifact }}/recur-code-computer-helper
           cp -r out dist/${{ matrix.artifact }}/web
           cd dist && tar czf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
 
@@ -833,9 +833,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist/${{ matrix.artifact }}
-          Copy-Item src-tauri/target/${{ matrix.target }}/release/codeg-server.exe dist/${{ matrix.artifact }}/
-          Copy-Item src-tauri/target/${{ matrix.target }}/release/codeg-mcp.exe dist/${{ matrix.artifact }}/
-          Copy-Item src-tauri/target/${{ matrix.target }}/release/codeg-computer-helper.exe dist/${{ matrix.artifact }}/
+          Copy-Item src-tauri/target/${{ matrix.target }}/release/recur-code-server.exe dist/${{ matrix.artifact }}/
+          Copy-Item src-tauri/target/${{ matrix.target }}/release/recur-code-mcp.exe dist/${{ matrix.artifact }}/
+          Copy-Item src-tauri/target/${{ matrix.target }}/release/recur-code-computer-helper.exe dist/${{ matrix.artifact }}/
           Copy-Item -Recurse out dist/${{ matrix.artifact }}/web
           Compress-Archive -Path dist/${{ matrix.artifact }} -DestinationPath dist/${{ matrix.artifact }}.zip
 
@@ -843,36 +843,36 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           set -euo pipefail
-          test -x "dist/${{ matrix.artifact }}/codeg-server"
-          test -x "dist/${{ matrix.artifact }}/codeg-mcp"
-          test -x "dist/${{ matrix.artifact }}/codeg-computer-helper"
-          # `codeg-mcp --help` exits 0 without flags and prints the usage
+          test -x "dist/${{ matrix.artifact }}/recur-code-server"
+          test -x "dist/${{ matrix.artifact }}/recur-code-mcp"
+          test -x "dist/${{ matrix.artifact }}/recur-code-computer-helper"
+          # `recur-code-mcp --help` exits 0 without flags and prints the usage
           # line. Only run it for native targets; cross-compiled arm64
           # binaries on x64 runners can't execute.
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ] || \
              [ "${{ matrix.target }}" = "x86_64-apple-darwin" ] || \
              [ "${{ matrix.target }}" = "aarch64-apple-darwin" ]; then
-            "dist/${{ matrix.artifact }}/codeg-mcp" --help | grep -F 'codeg-mcp --parent-connection-id'
+            "dist/${{ matrix.artifact }}/recur-code-mcp" --help | grep -F 'recur-code-mcp --parent-connection-id'
           else
-            echo "skipping codeg-mcp --help on cross-target ${{ matrix.target }}"
+            echo "skipping recur-code-mcp --help on cross-target ${{ matrix.target }}"
           fi
 
       - name: Smoke test packaged artifact (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          if (-not (Test-Path "dist/${{ matrix.artifact }}/codeg-server.exe")) {
-            throw "codeg-server.exe missing from packaged artifact"
+          if (-not (Test-Path "dist/${{ matrix.artifact }}/recur-code-server.exe")) {
+            throw "recur-code-server.exe missing from packaged artifact"
           }
-          if (-not (Test-Path "dist/${{ matrix.artifact }}/codeg-mcp.exe")) {
-            throw "codeg-mcp.exe missing from packaged artifact"
+          if (-not (Test-Path "dist/${{ matrix.artifact }}/recur-code-mcp.exe")) {
+            throw "recur-code-mcp.exe missing from packaged artifact"
           }
-          if (-not (Test-Path "dist/${{ matrix.artifact }}/codeg-computer-helper.exe")) {
-            throw "codeg-computer-helper.exe missing from packaged artifact"
+          if (-not (Test-Path "dist/${{ matrix.artifact }}/recur-code-computer-helper.exe")) {
+            throw "recur-code-computer-helper.exe missing from packaged artifact"
           }
-          $help = & "dist/${{ matrix.artifact }}/codeg-mcp.exe" --help
-          if ($help -notlike "*codeg-mcp --parent-connection-id*") {
-            throw "codeg-mcp --help output unexpected: $help"
+          $help = & "dist/${{ matrix.artifact }}/recur-code-mcp.exe" --help
+          if ($help -notlike "*recur-code-mcp --parent-connection-id*") {
+            throw "recur-code-mcp --help output unexpected: $help"
           }
 
       - name: Upload artifact for Docker build (Linux only)
@@ -944,29 +944,29 @@ jobs:
       - name: Download Linux x64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: codeg-server-linux-x64
+          name: recur-code-server-linux-x64
           path: artifacts/linux-x64
 
       - name: Download Linux arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: codeg-server-linux-arm64
+          name: recur-code-server-linux-arm64
           path: artifacts/linux-arm64
 
       - name: Prepare Docker build context
         run: |
           set -euo pipefail
           mkdir -p dist/amd64 dist/arm64
-          cp artifacts/linux-x64/codeg-server dist/amd64/codeg-server
-          cp artifacts/linux-x64/codeg-mcp dist/amd64/codeg-mcp
-          cp artifacts/linux-arm64/codeg-server dist/arm64/codeg-server
-          cp artifacts/linux-arm64/codeg-mcp dist/arm64/codeg-mcp
+          cp artifacts/linux-x64/recur-code-server dist/amd64/recur-code-server
+          cp artifacts/linux-x64/recur-code-mcp dist/amd64/recur-code-mcp
+          cp artifacts/linux-arm64/recur-code-server dist/arm64/recur-code-server
+          cp artifacts/linux-arm64/recur-code-mcp dist/arm64/recur-code-mcp
           cp -r artifacts/linux-x64/web dist/web
-          chmod +x dist/amd64/codeg-server dist/amd64/codeg-mcp \
-                   dist/arm64/codeg-server dist/arm64/codeg-mcp
+          chmod +x dist/amd64/recur-code-server dist/amd64/recur-code-mcp \
+                   dist/arm64/recur-code-server dist/arm64/recur-code-mcp
           # Fail fast if any companion went missing — Docker would otherwise
           # produce an image where delegation silently degrades.
-          for f in dist/amd64/codeg-mcp dist/arm64/codeg-mcp; do
+          for f in dist/amd64/recur-code-mcp dist/arm64/recur-code-mcp; do
             test -x "$f" || { echo "FATAL: $f missing or non-exec"; exit 1; }
           done
 
@@ -1011,9 +1011,9 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
           tags: |
             ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/codeg:${{ steps.version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/RecurCode:${{ steps.version.outputs.version }}
             ${{ needs.create-draft-release.outputs.prerelease != 'true' && format('ghcr.io/{0}:latest', github.repository) || '' }}
-            ${{ needs.create-draft-release.outputs.prerelease != 'true' && format('{0}/codeg:latest', secrets.DOCKERHUB_USERNAME) || '' }}
+            ${{ needs.create-draft-release.outputs.prerelease != 'true' && format('{0}/RecurCode:latest', secrets.DOCKERHUB_USERNAME) || '' }}
 
   publish-release:
     needs:

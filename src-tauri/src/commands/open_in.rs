@@ -280,7 +280,7 @@ mod tests {
 
     #[test]
     fn validate_rejects_missing_path() {
-        let err = validate_open_in_code_path("/definitely/not/a/codeg/path").expect_err("missing");
+        let err = validate_open_in_code_path("/definitely/not/a/RecurCode/path").expect_err("missing");
         assert!(err.message.contains("does not exist"), "{err:?}");
     }
 
@@ -358,7 +358,7 @@ mod tests {
         );
     }
 
-    /// `&` is a legal file-name character on every platform codeg ships to, and
+    /// `&` is a legal file-name character on every platform RecurCode ships to, and
     /// a cmd command separator on one of them. The teeth are on Windows, where
     /// the stub is a `.cmd`: hand-wrapping it in `cmd /C` truncates the argument
     /// at the `&` and runs the remainder as a command. Elsewhere the stub is
@@ -381,7 +381,7 @@ mod tests {
 
     #[tokio::test]
     async fn open_in_code_core_errors_when_path_missing() {
-        let err = open_in_code_core("/no/such/codeg/open-in-code-target".into())
+        let err = open_in_code_core("/no/such/RecurCode/open-in-code-target".into())
             .await
             .expect_err("missing path");
         assert!(err.message.contains("does not exist"), "{err:?}");

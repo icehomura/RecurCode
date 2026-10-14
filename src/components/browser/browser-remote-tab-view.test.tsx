@@ -169,7 +169,7 @@ describe("BrowserRemoteTabView", () => {
     expect(screen.getByText("This address is on the remote host")).toBeVisible()
   })
 
-  // Without a port, the remote name's default port is whatever fronts codeg
+  // Without a port, the remote name's default port is whatever fronts RecurCode
   // there — not the page the address meant.
   it("has nothing to try for a loopback address without a port", () => {
     renderView("http://localhost/app")
@@ -250,7 +250,7 @@ describe("BrowserTabView", () => {
     expect(screen.getByText("This address is on dev.example.com")).toBeVisible()
     expect(
       screen.getByText(
-        "The remote codeg-server has its browser tunnel switched off (CODEG_BROWSER_TUNNEL)."
+        "The remote recur-code-server has its browser tunnel switched off (RECUR_CODE_BROWSER_TUNNEL)."
       )
     ).toBeVisible()
     expect(screen.queryByText("RAW BACKEND MESSAGE")).toBeNull()

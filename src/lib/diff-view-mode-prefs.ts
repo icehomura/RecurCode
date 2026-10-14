@@ -14,7 +14,7 @@ import { useEffect, useState } from "react"
 export type DiffViewMode = "unified" | "split"
 
 const DIFF_VIEW_MODE_KEY = "workspace:diff-view-mode"
-const DIFF_VIEW_MODE_EVENT = "codeg:diff-view-mode-changed"
+const DIFF_VIEW_MODE_EVENT = "RecurCode:diff-view-mode-changed"
 
 export function loadDiffViewMode(): DiffViewMode {
   if (typeof window === "undefined") return "unified"

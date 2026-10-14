@@ -285,8 +285,8 @@ describe("MessageInput (RichComposer integration)", () => {
     const card = container.querySelector('[class~="@container"]') as HTMLElement
     expect(card).not.toBeNull()
     // The same box paints the text I-beam across its blank chrome (see the
-    // `.codeg-composer-chrome` rule in globals.css).
-    expect(card.className).toContain("codeg-composer-chrome")
+    // `.recur-code-composer-chrome` rule in globals.css).
+    expect(card.className).toContain("recur-code-composer-chrome")
     expect(firePointer(card, "pointerdown", "mouse")).toBe(false)
   })
 
@@ -600,7 +600,7 @@ describe("MessageInput attach-to-chat insertion position", () => {
     // which is what the sent message lists under the bubble.
     expect(text).not.toContain("Captured from a web page")
     expect(text).toMatch(
-      /\[button#export]\(codeg:\/\/embedded\/https%3A%2F%2Fexample\.com%2Forders#[^)\s]+\)/
+      /\[button#export]\(RecurCode:\/\/embedded\/https%3A%2F%2Fexample\.com%2Forders#[^)\s]+\)/
     )
   })
 
@@ -718,7 +718,7 @@ describe("MessageInput attach-to-chat insertion position", () => {
       )
     )
     expect(serializeDocToText(editor.state.doc)).not.toContain(
-      "codeg://embedded/"
+      "recurcode://embedded/"
     )
   })
 
@@ -863,7 +863,7 @@ describe("MessageInput session-mention attach", () => {
         conversation: summary(42, "Fix auth"),
       })
     })
-    const link = "[Fix auth](codeg://session/42)"
+    const link = "[Fix auth](recurcode://session/42)"
     await waitFor(() =>
       expect(serializeDocToText(editor.state.doc)).toContain(link)
     )
@@ -883,7 +883,7 @@ describe("MessageInput session-mention attach", () => {
     })
     await waitFor(() =>
       expect(serializeDocToText(editor.state.doc)).toContain(
-        "[#7](codeg://session/7)"
+        "[#7](recurcode://session/7)"
       )
     )
   })
@@ -897,7 +897,7 @@ describe("MessageInput session-mention attach", () => {
       })
     })
     expect(serializeDocToText(editor.state.doc)).not.toContain(
-      "codeg://session/42"
+      "recurcode://session/42"
     )
   })
 
@@ -907,7 +907,7 @@ describe("MessageInput session-mention attach", () => {
     act(() => {
       emitAttachSessionToSession({ tabId: "tab-1", conversation })
     })
-    const link = "[Fix auth](codeg://session/42)"
+    const link = "[Fix auth](recurcode://session/42)"
     await waitFor(() =>
       expect(serializeDocToText(editor.state.doc)).toContain(link)
     )
@@ -936,7 +936,7 @@ describe("MessageInput file-tree drag-and-drop", () => {
     kind: "file" | "dir"
   }) {
     const store = new Map<string, string>([
-      ["application/x-codeg-tree-entry", JSON.stringify(payload)],
+      ["application/x-recur-code-tree-entry", JSON.stringify(payload)],
       ["text/plain", payload.absPath],
     ])
     return {
@@ -1760,10 +1760,10 @@ describe("MessageInput queue-edit restore vs. a late command list", () => {
     const text = serializeDocToDisplayText(editor.state.doc)
     // Named by what it is, and carrying the page for the chip it gets once sent.
     expect(text).toMatch(
-      /\[Marked-up screenshot]\(codeg:\/\/embedded\/https%3A%2F%2Fshop\.test%2Forders%2F42#[^)\s]+\)/
+      /\[Marked-up screenshot]\(RecurCode:\/\/embedded\/https%3A%2F%2Fshop\.test%2Forders%2F42#[^)\s]+\)/
     )
     // Anything that is not a page keeps the name its uri gives it.
-    expect(text).toMatch(/\[notes\.md-1]\(codeg:\/\/embedded\/[^)\s#]+\)/)
+    expect(text).toMatch(/\[notes\.md-1]\(RecurCode:\/\/embedded\/[^)\s#]+\)/)
   })
 })
 
@@ -2552,13 +2552,13 @@ describe("MessageInput composer box sizing (#746)", () => {
       expect(container.querySelector('[role="textbox"]')).not.toBeNull()
     )
 
-    const chrome = container.querySelector(".codeg-composer-chrome")
+    const chrome = container.querySelector(".recur-code-composer-chrome")
     expect(chrome).not.toBeNull()
     const chromeClasses = chrome!.className.split(/\s+/)
     expect(chromeClasses).toContain("flex")
     expect(chromeClasses).toContain("flex-col")
 
-    const editorRoot = chrome!.querySelector(".codeg-composer")
+    const editorRoot = chrome!.querySelector(".recur-code-composer")
     expect(editorRoot).not.toBeNull()
     const editorClasses = editorRoot!.className.split(/\s+/)
     // A zero basis (`flex-1`) only reaches its intended height by absorbing the
@@ -2579,8 +2579,8 @@ describe("MessageInput composer box sizing (#746)", () => {
         expect(container.querySelector('[role="textbox"]')).not.toBeNull()
       )
 
-      const chrome = container.querySelector(".codeg-composer-chrome")!
-      const editorRoot = chrome.querySelector(".codeg-composer")!
+      const chrome = container.querySelector(".recur-code-composer-chrome")!
+      const editorRoot = chrome.querySelector(".recur-code-composer")!
       expect(chrome.className.split(/\s+/)).toContain(
         composerBoxMinHeight(tall)
       )
@@ -2596,8 +2596,8 @@ describe("MessageInput composer box sizing (#746)", () => {
       expect(container.querySelector('[role="textbox"]')).not.toBeNull()
     )
 
-    const chrome = container.querySelector(".codeg-composer-chrome")!
-    const editorRoot = chrome.querySelector(".codeg-composer")!
+    const chrome = container.querySelector(".recur-code-composer-chrome")!
+    const editorRoot = chrome.querySelector(".recur-code-composer")!
     // The row holding the add menu / agent settings / stop button.
     const actionRow = chrome.querySelector(":scope > .shrink-0.items-end")
     expect(actionRow).not.toBeNull()
@@ -2638,7 +2638,7 @@ describe("MessageInput folder data arriving after mount", () => {
     const editor = handle.getEditor()!
     const editorDom = editor.view.dom
     act(() => handle.insertTextAtCursor("keep this draft"))
-    const chrome = container.querySelector(".codeg-composer-chrome")!
+    const chrome = container.querySelector(".recur-code-composer-chrome")!
     const wrapper = chrome.parentElement!
     // jsdom has no layout engine, so it cannot reproduce the collapse; this
     // pins the class contract that avoids it. One class per negative

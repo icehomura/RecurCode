@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 const DEEPSEEK_API_KEY_ENV = "DEEPSEEK_API_KEY"
 /** Endpoint override. `llm-deepseek` resolves it per request through the
  * launch-environment snapshot, which falls back to `process.env` when the host
- * installs none — deepseek-acp installs none, so codeg's launch env reaches it.
+ * installs none — deepseek-acp installs none, so RecurCode's launch env reaches it.
  * Empty ⇒ the adapter's own default, `https://api.deepseek.com`. */
 const DEEPSEEK_BASE_URL_ENV = "DEEPSEEK_BASE_URL"
 

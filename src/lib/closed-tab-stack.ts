@@ -43,7 +43,7 @@ export type ClosedBrowserTab = {
   folderId: number | null
   /** The browser profile the tab lived in; it reopens in the same one. */
   profile: string
-  /** An address on the remote codeg host (`BrowserTabSeed.remote`): it
+  /** An address on the remote RecurCode host (`BrowserTabSeed.remote`): it
    *  reopens as one, never as a page of this computer. */
   remote?: true
   /** The device it showed its page as (`BrowserTabSeed.device`); it reopens

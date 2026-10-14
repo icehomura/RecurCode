@@ -13,10 +13,10 @@
 
 use std::fmt;
 
-/// WebSocket subprotocol both ends name, next to codeg's token protocol.
-pub const TUNNEL_PROTOCOL: &str = "codeg-tunnel";
+/// WebSocket subprotocol both ends name, next to RecurCode's token protocol.
+pub const TUNNEL_PROTOCOL: &str = "recur-code-tunnel";
 
-/// Where the tunnel is served, relative to the codeg-server's base URL.
+/// Where the tunnel is served, relative to the recur-code-server's base URL.
 pub const TUNNEL_PATH: &str = "/ws/browser-tunnel";
 
 /// Bytes a side may send on a stream before the other grants more — per

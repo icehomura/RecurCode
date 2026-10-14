@@ -8,7 +8,7 @@ import {
   cursorAuthState,
   cursorLoginCommand,
   cursorLoginIsHeadless,
-  cursorLoginRunsOnCodegHost,
+  cursorLoginRunsOnRecurCodeHost,
   inferCursorMode,
   isCursorForceEnabled,
 } from "./cursor-config-panel"
@@ -148,12 +148,12 @@ describe("cursorLoginCommand", () => {
   })
 })
 
-describe("cursorLoginRunsOnCodegHost", () => {
+describe("cursorLoginRunsOnRecurCodeHost", () => {
   it("is false only for a window whose backend is this machine", () => {
-    expect(cursorLoginRunsOnCodegHost(true, false)).toBe(false)
-    // A web page and a remote-desktop window both talk to a codeg server.
-    expect(cursorLoginRunsOnCodegHost(false, false)).toBe(true)
-    expect(cursorLoginRunsOnCodegHost(true, true)).toBe(true)
+    expect(cursorLoginRunsOnRecurCodeHost(true, false)).toBe(false)
+    // A web page and a remote-desktop window both talk to a RecurCode server.
+    expect(cursorLoginRunsOnRecurCodeHost(false, false)).toBe(true)
+    expect(cursorLoginRunsOnRecurCodeHost(true, true)).toBe(true)
   })
 })
 
@@ -165,7 +165,7 @@ describe("cursorLoginIsHeadless", () => {
   })
 
   it("treats a web page and a remote-desktop window as another host", () => {
-    // Both talk to a codeg server: `login` would run there, with no display.
+    // Both talk to a RecurCode server: `login` would run there, with no display.
     expect(cursorLoginIsHeadless(POSIX, false, false)).toBe(true)
     expect(cursorLoginIsHeadless(POSIX, true, true)).toBe(true)
   })
@@ -178,7 +178,7 @@ describe("cursorLoginIsHeadless", () => {
     ).toBe(false)
     // ...but it is still another machine, so the wording must not claim a
     // browser opens here. Suppressing both was the bug this pair splits.
-    expect(cursorLoginRunsOnCodegHost(false, false)).toBe(true)
+    expect(cursorLoginRunsOnRecurCodeHost(false, false)).toBe(true)
   })
 })
 
@@ -375,14 +375,14 @@ describe("CursorConfigPanel", () => {
       membership: null,
       error: null,
       binary_path:
-        "/Users/x/Library/Caches/app.codeg/acp-binaries/cursor/dist-package/cursor-agent",
+        "/Users/x/Library/Caches/app.recurcode/acp-binaries/cursor/dist-package/cursor-agent",
     })
     // Empty env → subscription mode.
     const { onSaveEnv, onSaved } = renderPanel({ env: {} })
 
     // The login command uses the resolved binary path, not a bare name.
     await screen.findByText(
-      "/Users/x/Library/Caches/app.codeg/acp-binaries/cursor/dist-package/cursor-agent login"
+      "/Users/x/Library/Caches/app.recurcode/acp-binaries/cursor/dist-package/cursor-agent login"
     )
 
     fireEvent.click(
@@ -432,8 +432,8 @@ describe("CursorConfigPanel", () => {
     ).toBeNull()
   })
 
-  it("offers a command a headless codeg server can actually run", async () => {
-    // The reported deployment: codeg-server on a Linux box, panel open in a
+  it("offers a command a headless RecurCode server can actually run", async () => {
+    // The reported deployment: recur-code-server on a Linux box, panel open in a
     // browser somewhere else. `login` would run on the server, where nothing
     // can open a browser — the reason the offered command "just cannot be
     // run". Cursor's documented answer is to print the URL instead.
@@ -465,7 +465,7 @@ describe("CursorConfigPanel", () => {
   })
 
   it("still says where to run it when the host is Windows", async () => {
-    // A Windows codeg host cannot take the POSIX `VAR=1 cmd` prefix — but it
+    // A Windows RecurCode host cannot take the POSIX `VAR=1 cmd` prefix — but it
     // is still not this machine, so the wording must not fall back to "a
     // browser window opens". Suppressing both was the gap here.
     runtime.desktop = false

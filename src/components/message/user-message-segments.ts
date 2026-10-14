@@ -1,4 +1,4 @@
-import { parseCodegReferenceUri } from "@/components/chat/composer/reference-uri"
+import { parseRecurCodeReferenceUri } from "@/components/chat/composer/reference-uri"
 import type { ReferenceAttrs } from "@/components/chat/composer/types"
 import {
   INVOCATION_TOKEN_RE,
@@ -21,9 +21,9 @@ export type UserMessageSegment =
 /**
  * Only these schemes become badges. A `[label](https://…)` a user typed is NOT a
  * reference — it stays literal text (the composer is plain-text; genuine badges
- * are always inserted via the `@`·`/`·`$` menus and serialize to `file:`/`codeg:`).
+ * are always inserted via the `@`·`/`·`$` menus and serialize to `file:`/`RecurCode:`).
  */
-const REFERENCE_SCHEME = /^(?:file:|codeg:)/i
+const REFERENCE_SCHEME = /^(?:file:|RecurCode:)/i
 
 /**
  * Split a plain-prose run into literal text and bare `/slug`·`$slug` skill
@@ -58,8 +58,8 @@ function pushProseSegments(
     // Resolve through the shared reference parser, which strips the leading
     // `/`·`$` so the badge label is the bare slug (`build`, `deploy`) — matching
     // the composer's inline command/skill badge.
-    const attrs = parseCodegReferenceUri(
-      `codeg://skill/${encodeURIComponent(slug)}`,
+    const attrs = parseRecurCodeReferenceUri(
+      `recurcode://skill/${encodeURIComponent(slug)}`,
       token
     )
     out.push(
@@ -91,8 +91,8 @@ export interface UserMessageSegmentOptions {
  *
  * Two passes over the shared wire format (unchanged by this feature):
  *  1. {@link tokenizeReferenceLinks} splits `[label](dest)` links from prose. A
- *     link whose (angle-unwrapped) destination is a `file:`/`codeg:` reference
- *     becomes a badge via {@link parseCodegReferenceUri}; any other link stays
+ *     link whose (angle-unwrapped) destination is a `file:`/`RecurCode:` reference
+ *     becomes a badge via {@link parseRecurCodeReferenceUri}; any other link stays
  *     literal (rendered as its raw `[label](dest)` source).
  *  2. The prose between links is scanned for bare `/slug`·`$slug` skill tokens.
  *
@@ -100,7 +100,7 @@ export interface UserMessageSegmentOptions {
  * literal, matching the plain-text composer.
  *
  * {@link UserMessageSegmentOptions.knownInvocations} narrows pass 2. Pass 1 is
- * unaffected either way — a `file:`/`codeg:` link is unambiguous.
+ * unaffected either way — a `file:`/`RecurCode:` link is unambiguous.
  */
 export function parseUserMessageSegments(
   text: string,
@@ -112,7 +112,7 @@ export function parseUserMessageSegments(
     if (token.type === "link") {
       const destination = unwrapReferenceDestination(token.destination)
       if (REFERENCE_SCHEME.test(destination)) {
-        const attrs = parseCodegReferenceUri(
+        const attrs = parseRecurCodeReferenceUri(
           destination,
           unescapeReferenceLabel(token.label)
         )

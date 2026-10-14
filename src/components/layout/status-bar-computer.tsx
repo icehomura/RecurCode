@@ -16,11 +16,11 @@
  * is left to resume — sharing again is the Share button, as the first time.
  * Where the stop shortcut is in force the button names it, so it is learnt
  * where it is needed; the strip above every window carries the same Stop
- * for when codeg is out of sight.
+ * for when RecurCode is out of sight.
  *
- * The permission rows name the helper, never codeg: on macOS the grants belong
- * to `codeg-computer-helper`, and one given to codeg would be given to every
- * agent's shell. If codeg itself holds one, a line says so — nothing is
+ * The permission rows name the helper, never RecurCode: on macOS the grants belong
+ * to `recur-code-computer-helper`, and one given to RecurCode would be given to every
+ * agent's shell. If RecurCode itself holds one, a line says so — nothing is
  * refused over it: the agents' shells have that permission whatever computer
  * use does. The rows are asked afresh when the popover opens and whenever
  * this window comes back to the front while it is open, which is when a
@@ -78,7 +78,7 @@ import { stopShortcutLabel } from "@/lib/computer/stop-shortcut"
 import type { GrantLevel } from "@/lib/computer/types"
 import { useComputerEnabled } from "@/lib/computer/use-computer-enabled"
 import {
-  codegHoldsPermission,
+  recurCodeHoldsPermission,
   useComputerStatus,
 } from "@/lib/computer/use-computer-status"
 import { useComputerStopKey } from "@/lib/computer/use-stop-key"
@@ -203,7 +203,7 @@ function ComputerPopover() {
     }
   }, [])
 
-  // A codeg window opened after something was shared has heard nothing of
+  // A RecurCode window opened after something was shared has heard nothing of
   // it yet: ask once when it loads, so the glyph says so without anyone
   // opening the popover.
   useEffect(() => {
@@ -265,7 +265,7 @@ function ComputerPopover() {
   }
 
   const liveBackend = backend ?? status?.backend ?? null
-  const codegLeaks = codegHoldsPermission(status)
+  const recurCodeLeaks = recurCodeHoldsPermission(status)
   const permissions = status?.permissions
   const development = liveBackend?.peer === "development"
   const shortcut = stopKey?.active
@@ -337,10 +337,10 @@ function ComputerPopover() {
             </Button>
           )}
 
-          {codegLeaks && (
+          {recurCodeLeaks && (
             <div className="flex gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1.5 text-2xs text-amber-600 dark:text-amber-400">
               <ShieldAlert className="mt-0.5 size-3.5 shrink-0" />
-              <span>{t("codegGranted")}</span>
+              <span>{t("recurCodeGranted")}</span>
             </div>
           )}
 

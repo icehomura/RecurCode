@@ -1,6 +1,6 @@
 // Sprite-sheet animation constants. Locked to the Codex `/pet` format so a
-// `~/.codex/pets/<id>/spritesheet.webp` (or codeg's own
-// `~/.codeg/pets/<id>/spritesheet.webp`) renders identically.
+// `~/.codex/pets/<id>/spritesheet.webp` (or RecurCode's own
+// `~/.recurcode/pets/<id>/spritesheet.webp`) renders identically.
 //
 // Source of truth: openai/skills hatch-pet `animation-rows.md`.
 

@@ -174,7 +174,7 @@ describe("InlineSessionConfigSelector — model grouping", () => {
 
 // codex-acp 1.11.0 names a recommended value per select
 // (`_meta.jetbrains.air.recommendedValue`). What makes it worth rendering at
-// all is that it is NOT the selection: codeg replays a persisted per-agent
+// all is that it is NOT the selection: RecurCode replays a persisted per-agent
 // preference into every new session, so the selected row is routinely a model
 // the agent no longer defaults to.
 describe("InlineSessionConfigSelector — the agent's recommended value", () => {

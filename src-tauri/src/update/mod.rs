@@ -2,12 +2,12 @@
 //!
 //! Desktop (Tauri) builds never drive this — they update through
 //! `tauri-plugin-updater`. Here the running worker downloads the signed
-//! release bundle for its platform, verifies it, swaps `codeg-server` +
-//! `codeg-mcp` + `web/` on disk (keeping `.bak`), and then restarts:
+//! release bundle for its platform, verifies it, swaps `recur-code-server` +
+//! `recur-code-mcp` + `web/` on disk (keeping `.bak`), and then restarts:
 //!
 //! - **Supervised** (our `--supervise` parent, PID 1 in Docker): the worker
 //!   exits with [`runtime::EXIT_RESTART`] and the supervisor relaunches it
-//!   after `CODEG_RESTART_DELAY_MS`.
+//!   after `RECUR_CODE_RESTART_DELAY_MS`.
 //! - **Standalone** (no supervisor): the worker re-execs itself.
 
 pub mod install;

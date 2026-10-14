@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::AgentType;
 
-/// Per-agent defaults applied when codeg-mcp spawns a subagent on behalf of a
+/// Per-agent defaults applied when recur-code-mcp spawns a subagent on behalf of a
 /// `delegate_to_agent` call. Mirrors the two knobs `ConnectionManager::spawn_agent`
 /// already accepts:
 ///   * `mode_id` → forwarded as `preferred_mode_id`
@@ -40,7 +40,7 @@ impl AgentDelegationDefaults {
 
 /// Everything the broker needs to dispatch a single delegation call.
 ///
-/// `parent_connection_id` is the codeg-internal ACP connection UUID for the
+/// `parent_connection_id` is the recur-code-internal ACP connection UUID for the
 /// parent session (NOT the agent-assigned ACP session id). The broker uses it
 /// to inherit the parent's EventEmitter/working_dir and to scope
 /// `cancel_by_parent`.
@@ -154,7 +154,7 @@ pub enum DelegationError {
     /// as `auth_required` by the connection loop). Distinct from
     /// [`Self::ChildUnknown`] because it names an action the user can take —
     /// and because this message ships to the parent LLM, which would otherwise
-    /// read "unrecognized stop reason" for a reason codeg recognizes perfectly
+    /// read "unrecognized stop reason" for a reason RecurCode recognizes perfectly
     /// well. The child's session survives it, so signing in and re-delegating
     /// works.
     #[error("subagent's agent needs you to sign in again")]

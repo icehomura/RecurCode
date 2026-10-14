@@ -9,7 +9,7 @@ import {
 // Mirrors ui/scroll-area.tsx's ScrollArea with x="scroll" y="hidden".
 const TILE_SCROLL_OPTIONS: UseOverlayScrollbarsParams["options"] = {
   scrollbars: {
-    theme: "os-theme-codeg",
+    theme: "os-theme-RecurCode",
     autoHide: "leave",
     clickScroll: true,
   },

@@ -14,8 +14,8 @@ interface PersistedDraftStateV2 {
   doc: JSONContent
 }
 
-const STORAGE_PREFIX = "codeg:message-input-draft:v1"
-const STORAGE_PREFIX_V2 = "codeg:message-input-draft:v2"
+const STORAGE_PREFIX = "RecurCode:message-input-draft:v1"
+const STORAGE_PREFIX_V2 = "RecurCode:message-input-draft:v2"
 const draftTextCache = new Map<string, string>()
 const draftDocCache = new Map<string, JSONContent>()
 const pendingPersistDrafts = new Map<string, string>()

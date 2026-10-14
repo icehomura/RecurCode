@@ -23,9 +23,9 @@ import type {
 import { useAgentVocabulary } from "@/hooks/use-agent-vocabulary"
 
 // Picking this clears the override (inherit the agent's own default). Mirrors
-// delegation-agent-defaults.tsx; the codeg prefix avoids colliding with a real
+// delegation-agent-defaults.tsx; the RecurCode prefix avoids colliding with a real
 // option id.
-const DEFAULT_SENTINEL = "__codeg_default__"
+const DEFAULT_SENTINEL = "__recur_code_default__"
 
 interface AgentConfigSectionProps {
   /** Probe result, owned by the parent (so a single probe also feeds the `/`

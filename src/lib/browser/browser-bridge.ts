@@ -1,5 +1,5 @@
 // Client of the web-mode port bridge: when the workbench runs in a browser,
-// a dev server on the codeg host (`http://localhost:3000` as an agent printed
+// a dev server on the RecurCode host (`http://localhost:3000` as an agent printed
 // it) is shown through a bridge origin of its own — a listener the server
 // binds next to its own port, or a hostname it answers for on that same port.
 // The workbench asks the API for a grant, then loads the bridge's entry URL
@@ -18,7 +18,7 @@ export interface BridgeStatus {
   /** Hostname to use for the bridge instead of the page's own. */
   publicHost: string | null
   /** How a target is named when the server addresses them by hostname on its
-   *  own port (`{port}.codeg.example.com`, `auto`). */
+   *  own port (`{port}.recurcode.example.com`, `auto`). */
   hostPattern: string | null
 }
 
@@ -184,7 +184,7 @@ export async function probeBridge(
   const controller = new AbortController()
   const timer = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const response = await fetch(`${origin}/__codeg_bridge/ping`, {
+    const response = await fetch(`${origin}/__recur_code_bridge/ping`, {
       mode: "cors",
       credentials: "omit",
       cache: "no-store",

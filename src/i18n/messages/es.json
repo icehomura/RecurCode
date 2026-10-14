@@ -136,7 +136,7 @@
       },
       "css": {
         "dialogTitle": "CSS personalizado",
-        "dialogDescription": "Se aplica a todas las ventanas de codeg. Los cambios se previsualizan en vivo; pulsa Aplicar para guardar.",
+        "dialogDescription": "Se aplica a todas las ventanas de RecurCode. Los cambios se previsualizan en vivo; pulsa Aplicar para guardar.",
         "size": "{used} KB / {max} KB",
         "ruleCount": "{count} reglas",
         "errorTooLarge": "Demasiado grande para guardar. Redúcelo por debajo del límite.",
@@ -270,7 +270,7 @@
     "languageSaveSuccess": "La configuración de idioma se guardó",
     "languageSaveFailed": "No se pudo guardar la configuración de idioma: {message}",
     "dataTitle": "Datos y sincronización",
-    "dataDescription": "La sincronización de configuración lleva tus ajustes de un equipo a otro; la copia de seguridad empaqueta todos los datos de codeg de este equipo.",
+    "dataDescription": "La sincronización de configuración lleva tus ajustes de un equipo a otro; la copia de seguridad empaqueta todos los datos de RecurCode de este equipo.",
     "updateTitle": "Actualización de la app",
     "versionTitle": "Actualización de software",
     "updateDescription": "Comprueba versiones más nuevas en la fuente de versiones configurada e instálalas directamente cuando estén disponibles.",
@@ -699,7 +699,7 @@
       "draftTitle": "Nuevo MCP",
       "draftDescription": "Indica un Server ID y la configuración para crear un servidor MCP local.",
       "suggestedLabel": "Empezar desde un servidor conocido",
-      "suggestedChromeNote": "Rellena el formulario con el chrome-devtools-mcp oficial de Google; el registro incluye imitaciones con el mismo nombre, así que esto fija el auténtico. Controla un Chrome APARTE que codeg no supervisa: obtienes datos de red y rendimiento que las herramientas del navegador integrado no ofrecen, y ninguna de sus protecciones: sin compartir por pestaña, sin barra de actividad, sin aprobación por fragmento. `npx` descarga el paquete de npm la primera vez que se ejecuta.",
+      "suggestedChromeNote": "Rellena el formulario con el chrome-devtools-mcp oficial de Google; el registro incluye imitaciones con el mismo nombre, así que esto fija el auténtico. Controla un Chrome APARTE que RecurCode no supervisa: obtienes datos de red y rendimiento que las herramientas del navegador integrado no ofrecen, y ninguna de sus protecciones: sin compartir por pestaña, sin barra de actividad, sin aprobación por fragmento. `npx` descarga el paquete de npm la primera vez que se ejecuta.",
       "serverIdLabel": "Server ID",
       "serverIdPlaceholder": "Server ID (p. ej. my-mcp)",
       "typeHint": "Tipos admitidos: stdio, http (alias: streamable-http, streamableHttp), sse. env solo se usa con stdio; para MCP remotos usa headers para llevar tokens de autenticación.",
@@ -740,7 +740,7 @@
     "envVars": "Variables de entorno",
     "hostTools": {
       "label": "Dejar que el agente gestione archivos y comandos",
-      "description": "codeg deja de atender el acceso a archivos y los comandos de terminal, de modo que el agente los ejecuta en su propio proceso, donde sí se aplican su sandbox y sus reglas de permisos. También se desactiva la delegación a otros agentes, ya que devolvería ese mismo trabajo a codeg. codeg no añade ningún sandbox propio, así que actívalo solo si el agente tiene uno configurado."
+      "description": "RecurCode deja de atender el acceso a archivos y los comandos de terminal, de modo que el agente los ejecuta en su propio proceso, donde sí se aplican su sandbox y sus reglas de permisos. También se desactiva la delegación a otros agentes, ya que devolvería ese mismo trabajo a RecurCode. RecurCode no añade ningún sandbox propio, así que actívalo solo si el agente tiene uno configurado."
     },
     "nativeJsonConfig": "Configuración JSON nativa",
     "modelHintDefault": "Déjalo vacío para usar el modelo predeterminado del sistema.",
@@ -854,7 +854,7 @@
       "configTomlHint": "Se guarda literalmente como todo el ~/.grok/config.toml. El TOML no válido se rechaza para que una errata no trunque tu archivo.",
       "configTomlPlaceholder": "# Claves distintas de los controles de arriba, p. ej.\n# [mcp_servers.*], [cli], reglas [permission].",
       "customModelTitle": "Modelo personalizado (endpoint propio)",
-      "customModelHint": "Apunta Grok a un endpoint personalizado o autoalojado. codeg escribe un bloque `[model.*]` por modelo y lo establece como predeterminado. Deja el ID de modelo vacío para eliminarlo.",
+      "customModelHint": "Apunta Grok a un endpoint personalizado o autoalojado. RecurCode escribe un bloque `[model.*]` por modelo y lo establece como predeterminado. Deja el ID de modelo vacío para eliminarlo.",
       "customModelIdLabel": "ID del modelo",
       "customModelIdPlaceholder": "grok-4.5",
       "customModelIdHint": "Se registra como un bloque `[model.*]` y se envía a la API como nombre del modelo; también se establece como `[models].default`.",
@@ -872,7 +872,7 @@
       "autoCompactHint": "Compacta la conversación cuando el uso del contexto alcanza este porcentaje (predeterminado de Grok: 85). Se escribe en `[session]`."
     },
     "cursor": {
-      "configDescription": "Configura Cursor aquí. Elige un método de autenticación —suscripción oficial (inicio de sesión en el navegador) o una clave API de Cursor para equipos sin interfaz o servidores— y luego elige un modelo y edita las reglas de permisos y el sandbox del CLI. codeg los escribe en ~/.cursor/cli-config.json, compartido con el CLI cursor-agent.",
+      "configDescription": "Configura Cursor aquí. Elige un método de autenticación —suscripción oficial (inicio de sesión en el navegador) o una clave API de Cursor para equipos sin interfaz o servidores— y luego elige un modelo y edita las reglas de permisos y el sandbox del CLI. RecurCode los escribe en ~/.cursor/cli-config.json, compartido con el CLI cursor-agent.",
       "authTitle": "Autenticación",
       "authChecking": "Comprobando…",
       "authNotInstalled": "cursor-agent no está instalado",
@@ -882,7 +882,7 @@
       "authUnverifiedHint": "cursor-agent conserva un inicio de sesión, pero no se ha podido usar con Cursor ahora mismo, normalmente porque ha caducado. Las sesiones fallarán con «Authentication required» hasta que vuelvas a iniciar sesión; la CLI no puede renovar por sí sola un inicio de sesión del navegador.",
       "authUnverifiedHintApiKey": "cursor-agent tiene una clave de API guardada, pero Cursor acaba de rechazarla: normalmente una clave revocada, caducada o mal escrita. Las sesiones fallarán con \"Authentication required\" hasta que guardes una clave válida abajo.",
       "loginHint": "Ejecuta esto en una terminal para iniciar sesión con tu cuenta de Cursor (se abre el navegador) y luego pulsa actualizar:",
-      "loginHintRemote": "Ejecuta esto en el host de codeg donde está instalado cursor-agent, no en esta máquina, y luego pulsa actualizar. Ese host normalmente no tiene navegador que abrir, así que ejecútalo con NO_OPEN_BROWSER=1: en su lugar imprime una URL de inicio de sesión para que la abras en tu propio navegador. Para un servidor desatendido, cambia el método de arriba a clave de API.",
+      "loginHintRemote": "Ejecuta esto en el host de RecurCode donde está instalado cursor-agent, no en esta máquina, y luego pulsa actualizar. Ese host normalmente no tiene navegador que abrir, así que ejecútalo con NO_OPEN_BROWSER=1: en su lugar imprime una URL de inicio de sesión para que la abras en tu propio navegador. Para un servidor desatendido, cambia el método de arriba a clave de API.",
       "apiKeyLabel": "Clave API de Cursor",
       "apiKeyPlaceholder": "clave de cursor.com/dashboard",
       "apiKeyHint": "CURSOR_API_KEY: una clave de cuenta del panel de Cursor, alternativa al inicio de sesión en el navegador para equipos sin interfaz o servidores. No es una clave de terceros ni de OpenAI.",
@@ -967,11 +967,11 @@
       "missingAgentPlatformConfig": "Enter an API key, or both a project and a location — sessions will fail to start without one of the two.",
       "missingEnterpriseConfig": "Gemini Enterprise needs both a project and a location.",
       "settingsFileHint": "Saved to auth.type in this file. Any other keys you put there are preserved.",
-      "syncSkipped": "Your choice was saved, but codeg could not write it to the ACP server's settings.json, so Antigravity will keep authenticating the way that file says. Set auth.type in it yourself, or move it aside and save again.",
+      "syncSkipped": "Your choice was saved, but RecurCode could not write it to the ACP server's settings.json, so Antigravity will keep authenticating the way that file says. Set auth.type in it yourself, or move it aside and save again.",
       "save": "Save",
       "headless": {
         "title": "Inicia sesión sin navegador en esta máquina",
-        "description": "Antigravity ejecuta el inicio de sesión de Google por su cuenta, en la máquina donde corre el agente. Si allí no hay navegador —codeg en un servidor sin escritorio—, la primera sesión espera cinco minutos y falla. Inicia sesión desde aquí: abre el enlace en cualquier dispositivo y pega de vuelta la dirección a la que llegues.",
+        "description": "Antigravity ejecuta el inicio de sesión de Google por su cuenta, en la máquina donde corre el agente. Si allí no hay navegador —RecurCode en un servidor sin escritorio—, la primera sesión espera cinco minutos y falla. Inicia sesión desde aquí: abre el enlace en cualquier dispositivo y pega de vuelta la dirección a la que llegues.",
         "start": "Obtener enlace de acceso",
         "saveFirst": "Guarda primero: el inicio de sesión usa los ajustes guardados, no lo que acabas de escribir.",
         "step1": "1. Abre este enlace e inicia sesión en Google.",
@@ -994,7 +994,7 @@
         "failed": "No se pudo cerrar la sesión"
       },
       "tempReclaimTitle": "Espacio temporal sobrante",
-      "tempReclaimHint": "Las versiones anteriores de codeg no podían limpiar el directorio temporal que este agente descomprime en cada inicio. Esto analiza la carpeta temporal del sistema en busca de esos restos. Esa carpeta se comparte con otras aplicaciones, por lo que no se elimina nada hasta que confirmes, y se omite todo lo que siga en uso.",
+      "tempReclaimHint": "Las versiones anteriores de RecurCode no podían limpiar el directorio temporal que este agente descomprime en cada inicio. Esto analiza la carpeta temporal del sistema en busca de esos restos. Esa carpeta se comparte con otras aplicaciones, por lo que no se elimina nada hasta que confirmes, y se omite todo lo que siga en uso.",
       "tempReclaimScan": "Analizar",
       "tempReclaimDelete": "Eliminar restos",
       "tempReclaimNone": "No hay nada que recuperar.",
@@ -1044,7 +1044,7 @@
       "approvalPolicy_untrusted": "No confiable: solo se ejecutan sin supervisión los comandos de solo lectura seguros",
       "approvalPolicy_never": "Nunca: sin ninguna solicitud de aprobación",
       "approvalPolicy_granular": "Granular: elige por tipo de solicitud",
-      "approvalPolicyUntrustedAcpWarning": "Untrusted no tiene equivalente entre los tres ajustes de aprobación del adaptador ACP, así que las sesiones de codeg recurren a «a petición»: el modelo decide entonces cuándo preguntar y los comandos que la zona aislada ya permite dejan de pedir confirmación. Restringe mejor el modo de aislamiento de abajo.",
+      "approvalPolicyUntrustedAcpWarning": "Untrusted no tiene equivalente entre los tres ajustes de aprobación del adaptador ACP, así que las sesiones de RecurCode recurren a «a petición»: el modelo decide entonces cuándo preguntar y los comandos que la zona aislada ya permite dejan de pedir confirmación. Restringe mejor el modo de aislamiento de abajo.",
       "granularHint": "Desactivado significa que ese tipo de solicitud se rechaza automáticamente en vez de mostrártela.",
       "granular_sandbox_approval": "Escalados de comandos de shell",
       "granular_rules": "Avisos de reglas de execpolicy",
@@ -1056,9 +1056,9 @@
       "sandboxMode_read-only": "Solo lectura",
       "sandboxMode_workspace-write": "Escritura en el espacio de trabajo",
       "sandboxMode_danger-full-access": "Acceso total (sin sandbox)",
-      "sandboxModeReadOnlyAcpWarning": "codex-acp 1.7–1.13 no incluye un sandbox de solo lectura: con esas versiones del adaptador, una sesión de codeg se ejecuta con escritura en el espacio de trabajo diga lo que diga esta opción, aunque cada elevación sigue pasando por tu aprobación. codex-acp 2.0 lo restauró, así que actualiza el adaptador si tienes uno anterior. Las sesiones de codex CLI y del IDE siempre respetan solo lectura.",
+      "sandboxModeReadOnlyAcpWarning": "codex-acp 1.7–1.13 no incluye un sandbox de solo lectura: con esas versiones del adaptador, una sesión de RecurCode se ejecuta con escritura en el espacio de trabajo diga lo que diga esta opción, aunque cada elevación sigue pasando por tu aprobación. codex-acp 2.0 lo restauró, así que actualiza el adaptador si tienes uno anterior. Las sesiones de codex CLI y del IDE siempre respetan solo lectura.",
       "sandboxModeHint": "En Windows, la escritura en el espacio de trabajo baja a solo lectura salvo que actives el sandbox experimental de Windows de codex.",
-      "sandboxModeSeedsPresetHint": "codeg también asigna esto al ajuste de aprobación inicial de la sesión, así que —a diferencia de la política de aprobación— sí afecta a las peticiones normales. Solo lectura empieza en «Read-only». Con la política de aprobación never, acceso total empieza en «Full access» y escritura en el espacio de trabajo en «Auto review», donde un modelo filtra las elevaciones y solo reenvía las que considera inseguras. Con cualquier otra política, escritura en el espacio de trabajo y acceso total empiezan en «Workspace access», que te pasa cada elevación, con codex-acp 2.0 o posterior, y en «Auto review» con adaptadores anteriores. Sin definir, se mantiene el valor por defecto del adaptador, «Auto review». El ajuste del compositor siempre tiene prioridad.",
+      "sandboxModeSeedsPresetHint": "RecurCode también asigna esto al ajuste de aprobación inicial de la sesión, así que —a diferencia de la política de aprobación— sí afecta a las peticiones normales. Solo lectura empieza en «Read-only». Con la política de aprobación never, acceso total empieza en «Full access» y escritura en el espacio de trabajo en «Auto review», donde un modelo filtra las elevaciones y solo reenvía las que considera inseguras. Con cualquier otra política, escritura en el espacio de trabajo y acceso total empiezan en «Workspace access», que te pasa cada elevación, con codex-acp 2.0 o posterior, y en «Auto review» con adaptadores anteriores. Sin definir, se mantiene el valor por defecto del adaptador, «Auto review». El ajuste del compositor siempre tiene prioridad.",
       "writableRootsLabel": "Carpetas adicionales con escritura",
       "writableRootsHint": "Una ruta absoluta por línea, además del directorio de trabajo.",
       "sandboxRootsRelativeError": "Debe ser una ruta absoluta: codex resuelve las rutas relativas dentro de ~/.codex: {path}",
@@ -1171,7 +1171,7 @@
         "description": "Decide qué acciones se ejecutan solas, cuáles te preguntan primero y cuáles se bloquean. Se escribe en el bloque permission de opencode.json y se aplica al guardar abajo.",
         "docsLink": "Documentación de permisos",
         "unparsableConfig": "El JSON nativo de abajo no es válido, así que el editor visual está pausado. Corrige el JSON para continuar.",
-        "invalidBlock": "El bloque permission tiene una forma que codeg no reconoce. Edítalo en el JSON nativo de abajo o usa Restablecer para empezar de nuevo.",
+        "invalidBlock": "El bloque permission tiene una forma que RecurCode no reconoce. Edítalo en el JSON nativo de abajo o usa Restablecer para empezar de nuevo.",
         "orderingUnsafe": "Hay una regla comodín escrita después de herramientas concretas, así que OpenCode también se la aplica a ellas: las filas de abajo no son lo que está en vigor. Corregir orden solo devuelve cada comodín al principio de su ámbito, sin cambiar ningún valor.",
         "orderingUnsafeManual": "Una regla queda tapada por un patrón posterior más general, así que OpenCode nunca la aplica: las filas de abajo no son lo que está en vigor. Dos patrones que se solapan no tienen un único orden correcto; reordénalos en el JSON nativo para que el más general vaya primero.",
         "fixOrder": "Corregir orden",
@@ -1267,7 +1267,7 @@
     },
     "hermes": {
       "configManagement": "Configuración de Hermes",
-      "configDescription": "Hermes gestiona sus propias credenciales en ~/.hermes/.env y los ajustes en ~/.hermes/config.yaml. Elige un proveedor y luego establece la clave de API y el modelo: codeg escribe ambos archivos por ti.",
+      "configDescription": "Hermes gestiona sus propias credenciales en ~/.hermes/.env y los ajustes en ~/.hermes/config.yaml. Elige un proveedor y luego establece la clave de API y el modelo: RecurCode escribe ambos archivos por ti.",
       "providerLabel": "Proveedor",
       "providerHint": "El proveedor determina qué variable de clave de API y qué model.provider usa Hermes. Los proveedores de OAuth se configuran mediante la configuración del terminal que aparece a continuación.",
       "groupApiKey": "Proveedores con clave API",
@@ -1309,7 +1309,7 @@
     },
     "kimiCode": {
       "configManagement": "Configuración de Kimi Code",
-      "configDescription": "`kimi acp` solo acepta un token de sesión almacenado, así que codeg escribe un proveedor gestionado en ~/.kimi-code/config.toml y siembra un token de acceso local: la inferencia sigue usando tu propia clave.",
+      "configDescription": "`kimi acp` solo acepta un token de sesión almacenado, así que RecurCode escribe un proveedor gestionado en ~/.kimi-code/config.toml y siembra un token de acceso local: la inferencia sigue usando tu propia clave.",
       "statusUnconfigured": "Sin configurar",
       "statusDirty": "Cambios sin guardar",
       "summaryLabel": "En vigor",
@@ -1321,7 +1321,7 @@
       "authModeApiKey": "Clave de API",
       "authModeLogin": "Inicio de sesión de Kimi (suscripción)",
       "authModeApiKeyHint": "Escribe un proveedor gestionado en config.toml y siembra el token de acceso para que las sesiones puedan abrirse.",
-      "loginHint": "Ejecuta `kimi login` en una terminal para iniciar sesión con una cuenta de suscripción de Kimi; desde Kimi 0.39.0, añade `--region global` para una cuenta de kimi.ai, ya que de forma predeterminada se inicia sesión en kimi.com. codeg no guarda nada y reutiliza el inicio de sesión de Kimi. Guardar aquí elimina el token de acceso por clave de API de codeg.",
+      "loginHint": "Ejecuta `kimi login` en una terminal para iniciar sesión con una cuenta de suscripción de Kimi; desde Kimi 0.39.0, añade `--region global` para una cuenta de kimi.ai, ya que de forma predeterminada se inicia sesión en kimi.com. RecurCode no guarda nada y reutiliza el inicio de sesión de Kimi. Guardar aquí elimina el token de acceso por clave de API de RecurCode.",
       "credentialTitle": "Credencial",
       "interfaceTypeLabel": "Tipo de proveedor",
       "interfaceTypeHint": "El protocolo de proveedor que habla Kimi (el `type` de config.toml). Usa Kimi / Moonshot para una clave de Moonshot / platform.kimi.com.",
@@ -1350,7 +1350,7 @@
       "modelNotInList": "Este modelo no está en la lista a la que tu clave puede acceder: Kimi fallará con «modelo no encontrado».",
       "reasoningTitle": "Razonamiento",
       "reasoningEnableLabel": "Activar",
-      "reasoningDescription": "Kimi solo muestra el selector «Thinking» en el cuadro de mensaje cuando el modelo declara una capacidad de razonamiento, así que codeg la escribe aquí. Se aplica a las sesiones nuevas.",
+      "reasoningDescription": "Kimi solo muestra el selector «Thinking» en el cuadro de mensaje cuando el modelo declara una capacidad de razonamiento, así que RecurCode la escribe aquí. Se aplica a las sesiones nuevas.",
       "effortsLabel": "Niveles ofrecidos",
       "effortsHint": "Estos son los niveles que aparecerán en el selector «Thinking». Kimi los reenvía al proveedor tal cual, así que elige los que acepte tu modelo.",
       "effortsEmptyHint": "Sin ningún nivel elegido, el cuadro de mensaje se reduce a un simple interruptor Off / On.",
@@ -1376,7 +1376,7 @@
       "authTypeHint": "Dónde se escribe la clave de API dentro de config.toml.",
       "rawEditorLabel": "Editar config.toml directamente",
       "rawEditorWarning": "Guardar aquí sobrescribe el archivo completo tal cual y reemplaza la configuración estructurada de arriba.",
-      "rawEditorPlaceholder": "[providers.codeg]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "Suscripción oficial",
     "authModeCustomEndpoint": "Endpoint personalizado",
@@ -1416,7 +1416,7 @@
       "customInstallInvalid": "Introduce un número de versión válido, p. ej. 1.2.3.",
       "customInstallSubmit": "Instalar",
       "confirmUpgradeToLatest": "¿Actualizar {name} a la versión sin revisar {version}?",
-      "confirmUpgradeToLatestDescription": "codeg no ha revisado esta versión. Puede romper {name} en codeg y, en ocasiones, se sabe que una versión está rota. Para volver atrás, usa Instalación personalizada y reinstala la versión recomendada {recommendedVersion}."
+      "confirmUpgradeToLatestDescription": "RecurCode no ha revisado esta versión. Puede romper {name} en RecurCode y, en ocasiones, se sabe que una versión está rota. Para volver atrás, usa Instalación personalizada y reinstala la versión recomendada {recommendedVersion}."
     },
     "errors": {
       "windowsFileLocked": "Los archivos de {name} están en uso por una sesión activa, por lo que Windows no puede reemplazarlos. Cierra todas las sesiones de {name} e inténtalo de nuevo.",
@@ -1520,18 +1520,18 @@
     "adapter": {
       "label": "Adaptador ACP",
       "badge": "Adaptador ACP",
-      "badgeHint": "Para este agente Codeg instala un paquete adaptador ACP, no la CLI del proveedor. Son independientes y comparten la misma configuración.",
+      "badgeHint": "Para este agente RecurCode instala un paquete adaptador ACP, no la CLI del proveedor. Son independientes y comparten la misma configuración.",
       "learnMore": "Más información",
-      "missingWithNative": "Se encontró tu {nativeLabel} en {nativePath}. Codeg habla con los agentes mediante ACP y esa CLI no habla ACP, así que Codeg necesita un paquete adaptador aparte, {adapterPackage}, mantenido por el proyecto Agent Client Protocol (originalmente Zed). Incluye su propio runtime, nunca modifica ni reemplaza tu comando {nativeCmd} y lee el mismo {configDir}: tu sesión y tus ajustes actuales se conservan. Instálalo abajo.",
-      "missing": "Codeg habla con los agentes mediante ACP y la {nativeLabel} no habla ACP, así que Codeg necesita un paquete adaptador aparte, {adapterPackage}, mantenido por el proyecto Agent Client Protocol (originalmente Zed). Incluye su propio runtime, por lo que no hace falta instalar antes la CLI {nativeCmd}; si ya la tienes, ambas conviven y comparten la sesión y los ajustes de {configDir}. Instálalo abajo.",
-      "readyWithNative": "El adaptador {adapterCmd} está instalado: es lo que Codeg ejecuta, no tu propio {nativeCmd} en {nativePath}. Son paquetes distintos que conviven y ambos leen {configDir}, así que la sesión y los ajustes son compartidos.",
-      "ready": "El adaptador {adapterCmd} está instalado: es lo que Codeg ejecuta. Incluye su propio runtime, así que la {nativeLabel} no es necesaria; si la instalas después, ambas conviven y comparten {configDir}."
+      "missingWithNative": "Se encontró tu {nativeLabel} en {nativePath}. RecurCode habla con los agentes mediante ACP y esa CLI no habla ACP, así que RecurCode necesita un paquete adaptador aparte, {adapterPackage}, mantenido por el proyecto Agent Client Protocol (originalmente Zed). Incluye su propio runtime, nunca modifica ni reemplaza tu comando {nativeCmd} y lee el mismo {configDir}: tu sesión y tus ajustes actuales se conservan. Instálalo abajo.",
+      "missing": "RecurCode habla con los agentes mediante ACP y la {nativeLabel} no habla ACP, así que RecurCode necesita un paquete adaptador aparte, {adapterPackage}, mantenido por el proyecto Agent Client Protocol (originalmente Zed). Incluye su propio runtime, por lo que no hace falta instalar antes la CLI {nativeCmd}; si ya la tienes, ambas conviven y comparten la sesión y los ajustes de {configDir}. Instálalo abajo.",
+      "readyWithNative": "El adaptador {adapterCmd} está instalado: es lo que RecurCode ejecuta, no tu propio {nativeCmd} en {nativePath}. Son paquetes distintos que conviven y ambos leen {configDir}, así que la sesión y los ajustes son compartidos.",
+      "ready": "El adaptador {adapterCmd} está instalado: es lo que RecurCode ejecuta. Incluye su propio runtime, así que la {nativeLabel} no es necesaria; si la instalas después, ambas conviven y comparten {configDir}."
     },
     "cline": {
       "configDescription": "Configure el proveedor de API y las credenciales de Cline. La configuración se guarda en ~/.cline/data/.",
       "signInGroup": "Iniciar sesión con Cline",
       "byoGroup": "Usa tu propio proveedor",
-      "externalGroup": "Configurado fuera de codeg",
+      "externalGroup": "Configurado fuera de RecurCode",
       "signInHint": "Cline guarda esta credencial por sí mismo. Ejecuta el comando de abajo en una terminal para iniciar sesión: muestra un código y abre una página del navegador para confirmarlo."
     },
     "opencodePlugins": {
@@ -1607,7 +1607,7 @@
       "installing": "Instalando…",
       "recheck": "Volver a comprobar",
       "configDirSkillsNote": "Con un directorio de configuración personalizado, las habilidades, los expertos y las herramientas de oficina gestionados en Ajustes no se aplican a este pi; gestiona sus habilidades directamente en esa carpeta.",
-      "dirHistoryNote": "Estos directorios solo llegan al proceso de pi. El historial de conversaciones de codeg lee la ubicación predeterminada de pi, así que las sesiones escritas en un directorio personalizado no aparecerán en la lista.",
+      "dirHistoryNote": "Estos directorios solo llegan al proceso de pi. El historial de conversaciones de RecurCode lee la ubicación predeterminada de pi, así que las sesiones escritas en un directorio personalizado no aparecerán en la lista.",
       "projectTrustTitle": "Confianza del proyecto",
       "projectTrustDescription": "Carpetas desde las que permitiste que pi cargue archivos del proyecto. Una carpeta de confianza permite que las .pi/extensions de ese repositorio ejecuten código al iniciar pi, se aplica a todas las carpetas que contiene y también se usa cuando ejecutas pi en una terminal.",
       "projectTrustLoading": "Cargando…",
@@ -1630,7 +1630,7 @@
       "modelNotListed": "Pi no incluye este modelo para este proveedor. Comprueba el ID del modelo: Pi solo muestra proveedores para los que tiene una clave de API o un inicio de sesión.",
       "catalogUnavailable": "No se pudo consultar a Pi qué niveles de razonamiento ofrece este modelo.",
       "configLoadFailed": "No se pudieron leer los ajustes de Pi: {message}",
-      "runtimeTooOld": "Este Pi es demasiado antiguo: Codeg necesita Pi {min} o posterior para abrir una sesión. Actualízalo primero."
+      "runtimeTooOld": "Este Pi es demasiado antiguo: RecurCode necesita Pi {min} o posterior para abrir una sesión. Actualízalo primero."
     },
     "recur_agent": {
       "configManagement": "Configuración de Recur Agent",
@@ -1683,7 +1683,7 @@
       "installing": "Instalando…",
       "recheck": "Volver a comprobar",
       "configDirSkillsNote": "Con un directorio de configuración personalizado, las habilidades, los expertos y las herramientas de oficina gestionados en Ajustes no se aplican a este pi; gestiona sus habilidades directamente en esa carpeta.",
-      "dirHistoryNote": "Estos directorios solo llegan al proceso de pi. El historial de conversaciones de codeg lee la ubicación predeterminada de pi, así que las sesiones escritas en un directorio personalizado no aparecerán en la lista.",
+      "dirHistoryNote": "Estos directorios solo llegan al proceso de pi. El historial de conversaciones de RecurCode lee la ubicación predeterminada de pi, así que las sesiones escritas en un directorio personalizado no aparecerán en la lista.",
       "projectTrustTitle": "Confianza del proyecto",
       "projectTrustDescription": "Carpetas desde las que permitiste que pi cargue archivos del proyecto. Una carpeta de confianza permite que las .pi/extensions de ese repositorio ejecuten código al iniciar pi, se aplica a todas las carpetas que contiene y también se usa cuando ejecutas pi en una terminal.",
       "projectTrustLoading": "Cargando…",
@@ -1730,7 +1730,7 @@
     "customAgentEditNotFound": "No se encontró el agente personalizado {id}",
     "customAgentSaved": "{name} guardado",
     "customAgentVersionProbeLabel": "Comando de consulta de versión (opcional)",
-    "customAgentVersionProbeHint": "Comando que imprime la versión instalada localmente. Si se deja vacío, codeg ejecuta el comando del agente con --version.",
+    "customAgentVersionProbeHint": "Comando que imprime la versión instalada localmente. Si se deja vacío, RecurCode ejecuta el comando del agente con --version.",
     "customAgentRemove": "Eliminar agente",
     "customAgentRemoveHint": "Elimina la definición del agente. Las conversaciones existentes conservan su historial; el agente simplemente ya no se puede iniciar.",
     "customAgentIconLabel": "Icono (opcional)",
@@ -1743,7 +1743,7 @@
     "customAgentSkillsDirLabel": "Directorio de skills dedicado",
     "customAgentSkillsDirHint": "Ruta absoluta del directorio desde el que este agente carga skills: su propio almacén, además del compartido o en su lugar. ~ se expande al directorio personal; las skills vinculadas se colocan aquí primero.",
     "customAgentMcpLabel": "Compatibilidad con MCP",
-    "customAgentMcpHint": "Envía el complemento MCP integrado de codeg a este agente al iniciar la sesión: es el canal de la delegación, los comentarios en vivo y las herramientas de tareas. Desactívalo para un agente que rechaza servidores MCP y no llega a conectarse; el cambio se aplica en la próxima conexión.",
+    "customAgentMcpHint": "Envía el complemento MCP integrado de RecurCode a este agente al iniciar la sesión: es el canal de la delegación, los comentarios en vivo y las herramientas de tareas. Desactívalo para un agente que rechaza servidores MCP y no llega a conectarse; el cambio se aplica en la próxima conexión.",
     "customAgentIconNotAnImage": "Selecciona un archivo de imagen.",
     "customAgentIconTooLarge": "El icono debe pesar menos de {limit} KB.",
     "customAgentIconReadFailed": "No se pudo leer esa imagen.",
@@ -1787,22 +1787,22 @@
   "CloseBehaviorSettings": {
     "title": "Comportamiento del botón de cerrar",
     "description": "Elige qué hace el botón de cerrar de la ventana principal.",
-    "trayUnavailable": "Este sistema no tiene una bandeja utilizable, por lo que el botón de cerrar siempre sale de codeg.",
+    "trayUnavailable": "Este sistema no tiene una bandeja utilizable, por lo que el botón de cerrar siempre sale de RecurCode.",
     "behaviorAsk": "Preguntar cada vez",
     "behaviorMinimize": "Minimizar a la bandeja",
-    "behaviorExit": "Salir de codeg",
+    "behaviorExit": "Salir de RecurCode",
     "saveFailed": "No se pudo guardar el comportamiento de cierre: {message}"
   },
   "CloseRequestDialog": {
-    "askTitle": "¿Cerrar codeg?",
-    "askDescription": "codeg puede seguir ejecutándose en la bandeja para mantener activos los agentes y las terminales, o salir por completo.",
-    "confirmExitTitle": "¿Salir de codeg?",
-    "confirmExitDescription": "Cerrar la ventana está configurado para salir de codeg.",
+    "askTitle": "¿Cerrar RecurCode?",
+    "askDescription": "RecurCode puede seguir ejecutándose en la bandeja para mantener activos los agentes y las terminales, o salir por completo.",
+    "confirmExitTitle": "¿Salir de RecurCode?",
+    "confirmExitDescription": "Cerrar la ventana está configurado para salir de RecurCode.",
     "runningTerminals": "{count, plural, one {# terminal sigue en ejecución y se cerrará al salir.} other {# terminales siguen en ejecución y se cerrarán al salir.}}",
     "remember": "Recordar mi elección",
     "cancel": "Cancelar",
     "minimize": "Minimizar a la bandeja",
-    "exit": "Salir de codeg",
+    "exit": "Salir de RecurCode",
     "actionFailed": "La acción falló: {message}"
   },
   "GeneralSettings": {
@@ -1810,7 +1810,7 @@
     "sectionTitle": "General",
     "sectionDescription": "Preferencias centralizadas para el terminal predeterminado, la aceleración de renderizado, el comportamiento al cerrar la ventana, las notificaciones y los sonidos.",
     "terminalTitle": "Terminal predeterminada",
-    "terminalDescription": "Elige el shell que codeg usa para las nuevas pestañas de terminal y para las líneas de comandos completas que un agente le pide ejecutar. Los agentes con shell propio (Codex, Claude Code) ejecutan los comandos dentro de su propio proceso, así que este ajuste no les llega.",
+    "terminalDescription": "Elige el shell que RecurCode usa para las nuevas pestañas de terminal y para las líneas de comandos completas que un agente le pide ejecutar. Los agentes con shell propio (Codex, Claude Code) ejecutan los comandos dentro de su propio proceso, así que este ajuste no les llega.",
     "terminalSystemDefault": "Predeterminado del sistema",
     "terminalPowerShell7": "PowerShell 7 (pwsh)",
     "terminalWindowsPowerShell": "Windows PowerShell",
@@ -1836,11 +1836,11 @@
   },
   "CollaborationSettings": {
     "sectionTitle": "Colaboración",
-    "sectionDescription": "Cómo colaboran los agentes entre sí y a qué herramientas propias de codeg pueden acceder dentro de una conversación."
+    "sectionDescription": "Cómo colaboran los agentes entre sí y a qué herramientas propias de RecurCode pueden acceder dentro de una conversación."
   },
   "LoginPage": {
-    "documentTitle": "Iniciar sesión - codeg",
-    "brand": "Codeg",
+    "documentTitle": "Iniciar sesión - RecurCode",
+    "brand": "RecurCode",
     "subtitle": "Introduce tu token de acceso para conectarte a la aplicación de escritorio",
     "tokenPlaceholder": "Token de acceso",
     "connect": "Conectar",
@@ -1896,7 +1896,7 @@
     "onlyImportable": "Solo importables",
     "includeDeleted": "Incluir eliminadas",
     "includeDeletedWithCount": "Incluir eliminadas ({count})",
-    "includeDeletedHint": "Eliminar una sesión en codeg solo la oculta: la conversación y su historial siguen aquí. Activa esto para seleccionar sesiones eliminadas y restaurarlas en su sitio.",
+    "includeDeletedHint": "Eliminar una sesión en RecurCode solo la oculta: la conversación y su historial siguen aquí. Activa esto para seleccionar sesiones eliminadas y restaurarlas en su sitio.",
     "selectAll": "Seleccionar todo",
     "clearSelection": "Limpiar",
     "expandAll": "Expandir todo",
@@ -2284,7 +2284,7 @@
         "showPet": "Mostrar mascota"
       },
       "mcp": {
-        "title": "Servicio codeg-mcp",
+        "title": "Servicio recur-code-mcp",
         "state": {
           "running": "En ejecución",
           "stopped": "Detenido",
@@ -2293,10 +2293,10 @@
           "unknown": "Desconocido"
         },
         "hint": {
-          "running": "Los agentes de aquí pueden usar las herramientas de codeg.",
+          "running": "Los agentes de aquí pueden usar las herramientas de RecurCode.",
           "stopped": "El socket del broker no responde.",
           "disabled": "Todos los grupos de herramientas están desactivados.",
-          "unavailable": "No se encuentra el binario codeg-mcp.",
+          "unavailable": "No se encuentra el binario recur-code-mcp.",
           "unknown": "No se pudo leer el estado."
         },
         "socketPath": "Dirección",
@@ -3124,7 +3124,7 @@
         },
         "backendErrors": {
           "initializeTimeout": "Se agotó el tiempo del handshake de conexión de {agent} (sin respuesta tras 60 segundos). Abre Ajustes para revisar la configuración del agente y de la red.",
-          "mcpRejectedByAgent": "{agent} rechazó la sesión con el complemento MCP de codeg adjunto: {message} Si este agente no admite MCP, desactiva «Compatibilidad con MCP» en Ajustes y vuelve a conectar.",
+          "mcpRejectedByAgent": "{agent} rechazó la sesión con el complemento MCP de RecurCode adjunto: {message} Si este agente no admite MCP, desactiva «Compatibilidad con MCP» en Ajustes y vuelve a conectar.",
           "processExited": "El proceso de {agent} terminó inesperadamente.",
           "spawnFailed": "No se pudo iniciar {agent}: {message}",
           "downloadFailed": "La descarga de {agent} falló: {message}",
@@ -3138,7 +3138,7 @@
           "turnFailedUnknown": "{agent} finalizó el turno con un motivo de parada no reconocido.",
           "turnFailedAuthRequired": "{agent} necesita que inicies sesión de nuevo antes de ejecutar este turno. Inicia sesión desde Ajustes y vuelve a enviar el mensaje.",
           "agentAuthRequired": "{agent} no ha podido iniciar una sesión: no tiene ninguna credencial utilizable. Vuelve a iniciar sesión en Ajustes → Agentes → {agent} y reabre esta conversación.",
-          "agentRuntimeOutdated": "{agent} es demasiado antiguo para esta versión de Codeg. Actualízalo y vuelve a abrir esta conversación.",
+          "agentRuntimeOutdated": "{agent} es demasiado antiguo para esta versión de RecurCode. Actualízalo y vuelve a abrir esta conversación.",
           "grokModelSwitchIncompatibleAgent": "{agent} no puede cambiar a ese modelo en una conversación existente. Inicia una nueva sesión para usarlo.",
           "setModeFailed": "{agent} no pudo cambiar de modo.",
           "setConfigOptionFailed": "{agent} no pudo aplicar ese ajuste.",
@@ -3146,7 +3146,7 @@
           "imageDropped": "{agent} no recibió una imagen adjunta.",
           "sessionLoadFallback": "{agent} no pudo restaurar la sesión anterior y empezó una nueva; ya no tiene el contexto previo.",
           "turnFailedEmpty": "{agent} finalizó el turno sin producir ninguna respuesta.",
-          "turnFailedEmptyProtocol": "{agent} produjo una salida que codeg no pudo analizar; la versión del agente podría no coincidir con el protocolo.",
+          "turnFailedEmptyProtocol": "{agent} produjo una salida que RecurCode no pudo analizar; la versión del agente podría no coincidir con el protocolo.",
           "turnFailedEmptyMetadata": "{agent} solo envió actualizaciones de estado en este turno (plan / modo / uso) y ninguna respuesta."
         },
         "unableReadAgentConfig": "No se puede leer la configuración del agente: {message}",
@@ -3302,7 +3302,7 @@
           "shortcutsAuxPanel": "<shortcut>{toggleAuxPanel}</shortcut> alterna el panel derecho para ver los archivos tocados y los cambios de Git de esta sesión.",
           "shortcutsTerminalSidebar": "<shortcut>{toggleTerminal}</shortcut> abre la terminal integrada, <shortcut>{toggleSidebar}</shortcut> alterna la barra lateral.",
           "customShortcuts": "Todos los atajos se pueden reasignar en Ajustes → Atajos.",
-          "webService": "Activa Ajustes → Servicio web para que tu equipo acceda al mismo codeg desde un navegador.",
+          "webService": "Activa Ajustes → Servicio web para que tu equipo acceda al mismo RecurCode desde un navegador.",
           "fusionMode": "Abre un archivo o diff para mostrarlo automáticamente junto a la conversación.",
           "quickMessages": "Abre el botón + junto a la entrada y elige Mensajes rápidos para insertar un fragmento guardado (gestiónalos en Ajustes → Mensajes rápidos).",
           "experts": "El botón + tiene un menú Habilidades expertas: carga roles como Depuración o Planificación con un clic.",
@@ -3312,7 +3312,7 @@
           "mentionTargets": "@ no solo trae archivos: menciona a otro agente para delegarle una subtarea, o referencia una sesión anterior, un commit o una habilidad.",
           "splitGroups": "Haz clic derecho en una pestaña y elige Dividir a la derecha o Dividir abajo para mantener dos conversaciones en paneles propios.",
           "worktrees": "Abre el botón de rama y elige Nuevo worktree para que varios agentes trabajen en el mismo repositorio sin pisarse los archivos.",
-          "importSessions": "¿Ya ejecutaste sesiones en la terminal? El menú de una carpeta tiene Importar sesiones locales para traer ese historial a codeg.",
+          "importSessions": "¿Ya ejecutaste sesiones en la terminal? El menú de una carpeta tiene Importar sesiones locales para traer ese historial a RecurCode.",
           "subSessions": "Cuando un agente delega, la subsesión aparece anidada bajo él en la barra lateral: despliega la fila para seguir lo que hizo cada una.",
           "liveFeedback": "Comentarios en vivo, en el menú +, inserta una nota en el turno que el agente ya está ejecutando, sin interrumpirlo.",
           "skillPacks": "Configuración → Paquetes de habilidades reúne expertos de programación, investigación científica y ofimática; actívalos por agente.",
@@ -3883,7 +3883,7 @@
         "collapse": "Contraer",
         "errorTitle": "Error al comprobar los comentarios"
       },
-      "codegMcpTool": {
+      "recurCodeMcpTool": {
         "getSessionInfo": "Leyendo la sesión {session}",
         "getSessionInfoNoId": "Leyendo una sesión",
         "taskProgress": "Progreso: {message}",
@@ -3941,7 +3941,7 @@
         "grantDescription": "pi carga los archivos .pi del propio repositorio. Revisa lo que eso permite.",
         "grantInheritedDescription": "Una carpeta superior es de confianza, así que pi carga los archivos .pi del propio repositorio. Revisa lo que eso permite.",
         "grantDialogTitle": "Los recursos de pi de este proyecto son de confianza",
-        "grantDialogDescription": "pi tiene permiso para cargar los archivos .pi del propio repositorio. Versiones anteriores de codeg lo concedían automáticamente al abrir una carpeta, así que puede que nunca te lo preguntaran.",
+        "grantDialogDescription": "pi tiene permiso para cargar los archivos .pi del propio repositorio. Versiones anteriores de RecurCode lo concedían automáticamente al abrir una carpeta, así que puede que nunca te lo preguntaran.",
         "grantExecutionWarning": "Las extensiones son código. El repositorio las ejecuta al iniciar pi con tus permisos, antes de que envíes ningún mensaje.",
         "inheritedFrom": "Confianza heredada de",
         "revoke": "Revocar confianza",
@@ -4153,11 +4153,11 @@
   "WebServiceSettings": {
     "addressSwitchHint": "Cambiar solo modifica la dirección que se muestra y se abre aquí; el servicio escucha en todas las interfaces y sigue accesible en cada dirección.",
     "sectionTitle": "Servicio Web",
-    "sectionDescription": "Habilitar para acceder a Codeg de forma remota a través del navegador",
+    "sectionDescription": "Habilitar para acceder a RecurCode de forma remota a través del navegador",
     "port": "Puerto",
     "status": "Estado",
     "autoStart": "Inicio automático",
-    "autoStartHint": "Iniciar el servicio web al abrir Codeg",
+    "autoStartHint": "Iniciar el servicio web al abrir RecurCode",
     "running": "En ejecución",
     "stopped": "Detenido",
     "processing": "Procesando...",
@@ -4172,7 +4172,7 @@
     "copy": "Copiar",
     "qrcode": "Código QR",
     "qrcodeTitle": "Escanear para abrir",
-    "qrcodeHint": "Escanea con tu teléfono para abrir Codeg en el navegador",
+    "qrcodeHint": "Escanea con tu teléfono para abrir RecurCode en el navegador",
     "addressLabel": "Dirección de acceso",
     "tokenLabel": "Token de acceso",
     "tokenHint": "Ingrese este token al acceder al cliente Web por primera vez",
@@ -4180,7 +4180,7 @@
     "regenerate": "Regenerar",
     "stalePortOccupiedTitle": "El puerto {port} está en uso por otro proceso",
     "stalePortUnknownTitle": "Estado del puerto {port} indeterminado",
-    "stalePortHint": "Codeg no puede vincularse hasta que se libere el puerto. Cambia el puerto arriba o cierra el proceso que lo retiene.",
+    "stalePortHint": "RecurCode no puede vincularse hasta que se libere el puerto. Cambia el puerto arriba o cierra el proceso que lo retiene.",
     "errors": {
       "alreadyRunning": "El servicio Web ya está en ejecución",
       "invalidAddress": "Formato de host o puerto no válido",
@@ -4237,7 +4237,7 @@
     "tokenRequired": "El token es obligatorio.",
     "chatIdRequired": "El Chat ID es obligatorio.",
     "topicMode": "Modo de grupo por temas",
-    "topicModeHint": "Enruta los temas de foros de Telegram como sesiones Codeg separadas. El bot debe estar en un supergrupo de foro y poder administrar temas.",
+    "topicModeHint": "Enruta los temas de foros de Telegram como sesiones RecurCode separadas. El bot debe estar en un supergrupo de foro y poder administrar temas.",
     "loadFailed": "Error al cargar los canales.",
     "saveFailed": "Error al guardar los cambios.",
     "connectSuccess": "Canal conectado.",
@@ -4435,7 +4435,7 @@
     },
     "confirm": {
       "disableTitle": "¿Desactivar estos enlaces?",
-      "disableBody": "Esto eliminará {count} enlaces de habilidades gestionados por codeg. Las habilidades que ocupan un directorio personalizado no se modifican. Puedes reactivarlas cuando quieras.",
+      "disableBody": "Esto eliminará {count} enlaces de habilidades gestionados por RecurCode. Las habilidades que ocupan un directorio personalizado no se modifican. Puedes reactivarlas cuando quieras.",
       "cancel": "Cancelar",
       "confirm": "Desactivar"
     },
@@ -4456,7 +4456,7 @@
   },
   "ExpertsSettings": {
     "title": "Habilidades de expertos",
-    "description": "Habilita flujos de trabajo de habilidades cuidadosamente seleccionadas y probadas en la práctica para tus agentes de codificación de IA. Cada experto es una habilidad independiente del proyecto superpowers — codeg gestiona la copia central y la vincula a los agentes que elijas.",
+    "description": "Habilita flujos de trabajo de habilidades cuidadosamente seleccionadas y probadas en la práctica para tus agentes de codificación de IA. Cada experto es una habilidad independiente del proyecto superpowers — RecurCode gestiona la copia central y la vincula a los agentes que elijas.",
     "loading": "Cargando expertos…",
     "loadingContent": "Cargando contenido…",
     "emptyExperts": "No hay expertos disponibles. Revisa los registros de la aplicación.",
@@ -4465,7 +4465,7 @@
     "searchPlaceholder": "Buscar expertos por nombre, ID o descripción",
     "enableForAgents": "Habilitar para agentes",
     "noAgents": "No se detectaron agentes ACP.",
-    "copyModeWarning": "Copiado (no vinculado). Vuelve a habilitarlo después de actualizar codeg para obtener la última versión.",
+    "copyModeWarning": "Copiado (no vinculado). Vuelve a habilitarlo después de actualizar RecurCode para obtener la última versión.",
     "previewTitle": "Vista previa de SKILL.md",
     "categories": {
       "discovery": "Descubrimiento y diseño",
@@ -4478,7 +4478,7 @@
     },
     "states": {
       "not_linked": "No habilitado",
-      "linked_to_codeg": "Habilitado",
+      "linked_to_recur_code": "Habilitado",
       "linked_elsewhere": "Bloqueado — existe otro vínculo",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Vínculo roto"
@@ -4501,7 +4501,7 @@
   },
   "ScienceSettings": {
     "title": "Habilidades de investigación científica",
-    "description": "Habilita habilidades de investigación científica seleccionadas para tus agentes de código con IA: generación de hipótesis, diseño experimental, estadística, visualización, evaluación crítica y búsqueda bibliográfica. codeg gestiona una copia central y enlaza cada habilidad a los agentes que elijas.",
+    "description": "Habilita habilidades de investigación científica seleccionadas para tus agentes de código con IA: generación de hipótesis, diseño experimental, estadística, visualización, evaluación crítica y búsqueda bibliográfica. RecurCode gestiona una copia central y enlaza cada habilidad a los agentes que elijas.",
     "loading": "Cargando habilidades científicas…",
     "emptySkills": "No hay habilidades científicas disponibles. Revisa los registros de la aplicación.",
     "searchPlaceholder": "Buscar habilidades científicas por nombre, id o descripción",
@@ -4515,7 +4515,7 @@
     },
     "states": {
       "not_linked": "No habilitado",
-      "linked_to_codeg": "Habilitado",
+      "linked_to_recur_code": "Habilitado",
       "linked_elsewhere": "Bloqueado — existe otro vínculo",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Vínculo roto"
@@ -4565,7 +4565,7 @@
     },
     "states": {
       "not_linked": "No activado",
-      "linked_to_codeg": "Activado",
+      "linked_to_recur_code": "Activado",
       "linked_elsewhere": "Bloqueado — existe otro enlace",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Enlace roto"
@@ -4595,7 +4595,7 @@
   },
   "SkillPacksSettings": {
     "title": "Paquetes de habilidades",
-    "description": "Paquetes de habilidades seleccionados que codeg gestiona de forma centralizada y vincula a tus agentes de IA: expertos en programación, investigación científica y herramientas de documentos de oficina. Actívalos por agente abajo.",
+    "description": "Paquetes de habilidades seleccionados que RecurCode gestiona de forma centralizada y vincula a tus agentes de IA: expertos en programación, investigación científica y herramientas de documentos de oficina. Actívalos por agente abajo.",
     "tabs": {
       "experts": "Expertos",
       "science": "Ciencia",
@@ -4615,7 +4615,7 @@
     "loading": "Cargando…",
     "category": "Interfaz generativa",
     "skillName": "Renderizado de UI",
-    "skillDescription": "Permite que el agente responda con tarjetas, tablas y gráficos interactivos en el chat de Codeg.",
+    "skillDescription": "Permite que el agente responda con tarjetas, tablas y gráficos interactivos en el chat de RecurCode.",
     "usage": "Escribe /ui-render seguido de tu petición, por ejemplo /ui-render muestra en una tabla los archivos modificados. En Codex, usa $ui-render. También puedes pedirle al agente que lo muestre en tarjetas, en una tabla o en un gráfico. El agente tiene la habilidad en las conversaciones iniciadas después de habilitarla.",
     "conflict": "Tu carpeta central de habilidades ya tiene una habilidad propia llamada ui-render. Cámbiale el nombre en la pestaña Personalizadas para usar la integrada.",
     "notReadyHint": "Una habilidad propia llamada ui-render ocupa el nombre. Cámbiale el nombre en la pestaña Personalizadas.",
@@ -4624,7 +4624,7 @@
     },
     "states": {
       "not_linked": "No habilitado",
-      "linked_to_codeg": "Habilitado",
+      "linked_to_recur_code": "Habilitado",
       "linked_elsewhere": "Bloqueado — existe otro vínculo",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Vínculo roto"
@@ -4948,7 +4948,7 @@
       "restore": "Restaurar"
     },
     "export": {
-      "description": "Empaqueta los datos de codeg de este equipo —base de datos y archivos subidos— en un solo archivo.",
+      "description": "Empaqueta los datos de RecurCode de este equipo —base de datos y archivos subidos— en un solo archivo.",
       "includeExternal": "Incluir el contenido de las conversaciones",
       "includeExternalHint": "También archiva las transcripciones de las CLI (Claude, Codex, Gemini, …). Aumenta el tamaño.",
       "passphrase": "Frase de contraseña (opcional)",
@@ -4971,7 +4971,7 @@
       }
     },
     "restore": {
-      "description": "Sustituye los datos de codeg de este equipo por el contenido de una copia de seguridad.",
+      "description": "Sustituye los datos de RecurCode de este equipo por el contenido de una copia de seguridad.",
       "selectFile": "Seleccionar archivo de copia",
       "passphrasePrompt": "Esta copia está cifrada. Introduce su frase de contraseña.",
       "unlock": "Desbloquear",
@@ -4982,9 +4982,9 @@
         "incompatible": "Incompatible",
         "createdAt": "Creada: {value}",
         "appVersion": "Versión de la app: {value}",
-        "incompatibleHint": "Esta copia fue creada por una versión más reciente de codeg y no se puede restaurar."
+        "incompatibleHint": "Esta copia fue creada por una versión más reciente de RecurCode y no se puede restaurar."
       },
-      "replaceWarning": "Restaurar reemplaza todos los datos actuales de codeg (base de datos y subidas). Tus datos actuales se guardan primero en una instantánea para poder recuperarlos.",
+      "replaceWarning": "Restaurar reemplaza todos los datos actuales de RecurCode (base de datos y subidas). Tus datos actuales se guardan primero en una instantánea para poder recuperarlos.",
       "keyringNote": "Los tokens de GitHub/chat del escritorio están en el llavero del sistema y no se incluyen; vuelve a introducirlos tras restaurar.",
       "button": "Restaurar",
       "staging": "Preparando la restauración…",
@@ -4993,7 +4993,7 @@
       "restartTimeout": "El servidor no volvió a tiempo. Recarga la página cuando esté activo.",
       "externalSideLocation": "Las transcripciones de conversaciones se restauraron en {path}",
       "confirmTitle": "¿Reemplazar todos los datos?",
-      "confirmBody": "Esto reemplazará tu base de datos y subidas actuales de codeg con la copia y luego reiniciará. Tus datos actuales se guardan primero en una instantánea.",
+      "confirmBody": "Esto reemplazará tu base de datos y subidas actuales de RecurCode con la copia y luego reiniciará. Tus datos actuales se guardan primero en una instantánea.",
       "cancel": "Cancelar",
       "confirmAction": "Reemplazar y reiniciar",
       "external": {
@@ -5025,7 +5025,7 @@
         "later": "Más tarde"
       }
     },
-    "remoteUnsupported": "La copia de seguridad y la restauración actúan sobre los datos de la máquina que ejecuta codeg. Estás conectado a un espacio de trabajo remoto: gestiona sus copias desde ese servidor directamente.",
+    "remoteUnsupported": "La copia de seguridad y la restauración actúan sobre los datos de la máquina que ejecuta RecurCode. Estás conectado a un espacio de trabajo remoto: gestiona sus copias desde ese servidor directamente.",
     "progress": {
       "cancel": "Cancelar"
     },
@@ -5107,7 +5107,7 @@
     "plaintextWarning": "La instantánea se sube sin cifrar e incluye claves de API, así que usa un servidor WebDAV al que solo tú tengas acceso. Las credenciales de sincronización nunca forman parte de la instantánea.",
     "importConfirmTitle": "¿Importar la configuración?",
     "importConfirmBody": "Las entradas del archivo se añadirán o actualizarán en este equipo. Las entradas existentes que el archivo no menciona se conservan.",
-    "restartHint": "Algunos cambios (apariencia, idioma y la lista de proveedores) se aplican al reiniciar codeg.",
+    "restartHint": "Algunos cambios (apariencia, idioma y la lista de proveedores) se aplican al reiniciar RecurCode.",
     "importConfirmAction": "Importar",
     "restoreConfirmTitle": "¿Restaurar desde el servidor?",
     "restoreConfirmBody": "Se aplicará en este equipo la instantánea de {device} creada el {time}. Las entradas existentes que la instantánea no menciona se conservan.",
@@ -5143,8 +5143,8 @@
       "error": {
         "badPassphrase": "Frase de contraseña incorrecta o copia dañada.",
         "corrupted": "El archivo de copia de seguridad está dañado.",
-        "unknownFormat": "Este archivo no es una copia de seguridad de codeg reconocida.",
-        "newerVersion": "Esta copia fue creada por codeg {backupVersion}, más reciente que esta versión ({appVersion}).",
+        "unknownFormat": "Este archivo no es una copia de seguridad de RecurCode reconocida.",
+        "newerVersion": "Esta copia fue creada por RecurCode {backupVersion}, más reciente que esta versión ({appVersion}).",
         "alreadyPending": "Ya hay una restauración preparada. Reinicia para aplicarla antes de preparar otra."
       }
     },
@@ -5155,9 +5155,9 @@
   },
   "configSync": {
     "error": {
-      "newerSchema": "Esta instantánea se creó con una versión más reciente de codeg (formato {snapshotVersion}); esta versión admite hasta el formato {appVersion}.",
+      "newerSchema": "Esta instantánea se creó con una versión más reciente de RecurCode (formato {snapshotVersion}); esta versión admite hasta el formato {appVersion}.",
       "checksum": "La instantánea no coincide con su suma de verificación y podría estar incompleta.",
-      "invalidSnapshot": "Este archivo no es una instantánea de configuración de codeg válida.",
+      "invalidSnapshot": "Este archivo no es una instantánea de configuración de RecurCode válida.",
       "noRemoteSnapshot": "Todavía no hay ninguna instantánea de configuración en el servidor.",
       "notConfigured": "Configura el servidor WebDAV antes de sincronizar.",
       "unauthorized": "El servidor WebDAV rechazó el usuario o la contraseña.",
@@ -5203,7 +5203,7 @@
   },
   "AgentToolsSettings": {
     "title": "Herramientas en la conversación",
-    "description": "Herramientas adicionales que codeg entrega a un agente dentro de una conversación. Se inyectan al iniciar el agente, así que los cambios se aplican a los agentes iniciados después.",
+    "description": "Herramientas adicionales que RecurCode entrega a un agente dentro de una conversación. Se inyectan al iniciar el agente, así que los cambios se aplican a los agentes iniciados después.",
     "save": "Guardar",
     "saving": "Guardando…",
     "saved": "Ajustes de herramientas guardados",
@@ -5244,7 +5244,7 @@
     "computer": {
       "label": "Ver y usar las ventanas del escritorio",
       "short": "Lista apps y ventanas; lee las que compartas y actúa en las que permitas.",
-      "hint": "Permite que un agente liste las aplicaciones y ventanas de tu escritorio, lea las ventanas que compartas con él —una captura, su contenido, si muestra lo que se espera— y haga clic, escriba y pulse teclas en las que compartas para actuar. Nada es legible hasta que compartas una ventana desde el panel Uso del ordenador de la barra de estado, y en ninguna se puede actuar salvo que también lo permitas; el uso compartido termina cuando la ventana se cierra, tras un rato sin uso o cuando lo detienes, y Detener agentes en ese panel los para a todos a la vez. La entrada llega a la ventana en segundo plano; para una acción que no llega en segundo plano, un agente puede traer la ventana al frente, algo que puedes desactivar en los ajustes de Uso del ordenador. Solo en la app de escritorio; en macOS requiere permisos concedidos a codeg-computer-helper. Versión preliminar."
+      "hint": "Permite que un agente liste las aplicaciones y ventanas de tu escritorio, lea las ventanas que compartas con él —una captura, su contenido, si muestra lo que se espera— y haga clic, escriba y pulse teclas en las que compartas para actuar. Nada es legible hasta que compartas una ventana desde el panel Uso del ordenador de la barra de estado, y en ninguna se puede actuar salvo que también lo permitas; el uso compartido termina cuando la ventana se cierra, tras un rato sin uso o cuando lo detienes, y Detener agentes en ese panel los para a todos a la vez. La entrada llega a la ventana en segundo plano; para una acción que no llega en segundo plano, un agente puede traer la ventana al frente, algo que puedes desactivar en los ajustes de Uso del ordenador. Solo en la app de escritorio; en macOS requiere permisos concedidos a recur-code-computer-helper. Versión preliminar."
     },
     "automations": {
       "label": "Crear automatizaciones",
@@ -5266,21 +5266,21 @@
     "permissionDefault": "Sin solicitar",
     "permissionUnsupported": "No disponible",
     "permissionManagedByOs": "Gestionado por el sistema",
-    "permissionGrantedHint": "Este navegador mostrará las notificaciones de Codeg.",
-    "permissionDeniedHint": "Este navegador está bloqueando las notificaciones de Codeg. Solo puedes revertirlo desde los ajustes del sitio en el navegador: una página no puede volver a preguntar.",
+    "permissionGrantedHint": "Este navegador mostrará las notificaciones de RecurCode.",
+    "permissionDeniedHint": "Este navegador está bloqueando las notificaciones de RecurCode. Solo puedes revertirlo desde los ajustes del sitio en el navegador: una página no puede volver a preguntar.",
     "permissionDefaultHint": "Aún no se ha preguntado a este navegador. No habrá notificaciones hasta que las permitas.",
     "permissionUnsupportedHint": "Las notificaciones necesitan un contexto seguro. Accede a este servidor por HTTPS o en localhost.",
-    "permissionManagedByOsHint": "La app de escritorio envía a través del centro de notificaciones del sistema, que no informa de si Codeg está permitido. Envía una prueba para comprobarlo.",
+    "permissionManagedByOsHint": "La app de escritorio envía a través del centro de notificaciones del sistema, que no informa de si RecurCode está permitido. Envía una prueba para comprobarlo.",
     "identityTitle": "Se envía como",
     "identityHint": "El sistema registra estas notificaciones bajo esta app; los interruptores que se aplican son los suyos.",
-    "identityDegradedHint": "No se pudo usar el identificador propio de Codeg, así que el sistema las envía como {bundleId} y se aplican los interruptores de esa app. Instala Codeg en la carpeta Aplicaciones para recuperar su identidad.",
+    "identityDegradedHint": "No se pudo usar el identificador propio de RecurCode, así que el sistema las envía como {bundleId} y se aplican los interruptores de esa app. Instala RecurCode en la carpeta Aplicaciones para recuperar su identidad.",
     "requestPermission": "Permitir notificaciones",
     "permissionGrantedToast": "Notificaciones permitidas.",
     "permissionDeniedToast": "Las notificaciones se bloquearon. Vuelve a activarlas en los ajustes del sitio de tu navegador.",
     "openSystemSettings": "Abrir ajustes del sistema",
     "openSystemSettingsFailed": "No se pudieron abrir los ajustes de notificaciones del sistema.",
     "sendTest": "Enviar una prueba",
-    "testTitle": "Codeg",
+    "testTitle": "RecurCode",
     "testBody": "Las notificaciones de escritorio funcionan.",
     "testSent": "Notificación de prueba enviada.",
     "testFailed": "No se pudo enviar la notificación de prueba.",
@@ -5304,7 +5304,7 @@
     "preview": "Escuchar",
     "previewEvent": "Escuchar el sonido de {event}",
     "onlyWhenUnfocused": "Solo cuando la ventana no está enfocada",
-    "onlyWhenUnfocusedHint": "Permanece en silencio mientras estás mirando Codeg.",
+    "onlyWhenUnfocusedHint": "Permanece en silencio mientras estás mirando RecurCode.",
     "eventsTitle": "Eventos",
     "eventsHint": "Elige un tono para cada evento o «Silencio» para omitirlo. Si el mismo evento se repite en pocos segundos, solo suena una vez.",
     "toneNone": "Silencio",
@@ -5318,7 +5318,7 @@
   "BrowserSettings": {
     "title": "Navegador integrado",
     "description": "Las páginas web abiertas desde conversaciones, resultados de herramientas y la terminal pueden mostrarse como pestañas junto a tus archivos, sin salir de la aplicación.",
-    "descriptionWeb": "En una sesión de navegador, las páginas se abren en el navegador que ya estás usando. La excepción es un servidor que se ejecuta en el host de codeg: se reenvía a una pestaña aquí. Estos son los ajustes que siguen decidiendo algo.",
+    "descriptionWeb": "En una sesión de navegador, las páginas se abren en el navegador que ya estás usando. La excepción es un servidor que se ejecuta en el host de RecurCode: se reenvía a una pestaña aquí. Estos son los ajustes que siguen decidiendo algo.",
     "defaultTargetTitle": "Dónde se abren los enlaces",
     "defaultTargetHint": "Se configura por origen. Haz ⌘/Ctrl+clic en un enlace para usar la otra opción solo esta vez.",
     "sourceTranscript": "Mensajes de la conversación",
@@ -5349,7 +5349,7 @@
     "proxyOn": "Usando {url}",
     "proxyOff": "Conexión directa",
     "proxyNextTab": "Un cambio de proxy se aplica a las pestañas que se abran a partir de ahora.",
-    "proxyRestart": "Reinicia codeg para que las pestañas del navegador usen el proxy cambiado.",
+    "proxyRestart": "Reinicia RecurCode para que las pestañas del navegador usen el proxy cambiado.",
     "proxyUnsupported": "No disponible en esta versión de macOS (se necesita 14 o posterior).",
     "proxyUnusable": "El proxy configurado no es de un tipo que las pestañas del navegador puedan usar (solo http y socks5).",
     "suspendTitle": "Descargar pestañas en segundo plano",
@@ -5427,7 +5427,7 @@
       "stop": "Dejar de compartir",
       "stopWithKey": "Dejar de compartir todas las ventanas ({key})"
     },
-    "codegGranted": "codeg tiene Accesibilidad o Grabación de pantalla, así que la shell de los agentes puede usarla sin que compartas nada. Si no lo necesitas, desactívalo para codeg en Ajustes del Sistema.",
+    "recurCodeGranted": "RecurCode tiene Accesibilidad o Grabación de pantalla, así que la shell de los agentes puede usarla sin que compartas nada. Si no lo necesitas, desactívalo para RecurCode en Ajustes del Sistema.",
     "backend": {
       "idle": "Sin iniciar",
       "downloading": "Descargando el controlador…",
@@ -5443,9 +5443,9 @@
       "screenRecording": "Grabación de pantalla",
       "granted": "Concedido",
       "request": "Conceder…",
-      "why": "Activa codeg-computer-helper en Ajustes del Sistema, no codeg. La Grabación de pantalla le permite ver las ventanas; la Accesibilidad, leerlas y actuar en ellas.",
-      "devRebuild": "Cada recompilación del ayudante anula su permiso anterior: quita primero el codeg-computer-helper antiguo de la lista y vuelve a concederlo.",
-      "notListed": "Si codeg-computer-helper no aparece en la lista, arrástralo desde el Finder:",
+      "why": "Activa recur-code-computer-helper en Ajustes del Sistema, no RecurCode. La Grabación de pantalla le permite ver las ventanas; la Accesibilidad, leerlas y actuar en ellas.",
+      "devRebuild": "Cada recompilación del ayudante anula su permiso anterior: quita primero el recur-code-computer-helper antiguo de la lista y vuelve a concederlo.",
+      "notListed": "Si recur-code-computer-helper no aparece en la lista, arrástralo desde el Finder:",
       "reveal": "Mostrar en el Finder"
     },
     "shared": {
@@ -5498,13 +5498,13 @@
       "loading": "Cargando ventanas…",
       "refresh": "Actualizar",
       "empty": "No se encontraron ventanas. Si debería haber alguna, revisa los permisos en el panel Uso del ordenador.",
-      "noScreenRecording": "codeg-computer-helper todavía no tiene Grabación de pantalla: no se pueden mostrar los títulos ni las imágenes de las ventanas, y los agentes no pueden leerlas.",
+      "noScreenRecording": "recur-code-computer-helper todavía no tiene Grabación de pantalla: no se pueden mostrar los títulos ni las imágenes de las ventanas, y los agentes no pueden leerlas.",
       "unnamedApp": "App desconocida",
       "untitled": "Ventana sin título",
       "minimized": "Minimizada",
       "hidden": "Oculta",
       "notGrantable": {
-        "codeg": "Ventana de codeg",
+        "RecurCode": "Ventana de RecurCode",
         "blocklisted": "En la lista de no compartir",
         "unidentified": "No se puede identificar la app"
       },
@@ -5520,7 +5520,7 @@
       "appLevelLabel": "Lo que los agentes pueden hacer con todo {app}",
       "viaApp": "Con la app",
       "screenTitle": "Toda la pantalla",
-      "screenHint": "Todas las ventanas que puedes compartir, también las que se abran después, y los atajos propios del escritorio. Las ventanas de codeg y la lista de no compartir siguen tapadas.",
+      "screenHint": "Todas las ventanas que puedes compartir, también las que se abran después, y los atajos propios del escritorio. Las ventanas de RecurCode y la lista de no compartir siguen tapadas.",
       "screenLevelLabel": "Lo que los agentes pueden hacer con toda la pantalla",
       "viaScreen": "Con la pantalla",
       "shareAll": "Compartir todas",
@@ -5530,7 +5530,7 @@
       "skipped": "{count, plural, one {No se pudo compartir # ventana; puede que se haya cerrado.} other {No se pudieron compartir # ventanas; puede que se hayan cerrado.}}",
       "unshareable": "{count, plural, one {# ventana no se puede compartir} other {# ventanas no se pueden compartir}}",
       "noneShareable": "Ninguna de estas ventanas se puede compartir.",
-      "codegWhy": "Las ventanas de codeg nunca se comparten: un agente que pudiera manejar codeg podría aprobar sus propias solicitudes o compartirse más ventanas. Lo mismo vale para otras copias de codeg."
+      "recurCodeWhy": "Las ventanas de RecurCode nunca se comparten: un agente que pudiera manejar RecurCode podría aprobar sus propias solicitudes o compartirse más ventanas. Lo mismo vale para otras copias de RecurCode."
     },
     "settings": {
       "pageTitle": "Uso del ordenador",
@@ -5542,7 +5542,7 @@
       },
       "driver": {
         "title": "Controlador",
-        "description": "El uso del ordenador lee las ventanas y actúa en ellas a través de cua-driver, un programa de código abierto. codeg solo ejecuta la versión que ha comprobado, {version}, y la descarga la primera vez que hace falta.",
+        "description": "El uso del ordenador lee las ventanas y actúa en ellas a través de cua-driver, un programa de código abierto. RecurCode solo ejecuta la versión que ha comprobado, {version}, y la descarga la primera vez que hace falta.",
         "loading": "Comprobando…",
         "unsupported": "cua-driver no tiene versión para esta plataforma.",
         "installing": "Instalando…",
@@ -5550,7 +5550,7 @@
         "downloadingSoFar": "Descargando… {done} MB",
         "uninstalling": "Desinstalando…",
         "installed": "Instalado · {version}",
-        "outdated": "Está instalada la {installed}; este codeg usa la {version}.",
+        "outdated": "Está instalada la {installed}; este RecurCode usa la {version}.",
         "notInstalled": "No instalado. Se descarga la primera vez que el uso del ordenador lo necesita, o puedes instalarlo ahora.",
         "install": "Instalar",
         "upgrade": "Actualizar a {version}",
@@ -5563,7 +5563,7 @@
       },
       "permissions": {
         "title": "Permisos",
-        "description": "macOS los pide para codeg-computer-helper. Concede uno en Ajustes del Sistema y vuelve: esto se actualiza solo.",
+        "description": "macOS los pide para recur-code-computer-helper. Concede uno en Ajustes del Sistema y vuelve: esto se actualiza solo.",
         "off": "Activa el uso del ordenador para comprobar y conceder permisos.",
         "accessibilityHint": "Leer el contenido de las ventanas y actuar en ellas.",
         "screenRecordingHint": "Hacer capturas y leer los títulos de las ventanas."
@@ -5600,7 +5600,7 @@
       },
       "stopKey": {
         "label": "Atajo para detener",
-        "hint": "Deja de compartir todas las ventanas desde cualquier aplicación, como el botón Dejar de compartir. Mientras el uso del ordenador esté activado, estas teclas son de codeg, así que elige unas que no uses en otro sitio.",
+        "hint": "Deja de compartir todas las ventanas desde cualquier aplicación, como el botón Dejar de compartir. Mientras el uso del ordenador esté activado, estas teclas son de RecurCode, así que elige unas que no uses en otro sitio.",
         "recording": "Pulsa las teclas…",
         "recordHint": "Mantén Ctrl y otro modificador (Alt o Mayús) y pulsa una tecla. Esc cancela.",
         "recordHintMac": "Mantén ⌃ o ⌘ y otro modificador y pulsa una tecla. Esc cancela.",
@@ -5634,7 +5634,7 @@
       },
       "launch": {
         "label": "Permitir que los agentes abran aplicaciones y muevan ventanas",
-        "hint": "Con esto activado, un agente puede iniciar en segundo plano una aplicación instalada —nunca codeg ni una de las que nunca se comparten— y mover o cambiar el tamaño de una ventana en la que le permites actuar. Iniciar una aplicación no comparte ninguna de sus ventanas: eso lo sigues decidiendo tú."
+        "hint": "Con esto activado, un agente puede iniciar en segundo plano una aplicación instalada —nunca RecurCode ni una de las que nunca se comparten— y mover o cambiar el tamaño de una ventana en la que le permites actuar. Iniciar una aplicación no comparte ninguna de sus ventanas: eso lo sigues decidiendo tú."
       },
       "clipboard": {
         "label": "Permitir que los agentes usen el portapapeles",
@@ -5642,9 +5642,9 @@
       },
       "screen": {
         "label": "Ofrecer toda la pantalla",
-        "hint": "Con esto activado, el selector para compartir ofrece toda la pantalla: los agentes ven una sola imagen de toda ella y pueden hacer clic en cualquier parte, y con ella van todas las ventanas que puedes compartir y los atajos propios del escritorio. Las ventanas de codeg y la lista de no compartir siguen tapadas. Desactivarlo termina el uso compartido de la pantalla."
+        "hint": "Con esto activado, el selector para compartir ofrece toda la pantalla: los agentes ven una sola imagen de toda ella y pueden hacer clic en cualquier parte, y con ella van todas las ventanas que puedes compartir y los atajos propios del escritorio. Las ventanas de RecurCode y la lista de no compartir siguen tapadas. Desactivarlo termina el uso compartido de la pantalla."
       },
-      "boundary": "En macOS los permisos se conceden a codeg-computer-helper, que solo puede usar codeg, así que la shell de los agentes no puede. Windows y Linux no tienen esa separación: allí estos ajustes deciden lo que los agentes obtienen a través de codeg, no lo que pueden hacer los programas de tu equipo.",
+      "boundary": "En macOS los permisos se conceden a recur-code-computer-helper, que solo puede usar RecurCode, así que la shell de los agentes no puede. Windows y Linux no tienen esa separación: allí estos ajustes deciden lo que los agentes obtienen a través de RecurCode, no lo que pueden hacer los programas de tu equipo.",
       "save": "Guardar",
       "saving": "Guardando…",
       "saved": "Ajustes de uso del ordenador guardados",
@@ -5693,9 +5693,9 @@
     "filesEmpty": "Aún no hay archivos de registro.",
     "download": "Descargar",
     "downloadTruncated": "El archivo es grande; se descargaron los {size} más recientes. El archivo completo está en el directorio de registros.",
-    "captureEnvLocked": "El nivel de registro está controlado por la variable de entorno RUST_LOG / CODEG_LOG; cámbialo ahí para que surta efecto.",
+    "captureEnvLocked": "El nivel de registro está controlado por la variable de entorno RUST_LOG / RECUR_CODE_LOG; cámbialo ahí para que surta efecto.",
     "targetsTitle": "Anulaciones por módulo",
-    "targetsDescription": "Establece un nivel distinto para módulos específicos (p. ej. codeg_lib::acp) sin cambiar el nivel global.",
+    "targetsDescription": "Establece un nivel distinto para módulos específicos (p. ej. recur_code_lib::acp) sin cambiar el nivel global.",
     "targetsAdd": "Añadir",
     "targetsRemove": "Quitar anulación",
     "toggleDetails": "Mostrar detalles"
@@ -6027,7 +6027,7 @@
     "settingsDeleteWorktreeHint": "Marca la opción por defecto en el diálogo de fusión; aún puedes cambiarla allí.",
     "settingsWorktreeRoot": "Ubicación del worktree",
     "settingsWorktreeRootHint": "Directorio donde se crean los worktrees de las tareas nuevas, uno por tarea. Déjalo vacío para crearlos junto a la carpeta del proyecto; «~» es tu carpeta personal y una ruta relativa se resuelve respecto a la carpeta del proyecto.",
-    "settingsWorktreeRootPlaceholder": "~/codeg-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
     "settingsWorktreeRootBrowse": "Elegir el directorio de worktrees",
     "settingsPreflight": "Comando de verificación",
     "settingsPreflightHint": "Se ejecuta en el worktree cuando una tarea llega a revisión.",
@@ -6131,7 +6131,7 @@
     "searchPlaceholder": "Buscar habilidades personalizadas por nombre, ID o descripción",
     "states": {
       "not_linked": "No habilitada",
-      "linked_to_codeg": "Habilitada",
+      "linked_to_recur_code": "Habilitada",
       "linked_elsewhere": "Vinculada en otro lugar",
       "blocked_by_real_directory": "Bloqueada por una carpeta real",
       "broken": "Enlace roto"
@@ -6154,7 +6154,7 @@
     "editor": {
       "createTitle": "Nueva habilidad personalizada",
       "editTitle": "Editar habilidad personalizada",
-      "description": "Las habilidades personalizadas se guardan en el almacén compartido (~/.codeg/skills) y pueden habilitarse para cualquier agente.",
+      "description": "Las habilidades personalizadas se guardan en el almacén compartido (~/.recurcode/skills) y pueden habilitarse para cualquier agente.",
       "idLabel": "ID de habilidad",
       "idPlaceholder": "p. ej. my-workflow",
       "contentLabel": "SKILL.md",
@@ -6209,7 +6209,7 @@
     }
   },
   "CodexModelEditor": {
-    "customizedNotice": "Has personalizado la lista de modelos, así que ahora codeg gestiona toda la tabla de modelos de codex. Los modelos oficiales que codex añada después no aparecerán automáticamente: haz clic en el botón actualizar de abajo y guarda de nuevo para sincronizarlos. Borra tus personalizaciones para que codex vuelva a actualizarse automáticamente.",
+    "customizedNotice": "Has personalizado la lista de modelos, así que ahora RecurCode gestiona toda la tabla de modelos de codex. Los modelos oficiales que codex añada después no aparecerán automáticamente: haz clic en el botón actualizar de abajo y guarda de nuevo para sincronizarlos. Borra tus personalizaciones para que codex vuelva a actualizarse automáticamente.",
     "officialsTitle": "Modelos oficiales",
     "officialsHint": "Se incluyen automáticamente del codex que ejecutas; elimina los que no quieras.",
     "officialsEmpty": "No hay modelos oficiales disponibles.",
@@ -6313,13 +6313,13 @@
       "npm_missing": "No se encontró npm en el PATH de la app.",
       "not_installed": "Este agente no parece estar instalado.",
       "installed_but_unresolved": "Consta como instalado, pero la app no puede localizar su ejecutable.",
-      "user_prefix_not_on_path": "Se instaló en el prefijo de reserva (~/.codeg/npm-global), que no está en el PATH de la app. Reinicia por completo la app e inténtalo de nuevo.",
+      "user_prefix_not_on_path": "Se instaló en el prefijo de reserva (~/.recurcode/npm-global), que no está en el PATH de la app. Reinicia por completo la app e inténtalo de nuevo.",
       "homebrew_bin_not_on_path": "Se instaló en el bin de Homebrew, que no está en el PATH de la app (división de keg en Apple Silicon).",
       "terminal_only_path": "El comando se resuelve en tu terminal pero no en la app: una diferencia de PATH de la GUI. Inicia la app desde una terminal o reinstala desde Ajustes de agentes.",
       "npm_prefix_timeout": "npm prefix -g fue demasiado lento (más de 1,5 s), por lo que se omitió la detección de reserva. Reinicia la app e inténtalo de nuevo.",
       "node_too_old": "Tu Node.js activo es más antiguo de lo que requiere este agente. Actualiza Node.js.",
-      "adapter_missing_native_present": "Tu CLI de {agent} sí está instalada, pero Codeg ejecuta un paquete adaptador ACP aparte, y ese todavía no lo está. Instálalo desde la configuración de agentes: no toca tu CLI y comparte la misma sesión.",
-      "adapter_missing": "Codeg ejecuta un paquete adaptador ACP aparte para {agent} y aún no está instalado. Instálalo desde la configuración de agentes: instalar solo la CLI del proveedor no basta."
+      "adapter_missing_native_present": "Tu CLI de {agent} sí está instalada, pero RecurCode ejecuta un paquete adaptador ACP aparte, y ese todavía no lo está. Instálalo desde la configuración de agentes: no toca tu CLI y comparte la misma sesión.",
+      "adapter_missing": "RecurCode ejecuta un paquete adaptador ACP aparte para {agent} y aún no está instalado. Instálalo desde la configuración de agentes: instalar solo la CLI del proveedor no basta."
     }
   },
   "TokenUsage": {
@@ -6353,7 +6353,7 @@
     "resetFilters": "Restablecer filtros",
     "refresh": "Actualizar",
     "rebuild": "Reconstruir todo",
-    "rebuildHint": "Descarta lo contabilizado y vuelve a leer todas las transcripciones. Útil si una sesión creció fuera de codeg.",
+    "rebuildHint": "Descarta lo contabilizado y vuelve a leer todas las transcripciones. Útil si una sesión creció fuera de RecurCode.",
     "syncing": "Contando sesiones…",
     "syncProgress": "{done} / {total}",
     "syncDone": "{synced} sesiones contabilizadas",
@@ -6432,7 +6432,7 @@
     "cardHeading": "Mis estadísticas de código con IA",
     "cardRangeAll": "Todo el tiempo",
     "cardTotalLabel": "Tokens usados",
-    "cardFooter": "Hecho con codeg",
+    "cardFooter": "Hecho con RecurCode",
     "cardTopModels": "Modelos principales",
     "cardTopProjects": "Proyectos principales",
     "archetypeNightOwl": "Ave nocturna",
@@ -6454,7 +6454,7 @@
     "archetypeSteady": "Constructor constante",
     "archetypeSteadyDesc": "{days} días entregando.",
     "emptyTitle": "Todavía no hay nada contabilizado",
-    "emptyHint": "Codeg lee los tokens directamente de la transcripción de cada agente. Actualiza para contabilizar lo que ya hay en esta máquina.",
+    "emptyHint": "RecurCode lee los tokens directamente de la transcripción de cada agente. Actualiza para contabilizar lo que ya hay en esta máquina.",
     "emptyAction": "Contabilizar mis sesiones",
     "loadFailed": "No se pudo cargar el uso",
     "truncatedNotice": "Este periodo es muy amplio: las cifras cubren solo su tramo más reciente.",
@@ -6617,7 +6617,7 @@
     "dialogDescriptionMr": "Crea una tarea pendiente en la carpeta de {repo}, con su worktree en el head de este merge request: los commits del agente se apilan encima y se envían al mismo merge request cuando lo aceptas.",
     "instructionPlaceholder": "Instrucción adicional para el agente (opcional)…",
     "writebackLabel": "Comentar el resultado en este elemento",
-    "writebackHint": "Cuando la tarea termine, codeg publicará un comentario en este elemento: el resultado, el enlace y las cifras del diff.",
+    "writebackHint": "Cuando la tarea termine, RecurCode publicará un comentario en este elemento: el resultado, el enlace y las cifras del diff.",
     "previewToggle": "Vista previa del contenido del issue que llevará la tarea",
     "previewEmpty": "(sin descripción)",
     "duplicateBody": "Ya hay una tarea activa para este elemento: {title} ({status}). ¿Crear otra de todos modos?",
@@ -6833,7 +6833,7 @@
       "errorBlockedHint": "Una regla de sitio bloquea esta dirección. Las reglas se gestionan en Ajustes → Navegador integrado.",
       "popupDeniedBlockedHost": "bloqueada por una regla de sitio",
       "channelDegraded": "En esta pestaña se bloquean las ventanas emergentes y la barra de direcciones puede quedarse atrás",
-      "channelDegradedHint": "codeg no pudo instalar su script de página. Las ventanas emergentes que abra esta página se bloquean, la barra de direcciones no seguirá la navegación dentro de la página y el atajo de búsqueda pulsado en la página no abrirá la barra de búsqueda. Volver a abrir la pestaña lo intenta de nuevo.",
+      "channelDegradedHint": "RecurCode no pudo instalar su script de página. Las ventanas emergentes que abra esta página se bloquean, la barra de direcciones no seguirá la navegación dentro de la página y el atajo de búsqueda pulsado en la página no abrirá la barra de búsqueda. Volver a abrir la pestaña lo intenta de nuevo.",
       "downloadsDenied": "Descargas bloqueadas: {host}",
       "downloadsDeniedNoGesture": "varios archivos, no iniciados por un clic",
       "agentGrantLost": "El acceso terminó: la página salió de {origin}",
@@ -6845,7 +6845,7 @@
       "errorRemoteUnreachable": "El host remoto no puede llegar a esta dirección",
       "errorRemoteUnreachableHint": "Desde {host}, el nombre no se resuelve o no hay ruta hasta él.",
       "errorRemoteNotAllowed": "El servidor remoto no abre esta dirección para el navegador",
-      "errorRemoteNotAllowedHint": "El codeg-server de {host} solo deja que su túnel del navegador llegue a direcciones privadas (CODEG_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "El recur-code-server de {host} solo deja que su túnel del navegador llegue a direcciones privadas (RECUR_CODE_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "El host remoto tardó demasiado en conectar",
       "errorRemoteTimeoutHint": "{host} no obtuvo respuesta de esta dirección a tiempo. Puede que el servidor esté ocupado o detrás de un cortafuegos.",
       "errorTunnelDown": "La conexión con el host remoto está caída",
@@ -6868,8 +6868,8 @@
       "copyAddress": "Copiar dirección",
       "copied": "Dirección copiada",
       "unreachableTitle": "No se puede acceder al puerto puente",
-      "unreachableHint": "El servidor de codeg puso esta página en {origin}, pero tu navegador no puede acceder a él. Publica ese puerto (consulta CODEG_BRIDGE_PORTS) o define CODEG_BRIDGE_PUBLIC_HOST; si codeg se sirve por HTTPS, los puertos puente también necesitan HTTPS.",
-      "unreachableHostHint": "El servidor de codeg puso esta página en {origin}, pero tu navegador no puede acceder a ella. Ese nombre de host tiene que resolverse al servidor de codeg y atravesar el proxy que haya delante: un registro DNS comodín y un vhost comodín (consulta CODEG_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "El servidor de RecurCode puso esta página en {origin}, pero tu navegador no puede acceder a él. Publica ese puerto (consulta RECUR_CODE_BRIDGE_PORTS) o define RECUR_CODE_BRIDGE_PUBLIC_HOST; si RecurCode se sirve por HTTPS, los puertos puente también necesitan HTTPS.",
+      "unreachableHostHint": "El servidor de RecurCode puso esta página en {origin}, pero tu navegador no puede acceder a ella. Ese nombre de host tiene que resolverse al servidor de RecurCode y atravesar el proxy que haya delante: un registro DNS comodín y un vhost comodín (consulta RECUR_CODE_BRIDGE_HOST_PATTERN).",
       "errorTitle": "Esta página no se puede mostrar aquí"
     },
     "remote": {
@@ -7076,9 +7076,9 @@
     "remote": {
       "error": {
         "unavailable": "Para abrir las direcciones del host remoto en el navegador integrado se necesita macOS 14 o posterior.",
-        "unsupported": "El codeg-server remoto es demasiado antiguo para transportar el tráfico del navegador. Actualízalo para abrir sus direcciones aquí.",
-        "disabled": "El codeg-server remoto tiene desactivado su túnel del navegador (CODEG_BROWSER_TUNNEL).",
-        "unreachable": "No se pudo conectar con el túnel del navegador del codeg-server remoto ({reason}).",
+        "unsupported": "El recur-code-server remoto es demasiado antiguo para transportar el tráfico del navegador. Actualízalo para abrir sus direcciones aquí.",
+        "disabled": "El recur-code-server remoto tiene desactivado su túnel del navegador (RECUR_CODE_BROWSER_TUNNEL).",
+        "unreachable": "No se pudo conectar con el túnel del navegador del recur-code-server remoto ({reason}).",
         "bypassed": "El motor del navegador de este equipo envía algunas direcciones por fuera del túnel, así que las páginas del host remoto no se abren para no cargarlas desde este equipo.",
         "probeFailed": "El navegador integrado no pudo confirmar que llega al host remoto a través del túnel. Vuelve a intentarlo en un momento."
       }

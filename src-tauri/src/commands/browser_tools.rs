@@ -2,13 +2,13 @@
 //! browser at all.
 //!
 //! Separate from `commands::browser`, which is the browser itself and exists
-//! only in the desktop build: this switch is read by the shared codeg-mcp
+//! only in the desktop build: this switch is read by the shared recur-code-mcp
 //! plumbing (injection, the service-status popover), so it has to compile in
 //! server mode too — where it is simply always answered "no" at the point of
 //! use, there being no native tabs there.
 //!
 //! **Off by default**, unlike the other two read-only tool groups. Those hand
-//! an agent codeg's own state; this one hands it a listing of the sites the
+//! an agent RecurCode's own state; this one hands it a listing of the sites the
 //! user has open right now, which is the sort of thing that should be a
 //! decision rather than a default. Sharing an individual page is a second,
 //! per-tab decision on top of it (`crate::browser::agent`) — this switch only

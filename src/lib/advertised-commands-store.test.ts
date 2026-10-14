@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { AvailableCommandInfo } from "@/lib/types"
 
-const PREFIX = "codeg:advertised-commands:"
+const PREFIX = "RecurCode:advertised-commands:"
 const keyOf = (agentType: string, folder: string) =>
   PREFIX + JSON.stringify([agentType, folder])
 
@@ -327,7 +327,7 @@ describe("getLastAdvertisedCommands", () => {
     expect(store.getLastAdvertisedCommands("claude_code", "/a")).toBe(kept)
 
     // Some other key is none of its business.
-    window.dispatchEvent(new StorageEvent("storage", { key: "codeg:other" }))
+    window.dispatchEvent(new StorageEvent("storage", { key: "RecurCode:other" }))
     expect(listener).toHaveBeenCalledTimes(1)
 
     // Another window dropped /b to stay under the cap.

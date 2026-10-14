@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { CODEG_MCP_WORKBENCH_TOOLS } from "@/lib/codeg-mcp-tool"
+import { RECUR_CODE_MCP_WORKBENCH_TOOLS } from "@/lib/recur-code-mcp-tool"
 import {
   classifyToolKind,
   isAgentLikeToolName,
@@ -59,17 +59,17 @@ describe("isAgentLikeToolName", () => {
   it("matches delegate_to_agent across host naming conventions", () => {
     expect(isAgentLikeToolName("delegate_to_agent")).toBe(true)
     // Claude Code style (current + legacy server names)
-    expect(isAgentLikeToolName("mcp__codeg-mcp__delegate_to_agent")).toBe(true)
-    expect(isAgentLikeToolName("mcp__codeg-delegate__delegate_to_agent")).toBe(
+    expect(isAgentLikeToolName("mcp__recur-code-mcp__delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("mcp__recur-code-delegate__delegate_to_agent")).toBe(
       true
     )
-    expect(isAgentLikeToolName("mcp__codeg__delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("mcp__recur_code__delegate_to_agent")).toBe(true)
     // Codex live ACP style (server/tool)
-    expect(isAgentLikeToolName("codeg-mcp/delegate_to_agent")).toBe(true)
-    expect(isAgentLikeToolName("codeg-delegate/delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp/delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-delegate/delegate_to_agent")).toBe(true)
     // Dot- and colon-separated forms other hosts may emit
-    expect(isAgentLikeToolName("codeg-delegate.delegate_to_agent")).toBe(true)
-    expect(isAgentLikeToolName("codeg-delegate:delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-delegate.delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-delegate:delegate_to_agent")).toBe(true)
   })
 
   it("matches the delegation companion tools across host naming conventions", () => {
@@ -77,29 +77,29 @@ describe("isAgentLikeToolName", () => {
       // Bare canonical form (live-streaming path, post-inferLiveToolName)
       expect(isAgentLikeToolName(tool)).toBe(true)
       // Claude Code style (current + legacy server names)
-      expect(isAgentLikeToolName(`mcp__codeg-mcp__${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`mcp__codeg-delegate__${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`mcp__codeg__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__recur-code-mcp__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__recur-code-delegate__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__recur_code__${tool}`)).toBe(true)
       // Codex live ACP + dot/colon separated forms
-      expect(isAgentLikeToolName(`codeg-mcp/${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`codeg-delegate/${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`codeg-delegate.${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`codeg-delegate:${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-mcp/${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-delegate/${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-delegate.${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-delegate:${tool}`)).toBe(true)
     }
   })
 
   // The classifier keeps its own copy of the workbench list; when
-  // `resume_delegation` was added to `CODEG_MCP_WORKBENCH_TOOLS` the copy was
+  // `resume_delegation` was added to `RECUR_CODE_MCP_WORKBENCH_TOOLS` the copy was
   // not updated, so the resume card spent its life wrapped in a spurious
   // "工具 ×1" group shell. Pin the relationship so it can't drift again.
-  it("covers every tool that owns a CodegMcpToolCard", () => {
-    for (const tool of CODEG_MCP_WORKBENCH_TOOLS) {
+  it("covers every tool that owns a RecurCodeMcpToolCard", () => {
+    for (const tool of RECUR_CODE_MCP_WORKBENCH_TOOLS) {
       expect(isAgentLikeToolName(tool)).toBe(true)
     }
   })
 
-  it("matches the codeg-mcp workbench companions across host naming conventions", () => {
-    // Each owns a CodegMcpToolCard, so it breaks the tool-group run and renders
+  it("matches the recur-code-mcp workbench companions across host naming conventions", () => {
+    // Each owns a RecurCodeMcpToolCard, so it breaks the tool-group run and renders
     // standalone rather than folding into a "工具 ×N" tally.
     for (const tool of [
       "get_session_info",
@@ -110,11 +110,11 @@ describe("isAgentLikeToolName", () => {
       "resume_delegation",
     ]) {
       expect(isAgentLikeToolName(tool)).toBe(true)
-      expect(isAgentLikeToolName(`mcp__codeg-mcp__${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`mcp__codeg__${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`codeg-mcp/${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`codeg-mcp.${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`codeg-mcp:${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__recur-code-mcp__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__recur_code__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-mcp/${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-mcp.${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`recur-code-mcp:${tool}`)).toBe(true)
     }
     // …without dragging the generic task tools along with them.
     expect(isAgentLikeToolName("task")).toBe(false)
@@ -131,10 +131,10 @@ describe("isAgentLikeToolName", () => {
   it("matches ask_user_question across host naming conventions", () => {
     expect(isAgentLikeToolName("question")).toBe(true)
     expect(isAgentLikeToolName("ask_user_question")).toBe(true)
-    expect(isAgentLikeToolName("mcp__codeg-mcp__ask_user_question")).toBe(true)
-    expect(isAgentLikeToolName("codeg-mcp/ask_user_question")).toBe(true)
-    expect(isAgentLikeToolName("codeg-mcp.ask_user_question")).toBe(true)
-    expect(isAgentLikeToolName("codeg-mcp:ask_user_question")).toBe(true)
+    expect(isAgentLikeToolName("mcp__recur-code-mcp__ask_user_question")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp/ask_user_question")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp.ask_user_question")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp:ask_user_question")).toBe(true)
   })
 
   it("matches codex's Plan-mode request_user_input", () => {
@@ -153,13 +153,13 @@ describe("isAgentLikeToolName", () => {
 
   it("matches check_user_feedback across host naming conventions", () => {
     expect(isAgentLikeToolName("check_user_feedback")).toBe(true)
-    expect(isAgentLikeToolName("mcp__codeg-mcp__check_user_feedback")).toBe(
+    expect(isAgentLikeToolName("mcp__recur-code-mcp__check_user_feedback")).toBe(
       true
     )
-    expect(isAgentLikeToolName("mcp__codeg__check_user_feedback")).toBe(true)
-    expect(isAgentLikeToolName("codeg-mcp/check_user_feedback")).toBe(true)
-    expect(isAgentLikeToolName("codeg-mcp.check_user_feedback")).toBe(true)
-    expect(isAgentLikeToolName("codeg-mcp:check_user_feedback")).toBe(true)
+    expect(isAgentLikeToolName("mcp__recur_code__check_user_feedback")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp/check_user_feedback")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp.check_user_feedback")).toBe(true)
+    expect(isAgentLikeToolName("recur-code-mcp:check_user_feedback")).toBe(true)
   })
 
   it("does not match other tools", () => {

@@ -172,7 +172,7 @@ pub fn data_store_identifier(profile_id: &str) -> [u8; 16] {
 /// folder) and Linux (WebKitGTK data directory). Unused on macOS, where the
 /// data store identifier plays this role.
 pub fn directory(profile_id: &str) -> PathBuf {
-    crate::paths::codeg_browser_profiles_root().join(profile_id)
+    crate::paths::recur_code_browser_profiles_root().join(profile_id)
 }
 
 /// Whether more than the default profile can exist here. macOS keeps the
@@ -376,7 +376,7 @@ fn platform_proxy_status() -> BrowserProxyStatus {
     let frozen = frozen_proxy();
     let mut status = status_for(ProxyApplies::Restart, current_proxy());
     if FROZEN_PROXY.get().is_some() && status.url != frozen.as_ref().map(BrowserProxy::to_url_string) {
-        status.reason = Some("restart codeg for browser tabs to use the new proxy".to_string());
+        status.reason = Some("restart RecurCode for browser tabs to use the new proxy".to_string());
         status.url = frozen.map(|p| p.to_url_string());
     }
     status
@@ -636,7 +636,7 @@ const GOOGLE_SIGN_IN_HOSTS: [&str; 2] = ["accounts.google.com", "accounts.youtub
 /// Environment variable naming further hosts (comma-separated) that get the
 /// sign-in identity: another provider with the same refusal, or a server of
 /// one's own to check the switch against. Read once per process.
-pub const SIGN_IN_HOSTS_ENV: &str = "CODEG_BROWSER_SIGN_IN_HOSTS";
+pub const SIGN_IN_HOSTS_ENV: &str = "RECUR_CODE_BROWSER_SIGN_IN_HOSTS";
 
 fn extra_sign_in_hosts() -> &'static [String] {
     static EXTRA: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
@@ -655,7 +655,7 @@ fn host_matches(host: &str, known: &str) -> bool {
 }
 
 /// Whether `host` (or a parent domain of it) is one of the sign-in hosts:
-/// Google's, plus whatever `CODEG_BROWSER_SIGN_IN_HOSTS` names.
+/// Google's, plus whatever `RECUR_CODE_BROWSER_SIGN_IN_HOSTS` names.
 pub fn is_google_sign_in_host(host: &str) -> bool {
     is_sign_in_host_among(host, extra_sign_in_hosts())
 }

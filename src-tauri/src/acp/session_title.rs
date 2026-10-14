@@ -1,6 +1,6 @@
 //! Live ACP session titles.
 //!
-//! Agents publish a session name through `session_info_update.title`. Codeg
+//! Agents publish a session name through `session_info_update.title`. RecurCode
 //! used to ignore that field and only adopt a title the next time the
 //! conversation was loaded from disk. These helpers extract a usable title
 //! from the live notification so the lifecycle worker can write it immediately.
@@ -19,12 +19,12 @@
 //! `session_info_update.title`). The CLI stores that title in the session file
 //! as an `ai-title` record, which the watcher reads like any other.
 //!
-//! For Claude the wire is NOT a second producer while codeg can read the
+//! For Claude the wire is NOT a second producer while RecurCode can read the
 //! transcript ([`accept_wire_title`], [`release_held_wire_title`]). The
 //! adapter publishes what the Agent SDK reports for the session: its custom or
 //! AI title when it has one, else its `summary`, which is the newest
 //! `last-prompt` record (then a summary record, then the first prompt), every
-//! value collapsed and cut by its `sanitizeTitle`. codeg's history parser,
+//! value collapsed and cut by its `sanitizeTitle`. RecurCode's history parser,
 //! on every detail fetch, titles an untitled session by its first prompt
 //! (reference links folded), and neither it nor the transcript watcher
 //! (`acp::background_watch`, which reads only `custom-title` and `ai-title`
@@ -77,7 +77,7 @@ pub(crate) fn native_title_from_session_info(title: Option<&str>) -> Option<Stri
 /// Every agent but Claude Code has it published at once
 /// ([`publish_native_title`]). Claude Code's is held on the session state
 /// instead, a newer one replacing it, and the transcript watcher is woken to
-/// settle it on an immediate poll ([`release_held_wire_title`]): while codeg
+/// settle it on an immediate poll ([`release_held_wire_title`]): while RecurCode
 /// can read the transcript, the transcript is the title's only source (see
 /// the module docs).
 pub(crate) async fn accept_wire_title(
@@ -103,7 +103,7 @@ pub(crate) async fn accept_wire_title(
 /// the session, read by the watcher and by the history parser alike, and the
 /// held title is dropped. Otherwise no transcript reader titles the session,
 /// as when the agent writes to a Claude config dir set only in its own
-/// environment, which codeg's readers never look in, or when the file cannot
+/// environment, which RecurCode's readers never look in, or when the file cannot
 /// be read. The held title is then published, once the row is bound: until
 /// then it stays held, as the watcher's own titles do, since the adapter
 /// publishes a title only when it changes.
@@ -363,7 +363,7 @@ mod tests {
         }
     }
 
-    /// With no transcript to read, the wire is the only title codeg gets, so
+    /// With no transcript to read, the wire is the only title RecurCode gets, so
     /// the held one is published, once.
     #[tokio::test]
     async fn a_held_title_is_published_when_no_transcript_can_be_read() {
@@ -421,8 +421,8 @@ mod tests {
 
     /// JetBrains AIR archives a Claude session by prefixing its stored title
     /// with `[archived] `; claude-agent-acp 0.89.0 drops one such marker from
-    /// the title it publishes to codeg, and an older adapter does not. Either
-    /// way codeg shows the title without any, by AIR's own rule.
+    /// the title it publishes to RecurCode, and an older adapter does not. Either
+    /// way RecurCode shows the title without any, by AIR's own rule.
     #[test]
     fn drops_the_air_archive_markers() {
         for (raw, shown) in [
@@ -500,7 +500,7 @@ mod tests {
     }
 
     /// claude-agent-acp 0.89.0 removes one archive marker before it publishes,
-    /// so the wire hands codeg the transcript's title minus that marker. A
+    /// so the wire hands RecurCode the transcript's title minus that marker. A
     /// held wire title reads like the transcript's only if normalizing a
     /// normalized title changes nothing: the record keeps
     /// `[archived] [archived] X`, the wire carries `[archived] X`, and both

@@ -1,8 +1,8 @@
-//! HTTP handlers for codeg's Computer use panel — the web-mode mirror of the
+//! HTTP handlers for RecurCode's Computer use panel — the web-mode mirror of the
 //! Tauri commands in `commands::computer`.
 //!
-//! Only codeg-server answers them, and only where the person who runs it has
-//! let it share the screen it runs on (`CODEG_COMPUTER_USE`): its web
+//! Only recur-code-server answers them, and only where the person who runs it has
+//! let it share the screen it runs on (`RECUR_CODE_COMPUTER_USE`): its web
 //! clients — each holding the server's token, as every route here requires —
 //! are then the only panel there is, from which windows are shared and Stop
 //! is pressed. Anywhere else (a server not let share its screen, the desktop
@@ -36,8 +36,8 @@ use crate::computer::targets::SharedWindow;
 fn served(state: &AppState) -> Result<&Arc<ComputerService>, AppCommandError> {
     state.computer_service.get().ok_or_else(|| {
         AppCommandError::configuration_invalid(
-            "computer use is not available here: codeg-server offers it only when started with \
-             CODEG_COMPUTER_USE=1 in a desktop session, and the desktop app only in its own \
+            "computer use is not available here: recur-code-server offers it only when started with \
+             RECUR_CODE_COMPUTER_USE=1 in a desktop session, and the desktop app only in its own \
              window",
         )
     })
@@ -98,7 +98,7 @@ pub async fn computer_open_permission_settings(
     Ok(Json(()))
 }
 
-/// Show codeg-computer-helper where the person at this machine can drag it
+/// Show recur-code-computer-helper where the person at this machine can drag it
 /// into System Settings' list by hand.
 pub async fn computer_reveal_helper(
     Extension(state): Extension<Arc<AppState>>,

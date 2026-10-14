@@ -29,13 +29,13 @@ use super::{
 // SUB-agent is written — those get a row and a sibling messages file, never a
 // manifest of their own. Listing manifests therefore yields exactly the root
 // sessions, which is what the index's own `rootOnly` filter selects, without
-// codeg opening a live SQLite store owned by another process.
+// RecurCode opening a live SQLite store owned by another process.
 //
 // The pre-3.x layout (`state/taskHistory.json` + `tasks/<id>/`) is still read
 // as a fallback so history written by an older cline does not disappear.
 
 /// `sessions/<id>/<id>.json`. Mirrors the columns of the `sessions` table;
-/// only the fields codeg surfaces are declared.
+/// only the fields RecurCode surfaces are declared.
 #[derive(Debug, Default, Deserialize)]
 struct SessionManifest {
     #[serde(default)]
@@ -333,7 +333,7 @@ impl ClineParser {
         let mut manifest: SessionManifest = serde_json::from_str(&raw).ok()?;
         // A manifest whose `session_id` is missing or disagrees with its own
         // directory is still readable — the directory name is the id every
-        // other path is built from, and the id codeg recorded as `external_id`.
+        // other path is built from, and the id RecurCode recorded as `external_id`.
         if manifest.session_id != session_id {
             manifest.session_id = session_id.to_string();
         }
@@ -1168,7 +1168,7 @@ const MODE_NOTICE_TAG: &str = "mode_notice";
 /// `switch_to_act_mode` (`ACT_MODE_CONTINUATION_PROMPT` in
 /// `apps/cli/src/runtime/interactive/mode.ts`). It carries no metadata to tell
 /// it apart, so cline's TUI hydration and its ACP `session/load` replay both
-/// drop it by exact text; so does codeg.
+/// drop it by exact text; so does RecurCode.
 const ACT_MODE_CONTINUATION_PROMPT: &str =
     "The user approved switching to act mode. Continue with the approved plan now.";
 
@@ -1425,7 +1425,7 @@ mod tests {
     }
 
     /// The manifest shape observed from cline 3.0.62, trimmed to the fields
-    /// codeg reads.
+    /// RecurCode reads.
     fn manifest(session_id: &str) -> serde_json::Value {
         json!({
             "version": 1,
@@ -1622,7 +1622,7 @@ mod tests {
 
     /// cline 3.0.65 writes a failed run into the transcript as an assistant
     /// message carrying the error text. The record below is verbatim from a
-    /// 3.0.65 run against an endpoint that answers 400 — codeg must not show
+    /// 3.0.65 run against an endpoint that answers 400 — RecurCode must not show
     /// it as the model's reply but as the failure line closing that round, and
     /// must not swallow the retry and the real answer that follow.
     #[test]
@@ -1929,7 +1929,7 @@ mod tests {
         );
 
         // Quoted INSIDE its own wrapper is markup cline cannot express and
-        // codeg cannot recover: the first closing tag ends the block, and the
+        // RecurCode cannot recover: the first closing tag ends the block, and the
         // rest is left as written. Asserted so the ambiguity is a recorded
         // outcome rather than an accident — what matters is that the pass
         // shrinks the string and terminates.

@@ -39,7 +39,7 @@ pub struct ForgeRemote {
     pub provider: ForgeProvider,
     /// Whether `provider` is known rather than assumed — see
     /// `HostProfile::recognized`. `false` says the remote parsed fine but names
-    /// a host codeg has no reason to think is GitHub or GitLab, so the panel
+    /// a host RecurCode has no reason to think is GitHub or GitLab, so the panel
     /// says so up front instead of spending a request that comes back as a raw
     /// API failure.
     pub supported: bool,
@@ -487,7 +487,7 @@ pub async fn folder_forge_remote_core(
 }
 
 /// Strip any `user:password@` from a URL before it leaves the backend. Git
-/// remotes configured elsewhere (or by an older codeg) can embed a token, and
+/// remotes configured elsewhere (or by an older RecurCode) can embed a token, and
 /// this string is shown and logged.
 fn redact_userinfo(url: &str) -> String {
     let Some((scheme, rest)) = url.split_once("://") else {

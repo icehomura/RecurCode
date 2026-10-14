@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl"
 import { describe, expect, it, vi } from "vitest"
 
-import { CodegMcpToolCard } from "./codeg-mcp-tool-card"
+import { RecurCodeMcpToolCard } from "./recur-code-mcp-tool-card"
 import enMessages from "@/i18n/messages/en.json"
 
 // MessageResponse (Streamdown) drags in the link-safety hook and async Shiki
@@ -32,10 +32,10 @@ function envelope(text: string, structured: Record<string, unknown>): string {
   })
 }
 
-describe("CodegMcpToolCard", () => {
+describe("RecurCodeMcpToolCard", () => {
   it("states which session a get_session_info call is reading", () => {
     const { container } = renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="get_session_info"
         input={JSON.stringify({ session_id: 2122, max_messages: 20 })}
         state="input-available"
@@ -49,7 +49,7 @@ describe("CodegMcpToolCard", () => {
 
   it("accepts the stringified session id some hosts send", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="get_session_info"
         input={JSON.stringify({ session_id: "2122" })}
         state="output-available"
@@ -60,7 +60,7 @@ describe("CodegMcpToolCard", () => {
 
   it("puts the progress message itself in the row", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_progress"
         input={JSON.stringify({ message: "tests passing, starting cleanup" })}
         output={envelope("Recorded.", { recorded: true })}
@@ -74,7 +74,7 @@ describe("CodegMcpToolCard", () => {
 
   it("leads a task_complete row with the verdict, then the summary", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_complete"
         input={JSON.stringify({
           verdict: "needs_review",
@@ -93,7 +93,7 @@ describe("CodegMcpToolCard", () => {
 
   it("falls back to an unknown verdict rather than dropping the row", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_complete"
         input={JSON.stringify({ verdict: "sorta-done" })}
         state="output-available"
@@ -104,7 +104,7 @@ describe("CodegMcpToolCard", () => {
 
   it("names the automation and the work task being created", () => {
     const { unmount } = renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="create_automation"
         input={JSON.stringify({ name: "nightly sweep", cron: "7 3 * * *" })}
         state="output-available"
@@ -116,7 +116,7 @@ describe("CodegMcpToolCard", () => {
     unmount()
 
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="create_work_task"
         input={JSON.stringify({ title: "fix the flaky test", prompt: "…" })}
         state="output-available"
@@ -133,10 +133,10 @@ describe("CodegMcpToolCard", () => {
     // the outer object would label the card with the TOOL's name. The walker
     // takes the deepest match for exactly this reason.
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="create_automation"
         input={JSON.stringify({
-          name: "mcp__codeg-mcp__create_automation",
+          name: "mcp__recur-code-mcp__create_automation",
           arguments: { name: "nightly sweep", prompt: "sweep the logs" },
         })}
         state="output-available"
@@ -149,7 +149,7 @@ describe("CodegMcpToolCard", () => {
 
   it("still reads flat arguments, which is what every known host sends", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_complete"
         input={JSON.stringify({ verdict: "success", summary: "shipped" })}
         state="output-available"
@@ -165,7 +165,7 @@ describe("CodegMcpToolCard", () => {
     // arguments — so `title` is the only way to read a long message back.
     const message = "a".repeat(200)
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_progress"
         input={JSON.stringify({ message })}
         state="output-available"
@@ -183,7 +183,7 @@ describe("CodegMcpToolCard", () => {
     // prompt — so the panel is the only place it can be audited. The generic
     // shell this card replaced dumped every argument; this keeps parity.
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="create_work_task"
         input={JSON.stringify({
           title: "fix the flaky test",
@@ -202,7 +202,7 @@ describe("CodegMcpToolCard", () => {
 
   it("shows the prompt above the result once both exist", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="create_automation"
         input={JSON.stringify({ name: "nightly sweep", prompt: "sweep logs" })}
         output={envelope("Created automation #12.", {
@@ -224,7 +224,7 @@ describe("CodegMcpToolCard", () => {
     // `task_progress` has no `prompt` argument; a stray one must not leak into
     // the panel and must not make an ack-less call look expandable.
     const { container } = renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_progress"
         input={JSON.stringify({ message: "halfway", prompt: "not mine" })}
         state="input-available"
@@ -236,7 +236,7 @@ describe("CodegMcpToolCard", () => {
 
   it("expands to the result text, rendered as Markdown", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="get_session_info"
         input={JSON.stringify({ session_id: 7 })}
         output={envelope("Session #7 (codex)\nTitle: probe", {
@@ -257,7 +257,7 @@ describe("CodegMcpToolCard", () => {
     // codex-acp forwards every MCP outcome as `{result: <CallToolResult>,
     // error: null}`; without the peel the whole envelope lands in the card.
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_progress"
         input={JSON.stringify({ message: "halfway" })}
         output={JSON.stringify({
@@ -279,7 +279,7 @@ describe("CodegMcpToolCard", () => {
 
   it("reads Codex's Wall time / Output wrap", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_complete"
         input={JSON.stringify({ verdict: "success", summary: "shipped" })}
         output={
@@ -297,7 +297,7 @@ describe("CodegMcpToolCard", () => {
 
   it("shows plain text hosts (claude-agent-acp) verbatim", () => {
     renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="task_progress"
         input={JSON.stringify({ message: "halfway" })}
         output="Recorded."
@@ -312,7 +312,7 @@ describe("CodegMcpToolCard", () => {
 
   it("surfaces a real tool error and tints the card", () => {
     const { container } = renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="get_session_info"
         input={JSON.stringify({ session_id: 7 })}
         errorText="socket closed"
@@ -330,7 +330,7 @@ describe("CodegMcpToolCard", () => {
     // These tools report "couldn't do it, here's why" as ordinary isError:false
     // text — an err badge must mean the CALL failed, not that it was refused.
     const { container } = renderWithIntl(
-      <CodegMcpToolCard
+      <RecurCodeMcpToolCard
         tool="create_automation"
         input={JSON.stringify({ name: "nightly sweep" })}
         output={envelope("Automation creation from chat is turned off.", {
@@ -345,7 +345,7 @@ describe("CodegMcpToolCard", () => {
 
   it("still renders a row when the arguments never arrived", () => {
     renderWithIntl(
-      <CodegMcpToolCard tool="task_progress" state="input-streaming" />
+      <RecurCodeMcpToolCard tool="task_progress" state="input-streaming" />
     )
     expect(screen.getByText("Reporting task progress")).toBeInTheDocument()
   })

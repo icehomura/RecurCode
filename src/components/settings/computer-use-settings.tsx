@@ -7,8 +7,8 @@
  *   * The switch itself. The in-conversation tools panel and the status-bar
  *     popover write the same setting, and each hears the others.
  *   * cua-driver, the program that reads and acts on windows: which release
- *     this codeg runs, fetching it, removing it (desktop only). There is no
- *     picking another release — codeg runs the one it pins and checks — so
+ *     this RecurCode runs, fetching it, removing it (desktop only). There is no
+ *     picking another release — RecurCode runs the one it pins and checks — so
  *     "upgrade" appears only where the cache holds an older one.
  *   * The helper's macOS permissions, while computer use is on (the helper
  *     that holds them only runs then), asked afresh whenever this window
@@ -66,7 +66,7 @@ import type { DriverInfo, OsPermission } from "@/lib/computer/types"
 import { useComputerDriver } from "@/lib/computer/use-computer-driver"
 import { useComputerEnabled } from "@/lib/computer/use-computer-enabled"
 import {
-  codegHoldsPermission,
+  recurCodeHoldsPermission,
   useComputerStatus,
 } from "@/lib/computer/use-computer-status"
 
@@ -387,10 +387,10 @@ function MacPermissions({ enabled }: { enabled: boolean }) {
           )}
         </>
       )}
-      {codegHoldsPermission(status) && (
+      {recurCodeHoldsPermission(status) && (
         <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-5 text-amber-600 dark:text-amber-400">
           <ShieldAlert className="mt-0.5 size-3.5 shrink-0" />
-          <span>{t("codegGranted")}</span>
+          <span>{t("recurCodeGranted")}</span>
         </div>
       )}
       {error && <SettingsError>{error}</SettingsError>}

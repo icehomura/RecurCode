@@ -33,13 +33,13 @@
  * first: it shares the origin's quota with every draft.
  *
  * `Map`, not a plain object, for the reason `model-label-store` gives: agent
- * types and folder paths are strings codeg does not choose.
+ * types and folder paths are strings RecurCode does not choose.
  */
 
 import type { AvailableCommandInfo } from "@/lib/types"
 
 /** Each entry's key: this prefix, then `[agentType, folder]` as JSON. */
-const KEY_PREFIX = "codeg:advertised-commands:"
+const KEY_PREFIX = "RecurCode:advertised-commands:"
 
 /**
  * At most this many characters across every entry's key and value: room for
@@ -86,7 +86,7 @@ function namesOf(names: readonly unknown[]): AdvertisedCommands {
 /**
  * One stored value, or null when it is not `{at, commands: [name]}`.
  *
- * localStorage is shared with every other codeg instance on this machine and
+ * localStorage is shared with every other RecurCode instance on this machine and
  * survives downgrades, so a stored value is untrusted input: anything else
  * reads as "nothing remembered" instead of reaching the parser of a sent
  * message.

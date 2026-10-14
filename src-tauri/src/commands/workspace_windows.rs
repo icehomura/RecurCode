@@ -1,4 +1,4 @@
-//! Reopening the workspace windows that were open when codeg last quit.
+//! Reopening the workspace windows that were open when RecurCode last quit.
 //!
 //! A workspace window is the local `main` window or a remote workspace window
 //! (`remote-workspace-{id}`, at most one per saved remote connection). The
@@ -155,7 +155,7 @@ struct RestorePlan {
 
 /// `remembered` is the stored list; `connection_exists` weeds out the remote
 /// connections deleted since. `local_requested` is a launch that asked for the
-/// local workspace itself (a `codeg://` link on the command line), and
+/// local workspace itself (a `recurcode://` link on the command line), and
 /// `local_can_hide` whether `main` can be hidden at all this launch — where it
 /// cannot, a hidden `main` would have nothing to bring it back.
 fn plan_restore(

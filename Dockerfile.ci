@@ -22,27 +22,27 @@ RUN apt-get update && apt-get install -y \
 # server/Docker mode. The version (72) is pinned to Debian bookworm; bump it to match
 # if the base image moves to a newer Debian release (e.g. trixie ships libicu76).
 
-COPY dist/${TARGETARCH}/codeg-server /usr/local/bin/codeg-server
-# codeg-mcp is the stdio MCP companion the runtime injects per session
-# (see acp/delegation/companion.rs). It must ship next to codeg-server so
-# `locate_codeg_mcp_binary()` finds it via the exe-sibling lookup.
-COPY dist/${TARGETARCH}/codeg-mcp /usr/local/bin/codeg-mcp
+COPY dist/${TARGETARCH}/recur-code-server /usr/local/bin/recur-code-server
+# recur-code-mcp is the stdio MCP companion the runtime injects per session
+# (see acp/delegation/companion.rs). It must ship next to recur-code-server so
+# `locate_recur_code_mcp_binary()` finds it via the exe-sibling lookup.
+COPY dist/${TARGETARCH}/recur-code-mcp /usr/local/bin/recur-code-mcp
 COPY dist/web /app/web
 
-ENV CODEG_STATIC_DIR=/app/web
-ENV CODEG_DATA_DIR=/data
-ENV CODEG_PORT=3080
-ENV CODEG_HOST=0.0.0.0
+ENV RECUR_CODE_STATIC_DIR=/app/web
+ENV RECUR_CODE_DATA_DIR=/data
+ENV RECUR_CODE_PORT=3080
+ENV RECUR_CODE_HOST=0.0.0.0
 ENV SHELL=/bin/bash
 # In-place self-update markers: tells the running server it is a container
 # (for the post-upgrade "also pull the image" hint) and how long the
 # supervisor waits before relaunching the worker after an upgrade.
-ENV CODEG_RUNTIME=docker
-ENV CODEG_RESTART_DELAY_MS=2000
+ENV RECUR_CODE_RUNTIME=docker
+ENV RECUR_CODE_RESTART_DELAY_MS=2000
 
 EXPOSE 3080
 VOLUME /data
 
 # Run under the built-in supervisor (PID 1) so an in-place upgrade can swap
 # the binary and have the worker relaunched without stopping the container.
-CMD ["codeg-server", "--supervise"]
+CMD ["recur-code-server", "--supervise"]

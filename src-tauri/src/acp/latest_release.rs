@@ -1,20 +1,20 @@
 //! The newest upstream release of an agent, offered in Agent Settings' Version
 //! Status as "Upgrade to unreviewed latest".
 //!
-//! codeg installs the version it has reviewed and pinned in the registry. This
+//! RecurCode installs the version it has reviewed and pinned in the registry. This
 //! answers a narrower question, asked once each time the user opens an agent:
 //! has the publisher released something newer than that pin, which Custom
 //! install can fetch?
 //!
 //! Sources, by distribution:
 //! - npx: the package's `latest` dist-tag on the official npm registry, the
-//!   same registry every codeg npm install is pointed at. The ACP registry
-//!   cannot stand in for it: it misses several of codeg's npx agents, lags on
+//!   same registry every RecurCode npm install is pointed at. The ACP registry
+//!   cannot stand in for it: it misses several of RecurCode's npx agents, lags on
 //!   others, and has listed an npm `alpha` as an agent's newest version.
 //! - binary: the ACP registry's archive URL for this platform. The version is
-//!   read out of that URL by matching it against codeg's pinned URL, not taken
+//!   read out of that URL by matching it against RecurCode's pinned URL, not taken
 //!   from the registry's `version` field, because the two can differ (Cursor's
-//!   field drops the build hash that its URLs, and codeg's pins, carry). A URL
+//!   field drops the build hash that its URLs, and RecurCode's pins, carry). A URL
 //!   that no longer fits the pinned template (upstream renamed its archives)
 //!   offers nothing, rather than an install that would 404.
 //! - uvx: nothing, since Custom install does not support it.
@@ -53,7 +53,7 @@ enum Lookup {
     },
 }
 
-/// The newest release of `agent_type` that is newer than codeg's pin, or
+/// The newest release of `agent_type` that is newer than RecurCode's pin, or
 /// `None` when there is none or the agent has nothing to look up. A failed
 /// request is an error; a package or registry entry that does not exist is
 /// `None`.

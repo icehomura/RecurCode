@@ -331,7 +331,7 @@ describe("AskQuestionResultCard", () => {
     const input = JSON.stringify({
       questions: [
         {
-          question: 'Name it "codeg"?',
+          question: 'Name it "RecurCode"?',
           header: "Name",
           multiSelect: false,
           options: [
@@ -342,7 +342,7 @@ describe("AskQuestionResultCard", () => {
       ],
     })
     const output =
-      'Your questions have been answered: "Name it "codeg"?"="Yes". ' +
+      'Your questions have been answered: "Name it "RecurCode"?"="Yes". ' +
       "You can now continue with these answers in mind."
     renderWithIntl(
       <AskQuestionResultCard
@@ -543,7 +543,7 @@ describe("AskQuestionResultCard", () => {
   it("echoes codex request_user_input answers keyed by question id", () => {
     // The reported bug: codex Plan-mode `request_user_input` rendered "no
     // selection" because its answer envelope is keyed by the question id
-    // ({answers:{<id>:{answers:[label]}}}), not the codeg-mcp array shape. The
+    // ({answers:{<id>:{answers:[label]}}}), not the recur-code-mcp array shape. The
     // card must match the answer to the question by that id and echo the pick.
     const input = JSON.stringify({
       questions: [

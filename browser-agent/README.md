@@ -16,7 +16,7 @@ pnpm browser:agent:probe    # drive the bundle in real Chrome
 `vendor/playwright/` is Playwright's aria tree, copied byte-for-byte at v1.63.0
 (see `vendor/playwright/VENDOR.md`). `src/index.ts` calls it in **`ai` mode** —
 the mode Playwright MCP uses — and puts `snapshot`, `elementForRef`, `act` and
-`locate` on `globalThis.__codegAgent` for Rust to call through world-scoped
+`locate` on `globalThis.__recur_codeAgent` for Rust to call through world-scoped
 eval. `src/act.ts` is the acting half: given an element, it clicks, hovers,
 types, presses or selects by dispatching events at it.
 
@@ -53,7 +53,7 @@ whose framework may have kept the DOM node and given it new meaning, and this
 world cannot see that it happened: the page's own `history.pushState` is
 invisible from an isolated world, because patching `History.prototype` here
 patches _this_ world's prototype while the page calls a different function
-object — the same isolation that keeps `__codegAgent` out of the page's reach.
+object — the same isolation that keeps `__recur_codeAgent` out of the page's reach.
 
 So the world enforces three floors it can check by looking — a new document, a
 moved address, a departed element — and `snapshot({ epoch })` mixes a host
@@ -220,7 +220,7 @@ and evaluates nothing here until it has.
 
 ## Where it runs
 
-The world is separate from the page: `__codegAgent` is not reachable from page
+The world is separate from the page: `__recur_codeAgent` is not reachable from page
 script, and page code cannot forge a ref or observe a snapshot. The probe
 asserts this. What the probe cannot assert is the engine — it drives Chrome,
 while the three platforms ship WKWebView, WebView2 and WebKitGTK.

@@ -23,16 +23,16 @@ pub use crate::browser::agent::GrantLevel;
 use super::keys::Platform;
 use super::protocol::RawApp;
 
-/// codeg's own bundle identifier (`tauri.conf.json`), matched on any process
-/// so a second codeg — a development build next to the installed one — is as
+/// RecurCode's own bundle identifier (`tauri.conf.json`), matched on any process
+/// so a second RecurCode — a development build next to the installed one — is as
 /// out of reach as this one.
-pub const CODEG_BUNDLE_ID: &str = "app.codeg";
+pub const RECUR_CODE_BUNDLE_ID: &str = "app.recurcode";
 
-/// The file names codeg's executable goes by, matched on any process's path
+/// The file names RecurCode's executable goes by, matched on any process's path
 /// for the same reason, where an application has no bundle identifier to
 /// know it by: on Windows, a development build next to the installed one is
 /// otherwise just another executable.
-pub const CODEG_EXECUTABLES: &[&str] = &["codeg.exe", "codeg"];
+pub const RECUR_CODE_EXECUTABLES: &[&str] = &["RecurCode.exe", "RecurCode"];
 
 /// A grant in force on one window.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -150,16 +150,16 @@ pub fn generation(epoch: u64, seq: u64) -> String {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum NotGrantable {
-    /// One of codeg's own windows. Not a setting: an agent that could read
-    /// codeg's windows could read the grant dialog and the stop button, and
+    /// One of RecurCode's own windows. Not a setting: an agent that could read
+    /// RecurCode's windows could read the grant dialog and the stop button, and
     /// the only thing keeping a person in charge of what an agent may see is
     /// that those are out of its reach.
-    Codeg,
+    RecurCode,
     /// The application is on the person's never-share list — one of the
     /// defaults they kept (credential managers, the system settings), or one
     /// they added.
     Blocklisted,
-    /// codeg cannot tell which application this is, or which run of it: the
+    /// RecurCode cannot tell which application this is, or which run of it: the
     /// platform gave no start time for its process (so a later process under
     /// the same pid could not be told apart), or nothing a blocklist could
     /// match (no bundle identifier, no path).
@@ -171,16 +171,16 @@ impl NotGrantable {
     /// a read of one is refused.
     pub fn note(self) -> &'static str {
         match self {
-            NotGrantable::Codeg => {
-                "codeg's own window: it can never be shared with an agent. For web pages use \
+            NotGrantable::RecurCode => {
+                "RecurCode's own window: it can never be shared with an agent. For web pages use \
                  the browser_* tools."
             }
             NotGrantable::Blocklisted => {
                 "on the user's list of applications never shared with agents: it cannot be \
-                 shared unless they take it off that list in codeg's settings."
+                 shared unless they take it off that list in RecurCode's settings."
             }
             NotGrantable::Unidentified => {
-                "codeg cannot tell which application owns this window, so it cannot be shared \
+                "RecurCode cannot tell which application owns this window, so it cannot be shared \
                  with an agent."
             }
         }
@@ -494,7 +494,7 @@ impl Blocklist {
     }
 }
 
-/// Enough about this codeg process to recognise its windows in a listing.
+/// Enough about this RecurCode process to recognise its windows in a listing.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SelfIdentity {
@@ -517,9 +517,9 @@ impl SelfIdentity {
         }
     }
 
-    /// Whether `app` is codeg: this process, any process calling itself
-    /// codeg's bundle, any executable named as codeg's is, or anything run
-    /// from this codeg's executable or bundle.
+    /// Whether `app` is RecurCode: this process, any process calling itself
+    /// RecurCode's bundle, any executable named as RecurCode's is, or anything run
+    /// from this RecurCode's executable or bundle.
     pub fn owns(&self, app: &RawApp) -> bool {
         if app.pid == self.pid {
             return true;
@@ -527,7 +527,7 @@ impl SelfIdentity {
         if app
             .bundle_id
             .as_deref()
-            .is_some_and(|b| b.eq_ignore_ascii_case(CODEG_BUNDLE_ID))
+            .is_some_and(|b| b.eq_ignore_ascii_case(RECUR_CODE_BUNDLE_ID))
         {
             return true;
         }
@@ -540,7 +540,7 @@ impl SelfIdentity {
             .rsplit(['/', '\\'])
             .find(|part| !part.is_empty())
             .is_some_and(|file| {
-                CODEG_EXECUTABLES
+                RECUR_CODE_EXECUTABLES
                     .iter()
                     .any(|name| file.eq_ignore_ascii_case(name))
             })
@@ -554,7 +554,7 @@ impl SelfIdentity {
             .any(|mine| same_path(mine, path))
     }
 
-    /// Whether any word of a launch command is codeg: its bundle
+    /// Whether any word of a launch command is RecurCode: its bundle
     /// identifier, an executable of its name, or this very executable or
     /// bundle.
     pub fn owns_command(&self, command: &str) -> bool {
@@ -600,7 +600,7 @@ pub fn grantable(
     blocklist: &Blocklist,
 ) -> Result<(), NotGrantable> {
     if me.owns(app) {
-        return Err(NotGrantable::Codeg);
+        return Err(NotGrantable::RecurCode);
     }
     if blocklist.matches(app) {
         return Err(NotGrantable::Blocklisted);
@@ -746,7 +746,7 @@ mod tests {
     use super::*;
 
     /// A launch command is read word by word, quotes kept together, and any
-    /// word naming codeg or an application on the list is enough: the
+    /// word naming RecurCode or an application on the list is enough: the
     /// executable, an argument, a wrapper's application id.
     #[test]
     fn a_launch_command_is_judged_by_every_word() {
@@ -769,11 +769,11 @@ mod tests {
         assert!(!list.matches_command("/usr/bin/gnome-calculator"));
         let me = SelfIdentity {
             pid: 1,
-            exe: Some(PathBuf::from("/opt/codeg/codeg")),
+            exe: Some(PathBuf::from("/opt/RecurCode/RecurCode")),
             bundle: None,
         };
-        assert!(me.owns_command(r#""C:\Program Files\codeg\codeg.exe" --flag"#));
-        assert!(me.owns_command("/opt/codeg/codeg"));
+        assert!(me.owns_command(r#""C:\Program Files\RecurCode\RecurCode.exe" --flag"#));
+        assert!(me.owns_command("/opt/RecurCode/RecurCode"));
         assert!(!me.owns_command("/usr/bin/gnome-calculator"));
     }
 
@@ -788,51 +788,51 @@ mod tests {
         }
     }
 
-    /// codeg is recognised by pid, by its bundle identifier on any pid, and
+    /// RecurCode is recognised by pid, by its bundle identifier on any pid, and
     /// by its executable or bundle path — the last is what a development build
     /// (which has no bundle identifier) is recognised by. A path in another
-    /// case is codeg's only where the filesystem ignores case: on Linux it
+    /// case is RecurCode's only where the filesystem ignores case: on Linux it
     /// names another file.
     #[test]
-    fn codeg_is_never_grantable_however_it_is_described() {
+    fn recur_code_is_never_grantable_however_it_is_described() {
         let me = SelfIdentity {
             pid: 100,
             exe: Some(PathBuf::from(
-                "/Applications/codeg.app/Contents/MacOS/codeg",
+                "/Applications/RecurCode.app/Contents/MacOS/RecurCode",
             )),
-            bundle: Some(PathBuf::from("/Applications/codeg.app")),
+            bundle: Some(PathBuf::from("/Applications/RecurCode.app")),
         };
         let list = Blocklist::new(&[]);
-        for codeg in [
+        for RecurCode in [
             app(100, None, None),
-            app(200, Some("app.codeg"), None),
-            app(200, Some("APP.CODEG"), None),
-            app(300, None, Some("/Applications/codeg.app")),
+            app(200, Some("app.recurcode"), None),
+            app(200, Some("APP.RECUR_CODE"), None),
+            app(300, None, Some("/Applications/RecurCode.app")),
             app(
                 300,
                 None,
-                Some("/Applications/codeg.app/Contents/MacOS/codeg"),
+                Some("/Applications/RecurCode.app/Contents/MacOS/RecurCode"),
             ),
-            // Any other codeg, wherever it runs from, by its executable's
+            // Any other RecurCode, wherever it runs from, by its executable's
             // name: Windows gives no bundle identifier to know it by.
             app(
                 400,
                 None,
-                Some(r"C:\Users\me\codeg\src-tauri\target\debug\codeg.exe"),
+                Some(r"C:\Users\me\RecurCode\src-tauri\target\debug\RecurCode.exe"),
             ),
-            app(400, None, Some(r"C:\Program Files\codeg\CODEG.EXE")),
-            app(400, None, Some("/usr/bin/codeg")),
+            app(400, None, Some(r"C:\Program Files\RecurCode\RECUR_CODE.EXE")),
+            app(400, None, Some("/usr/bin/RecurCode")),
         ] {
             assert_eq!(
-                grantable(&codeg, &me, &list),
-                Err(NotGrantable::Codeg),
-                "{codeg:?}"
+                grantable(&RecurCode, &me, &list),
+                Err(NotGrantable::RecurCode),
+                "{RecurCode:?}"
             );
         }
         assert_eq!(
-            grantable(&app(300, None, Some("/applications/CODEG.app")), &me, &list),
+            grantable(&app(300, None, Some("/applications/RECUR_CODE.app")), &me, &list),
             if cfg!(any(windows, target_os = "macos")) {
-                Err(NotGrantable::Codeg)
+                Err(NotGrantable::RecurCode)
             } else {
                 Ok(())
             }
@@ -843,8 +843,8 @@ mod tests {
         );
         for other in [
             r"C:\Tools\codegen.exe",
-            r"C:\codeg\WindowsTerminal.exe",
-            r"C:\Tools\codeg.exe.old",
+            r"C:\RecurCode\WindowsTerminal.exe",
+            r"C:\Tools\RecurCode.exe.old",
         ] {
             assert_eq!(
                 grantable(&app(400, None, Some(other)), &me, &list),
@@ -952,7 +952,7 @@ mod tests {
     /// name a blocklist could match, cannot be shared: the grant could not be
     /// held to it.
     #[test]
-    fn an_application_codeg_cannot_identify_is_not_grantable() {
+    fn an_application_recur_code_cannot_identify_is_not_grantable() {
         let me = SelfIdentity::default();
         let list = Blocklist::new(&[]);
         let mut no_start = app(1, Some("com.apple.TextEdit"), None);

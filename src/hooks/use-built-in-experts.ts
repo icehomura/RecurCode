@@ -6,7 +6,7 @@ import { expertsList } from "@/lib/api"
 import type { ExpertListItem } from "@/lib/types"
 
 // Module-level cache so every MessageInput/ChatInput instance shares a single
-// fetch. Experts are bundled into the binary and change only when codeg is
+// fetch. Experts are bundled into the binary and change only when RecurCode is
 // upgraded, so refetching per mount is wasted work.
 let cachedExperts: ExpertListItem[] | null = null
 let inflight: Promise<ExpertListItem[]> | null = null
@@ -32,7 +32,7 @@ async function loadExperts(): Promise<ExpertListItem[]> {
 }
 
 /**
- * Returns the list of built-in expert skills bundled into codeg.
+ * Returns the list of built-in expert skills bundled into RecurCode.
  *
  * The first call triggers a single backend request; subsequent hook
  * instances read from an in-memory cache. Safe to call from many components

@@ -3,7 +3,7 @@ import { Plugin, PluginKey, type EditorState } from "@tiptap/pm/state"
 import { Decoration, DecorationSet } from "@tiptap/pm/view"
 
 /** CSS class painted over the selected range while the editor is unfocused. */
-export const INACTIVE_SELECTION_CLASS = "codeg-inactive-selection"
+export const INACTIVE_SELECTION_CLASS = "recur-code-inactive-selection"
 
 /** Plugin state is a single boolean: whether the editor currently has focus. */
 export const inactiveSelectionKey = new PluginKey<boolean>(

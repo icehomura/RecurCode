@@ -9,7 +9,7 @@
  * in pi's `~/.pi/agent/trust.json`. Because pi-acp spawns `pi --mode rpc` (no UI),
  * pi cannot ask, and its own default is to skip those resources.
  *
- * codeg used to write that trust automatically on every pi launch, which silently
+ * RecurCode used to write that trust automatically on every pi launch, which silently
  * answered "yes" on the user's behalf — so merely opening a conversation on a
  * cloned repo executed whatever it shipped in `.pi/extensions`. That is gone; the
  * decision now surfaces here instead.
@@ -19,7 +19,7 @@
  * - UNDECIDED — nothing covers this folder, so pi is skipping the resources.
  *   Asks for a decision.
  * - ALREADY TRUSTED, not yet acknowledged — a grant is in force, possibly one an
- *   older codeg wrote without asking, and possibly inherited from an ancestor it
+ *   older RecurCode wrote without asking, and possibly inherited from an ancestor it
  *   seeded (which covers repos cloned into that ancestor long afterwards). Those
  *   entries can't be told apart from the user's own pi decisions, so they aren't
  *   pruned; instead this discloses the grant, names the deciding folder, and
@@ -194,7 +194,7 @@ export function PiProjectTrustBanner({
     if (!current || actionDisabled) return
     setApplying(true)
     try {
-      // The backend keeps codeg's acknowledgement in step with the verdict: a
+      // The backend keeps RecurCode's acknowledgement in step with the verdict: a
       // grant counts as answered, a decline or revoke clears the record so a
       // later grant is disclosed again instead of riding on a stale "seen".
       await acpPiSetProjectTrust(current.workspace, trusted)
@@ -227,7 +227,7 @@ export function PiProjectTrustBanner({
   }
 
   /**
-   * Keep an existing grant. pi's trust store is untouched — only codeg's record
+   * Keep an existing grant. pi's trust store is untouched — only RecurCode's record
    * that the user has now answered for it, which is what releases the launch
    * gate, so this also has to get pi running.
    */

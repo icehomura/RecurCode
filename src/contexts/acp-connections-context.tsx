@@ -242,7 +242,7 @@ export type LiveContentBlock =
    * render the message as its own user turn, and start the reply to it as a
    * new turn. Mirrors what a reload draws from the history — Claude Code's own
    * transcript for the built-in agent (`parsers/claude.rs`), the transcript
-   * codeg writes for a custom one, where the steer is a marked prompt
+   * RecurCode writes for a custom one, where the steer is a marked prompt
    * (`parsers/acp_native.rs`) — so the live view and a reload agree. `id` is
    * the feedback note id.
    *
@@ -250,7 +250,7 @@ export type LiveContentBlock =
    * hands the text to the agent (`submit_feedback_native`), on the machine the
    * agent runs on — so it is directly comparable with, and earlier than, the
    * timestamp the history gives this message (the agent's own record, or
-   * codeg's once the agent took it in). That ordering is what lets the runtime
+   * RecurCode's once the agent took it in). That ordering is what lets the runtime
    * store tell the history's copy of THIS message from the same words sent in
    * an earlier round (see `suppressPersistedSteeredPrompts`), and it is the
    * time the message shows.
@@ -272,12 +272,12 @@ export type LiveContentBlock =
     }
   /**
    * The turn FAILED: the adapter's typed terminal record, the prompt the agent
-   * rejected, or codeg's verdict that nothing came back. Not agent output:
+   * rejected, or RecurCode's verdict that nothing came back. Not agent output:
    * like a steer it closes the reply, and it renders as a `system` turn of its
    * own holding a `turn_error` block — what a reload draws from the agent's
    * own record of the failure (`parsers::turn_error_message`). At most one per
    * turn (see `TURN_FAILED`); `fromAgent` is whether `message` is the agent's
-   * own words rather than codeg's verdict.
+   * own words rather than RecurCode's verdict.
    */
   | { type: "turn_error"; message: string; fromAgent: boolean }
 
@@ -324,7 +324,7 @@ export interface ConnectionState {
    */
   steeredMessageIds: string[]
   pendingQuestion: PendingQuestion | null
-  /** Awaiting-answer multiple-choice `ask_user_question` (the codeg-mcp blocking
+  /** Awaiting-answer multiple-choice `ask_user_question` (the recur-code-mcp blocking
    *  tool). Set from a `question_request` event or a snapshot's
    *  `pending_question`; cleared on `question_resolved` or turn end. Distinct
    *  from the free-text `pendingQuestion` above. */
@@ -355,7 +355,7 @@ export interface ConnectionState {
   /** `error` (red) or `warning` (amber) — how the popover tints `error`. */
   errorLevel: AcpErrorLevel
   /**
-   * Set when the agent rejected `session/load` in a way codeg cannot paper
+   * Set when the agent rejected `session/load` in a way RecurCode cannot paper
    * over: no record of the session, the session/process died, or it is
    * archived. Distinct from `error` because the UI surfaces it inline in the
    * message list with reload / new-conversation actions, instead of as a
@@ -726,7 +726,7 @@ type Action =
       type: "TURN_FAILED"
       contextKey: string
       message: string
-      /** The agent's own words, as opposed to codeg's verdict. */
+      /** The agent's own words, as opposed to RecurCode's verdict. */
       fromAgent: boolean
     }
   | {
@@ -1151,7 +1151,7 @@ function parseInputRecord(value: unknown): Record<string, unknown> | null {
  * A permission request's file-tool input with the edit text put back from the
  * live call, or `null` when nothing is missing.
  *
- * claude-agent-acp 0.82.0 sends an AIR client (codeg) an approval whose
+ * claude-agent-acp 0.82.0 sends an AIR client (RecurCode) an approval whose
  * `toolCall` is a bare update — `{toolCallId, title, rawInput}`, and for an
  * Edit/Write `rawInput` is `{file_path}` alone: the text lives only in the
  * diff the live call already carries, which the backend rebuilds into the live
@@ -2862,7 +2862,7 @@ function connectionsReducer(
       if (!message) return state
       const prev = ensureLiveMessage(conn.liveMessage)
       const current = prev.content.find((block) => block.type === "turn_error")
-      // One account per turn. The agent's own words win over codeg's verdict
+      // One account per turn. The agent's own words win over RecurCode's verdict
       // whichever arrives first; otherwise the later account replaces the
       // earlier (a revised record), and a replay changes nothing.
       if (current) {
@@ -3414,7 +3414,7 @@ function isAlertedError(error: unknown): error is AlertedError {
 
 /**
  * One account of a failed turn (see `notifyTurnFailure`): an AIR terminal
- * record — the adapter's own wording and recovery buttons — or codeg's
+ * record — the adapter's own wording and recovery buttons — or RecurCode's
  * `turn_failed_*` verdict, which may carry the agent's stderr tail.
  */
 type TurnFailurePart =
@@ -3451,7 +3451,7 @@ interface TurnFailureState {
     description?: string
     actions: NotifyAction[]
   }
-  /** codeg's verdict; `paired` once a typed account carries it. */
+  /** RecurCode's verdict; `paired` once a typed account carries it. */
   verdict?: { key: string; evidence?: string; paired: boolean }
 }
 
@@ -3718,7 +3718,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
         kind: "sdk_missing",
         // Claude Code / Codex install a separate ACP adapter package, not the
         // vendor CLI — saying "{agent} is not installed" to someone who has
-        // `claude` on their PATH reads as a bug in codeg. Name what's actually
+        // `claude` on their PATH reads as a bug in RecurCode. Name what's actually
         // missing instead.
         reason: agent.is_acp_adapter
           ? t("blocked.adapterMissing", { agent: agentLabel })
@@ -4101,7 +4101,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
    * in one conversation held every OTHER conversation's deltas for up to
    * `STREAM_FLUSH_MAX_MS` — including a background conversation with no panel
    * mounted, which costs nothing to flush and so bought nothing by waiting.
-   * Codeg runs several agents at once by design, so that is the normal case,
+   * RecurCode runs several agents at once by design, so that is the normal case,
    * not a corner of one.
    *
    * Connections are independent — own wire, own seq cursor, own
@@ -4281,7 +4281,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
 
   /**
    * Tell a failed turn once. claude and codex report one failure twice — their
-   * typed AIR record, and codeg's `turn_failed_*` verdict on the same turn —
+   * typed AIR record, and RecurCode's `turn_failed_*` verdict on the same turn —
    * in either order; the two are shown as ONE toast and ONE alert: the typed
    * account's wording and buttons, the verdict's evidence behind the alert's
    * disclosure. A verdict after the typed account only adds that evidence to
@@ -4483,7 +4483,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
    * Say so when the agent settled a config-option pick somewhere else.
    *
    * `session/set_config_option` is advisory: the agent answers with the option
-   * list it adopted and codeg renders that verbatim, so a refused or downgraded
+   * list it adopted and RecurCode renders that verbatim, so a refused or downgraded
    * pick reads as the selector springing back for no reason. pi does this for a
    * model whose reasoning it can't honour; grok does it for a model switch
    * mid-conversation.
@@ -4566,7 +4566,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
         // The agent refused to OPEN a session for want of a credential.
         // Deliberately drops the agent's own wording: cursor-agent's
         // says to run `agent login`, which is not a command that exists
-        // (the binary is `cursor-agent`, and codeg's managed copy is not
+        // (the binary is `cursor-agent`, and RecurCode's managed copy is not
         // on PATH) — so echoing it sends the user somewhere they cannot
         // go. The agent's settings panel is where the real command, and
         // the API-key alternative, live. The raw refusal is not lost —
@@ -4656,7 +4656,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
           return t("backendErrors.goalControlFailed", { agent: agentLabel })
         case "image_dropped":
           return t("backendErrors.imageDropped", { agent: agentLabel })
-        // `session/load` failed in a way codeg could not classify, so the
+        // `session/load` failed in a way RecurCode could not classify, so the
         // backend started a NEW session to keep the conversation usable —
         // without the context the agent had before.
         case "session_load_fallback":
@@ -5029,7 +5029,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
             }
             // 4. flip each async sub-agent's launch card to its terminal
             //    (completed + result) state IN-MEMORY, by rewriting the
-            //    launching tool call's `[[codeg-background-task]]` marker from
+            //    launching tool call's `[[recur-code-background-task]]` marker from
             //    the settle payload's own `tool_use_id`/`status`/`result`. This
             //    deliberately replaces the `refetchDetail` this used to do: that
             //    refetch re-parsed the still-open transcript mid-#870-hold,
@@ -5731,7 +5731,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
               // Codex client with the same session open (the app, the CLI or an
               // IDE extension), where freeing it can take quitting that client
               // because closing its tab does not always unload the thread; or
-              // a fork codeg just made from it, which closes the parent and
+              // a fork RecurCode just made from it, which closes the parent and
               // leaves codex to unload it about a minute later.
               case "session_busy":
                 return t("backendErrors.sessionLoadBusy", {
@@ -6246,7 +6246,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
   // ── Backend keepalive + liveness reconciliation timer ──
   // Frontend is the only side that knows which conversation tabs the
   // user has open. Without this, the backend's idle sweep
-  // (CODEG_ACP_IDLE_TIMEOUT_SECS, default 180s) would reap connections
+  // (RECUR_CODE_ACP_IDLE_TIMEOUT_SECS, default 180s) would reap connections
   // backing visible tabs whenever the user was just reading without
   // sending — forcing them to re-spawn the agent on next message.
   // Touching only bumps last_activity_at; it does not emit any event.

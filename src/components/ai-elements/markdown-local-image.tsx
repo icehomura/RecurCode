@@ -190,20 +190,20 @@ function MarkdownImageSpan({
   ...props
 }: ComponentProps<"span"> & {
   node?: unknown
-  "data-codeg-local-image"?: string
-  "data-codeg-image-linked"?: string
+  "data-recur-code-local-image"?: string
+  "data-recur-code-image-linked"?: string
 }) {
   // Non-empty, not merely present: `remarkLocalImages` only ever emits a
   // destination it already parsed, so a valueless attribute can only come from
   // author-written raw HTML — leave that span as the plain text it is instead
   // of decorating it with a broken-image icon.
-  const source = props["data-codeg-local-image"]
+  const source = props["data-recur-code-local-image"]
   if (source) {
     return (
       <LocalMarkdownImage
         source={source}
         alt={typeof children === "string" ? children : ""}
-        linked={props["data-codeg-image-linked"] === "true"}
+        linked={props["data-recur-code-image-linked"] === "true"}
       />
     )
   }

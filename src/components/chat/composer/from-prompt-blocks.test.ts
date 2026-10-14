@@ -90,12 +90,12 @@ describe("blocksToRestoredDraft", () => {
     ])
   })
 
-  it("restores a codeg session link as a session reference", () => {
+  it("restores a RecurCode session link as a session reference", () => {
     const { segments } = blocksToRestoredDraft(
       [
         {
           type: "resource_link",
-          uri: "codeg://session/123",
+          uri: "recurcode://session/123",
           name: "Login refactor",
           mime_type: null,
           description: null,
@@ -107,7 +107,7 @@ describe("blocksToRestoredDraft", () => {
       refType: "session",
       id: "123",
       label: "Login refactor",
-      uri: "codeg://session/123",
+      uri: "recurcode://session/123",
     })
   })
 
@@ -116,7 +116,7 @@ describe("blocksToRestoredDraft", () => {
       [
         {
           type: "resource_link",
-          uri: "codeg://session/codex_sess1",
+          uri: "recurcode://session/codex_sess1",
           name: "My chat",
           mime_type: null,
           description: null,
@@ -128,17 +128,17 @@ describe("blocksToRestoredDraft", () => {
       refType: "session",
       id: "codex_sess1",
       label: "My chat",
-      uri: "codeg://session/codex_sess1",
+      uri: "recurcode://session/codex_sess1",
       meta: { agentType: "codex" },
     })
   })
 
-  it("restores a codeg commit link as a commit reference (hash after @)", () => {
+  it("restores a RecurCode commit link as a commit reference (hash after @)", () => {
     const { segments } = blocksToRestoredDraft(
       [
         {
           type: "resource_link",
-          uri: "codeg://commit/%2Frepo%20a@abc1234def5678",
+          uri: "recurcode://commit/%2Frepo%20a@abc1234def5678",
           name: "abc1234",
           mime_type: null,
           description: null,

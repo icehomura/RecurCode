@@ -29,7 +29,7 @@
  * The same task is polled repeatedly (first timeout/running, then
  * success/completed), so the renderer collapses consecutive polls of one task
  * id into a single lifecycle card — mirroring the delegation-status group
- * (`@/lib/delegation-status`). Codeg owns only the rendering: the backend
+ * (`@/lib/delegation-status`). RecurCode owns only the rendering: the backend
  * (`parsers/claude.rs`, `parsers/grok.rs`) passes the tool-result text through
  * verbatim, so all parsing lives here (same convention as
  * `delegation-status.ts`).
@@ -466,7 +466,7 @@ export function parseBackgroundTaskEnvelope(
  *  it: a `run_in_background` launch (also used when a plugin's turn abort moved
  *  it), the user's Ctrl+B in the terminal UI, a message that arrived while the
  *  command ran, and a command that outlived its timeout. The third is the one
- *  codeg causes: since Claude Code 2.1.286 (claude-agent-acp 0.85.0) a steer
+ *  RecurCode causes: since Claude Code 2.1.286 (claude-agent-acp 0.85.0) a steer
  *  sent during a foreground command moves that command to the background
  *  instead of waiting for it to finish. */
 const LAUNCH_RE =

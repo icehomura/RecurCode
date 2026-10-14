@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { TerminalTabBar } from "./terminal-tab-bar"
 import { TerminalView } from "./terminal-view"
 
-const KEYBAR_COLLAPSED_STORAGE_KEY = "codeg:term-keybar"
+const KEYBAR_COLLAPSED_STORAGE_KEY = "RecurCode:term-keybar"
 
 /**
  * 终端面板：顶栏（tab + 折叠键栏开关）+ 所有挂载的 xterm。

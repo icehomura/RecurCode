@@ -1,17 +1,17 @@
-//! `codeg-computer-helper`: the process that holds the OS permissions for
+//! `recur-code-computer-helper`: the process that holds the OS permissions for
 //! computer use, and runs the driver as its child.
 //!
-//! On macOS the helper is launched by codeg as its own TCC responsible
+//! On macOS the helper is launched by RecurCode as its own TCC responsible
 //! process, so Accessibility and Screen Recording are granted to it and not to
-//! codeg — where every agent's shell would inherit them. That makes the helper
+//! RecurCode — where every agent's shell would inherit them. That makes the helper
 //! the thing an agent would most like to drive itself: any process can launch
-//! a copy of it the same way codeg does. So **before it reads a byte, the
-//! helper checks that the process on the other end of its stdin is codeg** —
-//! by the audit token the kernel attached to the socket, against codeg's
+//! a copy of it the same way RecurCode does. So **before it reads a byte, the
+//! helper checks that the process on the other end of its stdin is RecurCode** —
+//! by the audit token the kernel attached to the socket, against RecurCode's
 //! designated requirement compiled into this binary — and exits, having done
 //! nothing, if it is not.
 //!
-//! The requirement is compiled in (`CODEG_COMPUTER_PEER_REQUIREMENT`, set by
+//! The requirement is compiled in (`RECUR_CODE_COMPUTER_PEER_REQUIREMENT`, set by
 //! the release build) rather than read from anywhere at run time: the app
 //! bundle both binaries ship in is owned by the user and writable by any of
 //! their processes. A build without it is a development build. Development
@@ -23,7 +23,7 @@
 //! the user granted.
 //!
 //! On Windows and Linux there is no TCC to guard and no code signature to
-//! check; the helper serves its stdin, which is the pipe codeg gave it.
+//! check; the helper serves its stdin, which is the pipe RecurCode gave it.
 
 pub mod act;
 #[cfg(target_os = "macos")]
@@ -59,23 +59,23 @@ use super::protocol::{
     RawWindow, MAX_FRAME_BYTES, PROTOCOL_VERSION, SOURCE_FINGERPRINT, STOP_ALL,
 };
 
-/// Exit codes, for codeg's log: they are all the helper says to a peer it has
+/// Exit codes, for RecurCode's log: they are all the helper says to a peer it has
 /// refused.
 pub const EXIT_OK: i32 = 0;
 pub const EXIT_FAILED: i32 = 1;
 pub const EXIT_PEER_REFUSED: i32 = 2;
 pub const EXIT_UNANCHORED: i32 = 3;
 
-/// codeg's designated requirement, compiled into release builds. See the
+/// RecurCode's designated requirement, compiled into release builds. See the
 /// module note.
-pub const PEER_REQUIREMENT: Option<&str> = option_env!("CODEG_COMPUTER_PEER_REQUIREMENT");
+pub const PEER_REQUIREMENT: Option<&str> = option_env!("RECUR_CODE_COMPUTER_PEER_REQUIREMENT");
 
 /// The helper's whole life: check the peer, serve it, exit when it goes away.
 ///
-/// (Asking macOS for a permission is not part of it: codeg starts a helper
+/// (Asking macOS for a permission is not part of it: RecurCode starts a helper
 /// of its own for each request — see `REQUEST_PERMISSION_ARG` — and the
-/// binary answers that before it gets here, so nothing codeg itself links
-/// can raise a request in codeg's name.)
+/// binary answers that before it gets here, so nothing RecurCode itself links
+/// can raise a request in RecurCode's name.)
 pub fn run() -> i32 {
     let _ = tracing_subscriber::fmt()
         .with_writer(std::io::stderr)
@@ -93,7 +93,7 @@ pub fn run() -> i32 {
 
     // Everything the helper writes lives under its own directory; being there
     // keeps the driver (which inherits the working directory) out of wherever
-    // codeg happened to be started. Done before any thread exists, and not
+    // RecurCode happened to be started. Done before any thread exists, and not
     // optional: a helper that stayed where it was started would hand that
     // directory to the driver.
     if let Some(dir) = driver_proc::helper_data_dir() {
@@ -113,7 +113,7 @@ pub fn run() -> i32 {
 
 /// Build the helper's runtime, open the channel on it (tokio's socket wrapper
 /// registers with its reactor) and serve — then leave without waiting on
-/// whatever is still running there: codeg is gone, and the process exits
+/// whatever is still running there: RecurCode is gone, and the process exits
 /// when this returns.
 fn serve_on_own_runtime(
     open: impl FnOnce() -> std::io::Result<Halves>,
@@ -146,7 +146,7 @@ fn serve_on_own_runtime(
 }
 
 enum RawChannel {
-    /// macOS: the socketpair end codeg handed over as both stdin and stdout.
+    /// macOS: the socketpair end RecurCode handed over as both stdin and stdout.
     #[cfg(target_os = "macos")]
     Socket(std::os::unix::net::UnixStream),
     Stdio,
@@ -178,7 +178,7 @@ struct Channel {
     guard: Option<PeerGuard>,
 }
 
-/// The codeg that was checked, for checking every request against.
+/// The RecurCode that was checked, for checking every request against.
 ///
 /// The kernel's peer token names the last process to have used the other end
 /// of the socket, not the one that created it — so a single check at start
@@ -218,7 +218,7 @@ fn open_channel() -> Result<Channel, (i32, String)> {
         if me.team_id.is_some() {
             return Err((
                 EXIT_UNANCHORED,
-                "this helper is signed with a Team ID but was built without codeg's \
+                "this helper is signed with a Team ID but was built without RecurCode's \
                  designated requirement; it would serve any caller"
                     .into(),
             ));
@@ -247,11 +247,11 @@ fn open_channel() -> Result<Channel, (i32, String)> {
             }
             let token = peer_audit_token(0)
                 .map_err(|e| (EXIT_PEER_REFUSED, format!("no peer token: {e}")))?;
-            // The codeg this helper serves is the one that launched it: the
+            // The RecurCode this helper serves is the one that launched it: the
             // peer must be this process's parent. Otherwise a process could
-            // get a genuine codeg to write once into a socket of its own
+            // get a genuine RecurCode to write once into a socket of its own
             // making and start the helper on the other end — the token would
-            // name that codeg, and the helper would serve whoever started it.
+            // name that RecurCode, and the helper would serve whoever started it.
             // SAFETY: getppid cannot fail.
             let parent = unsafe { libc::getppid() };
             if i64::from(token.pid()) != i64::from(parent) {
@@ -265,11 +265,11 @@ fn open_channel() -> Result<Channel, (i32, String)> {
                 ));
             }
             let info = check_guest(Guest::Audit(token), requirement)
-                .map_err(|e| (EXIT_PEER_REFUSED, format!("the peer is not codeg: {e}")))?;
+                .map_err(|e| (EXIT_PEER_REFUSED, format!("the peer is not RecurCode: {e}")))?;
             info.entitlements_clean().map_err(|e| {
                 (
                     EXIT_PEER_REFUSED,
-                    format!("the peer is not a codeg this helper serves: {e}"),
+                    format!("the peer is not a RecurCode this helper serves: {e}"),
                 )
             })?;
             (PeerCheck::Verified, Some(PeerGuard { token }))
@@ -343,8 +343,8 @@ struct HelperState {
     apps: Mutex<AppCache>,
     /// The latest snapshot of each window, as the running driver keeps them.
     snapshots: std::sync::Mutex<SnapshotBook>,
-    /// The latest of the person's Stops codeg has told of (`Halt::stop`),
-    /// moved the moment its frame is read — and to [`STOP_ALL`] when codeg
+    /// The latest of the person's Stops RecurCode has told of (`Halt::stop`),
+    /// moved the moment its frame is read — and to [`STOP_ALL`] when RecurCode
     /// goes. Nothing of a request from before it (`HelperRequest::stop`)
     /// reaches a driver after that, whichever frame arrived first; what is
     /// from after it runs as usual. Shared with each action's [`Delivery`].
@@ -372,7 +372,7 @@ impl HelperState {
         self.snapshots.lock().unwrap_or_else(|p| p.into_inner())
     }
 
-    /// Whether a request codeg let through at Stop count `stop` may still
+    /// Whether a request RecurCode let through at Stop count `stop` may still
     /// reach a driver: no later Stop has been heard of.
     fn check_not_stopped(&self, stop: u64) -> Result<(), HelperError> {
         if self.stopped.load(Ordering::Acquire) > stop {
@@ -401,9 +401,9 @@ impl HelperState {
         }
     }
 
-    /// The driver running now, for a request codeg let through at Stop count
+    /// The driver running now, for a request RecurCode let through at Stop count
     /// `stop` — never one started for it: none running, or one a Stop since
-    /// has ended, refuses the request, which codeg asks again about after
+    /// has ended, refuses the request, which RecurCode asks again about after
     /// [`HelperOp::DriverReady`].
     async fn running_driver(&self, stop: u64) -> Result<Arc<DriverProc>, HelperError> {
         self.check_not_stopped(stop)?;
@@ -421,7 +421,7 @@ impl HelperState {
             })
     }
 
-    /// The running driver, for a request codeg let through at Stop count
+    /// The running driver, for a request RecurCode let through at Stop count
     /// `stop` — starting one if there is none, if the one running started
     /// before a permission it now has (`driver_stale`), or if it started for
     /// a request from before a Stop since heard of (the `Halt` that ends it
@@ -678,7 +678,7 @@ impl HelperState {
 }
 
 /// What must hold at the moment an action goes out: no Stop has come since
-/// codeg let it through, the pid is still the process the window was shared
+/// RecurCode let it through, the pid is still the process the window was shared
 /// from (a relaunch under a reused pid is another process, whose windows
 /// nobody shared), so is the process drawing inside it where that is another
 /// (a frame's application, relaunched into the same frame, is a window nobody
@@ -724,7 +724,7 @@ impl Delivery {
             )),
             session::SessionState::Unknown => Err(HelperError::new(
                 HelperErrorCode::ActionFailed,
-                "codeg cannot tell whether this desktop's session is locked, so it does not act \
+                "RecurCode cannot tell whether this desktop's session is locked, so it does not act \
                  on windows here; retrying will not change that. Reading windows still works.",
             )),
         }
@@ -767,7 +767,7 @@ fn screen_offered() -> Result<(), HelperError> {
 fn stopped() -> HelperError {
     HelperError::new(
         HelperErrorCode::Stopped,
-        "The user pressed Stop in codeg's Computer use panel.",
+        "The user pressed Stop in RecurCode's Computer use panel.",
     )
 }
 
@@ -785,7 +785,7 @@ fn gained(before: &PermissionReport, now: &PermissionReport) -> bool {
         || (now.screen_recording && !before.screen_recording)
 }
 
-/// Serve one op, which codeg let through at Stop count `stop`. A driver call
+/// Serve one op, which RecurCode let through at Stop count `stop`. A driver call
 /// that turns out to lack a permission the remembered answer says is granted
 /// clears that answer, so the next call asks the system again rather than
 /// going on believing it. (A refusal that came from the remembered answer
@@ -840,7 +840,7 @@ async fn handle_op(
             if current.as_ref() != Some(&path) {
                 *current = Some(path);
                 drop(current);
-                // A driver started from another path is not the one codeg now
+                // A driver started from another path is not the one RecurCode now
                 // names; stop it, and the next call starts the right one.
                 state.shutdown().await;
             }
@@ -1042,7 +1042,7 @@ async fn handle_op(
                     )),
                     session::SessionState::Unknown => Err(HelperError::new(
                         HelperErrorCode::ActionFailed,
-                        "codeg cannot tell whether this desktop's session is locked, so it does \
+                        "RecurCode cannot tell whether this desktop's session is locked, so it does \
                          not act on the screen here.",
                     )),
                 }
@@ -1090,7 +1090,7 @@ fn encode(message: &HelperMessage) -> Vec<u8> {
     .unwrap_or_default()
 }
 
-/// How long, once codeg has gone, the helper waits for its driver to stop
+/// How long, once RecurCode has gone, the helper waits for its driver to stop
 /// before it exits anyway (the driver then sees its stdin close and exits on
 /// its own). Long enough for a driver still starting to finish starting and
 /// be stopped: past the file hash (after which a launch that meets a Stop
@@ -1099,10 +1099,10 @@ fn encode(message: &HelperMessage) -> Vec<u8> {
 /// seconds.
 const SHUTDOWN_GRACE: Duration = Duration::from_secs(60);
 
-/// Serve requests until codeg closes its end. Returns the exit code.
+/// Serve requests until RecurCode closes its end. Returns the exit code.
 ///
 /// `guard`, when there is one, is asked before each request is acted on;
-/// a request from anyone but the codeg that was checked ends the session.
+/// a request from anyone but the RecurCode that was checked ends the session.
 pub async fn serve(
     mut reader: Box<dyn AsyncRead + Send + Unpin>,
     mut writer: Box<dyn AsyncWrite + Send + Unpin>,
@@ -1146,7 +1146,7 @@ pub async fn serve(
             Ok(request) => request,
             Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
             Err(e) => {
-                // A frame that does not parse is not a request from the codeg
+                // A frame that does not parse is not a request from the RecurCode
                 // this helper was built with; stop rather than guess.
                 tracing::error!("unreadable request: {e}");
                 code = EXIT_FAILED;
@@ -1154,14 +1154,14 @@ pub async fn serve(
             }
         };
         if guard.as_ref().is_some_and(|g| !g.still_peer()) {
-            tracing::error!("a request came from a process other than the codeg that was checked");
+            tracing::error!("a request came from a process other than the RecurCode that was checked");
             code = EXIT_PEER_REFUSED;
             break;
         }
         // A Stop takes hold the moment its frame is read, not when its task
-        // is scheduled: whatever codeg let through before it meets it at the
+        // is scheduled: whatever RecurCode let through before it meets it at the
         // next check it makes before a driver call — even one whose frame
-        // is read later — and whatever codeg let through after it does not.
+        // is read later — and whatever RecurCode let through after it does not.
         if let HelperOp::Halt { stop } = request.op {
             state.stopped.fetch_max(stop, Ordering::AcqRel);
         }
@@ -1179,7 +1179,7 @@ pub async fn serve(
             let _ = tx.send(HelperMessage::Reply(reply));
         });
     }
-    // codeg is gone (or refused): stop the driver, and do not wait on the
+    // RecurCode is gone (or refused): stop the driver, and do not wait on the
     // requests still in flight — nobody is left to answer. As for a Stop,
     // nothing still in flight reaches a driver, and a driver still starting
     // stops itself once it has started.
@@ -1274,8 +1274,8 @@ mod tests {
         assert_eq!(task.await.unwrap(), EXIT_OK);
     }
 
-    /// A Stop cuts off what codeg let through before it and holds nothing
-    /// after it — by codeg's count, not by the order frames arrive in: an
+    /// A Stop cuts off what RecurCode let through before it and holds nothing
+    /// after it — by RecurCode's count, not by the order frames arrive in: an
     /// action from before the Stop is refused even when it arrives after the
     /// `Halt`, what comes from after it gets the answer it would have got
     /// with no Stop at all, and an older Stop arriving late changes nothing.
@@ -1356,7 +1356,7 @@ mod tests {
                 .code,
             HelperErrorCode::NotConfigured
         );
-        // codeg closing the helper ends everything.
+        // RecurCode closing the helper ends everything.
         assert!(ask(to, from, 8, halt(STOP_ALL), STOP_ALL)
             .await
             .error

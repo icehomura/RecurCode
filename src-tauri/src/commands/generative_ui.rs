@@ -3,33 +3,33 @@
 //! Two halves:
 //!   * the chat renders a ```spec fence in an assistant reply as a json-render
 //!     card — frontend only, always on;
-//!   * an agent learns to write that fence from a skill Codeg ships,
+//!   * an agent learns to write that fence from a skill RecurCode ships,
 //!     `ui-render` (`genui/ui-render/SKILL.md`, generated from the frontend's
 //!     catalog), which the user enables per agent on the UI tab of Skill
 //!     Packs — the same matrix the Experts tab uses.
 //!
 //! The skill reaches an agent the way the bundled skill packs do: a central
-//! copy in the shared store (`~/.codeg/skills/ui-render`), symlinked (or
+//! copy in the shared store (`~/.recurcode/skills/ui-render`), symlinked (or
 //! junctioned) into the agent's preferred skill directory. A cell of the
 //! matrix links or unlinks at once, and what it shows is the link on disk:
 //! nothing is stored anywhere else. Startup brings the central copy up to date
 //! ([`install_generative_ui_skill`]), so every agent it is linked into reads
-//! the bundled version. It runs before Codeg serves any command, so nothing on
+//! the bundled version. It runs before RecurCode serves any command, so nothing on
 //! the settings page can race it.
 //!
 //! **Ownership.** The central copy carries a marker file. A link is ours only
-//! when it resolves to the central copy AND that copy is marked. Codeg never
+//! when it resolves to the central copy AND that copy is marked. RecurCode never
 //! removes its central copy, so a link of ours never dangles: a dangling link
 //! cannot be attributed to anyone and is left alone. A `ui-render` directory
 //! in the central store WITHOUT the marker is the user's own skill of that
-//! name, possibly already linked into agents. Codeg then does nothing with
+//! name, possibly already linked into agents. RecurCode then does nothing with
 //! it — no overwrite, no link, no unlink — and the settings page asks the user
 //! to rename theirs. Taking it over instead would leave the user's existing
-//! links pointing at Codeg's content, and the next disable would delete them
+//! links pointing at RecurCode's content, and the next disable would delete them
 //! as ours.
 //!
-//! **The old name.** Codeg 0.35.0 shipped the skill as `json-render`, linked
-//! into every agent Codeg started while one switch (`generative_ui.enabled`)
+//! **The old name.** RecurCode 0.35.0 shipped the skill as `json-render`, linked
+//! into every agent RecurCode started while one switch (`generative_ui.enabled`)
 //! was on. Startup moves that over ([`migrate_legacy`]): with the switch on,
 //! an agent that had our `json-render` gets `ui-render` in its place; either
 //! way every `json-render` link of ours goes, and so does the old central copy
@@ -64,16 +64,16 @@ pub(crate) const SKILL_ID: &str = "ui-render";
 /// `skill.test.ts` keeps the two equal.
 const SKILL_MD: &str = include_str!("../../genui/ui-render/SKILL.md");
 
-/// Written into the central copy before anything else: says Codeg made it.
-pub(crate) const MARKER_FILE: &str = ".codeg-managed";
-const MARKER_TEXT: &str = "Codeg installs this skill (Settings > Skill Packs > UI) and \
+/// Written into the central copy before anything else: says RecurCode made it.
+pub(crate) const MARKER_FILE: &str = ".recur-code-managed";
+const MARKER_TEXT: &str = "RecurCode installs this skill (Settings > Skill Packs > UI) and \
 rewrites it when it changes. Edits made here are lost.\n";
 
-/// What Codeg 0.35.0 called the skill. Its central copy carries the same
+/// What RecurCode 0.35.0 called the skill. Its central copy carries the same
 /// marker, plus a list of every link made from it, one path per line.
 const LEGACY_SKILL_ID: &str = "json-render";
-const LEGACY_LINKS_FILE: &str = ".codeg-links";
-/// The 0.35.0 switch that linked `json-render` into every agent Codeg
+const LEGACY_LINKS_FILE: &str = ".recur-code-links";
+/// The 0.35.0 switch that linked `json-render` into every agent RecurCode
 /// started. Read once more, to move its links over; nothing writes it now.
 const LEGACY_SWITCH_KEY: &str = "generative_ui.enabled";
 
@@ -82,7 +82,7 @@ const LEGACY_SWITCH_KEY: &str = "generative_ui.enabled";
 pub struct GenerativeUiSkillInfo {
     /// The skill's name: its directory, and what the user types.
     pub id: String,
-    /// The central store holds a `ui-render` Codeg did not write, so Codeg
+    /// The central store holds a `ui-render` RecurCode did not write, so RecurCode
     /// leaves the skill alone until the user renames theirs (see the module
     /// doc).
     pub conflict: bool,
@@ -91,7 +91,7 @@ pub struct GenerativeUiSkillInfo {
 // ─── Where things live ──────────────────────────────────────────────────
 
 /// Where the central copies go and where each agent looks for skills. The
-/// real one resolves both on every call, from the environment Codeg runs in;
+/// real one resolves both on every call, from the environment RecurCode runs in;
 /// tests point both at temporary directories.
 #[derive(Debug, Clone)]
 enum SkillHome {
@@ -264,7 +264,7 @@ fn link_into(central: &Path, dir: &Path) -> io::Result<()> {
             tracing::info!("[GenerativeUI] linked {}", link.display());
             Ok(())
         }
-        ExpertLinkState::LinkedToCodeg => Ok(()),
+        ExpertLinkState::LinkedToRecurCode => Ok(()),
         ExpertLinkState::BlockedByRealDirectory => Err(taken("A folder")),
         ExpertLinkState::LinkedElsewhere => Err(taken("A link to somewhere else")),
         ExpertLinkState::Broken => Err(taken("A broken link")),
@@ -283,7 +283,7 @@ fn unlink_from(central: &Path, dirs: &[PathBuf]) -> io::Result<()> {
     }
     for dir in dirs {
         let link = dir.join(SKILL_ID);
-        if classify_link(&link, central) != ExpertLinkState::LinkedToCodeg {
+        if classify_link(&link, central) != ExpertLinkState::LinkedToRecurCode {
             continue;
         }
         remove_skill_entry(&link).map_err(|err| {
@@ -303,9 +303,9 @@ fn status_of(
 ) -> ExpertInstallStatus {
     let link = preferred.join(SKILL_ID);
     let state = match classify_link(&link, central) {
-        // It resolves to a `ui-render` Codeg did not write: the user's own
+        // It resolves to a `ui-render` RecurCode did not write: the user's own
         // link, which the matrix must neither count as ours nor remove.
-        ExpertLinkState::LinkedToCodeg if !ours => ExpertLinkState::LinkedElsewhere,
+        ExpertLinkState::LinkedToRecurCode if !ours => ExpertLinkState::LinkedElsewhere,
         state => state,
     };
     ExpertInstallStatus {
@@ -372,7 +372,7 @@ fn retire_legacy_links(home: &SkillHome, dirs: &[PathBuf]) -> io::Result<()> {
     }
     for dir in dirs {
         let link = dir.join(LEGACY_SKILL_ID);
-        if classify_link(&link, &old) != ExpertLinkState::LinkedToCodeg {
+        if classify_link(&link, &old) != ExpertLinkState::LinkedToRecurCode {
             continue;
         }
         remove_skill_entry(&link).map_err(|err| {
@@ -476,7 +476,7 @@ fn migrate_legacy(home: &SkillHome, switch: Option<bool>) -> Vec<String> {
                 continue;
             };
             let old_link = preferred.join(LEGACY_SKILL_ID);
-            if classify_link(&old_link, &old) != ExpertLinkState::LinkedToCodeg {
+            if classify_link(&old_link, &old) != ExpertLinkState::LinkedToRecurCode {
                 continue;
             }
             if let Err(err) = link_into(&central, preferred) {
@@ -520,7 +520,7 @@ fn write_recorded_links(old: &Path, links: &[PathBuf]) -> io::Result<()> {
         .iter()
         .map(|link| format!("{}\n", link.display()))
         .collect();
-    let partial = old.join(".codeg-links.partial");
+    let partial = old.join(".recur-code-links.partial");
     fs::write(&partial, list)?;
     fs::rename(&partial, old.join(LEGACY_LINKS_FILE)).inspect_err(|_| {
         let _ = fs::remove_file(&partial);
@@ -578,7 +578,7 @@ fn unlink_legacy(old: &Path, dirs: &[PathBuf], keep: &[PathBuf]) -> (Vec<String>
             }
             continue;
         }
-        if classify_link(&link, old) != ExpertLinkState::LinkedToCodeg {
+        if classify_link(&link, old) != ExpertLinkState::LinkedToRecurCode {
             continue;
         }
         match remove_skill_entry(&link) {
@@ -693,7 +693,7 @@ pub async fn install_generative_ui_skill(conn: &DatabaseConnection) {
 }
 
 /// The central-store ids this module owns, for the custom-skills pack to keep
-/// out of its list — each only while the copy there is Codeg's. A `ui-render`
+/// out of its list — each only while the copy there is RecurCode's. A `ui-render`
 /// the user made stays a custom skill they can see, edit and rename.
 pub(crate) fn reserved_skill_ids() -> Vec<String> {
     reserved_ids_in(&SkillHome::User)
@@ -792,7 +792,7 @@ mod tests {
         }
 
         fn is_our_link(&self, agent_dir: &str) -> bool {
-            classify_link(&self.link(agent_dir), &self.central()) == ExpertLinkState::LinkedToCodeg
+            classify_link(&self.link(agent_dir), &self.central()) == ExpertLinkState::LinkedToRecurCode
         }
 
         async fn apply(&self, ops: &[(AgentType, bool)]) -> Vec<LinkOpResult> {
@@ -838,7 +838,7 @@ mod tests {
         fn plant_legacy(&self, agent_dirs: &[&str]) {
             let old = self.legacy();
             fs::create_dir_all(&old).unwrap();
-            fs::write(old.join(MARKER_FILE), "Codeg installs this skill\n").unwrap();
+            fs::write(old.join(MARKER_FILE), "RecurCode installs this skill\n").unwrap();
             fs::write(old.join("SKILL.md"), "---\nname: json-render\n---\n").unwrap();
             let mut list = String::new();
             for dir in agent_dirs {
@@ -853,7 +853,7 @@ mod tests {
 
         fn is_our_legacy_link(&self, agent_dir: &str) -> bool {
             classify_link(&self.legacy_link(agent_dir), &self.legacy())
-                == ExpertLinkState::LinkedToCodeg
+                == ExpertLinkState::LinkedToRecurCode
         }
     }
 
@@ -946,7 +946,7 @@ mod tests {
         assert!(result.ok, "{result:?}");
         assert_eq!(
             result.status.map(|status| status.state),
-            Some(ExpertLinkState::LinkedToCodeg)
+            Some(ExpertLinkState::LinkedToRecurCode)
         );
         assert!(fx.is_our_link("codex/skills"));
         assert!(!exists(&fx.link("agents/skills")), "only the preferred dir");
@@ -954,7 +954,7 @@ mod tests {
 
         assert_eq!(
             fx.state_of(AgentType::Codex).await,
-            ExpertLinkState::LinkedToCodeg
+            ExpertLinkState::LinkedToRecurCode
         );
         assert_eq!(
             fx.state_of(AgentType::ClaudeCode).await,
@@ -1067,7 +1067,7 @@ mod tests {
         );
         assert_eq!(
             classify_link(&fx.link("codex/skills"), &elsewhere),
-            ExpertLinkState::LinkedToCodeg,
+            ExpertLinkState::LinkedToRecurCode,
             "the link to somewhere else is still there"
         );
         assert!(exists(&fx.link("agents/skills")), "the dangling link too");
@@ -1095,7 +1095,7 @@ mod tests {
         assert!(fx.disable(AgentType::ClaudeCode).await.ok);
         assert_eq!(
             classify_link(&fx.link("claude/skills"), &fx.central()),
-            ExpertLinkState::LinkedToCodeg,
+            ExpertLinkState::LinkedToRecurCode,
             "their link to their skill survives"
         );
         assert_eq!(
@@ -1145,7 +1145,7 @@ mod tests {
         assert!(!exists(&fx.legacy()), "the old copy is gone");
         assert_eq!(
             fx.state_of(AgentType::ClaudeCode).await,
-            ExpertLinkState::LinkedToCodeg
+            ExpertLinkState::LinkedToRecurCode
         );
         assert_eq!(
             fx.state_of(AgentType::Gemini).await,
@@ -1197,7 +1197,7 @@ mod tests {
         assert!(!exists(&fx.legacy_link("claude/skills")));
         assert_eq!(
             classify_link(&fx.legacy_link("agents/skills"), &elsewhere),
-            ExpertLinkState::LinkedToCodeg
+            ExpertLinkState::LinkedToRecurCode
         );
         assert!(fx.legacy_link("codex/skills").is_dir());
         assert!(!exists(&fx.link("agents/skills")), "Gemini never had ours");

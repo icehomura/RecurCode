@@ -12,12 +12,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import {
-  getCodegMcpServiceStatus,
+  getRecurCodeMcpServiceStatus,
   openSettingsWindow,
-  setCodegMcpToolGroup,
-  startCodegMcpService,
-  type CodegMcpServiceState,
-  type CodegMcpServiceStatus,
+  setRecurCodeMcpToolGroup,
+  startRecurCodeMcpService,
+  type RecurCodeMcpServiceState,
+  type RecurCodeMcpServiceStatus,
 } from "@/lib/api"
 import {
   AGENT_TOOLS_NAMESPACE,
@@ -33,7 +33,7 @@ const POLL_MS = 60_000
 
 /** `unknown` is frontend-only: the status call itself failed, which says
  * nothing about the service and must not be painted as a service fault. */
-type IndicatorState = CodegMcpServiceState | "unknown"
+type IndicatorState = RecurCodeMcpServiceState | "unknown"
 
 /** Badge tint per state. `disabled` and `unknown` stay neutral on purpose: the
  * service is not faulty in either case, and colouring them would train people
@@ -69,9 +69,9 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * codeg-mcp service indicator, bottom-right of the workspace.
+ * recur-code-mcp service indicator, bottom-right of the workspace.
  *
- * The companion is what carries codeg's own tools into an agent session —
+ * The companion is what carries RecurCode's own tools into an agent session —
  * delegation, live feedback, ask-user-question, session lookup, the two
  * create-from-chat writers. Its three failure modes are all silent from the
  * workspace: a missing companion binary logs one line at spawn time, a dead
@@ -86,7 +86,7 @@ export function StatusBarMcp() {
   const t = useTranslations("Folder.statusBar.mcp")
   const tools = useTranslations(AGENT_TOOLS_NAMESPACE)
   const [open, setOpen] = useState(false)
-  const [status, setStatus] = useState<CodegMcpServiceStatus | null>(null)
+  const [status, setStatus] = useState<RecurCodeMcpServiceStatus | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -102,7 +102,7 @@ export function StatusBarMcp() {
   const refresh = useCallback(async () => {
     const seq = ++seqRef.current
     try {
-      const next = await getCodegMcpServiceStatus()
+      const next = await getRecurCodeMcpServiceStatus()
       if (!aliveRef.current || seq !== seqRef.current) return
       setStatus(next)
       setLoadError(null)
@@ -134,7 +134,7 @@ export function StatusBarMcp() {
     setStarting(true)
     setActionError(null)
     try {
-      await startCodegMcpService()
+      await startRecurCodeMcpService()
       await refresh()
     } catch (e) {
       if (aliveRef.current) setActionError(toErrorMessage(e))
@@ -147,7 +147,7 @@ export function StatusBarMcp() {
     setPending((prev) => ({ ...prev, [key]: next }))
     setActionError(null)
     try {
-      await setCodegMcpToolGroup(key, next)
+      await setRecurCodeMcpToolGroup(key, next)
       // Re-read before releasing the optimistic value, so the switch hands
       // over to a `status` that already reflects the write.
       await refresh()

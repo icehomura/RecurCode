@@ -3,11 +3,11 @@
 /**
  * MCP declaration card on a custom agent's settings page.
  *
- * codeg injects its built-in codeg-mcp companion into `session/new`'s
+ * RecurCode injects its built-in recur-code-mcp companion into `session/new`'s
  * `mcpServers` — that is what backs delegation, live feedback and the task
  * tools. Most ACP agents accept it, but some reject any entry in that field
  * and fail session creation outright, so the agent cannot be connected to at
- * all until the injection stops. codeg cannot detect which kind an arbitrary
+ * all until the injection stops. RecurCode cannot detect which kind an arbitrary
  * agent is, so the user declares it here (OpenClaw is the built-in precedent,
  * where the same flag is a compile-time constant).
  *

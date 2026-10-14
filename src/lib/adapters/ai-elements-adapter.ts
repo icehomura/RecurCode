@@ -85,7 +85,7 @@ export type AdaptedToolCallPart = {
   /**
    * ACP extensibility metadata forwarded from `ContentBlock.tool_use.meta`.
    * Opaque pass-through, read by narrow accessors rather than interpreted here:
-   * `<DelegatedSubThread>` takes `meta["codeg.delegation"]` as a binding
+   * `<DelegatedSubThread>` takes `meta["RecurCode.delegation"]` as a binding
    * fallback when the live DelegationContext entry is missing (page refresh,
    * late mount), and the command card takes
    * `meta.jetbrains.air.asyncTasks.backgrounded` (`toolCallMovedToBackground`)
@@ -1058,7 +1058,7 @@ function stripBlockedMentions(
 
 /** Apply the per-scheme rule to ONE Markdown link, mutating `resources`. Returns
  *  the text to keep in place of the link: the original `match` for an inline-kept
- *  ref (file / codeg / non-resource link), or "" for a moved-out `@mention`. */
+ *  ref (file / RecurCode / non-resource link), or "" for a moved-out `@mention`. */
 function handleMarkdownLink(
   match: string,
   label: string,
@@ -1071,18 +1071,18 @@ function handleMarkdownLink(
   // the real path, not `file:///C:\\dir`. `match` (returned for inline-kept
   // refs) keeps the original bracketed form untouched.
   const normalizedUri = unwrapReferenceDestination(uri)
-  // A `codeg://` reference (session / commit / agent) renders as an inline badge
+  // A `recurcode://` reference (session / commit / agent) renders as an inline badge
   // in the transcript (markdown-link → ReferenceBadge); never lift it to the
   // bottom resource-chip row. The guard mirrors markdown-link's interception
-  // (`href.startsWith("codeg:")`): an unrecognized codeg path is parsed back to
+  // (`href.startsWith("RecurCode:")`): an unrecognized RecurCode path is parsed back to
   // null there and degrades to a plain inline link — still in-flow, never a chip.
-  // (The `@`-prefixed agent link `[@label](codeg://agent/…)` would otherwise be
+  // (The `@`-prefixed agent link `[@label](recurcode://agent/…)` would otherwise be
   // caught by `hasMentionLabel` below.)
-  if (normalizedUri.toLowerCase().startsWith("codeg:")) {
-    // A `codeg://embedded/…` ref is a path-less pasted attachment — still an
+  if (normalizedUri.toLowerCase().startsWith("RecurCode:")) {
+    // A `recurcode://embedded/…` ref is a path-less pasted attachment — still an
     // attached file, so it is COPIED to the row too (kept inline as its inert
-    // badge). Other codeg refs are not attachments: inline only.
-    if (normalizedUri.toLowerCase().startsWith("codeg://embedded/")) {
+    // badge). Other RecurCode refs are not attachments: inline only.
+    if (normalizedUri.toLowerCase().startsWith("recurcode://embedded/")) {
       // One whose uri carries the ref of the block behind it — a page the
       // built-in browser handed over — is listed by that ref, as the page it
       // came from: the badge in the prose already says what it is, and this is
@@ -1260,7 +1260,7 @@ function webSiteOf(uri: string): { host: string; origin: string } | null {
  * The badge the composer showed in place of an embedded attachment, written
  * back as the inline token the transcript parses into one.
  *
- * Its uri is the same `codeg://embedded/…` shape the composer mints for one
+ * Its uri is the same `recurcode://embedded/…` shape the composer mints for one
  * (`buildEmbeddedReferenceUri`), carrying the ref the way the composer's own
  * badge for a page does, so the transcript renders the rebuilt badge through
  * exactly the same branch: an inert file badge, never a link to anywhere.
@@ -2306,7 +2306,7 @@ function buildToolResultMap(
  *    "No matches" instead of a raw JSON dump. Two predicates for one fact
  *    would let the card's status and its body disagree.
  * 2. A live `failed` with NO output at all, on a call the backend marked as
- *    codex's own search (`CODEX_SEARCH_ACTION_META_KEY`). codeg advertises
+ *    codex's own search (`CODEX_SEARCH_ACTION_META_KEY`). RecurCode advertises
  *    `_meta.terminal_output_delta` to codex, and with it codex-acp stops
  *    sending `rawOutput` on every command completion — so a search that
  *    printed nothing arrives as a bare status, with no exit code left to
@@ -2322,7 +2322,7 @@ function buildToolResultMap(
  *    plain `bash` call, and its exit lives only in the exit line the backend
  *    appends. `isGrepNoMatchCommandResult` requires that line to read exit 1
  *    and to be ALL the call printed. Nothing here is codex's own: the exit
- *    line is codeg's record of the process, and a pipeline exits with its
+ *    line is RecurCode's record of the process, and a pipeline exits with its
  *    last stage's status, so any agent's card of that shape is the same no
  *    match. The output (the exit line) is kept, so the raw exit code still
  *    shows.
@@ -2368,7 +2368,7 @@ function isGrepNoMatchResult(
  *
  * codex publishes its Plan-mode plan on two live channels at once: as an
  * ordinary `agent_message` (so it streams as normal assistant prose) and as
- * `rawInput.plan` on the plan-review permission request codeg seeds a tool call
+ * `rawInput.plan` on the plan-review permission request RecurCode seeds a tool call
  * from. Both land in one turn — the live turn splitter only cuts a new turn on
  * a content block that FOLLOWS a completed tool call — so the reader sees the
  * whole plan twice, once bare and once boxed.

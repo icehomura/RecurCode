@@ -113,14 +113,14 @@ describe("serviceWorkerUrl", () => {
   })
 
   it("reads the version next.config.ts inlines at build", () => {
-    vi.stubEnv("CODEG_APP_VERSION", "9.8.7")
+    vi.stubEnv("RECUR_CODE_APP_VERSION", "9.8.7")
     expect(serviceWorkerUrl()).toBe("/sw.js?v=9.8.7")
   })
 })
 
 describe("registerAppServiceWorker", () => {
   it("registers the versioned script at the root scope and reports success", async () => {
-    vi.stubEnv("CODEG_APP_VERSION", "0.36.0")
+    vi.stubEnv("RECUR_CODE_APP_VERSION", "0.36.0")
     const register = vi.fn(async () => ({}))
     mockRegistration(register)
     await expect(registerAppServiceWorker()).resolves.toBe(true)

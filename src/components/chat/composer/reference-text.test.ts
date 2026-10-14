@@ -23,12 +23,12 @@ describe("referenceToMarkdown", () => {
     ).toBe("[app.ts](file:///repo/app.ts)")
   })
 
-  it("renders a session as a markdown link to its codeg:// uri", () => {
+  it("renders a session as a markdown link to its recurcode:// uri", () => {
     expect(
       referenceToMarkdown(
-        ref({ refType: "session", label: "Login", uri: "codeg://session/123" })
+        ref({ refType: "session", label: "Login", uri: "recurcode://session/123" })
       )
-    ).toBe("[Login](codeg://session/123)")
+    ).toBe("[Login](recurcode://session/123)")
   })
 
   it("renders a commit as a markdown link", () => {
@@ -37,10 +37,10 @@ describe("referenceToMarkdown", () => {
         ref({
           refType: "commit",
           label: "abc1234",
-          uri: "codeg://commit/repo@abc1234def",
+          uri: "recurcode://commit/repo@abc1234def",
         })
       )
-    ).toBe("[abc1234](codeg://commit/repo@abc1234def)")
+    ).toBe("[abc1234](recurcode://commit/repo@abc1234def)")
   })
 
   it("renders an agent as @label (no uri)", () => {
@@ -51,17 +51,17 @@ describe("referenceToMarkdown", () => {
     ).toBe("@Claude Code")
   })
 
-  it("renders an agent with a uri as a [@label](codeg://agent/…) link", () => {
+  it("renders an agent with a uri as a [@label](recurcode://agent/…) link", () => {
     expect(
       referenceToMarkdown(
         ref({
           refType: "agent",
           id: "codex",
           label: "Codex",
-          uri: "codeg://agent/codex",
+          uri: "recurcode://agent/codex",
         })
       )
-    ).toBe("[@Codex](codeg://agent/codex)")
+    ).toBe("[@Codex](recurcode://agent/codex)")
   })
 
   it("renders a skill as a /invocation token from its id", () => {
@@ -127,18 +127,18 @@ describe("referenceToMarkdown", () => {
           ref({
             refType: "session",
             label: "a](http://evil) x",
-            uri: "codeg://session/1",
+            uri: "recurcode://session/1",
           })
         )
-      ).toBe("[a\\]\\(http://evil\\) x](codeg://session/1)")
+      ).toBe("[a\\]\\(http://evil\\) x](recurcode://session/1)")
     })
 
     it("escapes backticks in link text", () => {
       expect(
         referenceToMarkdown(
-          ref({ refType: "session", label: "a`b", uri: "codeg://session/2" })
+          ref({ refType: "session", label: "a`b", uri: "recurcode://session/2" })
         )
-      ).toBe("[a\\`b](codeg://session/2)")
+      ).toBe("[a\\`b](recurcode://session/2)")
     })
 
     it("angle-wraps a destination containing spaces or parentheses", () => {
@@ -178,10 +178,10 @@ describe("referenceToMarkdown", () => {
           ref({
             refType: "agent",
             label: "a](http://evil) x",
-            uri: "codeg://agent/codex",
+            uri: "recurcode://agent/codex",
           })
         )
-      ).toBe("[@a\\]\\(http://evil\\) x](codeg://agent/codex)")
+      ).toBe("[@a\\]\\(http://evil\\) x](recurcode://agent/codex)")
     })
 
     it("code-spans a URL-like agent label so it cannot autolink", () => {

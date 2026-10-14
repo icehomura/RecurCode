@@ -50,7 +50,7 @@ const EVAL_RENDER = readFileSync(
   "utf8"
 )
 const evalCall = (code) =>
-  `(function(){\n${EVAL_RENDER}\ntry {\nvar __codegEvalValue = (function () {\n${code}\n})();\nreturn __codegEvalRender(__codegEvalValue);\n} catch (e) {\nreturn __codegEvalError(e);\n}\n})()`
+  `(function(){\n${EVAL_RENDER}\ntry {\nvar __recur_codeEvalValue = (function () {\n${code}\n})();\nreturn __recur_codeEvalRender(__recur_codeEvalValue);\n} catch (e) {\nreturn __recur_codeEvalError(e);\n}\n})()`
 
 const CHROME =
   process.env.CHROME_PATH ??
@@ -280,7 +280,7 @@ const PAGE = `<!doctype html><html><head><title>Probe</title>
   })
 </script></body></html>`
 
-const dir = mkdtempSync(join(tmpdir(), "codeg-agent-probe-"))
+const dir = mkdtempSync(join(tmpdir(), "recur-code-agent-probe-"))
 const pageFile = join(dir, "probe.html")
 writeFileSync(pageFile, PAGE)
 
@@ -343,7 +343,7 @@ try {
   const { result: frameTree } = await send("Page.getFrameTree")
   const { result: world } = await send("Page.createIsolatedWorld", {
     frameId: frameTree.frameTree.frame.id,
-    worldName: "codeg",
+    worldName: "RecurCode",
     grantUniveralAccess: false,
   })
 
@@ -361,7 +361,7 @@ try {
   await run(BUNDLE)
 
   const snap = JSON.parse(
-    await run("JSON.stringify(__codegAgent.snapshot({}))")
+    await run("JSON.stringify(__recur_codeAgent.snapshot({}))")
   )
   console.log("\n=== tree ===\n" + snap.tree + "\n")
   console.log(`url=${snap.url} title=${snap.title} refs=${snap.refsCount}\n`)
@@ -402,17 +402,17 @@ try {
 
   // The page must not be able to see, call or forge the agent surface.
   const mainWorld = await send("Runtime.evaluate", {
-    expression: "typeof globalThis.__codegAgent",
+    expression: "typeof globalThis.__recur_codeAgent",
     returnByValue: true,
   })
   check(
-    "the page cannot see __codegAgent",
+    "the page cannot see __recur_codeAgent",
     mainWorld.result.result.value,
     "undefined"
   )
 
   const cut = JSON.parse(
-    await run("JSON.stringify(__codegAgent.snapshot({maxChars: 40}))")
+    await run("JSON.stringify(__recur_codeAgent.snapshot({maxChars: 40}))")
   )
   check("a capped tree reports the cut", cut.truncated, true)
   check("a capped tree ends on a line boundary", cut.tree.endsWith(":"), true)
@@ -420,7 +420,7 @@ try {
   // Every snapshot hands out its own token, and the capped one above was a
   // snapshot: the refs used from here on come from a fresh one.
   const live = JSON.parse(
-    await run("JSON.stringify(__codegAgent.snapshot({}))")
+    await run("JSON.stringify(__recur_codeAgent.snapshot({}))")
   )
   const g = JSON.stringify(live.generation)
   // Two refs: one to spend on the removal case, one that must stay in the page
@@ -434,19 +434,19 @@ try {
 
   check(
     "a live ref resolves",
-    await run(`!!__codegAgent.elementForRef(${g}, ${kept})`),
+    await run(`!!__recur_codeAgent.elementForRef(${g}, ${kept})`),
     true
   )
   check(
     "a ref from another document does not",
-    await run(`__codegAgent.elementForRef("other", ${kept})`),
+    await run(`__recur_codeAgent.elementForRef("other", ${kept})`),
     null
   )
   check(
     "a ref for a removed element does not",
     await run(
-      `(() => { __codegAgent.elementForRef(${g}, ${spent}).remove();
-                return __codegAgent.elementForRef(${g}, ${spent}) })()`
+      `(() => { __recur_codeAgent.elementForRef(${g}, ${spent}).remove();
+                return __recur_codeAgent.elementForRef(${g}, ${spent}) })()`
     ),
     null
   )
@@ -458,18 +458,18 @@ try {
   check(
     "a ref does not survive a pushState, though its element does",
     await run(
-      `(() => { const el = __codegAgent.elementForRef(${g}, ${kept});
+      `(() => { const el = __recur_codeAgent.elementForRef(${g}, ${kept});
                 history.pushState({}, "", "?routed");
-                return [el.isConnected, __codegAgent.elementForRef(${g}, ${kept})] })()`
+                return [el.isConnected, __recur_codeAgent.elementForRef(${g}, ${kept})] })()`
     ),
     [true, null]
   )
   check(
     "and a snapshot at the new address hands out refs that work again",
     await run(
-      `(() => { const s = __codegAgent.snapshot({});
+      `(() => { const s = __recur_codeAgent.snapshot({});
                 const m = s.tree.match(/button "Export" \\[ref=(e\\d+)\\]/);
-                return !!__codegAgent.elementForRef(s.generation, m[1]) })()`
+                return !!__recur_codeAgent.elementForRef(s.generation, m[1]) })()`
     ),
     true
   )
@@ -483,11 +483,11 @@ try {
     "an address that leaves and returns is caught by the history length",
     await run(
       `(() => { const here = location.href;
-                const s = __codegAgent.snapshot({});
+                const s = __recur_codeAgent.snapshot({});
                 const m = s.tree.match(/button "Export" \\[ref=(e\\d+)\\]/);
                 history.pushState({}, "", "?elsewhere");
                 history.pushState({}, "", here);
-                return __codegAgent.elementForRef(s.generation, m[1]) })()`
+                return __recur_codeAgent.elementForRef(s.generation, m[1]) })()`
     ),
     null
   )
@@ -502,12 +502,12 @@ try {
       )
       await sleep(150)
       await run(
-        `globalThis.__s = __codegAgent.snapshot({});
+        `globalThis.__s = __recur_codeAgent.snapshot({});
          globalThis.__m = __s.tree.match(/button "Export" \\[ref=(e\\d+)\\]/)[1];
          history.back(); history.forward();`
       )
       await sleep(250)
-      resolve(await run(`__codegAgent.elementForRef(__s.generation, __m)`))
+      resolve(await run(`__recur_codeAgent.elementForRef(__s.generation, __m)`))
     }),
     null
   )
@@ -515,7 +515,7 @@ try {
   // ── acting ─────────────────────────────────────────────────────────────
 
   const fresh = async () => {
-    const s = JSON.parse(await run("JSON.stringify(__codegAgent.snapshot({}))"))
+    const s = JSON.parse(await run("JSON.stringify(__recur_codeAgent.snapshot({}))"))
     const ref = (pattern) => {
       const m = s.tree.match(pattern)
       if (!m) throw new Error(`no match for ${pattern} in\n${s.tree}`)
@@ -526,7 +526,7 @@ try {
   const actJson = async (gen, ref, request) =>
     JSON.parse(
       await run(
-        `JSON.stringify(__codegAgent.act(${gen}, ${JSON.stringify(ref)}, ${JSON.stringify(request)}))`
+        `JSON.stringify(__recur_codeAgent.act(${gen}, ${JSON.stringify(ref)}, ${JSON.stringify(request)}))`
       )
     )
 
@@ -621,14 +621,14 @@ try {
     )
     const located = JSON.parse(
       await run(
-        `JSON.stringify(__codegAgent.locate(${gen}, ${JSON.stringify(under)}))`
+        `JSON.stringify(__recur_codeAgent.locate(${gen}, ${JSON.stringify(under)}))`
       )
     )
     check("locate refuses on the same grounds", located.error, "obscured")
     const count = ref(/button "Count" \[ref=(e\d+)\]/)
     const point = JSON.parse(
       await run(
-        `JSON.stringify(__codegAgent.locate(${gen}, ${JSON.stringify(count)}))`
+        `JSON.stringify(__recur_codeAgent.locate(${gen}, ${JSON.stringify(count)}))`
       )
     )
     check(
@@ -687,7 +687,7 @@ try {
     )
     const located = JSON.parse(
       await run(
-        `JSON.stringify(__codegAgent.locate(${gen}, ${JSON.stringify(clipped)}))`
+        `JSON.stringify(__recur_codeAgent.locate(${gen}, ${JSON.stringify(clipped)}))`
       )
     )
     check(
@@ -1135,7 +1135,7 @@ try {
     const { gen, ref } = await fresh()
     const spent = ref(/listitem \[ref=(e\d+)\]: beta/)
     await run(
-      `__codegAgent.elementForRef(${gen}, ${JSON.stringify(spent)}).remove()`
+      `__recur_codeAgent.elementForRef(${gen}, ${JSON.stringify(spent)}).remove()`
     )
     const result = await actJson(gen, spent, { kind: "click" })
     check(
@@ -1157,25 +1157,25 @@ try {
   {
     // Two snapshots of one document under one epoch are two snapshots: a
     // token from the first does not resolve refs against the second's map.
-    const a = JSON.parse(await run("JSON.stringify(__codegAgent.snapshot({}))"))
-    const b = JSON.parse(await run("JSON.stringify(__codegAgent.snapshot({}))"))
+    const a = JSON.parse(await run("JSON.stringify(__recur_codeAgent.snapshot({}))"))
+    const b = JSON.parse(await run("JSON.stringify(__recur_codeAgent.snapshot({}))"))
     const m = b.tree.match(/button "Count" \[ref=(e\d+)\]/)[1]
     check(
       "each snapshot hands out its own token, and an older one is refused",
       [
         a.generation !== b.generation,
         await run(
-          `__codegAgent.elementForRef(${JSON.stringify(a.generation)}, ${JSON.stringify(m)})`
+          `__recur_codeAgent.elementForRef(${JSON.stringify(a.generation)}, ${JSON.stringify(m)})`
         ),
         !!(await run(
-          `__codegAgent.elementForRef(${JSON.stringify(b.generation)}, ${JSON.stringify(m)})`
+          `__recur_codeAgent.elementForRef(${JSON.stringify(b.generation)}, ${JSON.stringify(m)})`
         )),
       ],
       [true, null, true]
     )
     // A capped tree hands out only the refs it showed.
     const cut = JSON.parse(
-      await run("JSON.stringify(__codegAgent.snapshot({maxChars: 60}))")
+      await run("JSON.stringify(__recur_codeAgent.snapshot({maxChars: 60}))")
     )
     const shown = [...cut.tree.matchAll(/\[ref=(e\d+)\]/g)].map((x) => x[1])
     const hidden = "e" + (Math.max(...shown.map((r) => Number(r.slice(1)))) + 3)
@@ -1185,7 +1185,7 @@ try {
         cut.truncated,
         shown.length > 0,
         await run(
-          `__codegAgent.elementForRef(${JSON.stringify(cut.generation)}, ${JSON.stringify(hidden)})`
+          `__recur_codeAgent.elementForRef(${JSON.stringify(cut.generation)}, ${JSON.stringify(hidden)})`
         ),
       ],
       [true, true, null]
@@ -1194,13 +1194,13 @@ try {
     // own next snapshot is the one stale answer where "the page as it is now"
     // is actively misleading: the page has not changed at all.
     const before = JSON.parse(
-      await run("JSON.stringify(__codegAgent.snapshot({}))")
+      await run("JSON.stringify(__recur_codeAgent.snapshot({}))")
     )
     const far = [...before.tree.matchAll(/\[ref=(e\d+)\]/g)]
       .map((x) => x[1])
       .pop()
     const after = JSON.parse(
-      await run("JSON.stringify(__codegAgent.snapshot({maxChars: 60}))")
+      await run("JSON.stringify(__recur_codeAgent.snapshot({maxChars: 60}))")
     )
     const refused = await actJson(JSON.stringify(after.generation), far, {
       kind: "click",
@@ -1231,13 +1231,13 @@ try {
     // takes that element away, the caller is owed "the page moved on", not
     // "your own snapshot dropped this": whether the current table still holds
     // the name is the only thing that tells the two apart.
-    await run("JSON.stringify(__codegAgent.snapshot({}))")
+    await run("JSON.stringify(__recur_codeAgent.snapshot({}))")
     const live = JSON.parse(
-      await run("JSON.stringify(__codegAgent.snapshot({}))")
+      await run("JSON.stringify(__recur_codeAgent.snapshot({}))")
     )
     const doomed = live.tree.match(/button "Peeking" \[ref=(e\d+)\]/)[1]
     await run(
-      `__codegAgent.elementForRef(${JSON.stringify(live.generation)}, ${JSON.stringify(doomed)}).remove()`
+      `__recur_codeAgent.elementForRef(${JSON.stringify(live.generation)}, ${JSON.stringify(doomed)}).remove()`
     )
     const gone = await actJson(JSON.stringify(live.generation), doomed, {
       kind: "click",
@@ -1269,7 +1269,7 @@ try {
     const snap = async (maxChars) =>
       JSON.parse(
         await run(
-          `JSON.stringify(__codegAgent.snapshot(${JSON.stringify(maxChars ? { maxChars } : {})}))`
+          `JSON.stringify(__recur_codeAgent.snapshot(${JSON.stringify(maxChars ? { maxChars } : {})}))`
         )
       )
     // Near the top of the tree, so a cap that trims the page's tail still
@@ -1317,10 +1317,10 @@ try {
         "with the Navigation API, replaceState away and back is caught",
         await run(
           `(() => { const here = location.href;
-                    const s = __codegAgent.snapshot({});
+                    const s = __recur_codeAgent.snapshot({});
                     const m = s.tree.match(/button "Count" \\[ref=(e\\d+)\\]/)[1];
                     history.replaceState({}, "", "?away"); history.replaceState({}, "", here);
-                    return __codegAgent.elementForRef(s.generation, m) })()`
+                    return __recur_codeAgent.elementForRef(s.generation, m) })()`
         ),
         null
       )
@@ -1332,7 +1332,7 @@ try {
     const { gen, ref } = await fresh()
     void ref
     const s2 = JSON.parse(
-      await run("JSON.stringify(__codegAgent.snapshot({}))")
+      await run("JSON.stringify(__recur_codeAgent.snapshot({}))")
     )
     const m = (s2.tree.match(/button "Count" \[ref=(e\d+)\]/) || [])[1]
     if (m) {
@@ -1370,17 +1370,17 @@ try {
   check(
     "a host epoch reaches the token an agent echoes",
     await run(
-      `__codegAgent.snapshot({epoch: "nav-7"}).generation.endsWith(".nav-7")`
+      `__recur_codeAgent.snapshot({epoch: "nav-7"}).generation.endsWith(".nav-7")`
     ),
     true
   )
   check(
     "and a ref from an earlier epoch dies at the next snapshot",
     await run(
-      `(() => { const s = __codegAgent.snapshot({epoch: "nav-7"});
+      `(() => { const s = __recur_codeAgent.snapshot({epoch: "nav-7"});
                 const m = s.tree.match(/button "Export" \\[ref=(e\\d+)\\]/);
-                __codegAgent.snapshot({epoch: "nav-8"});
-                return __codegAgent.elementForRef(s.generation, m[1]) })()`
+                __recur_codeAgent.snapshot({epoch: "nav-8"});
+                return __recur_codeAgent.elementForRef(s.generation, m[1]) })()`
     ),
     null
   )
@@ -1391,7 +1391,7 @@ try {
     const count = ref(/button "Count" \[ref=(e\d+)\]/)
     const rect = JSON.parse(
       await run(
-        `JSON.stringify(__codegAgent.rectOf(${gen}, ${JSON.stringify(count)}))`
+        `JSON.stringify(__recur_codeAgent.rectOf(${gen}, ${JSON.stringify(count)}))`
       )
     )
     check(
@@ -1408,7 +1408,7 @@ try {
     )
     const stale = JSON.parse(
       await run(
-        `JSON.stringify(__codegAgent.rectOf("other", ${JSON.stringify(count)}))`
+        `JSON.stringify(__recur_codeAgent.rectOf("other", ${JSON.stringify(count)}))`
       )
     )
     check("rectOf refuses a ref from another snapshot", stale.error, "stale")
@@ -1423,7 +1423,7 @@ try {
   {
     await run(
       `globalThis.__lines = [];
-       document.addEventListener("codeg:console", (e) => {
+       document.addEventListener("RecurCode:console", (e) => {
          __lines.push(typeof e.detail === "string" ? JSON.parse(e.detail) : { bad: typeof e.detail })
        }, true); true`
     )
@@ -1487,7 +1487,7 @@ try {
     )
     const pageView = await send("Runtime.evaluate", {
       expression:
-        "JSON.stringify([console.log.name, typeof globalThis.__lines, typeof __codegAgent])",
+        "JSON.stringify([console.log.name, typeof globalThis.__lines, typeof __recur_codeAgent])",
       returnByValue: true,
     })
     check(
@@ -1506,12 +1506,12 @@ try {
   {
     await run(
       `globalThis.__picks = []; globalThis.__sent = [];
-       globalThis.__codegSend = (m) => { __sent.push(m); __picks.push(JSON.parse(m)) }; true`
+       globalThis.__recur_codeSend = (m) => { __sent.push(m); __picks.push(JSON.parse(m)) }; true`
     )
     await run(PICKER)
     const seenByPage = await send("Runtime.evaluate", {
       expression:
-        "JSON.stringify([typeof globalThis.__codegPicker, typeof globalThis.__codegSend])",
+        "JSON.stringify([typeof globalThis.__recur_codePicker, typeof globalThis.__recur_codeSend])",
       returnByValue: true,
     })
     check(
@@ -1520,9 +1520,9 @@ try {
       ["undefined", "undefined"]
     )
 
-    await run('__codegPicker.start("p1")')
+    await run('__recur_codePicker.start("p1")')
     const overlay = await send("Runtime.evaluate", {
-      expression: `(() => { const el = document.querySelector("[data-codeg-picker]");
+      expression: `(() => { const el = document.querySelector("[data-recur-code-picker]");
                             return JSON.stringify([!!el, el ? el.shadowRoot : null]) })()`,
       returnByValue: true,
     })
@@ -1604,18 +1604,18 @@ try {
     // only thing that can swallow the second half of a double-click over a
     // frame — and then it goes. The highlight itself is hidden immediately,
     // inside a shadow root this side cannot look into.
-    const stillUp = await run('!!document.querySelector("[data-codeg-picker]")')
+    const stillUp = await run('!!document.querySelector("[data-recur-code-picker]")')
     await sleep(800)
     check(
       "the overlay stays for the drain once something is picked, then goes",
-      [stillUp, await run('!!document.querySelector("[data-codeg-picker]")')],
+      [stillUp, await run('!!document.querySelector("[data-recur-code-picker]")')],
       [true, false]
     )
 
     // The person armed the pick, so something IS going to be handed over —
     // which is exactly why the page must not be the one choosing what. A
     // click the page dispatches itself decides nothing.
-    await run('__codegPicker.start("forged")')
+    await run('__recur_codePicker.start("forged")')
     await send("Runtime.evaluate", {
       expression: 'document.getElementById("exp").click()',
       returnByValue: true,
@@ -1625,17 +1625,17 @@ try {
       "a click the page dispatched itself does not choose",
       [
         JSON.parse(await run("JSON.stringify(__picks)")).length - 1,
-        await run('!!document.querySelector("[data-codeg-picker]")'),
+        await run('!!document.querySelector("[data-recur-code-picker]")'),
       ],
       [0, true]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
 
     // A frame's events are dispatched in ITS window and never reach a listener
     // here, so the picker covers every visible frame with a patch of overlay.
     // Without it, choosing something over an iframe presses whatever is under
     // the pointer inside it.
-    await run('__codegPicker.start("frame")')
+    await run('__recur_codePicker.start("frame")')
     const frameBox = JSON.parse(
       await run(`(() => { const el = document.getElementById("frame");
                           el.scrollIntoView({block: "center"});
@@ -1684,7 +1684,7 @@ try {
     // content first never reaches the shadow root, and the frame inside it
     // goes uncovered — measured: inverting the two pushes makes this check
     // report the wrong frame AND press the button inside the buried one.
-    await run('__codegPicker.start("deep")')
+    await run('__recur_codePicker.start("deep")')
     const deepBox = JSON.parse(
       await run(`(() => { const host = document.getElementById("shadowed");
                           host.scrollIntoView({block: "center"});
@@ -1729,7 +1729,7 @@ try {
 
     // …and one more boundary down, behind a light subtree of its own. Every
     // scope needs an allowance of its own or this is the one that starves.
-    await run('__codegPicker.start("nested")')
+    await run('__recur_codePicker.start("nested")')
     const nestedBox = JSON.parse(
       await run(`(() => { const outer = document.getElementById("shadowed").shadowRoot;
                           const host = outer.querySelector("div:last-of-type");
@@ -1778,7 +1778,7 @@ try {
     // picker hands the scroll on. A person who cannot scroll to the thing they
     // want to pick cannot pick it.
     await run("window.scrollTo(0, 0)")
-    await run('__codegPicker.start("wheel")')
+    await run('__recur_codePicker.start("wheel")')
     const scrolledFrom = await run("window.scrollY")
     await send("Input.dispatchMouseEvent", {
       type: "mouseWheel",
@@ -1818,7 +1818,7 @@ try {
       ],
       [true, true, 0]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
 
     // `position: fixed` stops meaning "the viewport" the moment an ancestor
     // has a transform. A page that slides its root element would slide the
@@ -1829,11 +1829,11 @@ try {
         'document.documentElement.style.transform = "translate(200px, 100px)"',
       returnByValue: true,
     })
-    await run('__codegPicker.start("moved")')
+    await run('__recur_codePicker.start("moved")')
     await sleep(120)
     const covered = JSON.parse(
       await run(`JSON.stringify((() => {
-        const h = document.querySelector("[data-codeg-picker]");
+        const h = document.querySelector("[data-recur-code-picker]");
         const r = h.getBoundingClientRect();
         return [Math.round(r.left), Math.round(r.top),
                 Math.abs(r.width - window.innerWidth) < 2,
@@ -1845,7 +1845,7 @@ try {
       covered,
       [0, 0, true, true]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
     await send("Runtime.evaluate", {
       expression: 'document.documentElement.style.transform = ""',
       returnByValue: true,
@@ -1864,7 +1864,7 @@ try {
                           return JSON.stringify({x: r.left + 4, y: r.top + 4,
                                                  cx: c.left + 4, cy: c.top + 4}) })()`)
     )
-    await run('__codegPicker.start("captured")')
+    await run('__recur_codePicker.start("captured")')
     // The page grabs the pointer for #count while the pointer is over #exp.
     await send("Input.dispatchMouseEvent", {
       type: "mouseMoved",
@@ -1907,7 +1907,7 @@ try {
     // its own frame after ours would otherwise paint over the overlay and
     // take the press into itself.
     await run("window.scrollTo(0, 0)")
-    await run('__codegPicker.start("cover")')
+    await run('__recur_codePicker.start("cover")')
     await send("Runtime.evaluate", {
       expression: `(() => {
         const cover = document.createElement("iframe")
@@ -1965,7 +1965,7 @@ try {
     const pressedTwiceBefore = await run(
       'document.getElementById("count").dataset.n || "0"'
     )
-    await run('__codegPicker.start("twice")')
+    await run('__recur_codePicker.start("twice")')
     await send("Input.dispatchMouseEvent", {
       type: "mouseMoved",
       x: twiceAt.x,
@@ -2004,7 +2004,7 @@ try {
     // Keys belong to the picker while it is armed. Enter in a text field
     // submits its form with no click for the picker to cancel, so the key
     // itself has to be eaten.
-    await run('__codegPicker.start("keys")')
+    await run('__recur_codePicker.start("keys")')
     await run('document.getElementById("name").focus()')
     for (const type of ["keyDown", "char", "keyUp"]) {
       await send("Input.dispatchKeyEvent", {
@@ -2027,14 +2027,14 @@ try {
       // EARLIER section made — this one did not add to it.
       [0, "Grace"]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
 
     // The page can reach the host node (it is in its DOM) and try to make it
     // hit-testable, so that every press lands on the overlay. What it must
     // not be able to do is make a press over one element report another: the
     // element under the pointer is looked up, never carried over from the
     // last thing hovered.
-    await run('__codegPicker.start("meddled")')
+    await run('__recur_codePicker.start("meddled")')
     const hoverAt = JSON.parse(
       await run(`(() => { const el = document.getElementById("count");
                           el.scrollIntoView({block: "center"});
@@ -2052,7 +2052,7 @@ try {
     await sleep(60)
     await send("Runtime.evaluate", {
       // The page's own world, reaching for our node.
-      expression: `(() => { const h = document.querySelector("[data-codeg-picker]");
+      expression: `(() => { const h = document.querySelector("[data-recur-code-picker]");
                             h.style.cssText = "position:fixed;inset:0;pointer-events:auto;z-index:2147483647";
                             return true })()`,
       returnByValue: true,
@@ -2081,7 +2081,7 @@ try {
       ],
       [true, true]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
 
     // A field cut between the halves of a surrogate pair would put a lone
     // surrogate escape in the JSON, which the host's parser refuses outright
@@ -2089,7 +2089,7 @@ try {
     await run(`(() => { const el = document.getElementById("emoji");
                         el.setAttribute("role", "a".repeat(63) + "\u{1F600}b");
                         el.scrollIntoView({block: "center"}); return true })()`)
-    await run('__codegPicker.start("emoji")')
+    await run('__recur_codePicker.start("emoji")')
     const emojiAt = JSON.parse(
       await run(`(() => { const r = document.getElementById("emoji").getBoundingClientRect();
                           return JSON.stringify({x: r.left + 2, y: r.top + 2}) })()`)
@@ -2134,7 +2134,7 @@ try {
     await run(`(() => { const el = document.getElementById("fat");
                         for (let i = 0; i < 30; i++) el.setAttribute("data-a" + i, "\u0001".repeat(400));
                         el.textContent = "\u0001".repeat(6000); return true })()`)
-    await run('__codegPicker.start("fat")')
+    await run('__recur_codePicker.start("fat")')
     const fatBox = JSON.parse(
       await run(`(() => { const el = document.getElementById("fat");
                           el.scrollIntoView({block: "center"});
@@ -2169,7 +2169,7 @@ try {
       [1, true, "div", "div#fat", true]
     )
 
-    await run('__codegPicker.start("p2")')
+    await run('__recur_codePicker.start("p2")')
     await send("Input.dispatchKeyEvent", {
       type: "keyDown",
       key: "Escape",
@@ -2185,7 +2185,7 @@ try {
       [
         last?.cancelled,
         last?.id,
-        await run('!!document.querySelector("[data-codeg-picker]")'),
+        await run('!!document.querySelector("[data-recur-code-picker]")'),
       ],
       [true, "p2", false]
     )
@@ -2193,9 +2193,9 @@ try {
     // The page moves the host somewhere it cannot be seen. Connected, and the
     // only child of its new parent, so every check the overlay makes about
     // itself still passes — and a rect says nothing about being rendered.
-    await run('__codegPicker.start("moved")')
+    await run('__recur_codePicker.start("moved")')
     await run(
-      'document.getElementById("trap").appendChild(document.querySelector("[data-codeg-picker]"))'
+      'document.getElementById("trap").appendChild(document.querySelector("[data-recur-code-picker]"))'
     )
     // Two guard ticks: one to notice, and the overlay is back on the first.
     await sleep(900)
@@ -2232,7 +2232,7 @@ try {
                     return b ? b.textContent : "no frame document" })()`
         ),
         await run(
-          '(document.querySelector("[data-codeg-picker]") || {}).parentElement?.tagName ?? "none"'
+          '(document.querySelector("[data-recur-code-picker]") || {}).parentElement?.tagName ?? "none"'
         ),
       ],
       // Picked the frame, left its button alone, and the overlay is back on
@@ -2245,9 +2245,9 @@ try {
     // anything the overlay can see about itself: it is still connected, still
     // styled, still the right size, still the topmost thing at every point.
     const beforeInert = JSON.parse(await run("JSON.stringify(__picks)"))
-    await run('__codegPicker.start("inert")')
+    await run('__recur_codePicker.start("inert")')
     await run(
-      'document.querySelector("[data-codeg-picker]").setAttribute("inert", "")'
+      'document.querySelector("[data-recur-code-picker]").setAttribute("inert", "")'
     )
     await sleep(500)
     for (const [type, button, buttons] of [
@@ -2289,10 +2289,10 @@ try {
     // overlay cannot win that, so it must not pretend it did: `owns()` asks
     // the engine whether it is inert, and the pick ends.
     const beforeFight = JSON.parse(await run("JSON.stringify(__picks)"))
-    await run('__codegPicker.start("inertfight")')
+    await run('__recur_codePicker.start("inertfight")')
     await send("Runtime.evaluate", {
       expression: `(() => {
-        const el = document.querySelector("[data-codeg-picker]")
+        const el = document.querySelector("[data-recur-code-picker]")
         globalThis.__fight = new MutationObserver(() => {
           if (!el.hasAttribute("inert")) el.setAttribute("inert", "")
         })
@@ -2326,7 +2326,7 @@ try {
     // Counted from here, not from an older snapshot: a baseline taken before
     // the checks in between silently turns "exactly one pick" into "three".
     const beforeTwiceFrame = JSON.parse(await run("JSON.stringify(__picks)"))
-    await run('__codegPicker.start("twiceframe")')
+    await run('__recur_codePicker.start("twiceframe")')
     await send("Input.dispatchMouseEvent", {
       type: "mouseMoved",
       x: movedBox.x,
@@ -2376,7 +2376,7 @@ try {
                 f.contentDocument.getElementById("inner").focus();
                 return true })()`
     )
-    await run('__codegPicker.start("framekeys")')
+    await run('__recur_codePicker.start("framekeys")')
     await sleep(80)
     for (const type of ["keyDown", "char", "keyUp"]) {
       await send("Input.dispatchKeyEvent", {
@@ -2402,18 +2402,18 @@ try {
       ],
       [0, "inner"]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
 
     // The top layer is painted above every ordinary child of the document,
     // whatever z-index they claim. A page that opens a popover of its own
     // would otherwise paint over the overlay — so the overlay joins the top
     // layer too, and being the later arrival puts it back on top.
     const popped = JSON.parse(await run("JSON.stringify(__picks)"))
-    await run('__codegPicker.start("popover")')
+    await run('__recur_codePicker.start("popover")')
     // …and the page strips the attribute that lets the overlay in there at
     // all. It is in the page's DOM, so the page can; the guard puts it back.
     await run(
-      'document.querySelector("[data-codeg-picker]").removeAttribute("popover")'
+      'document.querySelector("[data-recur-code-picker]").removeAttribute("popover")'
     )
     await run('document.getElementById("pop").showPopover()')
     await sleep(500)
@@ -2455,7 +2455,7 @@ try {
     // keeps the overlay in front cannot be the samples: it re-enters the top
     // layer every tick, and order in there is order of entry.
     const beforeSmall = JSON.parse(await run("JSON.stringify(__picks)"))
-    await run('__codegPicker.start("smallpop")')
+    await run('__recur_codePicker.start("smallpop")')
     await run('document.getElementById("smallpop").showPopover()')
     await sleep(700)
     for (const [type, button, buttons] of [
@@ -2494,7 +2494,7 @@ try {
     // Every other handler here refuses an event the page made up. This one
     // took `pagehide` at its word, and ending a pick takes the overlay down.
     const beforeFakeHide = JSON.parse(await run("JSON.stringify(__picks)"))
-    await run('__codegPicker.start("fakehide")')
+    await run('__recur_codePicker.start("fakehide")')
     await send("Runtime.evaluate", {
       expression: 'window.dispatchEvent(new Event("pagehide")), true',
       returnByValue: true,
@@ -2505,11 +2505,11 @@ try {
       [
         JSON.parse(await run("JSON.stringify(__picks)")).length -
           beforeFakeHide.length,
-        await run('!!document.querySelector("[data-codeg-picker]")'),
+        await run('!!document.querySelector("[data-recur-code-picker]")'),
       ],
       [0, true]
     )
-    await run("__codegPicker.stop()")
+    await run("__recur_codePicker.stop()")
     await sleep(200)
 
     // A modal dialog is the one the overlay cannot win: it makes everything
@@ -2518,7 +2518,7 @@ try {
     // must not do is stay armed and let a person believe it will.
     const beforeModal = JSON.parse(await run("JSON.stringify(__picks)"))
     await run('document.getElementById("modal").showModal()')
-    await run('__codegPicker.start("modal")')
+    await run('__recur_codePicker.start("modal")')
     // Two guard ticks plus room: one failed check is not enough to act on.
     await sleep(1400)
     const blocked = JSON.parse(await run("JSON.stringify(__picks)"))
@@ -2528,7 +2528,7 @@ try {
         blocked.length - beforeModal.length,
         blocked[blocked.length - 1]?.payload.cancelled,
         blocked[blocked.length - 1]?.payload.id,
-        await run('!!document.querySelector("[data-codeg-picker]")'),
+        await run('!!document.querySelector("[data-recur-code-picker]")'),
       ],
       [1, true, "modal", false]
     )
@@ -2537,7 +2537,7 @@ try {
     // Thirty-three shadow boundaries down. Giving up early is safe — the
     // answer is a host that really is above the pointer — but it is not the
     // element the person is pointing at.
-    await run('__codegPicker.start("deep33")')
+    await run('__recur_codePicker.start("deep33")')
     const deepAt = JSON.parse(
       await run(`(() => { let node = document.getElementById("deepnest");
                           node.scrollIntoView({block: "center"});
@@ -2586,7 +2586,7 @@ try {
   // back the envelope the host parses.
   // NOT `run`: its `contextId` defaults to the isolated world, and passing
   // `undefined` takes the default — which is how the first version of these
-  // checks ran the whole thing in codeg's world and still looked green until
+  // checks ran the whole thing in RecurCode's world and still looked green until
   // the two world checks below went red.
   const inPage = async (expression) => {
     const { result } = await send("Runtime.evaluate", {
@@ -2720,15 +2720,15 @@ try {
     "from the page"
   )
   check(
-    "a snippet cannot see codeg's world",
-    (await evalIn("return typeof globalThis.__codegAgent")).value,
+    "a snippet cannot see RecurCode's world",
+    (await evalIn("return typeof globalThis.__recur_codeAgent")).value,
     "undefined"
   )
-  // And leaves nothing behind in the page that would tell it codeg had run.
+  // And leaves nothing behind in the page that would tell it RecurCode had run.
   check(
     "an evaluation leaves no names on the page",
     await inPage(
-      'typeof globalThis.__codegEvalRender + "," + typeof globalThis.__codegEvalClip'
+      'typeof globalThis.__recur_codeEvalRender + "," + typeof globalThis.__recur_codeEvalClip'
     ),
     "undefined,undefined"
   )

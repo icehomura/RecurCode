@@ -48,7 +48,7 @@ import type {
  * the brief was written. That leaves this deciding one thing only: whether a
  * pasted image is presented as a thumbnail or degraded to an inline file badge.
  * Assuming no images would cost the feature outright during the probe window,
- * and permanently for an agent codeg cannot probe at all.
+ * and permanently for an agent RecurCode cannot probe at all.
  */
 const ASSUMED_PROMPT_CAPABILITIES: PromptCapabilitiesInfo = {
   image: true,
@@ -309,7 +309,7 @@ export function TaskMessageComposer({
       {...attach.containerDragProps}
       // Same shell the drawer's Textarea had (and the same rounding as every
       // other box in it); the editor brings the matching px-3 padding.
-      className="codeg-composer-chrome relative rounded-xl border border-input bg-background transition-colors focus-within:border-ring focus-within:ring-[3px] focus-within:ring-inset focus-within:ring-ring/50"
+      className="recur-code-composer-chrome relative rounded-xl border border-input bg-background transition-colors focus-within:border-ring focus-within:ring-[3px] focus-within:ring-inset focus-within:ring-ring/50"
     >
       <ComposerInvocationsPopup inv={invocations} />
       {attach.imageAttachments.length > 0 ? (

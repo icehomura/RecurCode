@@ -6,7 +6,7 @@ pub struct SystemProxySettings {
     pub proxy_url: Option<String>,
     /// Hosts that connect directly instead of through the proxy, as a
     /// comma-separated list. Exported as `NO_PROXY` behind the loopback hosts
-    /// codeg always adds (see [`crate::network::proxy::no_proxy_env_value`]).
+    /// RecurCode always adds (see [`crate::network::proxy::no_proxy_env_value`]).
     /// `#[serde(default)]` so rows stored before this field existed still parse.
     #[serde(default)]
     pub no_proxy: Option<String>,
@@ -51,12 +51,12 @@ pub struct SystemTerminalSettings {
     /// renders colored in the transcript's terminal card rather than as plain
     /// text.
     ///
-    /// Off by default, and deliberately so: the only lever codeg has is the
-    /// AGENT process's env (the agent runs its own bash tool in-process — codeg
+    /// Off by default, and deliberately so: the only lever RecurCode has is the
+    /// AGENT process's env (the agent runs its own bash tool in-process — RecurCode
     /// never spawns those commands), which every descendant inherits. What it
     /// injects there — `CLICOLOR` + `CLICOLOR_FORCE` for the BSD/Go/Rust
     /// toolchain, `FORCE_COLOR` for the npm one, and a pinned `TERM` for the
-    /// terminfo lookup both need — colors the output codeg renders AND the
+    /// terminfo lookup both need — colors the output RecurCode renders AND the
     /// output the agent pipes into `jq`, and the force flags outrank `NO_COLOR`,
     /// so nothing downstream can opt back out. See
     /// [`crate::acp::connection::force_command_color_enabled`].
@@ -106,7 +106,7 @@ pub struct AvailableTerminalShells {
 /// What the main window's close button does.
 ///
 /// Three values rather than the two a settings page needs, because the third
-/// is what makes the other two discoverable: codeg has always hidden to tray,
+/// is what makes the other two discoverable: RecurCode has always hidden to tray,
 /// and a user who believes the app exited never goes looking for a preference
 /// to change. `Ask` shows the choice once, on the first close, and pins itself
 /// to `Minimize` or `Exit` from there.

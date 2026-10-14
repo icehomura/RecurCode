@@ -1,5 +1,5 @@
 //! Commands for managing **custom ACP agents** — agents the user registers by
-//! supplying ACP-registry information rather than agents codeg ships support
+//! supplying ACP-registry information rather than agents RecurCode ships support
 //! for.
 //!
 //! The whole surface is deliberately thin: add / edit / remove a definition,
@@ -50,7 +50,7 @@ pub struct CustomAgentInfo {
     /// Mirrors [`CustomAgentDef::version_probe`] for the edit form.
     pub version_probe: Option<String>,
     /// Mirrors [`CustomAgentDef::supports_mcp`] — backs the settings toggle
-    /// that decides whether codeg-mcp rides along on `session/new`.
+    /// that decides whether recur-code-mcp rides along on `session/new`.
     pub supports_mcp: bool,
     /// False when the stored definition cannot produce launch metadata (e.g.
     /// a binary-only agent with no release for this platform). The row still
@@ -141,7 +141,7 @@ pub async fn acp_delete_custom_agent_core(
     // transcripts is what actually loses history, so it is opt-in.
     if delete_transcripts {
         if let Err(e) = crate::acp_transcript::remove_agent_transcripts_in(
-            &crate::paths::codeg_acp_transcripts_root(),
+            &crate::paths::recur_code_acp_transcripts_root(),
             &registry_id,
         ) {
             tracing::warn!("[custom-agent] failed to remove transcripts for {registry_id}: {e}");
@@ -151,7 +151,7 @@ pub async fn acp_delete_custom_agent_core(
     Ok(())
 }
 
-/// Fetch the public ACP registry, annotated with which entries codeg already
+/// Fetch the public ACP registry, annotated with which entries RecurCode already
 /// ships natively and which the user has already added.
 pub async fn acp_fetch_registry_catalog_core(
     db: &AppDatabase,
@@ -191,7 +191,7 @@ pub async fn acp_add_registry_agent_core(
         .any(|a| registry::registry_id_for(a) == registry_id)
     {
         return Err(AcpError::protocol(format!(
-            "{registry_id} is already built into codeg"
+            "{registry_id} is already built into RecurCode"
         )));
     }
     let catalog = acp_fetch_registry_catalog_core(db).await?;
@@ -271,7 +271,7 @@ fn expand_home(path: &str) -> std::path::PathBuf {
     std::path::PathBuf::from(path)
 }
 
-/// Largest icon codeg will inline. Registry marks are 650 B–5 KB SVGs, so this
+/// Largest icon RecurCode will inline. Registry marks are 650 B–5 KB SVGs, so this
 /// is far above anything real; it exists so a hostile or mistyped URL cannot
 /// push an arbitrary blob into the database.
 pub const MAX_ICON_BYTES: usize = 256 * 1024;
@@ -804,7 +804,7 @@ mod tests {
         // HOME is pinned so a parallel test rewriting it cannot flip the
         // expansion mid-test; expectations still derive from `dirs::home_dir()`
         // itself, which ignores $HOME on Windows.
-        temp_env::with_var("HOME", Some("/tmp/codeg-skills-home"), || {
+        temp_env::with_var("HOME", Some("/tmp/recur-code-skills-home"), || {
             let home = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
 
             // Blank input reads as "not declared".

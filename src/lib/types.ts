@@ -1,4 +1,4 @@
-/** The sixteen agents codeg ships hand-written support for. */
+/** The sixteen agents RecurCode ships hand-written support for. */
 export type BuiltinAgentType =
   | "claude_code"
   | "codex"
@@ -239,7 +239,7 @@ export type ContentBlock =
        * ACP extensibility metadata for this tool call. Opaque pass-through
        * — both the live snapshot (`ToolCallState.meta`) and the persisted
        * message-row variant carry the same shape. Delegation writes
-       * `meta["codeg.delegation"] = { status, child_connection_id,
+       * `meta["RecurCode.delegation"] = { status, child_connection_id,
        * child_conversation_id, error_code? }` here.
        */
       meta?: Record<string, unknown> | null
@@ -325,7 +325,7 @@ export interface MessageTurn {
    * `timestamp + duration_ms` — those two fields encode unrelated spans in
    * most parsers. */
   completed_at?: string | null
-  /** The id the AGENT knows this turn's message by, when codeg can name it the
+  /** The id the AGENT knows this turn's message by, when RecurCode can name it the
    * same way the agent does — `id` above is positional (`turn-3`) and names
    * nothing an agent could look up.
    *
@@ -650,7 +650,7 @@ export const FEEDBACK_SETTINGS_CHANGED_EVENT = "feedback-settings://changed"
 /** Global side-channel announcing a create-from-chat switch move (payload is
  *  `ChatAuthoringSettings`). Load-bearing rather than cosmetic: these two flags
  *  share one record and have two editors — the settings form, which writes the
- *  pair, and the status-bar codeg-mcp popover, which writes one key. Without
+ *  pair, and the status-bar recur-code-mcp popover, which writes one key. Without
  *  this broadcast an open settings form keeps a stale value for the switch it
  *  did not touch and reverts it on the next save. Mirrors the Rust
  *  `CHAT_AUTHORING_SETTINGS_CHANGED_EVENT`. */
@@ -661,7 +661,7 @@ export const CHAT_AUTHORING_SETTINGS_CHANGED_EVENT =
  *  `BrowserToolsSettings`). The same two-editor problem as
  *  [CHAT_AUTHORING_SETTINGS_CHANGED_EVENT], and for the same reason: the
  *  group and `browser_eval` are two keys of one record, the settings form
- *  writes the pair, and the status-bar codeg-mcp popover — which now carries
+ *  writes the pair, and the status-bar recur-code-mcp popover — which now carries
  *  both rows — writes one key. Mirrors the Rust
  *  `BROWSER_TOOLS_SETTINGS_CHANGED_EVENT`. */
 export const BROWSER_TOOLS_SETTINGS_CHANGED_EVENT =
@@ -670,7 +670,7 @@ export const BROWSER_TOOLS_SETTINGS_CHANGED_EVENT =
 /** Global side-channel announcing a delegation-settings write (payload is
  *  `DelegationSettings`). Same two-editor problem as
  *  [CHAT_AUTHORING_SETTINGS_CHANGED_EVENT]: the settings form writes all four
- *  keys, the status-bar codeg-mcp popover writes only `enabled`. Mirrors the
+ *  keys, the status-bar recur-code-mcp popover writes only `enabled`. Mirrors the
  *  Rust `DELEGATION_SETTINGS_CHANGED_EVENT`. */
 export const DELEGATION_SETTINGS_CHANGED_EVENT = "delegation-settings://changed"
 
@@ -737,12 +737,12 @@ export interface ScanSession {
 }
 
 /** Mirrors Rust `ScanFolder`: sessions sharing a normalize-matched cwd, plus
- *  how that path reconciles against the folder table. `exists_in_codeg: false`
+ *  how that path reconciles against the folder table. `exists_in_recur_code: false`
  *  with a `folder_id` means the row is soft-deleted and import will reopen it. */
 export interface ScanFolder {
   path: string
   name: string
-  exists_in_codeg: boolean
+  exists_in_recur_code: boolean
   folder_id: number | null
   agent_types: AgentType[]
   sessions: ScanSession[]
@@ -1146,7 +1146,7 @@ export const MODEL_PROVIDER_AGENT_TYPES: BuiltinAgentType[] = [
 
 /**
  * How a Hermes provider's credentials are supplied:
- * - `apiKey`: codeg writes the key to `~/.hermes/.env`.
+ * - `apiKey`: RecurCode writes the key to `~/.hermes/.env`.
  * - `oauth`: set through the terminal `--setup` flow (no API-key field).
  * - `aws`: resolved from the AWS SDK credential chain (no API-key field).
  */
@@ -1170,7 +1170,7 @@ export interface HermesProviderOption {
 }
 
 export const HERMES_PROVIDERS: HermesProviderOption[] = [
-  // API-key providers — codeg writes the key var to ~/.hermes/.env.
+  // API-key providers — RecurCode writes the key var to ~/.hermes/.env.
   {
     id: "openrouter",
     label: "OpenRouter",
@@ -2192,7 +2192,7 @@ export interface ForgeRemote {
   provider: ForgeProviderId
   /** Whether `provider` is KNOWN rather than assumed — an account configured
    *  for the host, or a hostname naming one of the two forges. `false` is a
-   *  remote that parsed perfectly well but lives somewhere codeg cannot read
+   *  remote that parsed perfectly well but lives somewhere RecurCode cannot read
    *  (Bitbucket, Gitee, a Gitea): the panel says only GitHub and GitLab are
    *  supported rather than spending a call that fails as a raw API error. */
   supported: boolean
@@ -2384,7 +2384,7 @@ export interface WorkTaskFolderSettings {
   auto_compact_percent: number
   /** The command sent to compact, verbatim (e.g. `/compact`). Null/blank
    *  resolves per agent: what the live session advertises, else a built-in
-   *  default for the agents codeg knows first-hand. */
+   *  default for the agents RecurCode knows first-hand. */
   compact_command?: string | null
   /** Extra instructions appended after the built-in prompt of a launch stage.
    *  Keys are the engine's stage ids (`work` | `retry` | `return` | `merge`)
@@ -2596,7 +2596,7 @@ export interface ToolCallImageWire {
  *
  * `tool_use_id`/`result` come from the same notification's `<tool-use-id>`/
  * `<result>` tags. The `background_activity` handler uses them to flip the
- * launch card in-memory (rewriting its `[[codeg-background-task]]` marker via
+ * launch card in-memory (rewriting its `[[recur-code-background-task]]` marker via
  * `resolveBackgroundTask`) instead of a `refetchDetail` — which double-rendered
  * the #870-held turn and raced the transcript's last write. `tool_use_id` is
  * the launching tool call's id (`toolu_…`), NOT `task_id`. A background shell's
@@ -2815,7 +2815,7 @@ export type AcpEvent =
   | {
       // JetBrains AIR typed session failure upsert
       // (`_meta.jetbrains.air.sessionFailure`, claude-agent-acp 0.67+/
-      // codex-acp 1.2+; published because codeg advertises the client
+      // codex-acp 1.2+; published because RecurCode advertises the client
       // capability). Wire carries UPSERTS ONLY — the reducer applies the same
       // monotonic id+revision merge as the backend snapshot store, and infers
       // resolution (warnings settle at turn boundaries; errors stay active).
@@ -2824,7 +2824,7 @@ export type AcpEvent =
     }
   /**
    * One ACP Session Notice (claude-agent-acp 0.81+/codex-acp 1.13+; published
-   * because codeg advertises `clientCapabilities.session.notices`).
+   * because RecurCode advertises `clientCapabilities.session.notices`).
    *
    * NOT a record — no id, no revision, no history position, and never replayed
    * (the backend drops these on the replay seam). Every emission is a distinct
@@ -3190,7 +3190,7 @@ export interface SessionLastError {
 /**
  * One JetBrains AIR typed session failure record (mirror of Rust
  * `SessionFailureRecord`; claude-agent-acp 0.67+/codex-acp 1.2+, published
- * only because codeg advertises `clientCapabilities._meta.jetbrains.air`).
+ * only because RecurCode advertises `clientCapabilities._meta.jetbrains.air`).
  *
  * The wire carries UPSERTS ONLY: a record is revised in place through
  * `id`+`revision` (per-id, from 1), and adapters never publish resolution —
@@ -3279,7 +3279,7 @@ export interface AsyncTaskUsage {
 
 /**
  * One JetBrains AIR async task (mirror of Rust `AsyncTaskRecord`;
- * claude-agent-acp 0.73+ and codex-acp 1.10+, published only because codeg
+ * claude-agent-acp 0.73+ and codex-acp 1.10+, published only because RecurCode
  * advertises the `asyncTasks` AIR capability — plus Grok's background
  * workflows, which the backend translates from Grok's own `workflow_updated`).
  *
@@ -3457,7 +3457,7 @@ export interface ConversationConnectionInfo {
 export interface AcpAgentInfo {
   agent_type: AgentType
   /**
-   * Whether this agent has a codeg-known skill store — every built-in, and
+   * Whether this agent has a recur-code-known skill store — every built-in, and
    * custom agents that declared the shared `.agents/skills` store. Gates the
    * skills matrices.
    */
@@ -3480,7 +3480,7 @@ export interface AcpAgentInfo {
   available: boolean
   distribution_type: string
   /**
-   * Whether codeg's entry for this agent is a third-party ACP *adapter*
+   * Whether RecurCode's entry for this agent is a third-party ACP *adapter*
    * wrapping a vendor CLI of a different name (Claude Code → claude-agent-acp,
    * Codex → codex-acp). Surfaces without a preflight result use it to say "the
    * ACP adapter isn't installed" rather than "the agent isn't" — the single
@@ -3498,10 +3498,10 @@ export interface AcpAgentInfo {
   installed_version: string | null
   env: Record<string, string>
   /**
-   * The RESOLVED `CODEG_ACP_HOST_TOOLS` verdict: whether the next launch hands
-   * the `fs/*` + `terminal/*` channels — and, with them, codeg-mcp's delegation
+   * The RESOLVED `RECUR_CODE_ACP_HOST_TOOLS` verdict: whether the next launch hands
+   * the `fs/*` + `terminal/*` channels — and, with them, recur-code-mcp's delegation
    * tools — back to the agent. Resolved by the same Rust function the launch
-   * uses, so it covers BOTH the per-agent `env` above and codeg's own process
+   * uses, so it covers BOTH the per-agent `env` above and RecurCode's own process
    * env; reading `env` here would miss the second.
    */
   host_tools_agent_mode: boolean
@@ -3580,7 +3580,7 @@ export interface CodexGranularApproval {
 }
 
 /** [sandbox_workspace_write]. Every field defaults to false/empty upstream, so
- * codeg writes only the non-default ones. */
+ * RecurCode writes only the non-default ones. */
 export interface CodexWorkspaceWrite {
   /** Extra writable folders. MUST be absolute: codex does not reject a
    * relative entry, it resolves it against CODEX_HOME (so "rel/dir" silently
@@ -3617,13 +3617,13 @@ export interface CodexSandboxStructuredConfig {
 
 /** Parsed keys from ~/.grok/config.toml. `null` means the key is absent.
  * Serialized snake_case to match AcpAgentInfo. The stock per-session model is
- * NOT here — it's chosen from the composer. But a codeg-managed custom (BYO
+ * NOT here — it's chosen from the composer. But a recur-code-managed custom (BYO
  * endpoint) model IS: it's the `[model.<id>]` block whose id equals
  * [models].default, read back through the custom_* fields. */
 export interface GrokSettings {
   default_reasoning_effort: string | null
   permission_mode: string | null
-  /** The codeg-managed custom model id ([model.<id>] == [models].default). */
+  /** The recur-code-managed custom model id ([model.<id>] == [models].default). */
   custom_model_id: string | null
   /** [model.<id>].base_url — null ⇒ Grok's official xAI endpoint. */
   custom_base_url: string | null
@@ -3654,7 +3654,7 @@ export interface GrokStructuredConfig {
 }
 
 /** Parsed keys from ~/.cursor/cli-config.json (shared with the Cursor CLI's
- * own /config UI). Only the codeg-managed subset is projected; everything
+ * own /config UI). Only the recur-code-managed subset is projected; everything
  * else is preserved verbatim on write. */
 export interface CursorSettings {
   /** sandbox.mode — "enabled" | "disabled". */
@@ -3683,7 +3683,7 @@ export interface CursorAuthStatus {
   email: string | null
   membership: string | null
   error: string | null
-  /** Absolute path to the cursor-agent binary codeg would launch; the panel
+  /** Absolute path to the cursor-agent binary RecurCode would launch; the panel
    * builds a copy-pasteable `"<binary_path>" login` command from it (the
    * managed binary isn't on PATH). Null when not installed. */
   binary_path?: string | null
@@ -3723,17 +3723,17 @@ export interface QoderAuthStatus {
   /** Account tier, e.g. `personal_standard`. */
   user_type: string | null
   /** Version the probed binary reports — the one that would actually launch,
-   * not necessarily the version codeg's registry pins. */
+   * not necessarily the version RecurCode's registry pins. */
   version: string | null
   allow_byok: boolean | null
   error: string | null
-  /** Absolute path to the qoder binary codeg would launch; the panel builds a
+  /** Absolute path to the qoder binary RecurCode would launch; the panel builds a
    * copy-pasteable `"<binary_path>" login` command from it. */
   binary_path?: string | null
 }
 
-// The newest upstream release of an agent, newer than codeg's pinned version,
-// returned by acp_fetch_agent_latest_release. Unreviewed by codeg; `version` is
+// The newest upstream release of an agent, newer than RecurCode's pinned version,
+// returned by acp_fetch_agent_latest_release. Unreviewed by RecurCode; `version` is
 // already in the form Custom install accepts.
 export interface AgentLatestRelease {
   version: string
@@ -3815,7 +3815,7 @@ export interface AgentSkillContent {
 
 /**
  * Built-in expert skills, sourced from obra/superpowers and bundled into
- * the codeg binary. Experts live in a central store at `~/.codeg/skills/`
+ * the RecurCode binary. Experts live in a central store at `~/.recurcode/skills/`
  * and are linked into agent skill directories on demand.
  */
 export interface ExpertMetadata {
@@ -3837,7 +3837,7 @@ export interface ExpertListItem {
 
 export type ExpertLinkState =
   | "not_linked"
-  | "linked_to_codeg"
+  | "linked_to_recur_code"
   | "linked_elsewhere"
   | "blocked_by_real_directory"
   | "broken"
@@ -3873,7 +3873,7 @@ export interface LinkOpResult {
 /**
  * A user-authored "custom" skill. The fourth skill pack: unlike the bundled
  * experts/science/office packs, these are created/edited/imported/deleted by
- * the user, but live in the SAME central store (`~/.codeg/skills/<id>/`) and
+ * the user, but live in the SAME central store (`~/.recurcode/skills/<id>/`) and
  * reuse the experts link primitives. A skill is "custom" iff its central-store
  * directory id is not claimed by any bundled pack. Link statuses reuse
  * `ExpertInstallStatus`/`LinkOp`/`LinkOpResult` (the `expertId` field carries
@@ -3910,8 +3910,8 @@ export interface CustomImportResult {
 
 /**
  * Built-in scientific-research skills, curated from
- * K-Dense-AI/scientific-agent-skills and bundled into the codeg binary. They
- * share the central store (`~/.codeg/skills/`) and link primitives with
+ * K-Dense-AI/scientific-agent-skills and bundled into the RecurCode binary. They
+ * share the central store (`~/.recurcode/skills/`) and link primitives with
  * experts; link statuses reuse `ExpertInstallStatus`/`LinkOp`/`LinkOpResult`
  * (the `expertId` field carries the science skill id).
  */
@@ -4031,7 +4031,7 @@ export interface SystemAutostartSettings {
 /**
  * What the main window's close button does.
  *
- * `ask` is the shipped default and exists for discoverability: codeg has always
+ * `ask` is the shipped default and exists for discoverability: RecurCode has always
  * hidden to tray, and a user who believes the app exited never goes looking for
  * a preference. The first close offers the choice, then pins itself to one of
  * the other two.
@@ -4069,7 +4069,7 @@ export interface CloseRequestPayload {
 
 export type LogLevel = "off" | "error" | "warn" | "info" | "debug" | "trace"
 
-/** A per-target level override, e.g. `codeg_lib::acp` at `debug` while the
+/** A per-target level override, e.g. `recur_code_lib::acp` at `debug` while the
  * global level stays `info`. `target` is a tracing target (a Rust module path). */
 export interface TargetDirective {
   target: string
@@ -4083,7 +4083,7 @@ export interface LogSettings {
 }
 
 /** What the Logs settings UI reads: the persisted level + per-target overrides,
- * plus whether an env var (CODEG_LOG/RUST_LOG) currently locks the controls
+ * plus whether an env var (RECUR_CODE_LOG/RUST_LOG) currently locks the controls
  * (env owns the live level). */
 export interface LogSettingsView {
   level: LogLevel
@@ -4210,7 +4210,7 @@ export interface LocalMcpSourceWarning {
 }
 
 /**
- * A local MCP scan: everything codeg could read, plus a warning per source it
+ * A local MCP scan: everything RecurCode could read, plus a warning per source it
  * could not. A single unreadable config degrades to a warning instead of
  * failing the whole scan (issue #632).
  */
@@ -4705,13 +4705,13 @@ export interface CheckItem {
 }
 
 /**
- * Structured explainer data for agents whose codeg entry is a third-party ACP
+ * Structured explainer data for agents whose RecurCode entry is a third-party ACP
  * adapter rather than the vendor's own CLI (Claude Code, Codex). The backend
  * ships only facts — the wording lives in i18n, the same way buildVersionCheck
  * owns the version card's copy.
  */
 export interface AdapterInfo {
-  /** npm spec codeg installs, e.g. "@agentclientprotocol/codex-acp@1.3.0". */
+  /** npm spec RecurCode installs, e.g. "@agentclientprotocol/codex-acp@1.3.0". */
   adapter_package: string
   /** Command the launch gate resolves, e.g. "codex-acp". */
   adapter_cmd: string
@@ -4720,7 +4720,7 @@ export interface AdapterInfo {
   native_cmd: string
   /** Display name for the vendor CLI, e.g. "Codex CLI". */
   native_label: string
-  /** Where the user's own vendor CLI was found. codeg never launches it. */
+  /** Where the user's own vendor CLI was found. RecurCode never launches it. */
   native_path: string | null
   /** Config dir both read, so installing the adapter needs no second login. */
   shared_config_dir: string
@@ -5164,7 +5164,7 @@ function isListableModel(m: CodexModelInfo): boolean {
  *
  *  Codex retires models by flipping them to `visibility:"hide"` (0.147 did this
  *  to `gpt-5.4` / `gpt-5.4-mini`), which turns a past removal into a *ghost*: it
- *  is invisible in the editor yet still counts as a customization, so codeg goes
+ *  is invisible in the editor yet still counts as a customization, so RecurCode goes
  *  on replacing codex's whole model table for no benefit. Pruning lets the
  *  config heal itself on the next save.
  *

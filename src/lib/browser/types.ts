@@ -5,7 +5,7 @@
 export type SurfaceKind = "child" | "window"
 
 /** What a tab shows: a web page, or a local HTML file through the document
- *  guest (`codeg-doc:`), which the file column hosts in place of the inline
+ *  guest (`recur-code-doc:`), which the file column hosts in place of the inline
  *  HTML preview. */
 export type TabKind = "page" | "document"
 
@@ -338,7 +338,7 @@ export interface BrowserCapabilities {
   downloadsDir: string
   policy: BrowserPolicyStatus
   /** Local HTML files can be shown through the document guest (an embedded
-   *  surface with a handler for `codeg-doc:`). */
+   *  surface with a handler for `recur-code-doc:`). */
   docGuest: boolean
   /** More than the default browser profile can exist (macOS 14+, Windows,
    *  Linux); the settings offer to create, clear and delete them. */
@@ -351,7 +351,7 @@ export interface BrowserCapabilities {
    *  shim also drives the owned-window fallback (Linux). */
   ownedWindowControls: boolean
   /** A remote-workspace window's tabs can reach the remote host through its
-   *  codeg-server: a profile of their own to proxy (macOS 14+), and on macOS
+   *  recur-code-server: a profile of their own to proxy (macOS 14+), and on macOS
    *  the embedded surface. Whether a given remote server carries the traffic
    *  is only known when a tab asks. */
   remoteEgress: boolean
@@ -492,7 +492,7 @@ export interface BrowserOpenRequestPayload {
 /** Where a detected address was printed. */
 export type ServiceSource = "terminal" | "agent"
 
-/** A loopback address something codeg started printed, and that answered a
+/** A loopback address something RecurCode started printed, and that answered a
  *  connection when the backend probed it.
  *
  *  Carried both by `browser://service-detected` (one, as it appears) and by

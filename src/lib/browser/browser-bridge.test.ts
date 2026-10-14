@@ -27,7 +27,7 @@ const grant: BridgeGrant = {
   targetPort: 3000,
   bridgePort: 3081,
   bridgeHost: null,
-  entryPath: "/__codeg_bridge/enter/cap123",
+  entryPath: "/__recur_code_bridge/enter/cap123",
   publicHost: null,
   path: "/docs?x=1",
 }
@@ -36,7 +36,7 @@ const grant: BridgeGrant = {
 const hostGrant: BridgeGrant = {
   ...grant,
   bridgePort: null,
-  bridgeHost: "3000.codeg.example",
+  bridgeHost: "3000.recurcode.example",
 }
 
 beforeEach(() => {
@@ -172,7 +172,7 @@ describe("bridge URLs", () => {
     const page = { protocol: "http:", hostname: "192.168.1.5", port: "3080" }
     expect(bridgeOrigin(grant, page)).toBe("http://192.168.1.5:3081")
     expect(bridgeEntryUrl(grant, page)).toBe(
-      "http://192.168.1.5:3081/__codeg_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "http://192.168.1.5:3081/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
   })
 
@@ -180,7 +180,7 @@ describe("bridge URLs", () => {
     expect(
       bridgeOrigin(
         { ...grant, publicHost: "bridge.example" },
-        { protocol: "https:", hostname: "codeg.example", port: "" }
+        { protocol: "https:", hostname: "RecurCode.example", port: "" }
       )
     ).toBe("https://bridge.example:3081")
     expect(
@@ -197,16 +197,16 @@ describe("bridge URLs", () => {
   })
 
   it("use the server's hostname for this target on the page's own port", () => {
-    // Named by hostname the bridge answers on codeg's own listener, so the
+    // Named by hostname the bridge answers on RecurCode's own listener, so the
     // browser keeps the port it is already talking to — including none at
     // all, which is what a deployment behind 443 looks like.
-    const page = { protocol: "https:", hostname: "codeg.example", port: "" }
-    expect(bridgeOrigin(hostGrant, page)).toBe("https://3000.codeg.example")
+    const page = { protocol: "https:", hostname: "RecurCode.example", port: "" }
+    expect(bridgeOrigin(hostGrant, page)).toBe("https://3000.recurcode.example")
     expect(bridgeEntryUrl(hostGrant, page)).toBe(
-      "https://3000.codeg.example/__codeg_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "https://3000.recurcode.example/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
     expect(bridgeOrigin(hostGrant, { ...page, port: "8443" })).toBe(
-      "https://3000.codeg.example:8443"
+      "https://3000.recurcode.example:8443"
     )
     // The hostname the server worked out wins over the public host it would
     // have used for a bridge port, and over the page's own host.
@@ -215,19 +215,19 @@ describe("bridge URLs", () => {
         { ...hostGrant, publicHost: "bridge.example" },
         { protocol: "http:", hostname: "elsewhere.example", port: "3080" }
       )
-    ).toBe("http://3000.codeg.example:3080")
+    ).toBe("http://3000.recurcode.example:3080")
   })
 
   it("send an empty path to the root and keep the address's fragment", () => {
     const page = { protocol: "http:", hostname: "h", port: "3080" }
     expect(bridgeEntryUrl({ ...grant, path: "" }, page)).toBe(
-      "http://h:3081/__codeg_bridge/enter/cap123?to=%2F"
+      "http://h:3081/__recur_code_bridge/enter/cap123?to=%2F"
     )
     expect(bridgeEntryUrl(grant, page, "#install")).toBe(
-      "http://h:3081/__codeg_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1%23install"
+      "http://h:3081/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1%23install"
     )
     expect(bridgeEntryUrl(grant, page, "")).toBe(
-      "http://h:3081/__codeg_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "http://h:3081/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
     expect(fragmentOf("http://localhost:3000/docs#install")).toBe("#install")
     expect(fragmentOf("http://localhost:3000/docs")).toBe("")
@@ -241,7 +241,7 @@ describe("probeBridge", () => {
     vi.stubGlobal("fetch", fetchMock)
     expect(await probeBridge("http://h:3081")).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://h:3081/__codeg_bridge/ping",
+      "http://h:3081/__recur_code_bridge/ping",
       expect.objectContaining({
         mode: "cors",
         credentials: "omit",

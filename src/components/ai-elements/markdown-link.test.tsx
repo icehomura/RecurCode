@@ -100,7 +100,7 @@ describe("MarkdownLink", () => {
     expect(window.open).not.toHaveBeenCalled()
   })
 
-  // Streamdown's contract also allows an async check. codeg's own config never
+  // Streamdown's contract also allows an async check. RecurCode's own config never
   // returns a promise, but the fallback has to keep working — it just can't
   // preserve the user gesture (openLinkWithSafety documents why).
   it("still opens on a promise verdict, one microtask late", async () => {
@@ -141,10 +141,10 @@ describe("MarkdownLink", () => {
     }
   )
 
-  describe("codeg:// reference badges", () => {
+  describe("recurcode:// reference badges", () => {
     it("renders a session link as a session badge (conversation glyph, no agent icon or status dot)", () => {
       render(
-        <MarkdownLink href="codeg://session/codex_abc">My chat</MarkdownLink>
+        <MarkdownLink href="recurcode://session/codex_abc">My chat</MarkdownLink>
       )
       // It's a badge, not a clickable link.
       expect(screen.queryByRole("button")).toBeNull()
@@ -161,14 +161,14 @@ describe("MarkdownLink", () => {
     })
 
     it("renders a legacy numeric session link as a session badge", () => {
-      render(<MarkdownLink href="codeg://session/123">Login</MarkdownLink>)
+      render(<MarkdownLink href="recurcode://session/123">Login</MarkdownLink>)
       const badge = screen.getByRole("img", { name: "session: Login" })
       expect(badge).toHaveAttribute("data-ref-type", "session")
     })
 
     it("renders a commit link as a commit badge", () => {
       render(
-        <MarkdownLink href="codeg://commit/%2Frepo@abc1234def">
+        <MarkdownLink href="recurcode://commit/%2Frepo@abc1234def">
           abc1234
         </MarkdownLink>
       )
@@ -177,14 +177,14 @@ describe("MarkdownLink", () => {
     })
 
     it("renders an agent link as an agent badge", () => {
-      render(<MarkdownLink href="codeg://agent/codex">@Codex</MarkdownLink>)
+      render(<MarkdownLink href="recurcode://agent/codex">@Codex</MarkdownLink>)
       const badge = screen.getByRole("img", { name: "agent: Codex" })
       expect(badge).toHaveAttribute("data-ref-type", "agent")
       expect(badge.querySelector("svg")).not.toBeNull()
     })
 
-    it("leaves a non-reference codeg uri as a normal link", () => {
-      render(<MarkdownLink href="codeg://unknown/x">x</MarkdownLink>)
+    it("leaves a non-reference RecurCode uri as a normal link", () => {
+      render(<MarkdownLink href="recurcode://unknown/x">x</MarkdownLink>)
       expect(screen.getByRole("button")).toBeInTheDocument()
     })
   })
@@ -239,11 +239,11 @@ describe("MarkdownLink", () => {
   })
 
   describe("embedded attachment badges", () => {
-    it("renders a codeg://embedded link as an inert file badge", () => {
+    it("renders a recurcode://embedded link as an inert file badge", () => {
       // Path-less pasted bytes serialize to this inert display uri; the badge
       // name is the link text the composer wrote.
       render(
-        <MarkdownLink href="codeg://embedded/abc-123">report.pdf</MarkdownLink>
+        <MarkdownLink href="recurcode://embedded/abc-123">report.pdf</MarkdownLink>
       )
       // It's a badge, not a clickable link (nothing to open — bytes are
       // appended out of band as a resource block on send).

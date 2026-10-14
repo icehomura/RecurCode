@@ -38,7 +38,7 @@ const TRIGGER_ACTIVE =
 /**
  * Unified "Skill Packs" settings hub — a shared generic header + a fixed
  * top-right toolbar over a tabbed switcher for the three curated,
- * codeg-managed skill bundles (Experts, Science, Office), the generative-UI
+ * recur-code-managed skill bundles (Experts, Science, Office), the generative-UI
  * skill that teaches agents the chat's cards (UI), and the user's own skills
  * (Custom). Each tab renders the existing per-pack body verbatim.
  */
@@ -77,7 +77,7 @@ export function SkillPacksSettings() {
     [router, pathname, searchParams]
   )
 
-  // All three packs link from ONE shared central store (~/.codeg/skills), so a
+  // All three packs link from ONE shared central store (~/.recurcode/skills), so a
   // single, tab-independent "open central folder" is correct for every tab.
   const handleOpenCentralDir = useCallback(async () => {
     try {
@@ -85,7 +85,7 @@ export function SkillPacksSettings() {
       if (isDesktop() && getActiveRemoteConnectionId() === null) {
         // Desktop: reveal the folder. `revealItemInDir` (not `openPath`) is
         // deliberate — the opener plugin's scope rejects `openPath` for the
-        // hidden `~/.codeg/...` path.
+        // hidden `~/.recurcode/...` path.
         await revealItemInDir(path)
       } else {
         await openFolder(path)

@@ -121,15 +121,15 @@ const EXACT_TOOL_NAME_ALIASES: Record<string, string> = {
   update_goal: "update_goal",
   "functions.update_goal": "update_goal",
   request_user_input: "question",
-  // codeg multi-agent delegation MCP tools (server prefix varies by host)
+  // RecurCode multi-agent delegation MCP tools (server prefix varies by host)
   delegate_to_agent: "delegate_to_agent",
-  "mcp__codeg-mcp__delegate_to_agent": "delegate_to_agent",
-  "mcp__codeg-delegate__delegate_to_agent": "delegate_to_agent",
-  mcp__codeg__delegate_to_agent: "delegate_to_agent",
+  "mcp__recur-code-mcp__delegate_to_agent": "delegate_to_agent",
+  "mcp__recur-code-delegate__delegate_to_agent": "delegate_to_agent",
+  mcp__recur_code__delegate_to_agent: "delegate_to_agent",
   get_delegation_status: "get_delegation_status",
   cancel_delegation: "cancel_delegation",
   resume_delegation: "resume_delegation",
-  // codeg-mcp workbench companions (session lookup, work-task reporting, chat
+  // recur-code-mcp workbench companions (session lookup, work-task reporting, chat
   // authoring). Listed explicitly because the freeform `^task(\b|[_\s:-])` rule
   // below would otherwise collapse `task_progress` / `task_complete` into the
   // generic "task" tool and strand them on the generic tool shell. The suffix
@@ -139,12 +139,12 @@ const EXACT_TOOL_NAME_ALIASES: Record<string, string> = {
   task_complete: "task_complete",
   create_automation: "create_automation",
   create_work_task: "create_work_task",
-  // codeg-mcp live-feedback poll (server prefix varies by host; the suffix rule
+  // recur-code-mcp live-feedback poll (server prefix varies by host; the suffix rule
   // in `normalizeToolName` covers the other separators). Codex persists it under
-  // the bare `check_user_feedback` name, dropping the `mcp__codeg_mcp` namespace.
+  // the bare `check_user_feedback` name, dropping the `mcp__recur_code_mcp` namespace.
   check_user_feedback: "check_user_feedback",
-  "mcp__codeg-mcp__check_user_feedback": "check_user_feedback",
-  mcp__codeg__check_user_feedback: "check_user_feedback",
+  "mcp__recur-code-mcp__check_user_feedback": "check_user_feedback",
+  mcp__recur_code__check_user_feedback: "check_user_feedback",
   // OpenCode
   delegate_task: "task",
   call_omo_agent: "agent",
@@ -157,9 +157,9 @@ const EXACT_TOOL_NAME_ALIASES: Record<string, string> = {
   question: "question",
   ask_user_question: "question",
   askuserquestion: "question",
-  // codeg-mcp ask-user-question companion tool (server prefix varies by host;
+  // recur-code-mcp ask-user-question companion tool (server prefix varies by host;
   // the suffix rule in `normalizeToolName` covers the other separators)
-  "mcp__codeg-mcp__ask_user_question": "question",
+  "mcp__recur-code-mcp__ask_user_question": "question",
   lsp_diagnostics: "lsp",
   lsp_document_symbols: "lsp",
   lsp_goto_definition: "lsp",
@@ -469,7 +469,7 @@ function inferFromInput(
   if (hasGlob) return "glob"
 
   // `question` (singular) covers Cline/Codex follow-up tools; `questions`
-  // (plural) is the codeg-mcp `ask_user_question` payload shape, so the live
+  // (plural) is the recur-code-mcp `ask_user_question` payload shape, so the live
   // stream resolves to "question" before the tool result arrives.
   if (hasAnyKey(parsed, ["question", "questions"])) return "question"
 
@@ -582,7 +582,7 @@ export function normalizeToolName(toolName: string): string {
   if (/[^a-z0-9]create_goal$/.test(canonical)) return "create_goal"
   if (/[^a-z0-9]update_goal$/.test(canonical)) return "update_goal"
 
-  // codeg-mcp workbench companions — same host-prefix story as the delegation
+  // recur-code-mcp workbench companions — same host-prefix story as the delegation
   // tools above (`mcp__<server>__get_session_info`, `<server>/task_progress`, …).
   if (/[^a-z0-9]get_session_info$/.test(canonical)) return "get_session_info"
   if (/[^a-z0-9]task_progress$/.test(canonical)) return "task_progress"
@@ -590,14 +590,14 @@ export function normalizeToolName(toolName: string): string {
   if (/[^a-z0-9]create_automation$/.test(canonical)) return "create_automation"
   if (/[^a-z0-9]create_work_task$/.test(canonical)) return "create_work_task"
 
-  // codeg-mcp ask-user-question companion tool. Same host-prefix story as the
+  // recur-code-mcp ask-user-question companion tool. Same host-prefix story as the
   // delegation tools above (`mcp__<server>__ask_user_question`,
   // `<server>/ask_user_question`, …) — the bare `ask_user_question` alias only
   // catches the unprefixed form, so collapse every separator here. Note the
   // freeform matcher below intentionally does NOT catch the underscore form.
   if (/[^a-z0-9]ask_user_question$/.test(canonical)) return "question"
 
-  // codeg-mcp live-feedback poll. Same host-prefix story as the delegation tools
+  // recur-code-mcp live-feedback poll. Same host-prefix story as the delegation tools
   // (`mcp__<server>__check_user_feedback`, `<server>/check_user_feedback`, …) —
   // collapse every separator to the canonical name the renderer dispatches on.
   if (/[^a-z0-9]check_user_feedback$/.test(canonical))
@@ -615,7 +615,7 @@ export function normalizeToolName(toolName: string): string {
   return trimmed
 }
 
-// Canonical names of the codeg-mcp delegation companion tools. Their identity
+// Canonical names of the recur-code-mcp delegation companion tools. Their identity
 // must win over input-shape heuristics during live streaming (see
 // `inferLiveToolName`): most have a dedicated card renderer, and
 // `resume_delegation`'s `{task_id, reason}` input would otherwise be
@@ -668,7 +668,7 @@ export function inferLiveToolName(params: {
   // otherwise collapse `spawn_agent`→"agent" / `wait_agent`→"task").
   if (isCodexCollabInput(params.rawInput)) return COLLAB_AGENT_TOOL_NAME
 
-  // The codeg-mcp delegation companion tools carry their authoritative identity
+  // The recur-code-mcp delegation companion tools carry their authoritative identity
   // in `meta.claudeCode.toolName` — claude-agent-acp sets it to the raw
   // `mcp__<server>__<tool>` name for every MCP call — and, on Qoder, in
   // `meta.qoder.toolName`. Resolve them FIRST, ahead of `inferFromInput`, so the
@@ -689,9 +689,9 @@ export function inferLiveToolName(params: {
     if (DELEGATION_COMPANION_TOOLS.has(normalizedMeta)) return normalizedMeta
   }
 
-  // The delegation broker stamps `meta["codeg.delegation"]` onto the parent's
+  // The delegation broker stamps `meta["RecurCode.delegation"]` onto the parent's
   // `delegate_to_agent` tool call (meta_writer.rs) — an authoritative,
-  // codeg-minted marker no other tool ever carries. It is the ONLY live
+  // recur-code-minted marker no other tool ever carries. It is the ONLY live
   // identity signal on hosts whose wire loses the MCP tool name entirely:
   // Cursor announces MCP calls as title "MCP: tool" with empty rawInput and
   // never resends either, so when the broker claims the call and writes the
@@ -700,7 +700,7 @@ export function inferLiveToolName(params: {
   if (
     params.meta &&
     typeof params.meta === "object" &&
-    "codeg.delegation" in params.meta
+    "RecurCode.delegation" in params.meta
   ) {
     return "delegate_to_agent"
   }
@@ -786,12 +786,12 @@ export function inferLiveToolName(params: {
   // Qoder stamps the authoritative tool name in `_meta.qoder.toolName` on EVERY
   // `tool_call` (`AOn` in its ACP bridge), while the `title` it ships for an MCP
   // call is a human sentence — `"<tool> (<server> MCP Server)"` — that no
-  // suffix/alias rule can collapse. Without this, every codeg-mcp companion but
-  // `delegate_to_agent` (rescued by the broker's `codeg.delegation` marker
+  // suffix/alias rule can collapse. Without this, every recur-code-mcp companion but
+  // `delegate_to_agent` (rescued by the broker's `RecurCode.delegation` marker
   // above) fell through to the generic tool shell: `get_session_info` /
   // `task_progress` / `check_user_feedback` kept the sentence as their "name",
   // so their cards never matched — while the historical path, which reads the
-  // raw `mcp__codeg-mcp__<tool>` name straight out of the transcript, rendered
+  // raw `mcp__recur-code-mcp__<tool>` name straight out of the transcript, rendered
   // them correctly. Same placement as the Grok override: AFTER `inferFromInput`,
   // so every input-shape classification Qoder's own tools rely on is preserved
   // (`Agent` → "agent" via `subagent_type`, `TodoWrite` → "todowrite" via
@@ -836,7 +836,7 @@ function extractClaudeCodeToolName(
 
 /**
  * Qoder's authoritative tool name from `_meta.qoder.toolName` — the raw SDK name
- * (`Bash`, `TodoWrite`, `mcp__codeg-mcp__get_delegation_status`, …) its ACP
+ * (`Bash`, `TodoWrite`, `mcp__recur-code-mcp__get_delegation_status`, …) its ACP
  * bridge attaches to every `tool_call` it emits, and the same name its history
  * parser reads back out of the transcript. Unlike `title`, it neither mutates
  * across the call's lifecycle nor gets rewritten into a human sentence.
@@ -859,7 +859,7 @@ function extractQoderToolName(
 
 /**
  * OpenCode's authoritative tool name from `_meta.opencode.toolName` — the raw
- * tool id (`glob`, `lsp_diagnostics`, `context7_query-docs`, …) codeg's backend
+ * tool id (`glob`, `lsp_diagnostics`, `context7_query-docs`, …) RecurCode's backend
  * lifts off the opening `tool_call` frame, which is the only frame OpenCode
  * states it on (see `stamp_opencode_tool_name` for the captured wire evidence).
  * The same name the history parser reads out of `part.tool`, so both paths land

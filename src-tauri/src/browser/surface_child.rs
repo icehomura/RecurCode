@@ -263,7 +263,7 @@ const DOWNLOAD_GESTURE_WINDOW: Duration = Duration::from_secs(5);
 /// Windows only: the answer to WebView2's multiple-downloads permission,
 /// which the engine would otherwise put to the user in a bubble of its own
 /// drawn over the page — and hold `DownloadStarting` back until it is
-/// answered, so a click would appear to do nothing and codeg's download bar
+/// answered, so a click would appear to do nothing and RecurCode's download bar
 /// would stay empty.
 ///
 /// The same test the popup blocker applies: a page that was clicked recently
@@ -833,7 +833,7 @@ fn build_child(
     }
 }
 
-/// The `codeg-doc:` handler of one document guest. Registered on the guest's
+/// The `recur-code-doc:` handler of one document guest. Registered on the guest's
 /// builder alone, bound to its grant, and checked against the webview it is
 /// called for; the file work happens off the main thread (the engine calls
 /// here on it), and a request that ends dynamic mode reports the new state.

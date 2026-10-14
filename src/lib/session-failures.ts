@@ -335,7 +335,7 @@ export function lastUserPromptText(
   return null
 }
 
-/** The AIR action vocabulary codeg knows how to wire. */
+/** The AIR action vocabulary RecurCode knows how to wire. */
 export const KNOWN_SESSION_FAILURE_ACTIONS = [
   "retry",
   "login",

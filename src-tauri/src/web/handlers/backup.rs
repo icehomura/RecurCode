@@ -62,7 +62,7 @@ pub async fn backup_create_ticket(
     Json(params): Json<CreateBackupParams>,
 ) -> Result<Json<BackupTicketResult>, AppCommandError> {
     let encrypted = params.passphrase.as_deref().is_some_and(|p| !p.is_empty());
-    let ext = if encrypted { "codegbak" } else { "codeg.zip" };
+    let ext = if encrypted { "recurcodebak" } else { "recurcode.zip" };
 
     let tmp_dir = state.data_dir.join(BACKUP_TMP_DIR);
     tokio::fs::create_dir_all(&tmp_dir)
@@ -88,7 +88,7 @@ pub async fn backup_create_ticket(
     let manifest = result?;
 
     let download_name = format!(
-        "codeg-backup-{}.{ext}",
+        "recur-code-backup-{}.{ext}",
         chrono::Utc::now().format("%Y%m%d-%H%M%S")
     );
     let ticket = state
@@ -161,7 +161,7 @@ pub async fn backup_upload(
 
     // Optional hard size cap (default unlimited, matching the attachment-upload
     // convention). Operators on shared deployments can bound it via env.
-    let max_bytes = std::env::var("CODEG_BACKUP_UPLOAD_MAX_BYTES")
+    let max_bytes = std::env::var("RECUR_CODE_BACKUP_UPLOAD_MAX_BYTES")
         .ok()
         .and_then(|v| v.trim().parse::<u64>().ok())
         .filter(|v| *v > 0);

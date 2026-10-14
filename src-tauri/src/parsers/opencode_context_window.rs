@@ -18,7 +18,7 @@
 //!    OpenCode 1.18 layers them (see [`ModelLimitSources::config_files`]);
 //! 2. the models.dev catalog OpenCode caches: `$OPENCODE_MODELS_PATH`, else
 //!    `$XDG_CACHE_HOME/opencode/models.json`;
-//! 3. codeg's bundled models.dev snapshot, for a model that catalog does not
+//! 3. RecurCode's bundled models.dev snapshot, for a model that catalog does not
 //!    list. OpenCode itself falls back to the snapshot compiled into its
 //!    binary when it has no readable cache, so a machine that never fetched
 //!    the catalog still sized its gauge from one.
@@ -75,13 +75,13 @@ pub(crate) struct ModelLimitSources {
     pub(crate) project_config: bool,
     /// The models.dev catalog OpenCode caches.
     pub(crate) catalog_file: Option<PathBuf>,
-    /// Whether codeg's bundled models.dev snapshot answers last.
+    /// Whether RecurCode's bundled models.dev snapshot answers last.
     pub(crate) bundled_catalog: bool,
 }
 
 impl ModelLimitSources {
-    /// The files the OpenCode that codeg launches reads. Its agent process
-    /// inherits codeg's environment, so the same variables send both to the
+    /// The files the OpenCode that RecurCode launches reads. Its agent process
+    /// inherits RecurCode's environment, so the same variables send both to the
     /// same files.
     pub(crate) fn from_env() -> Self {
         let env_path = |key: &str| {
@@ -252,7 +252,7 @@ fn env_flag(key: &str) -> bool {
 /// The root is the nearest directory holding `.git`, which is where OpenCode's
 /// project detection stops. Outside a repository OpenCode's worktree is `/`, so
 /// the walk runs to the filesystem root. A relative `directory` has no
-/// ancestors worth reading: resolving it would read codeg's own working
+/// ancestors worth reading: resolving it would read RecurCode's own working
 /// directory instead of the session's.
 fn dirs_up_to_worktree(directory: &Path) -> Vec<PathBuf> {
     if !directory.is_absolute() {
@@ -463,7 +463,7 @@ fn cached_catalog_index(path: &Path) -> Option<Arc<ContextIndex>> {
     Some(index)
 }
 
-/// codeg's bundled models.dev snapshot, indexed once per process.
+/// RecurCode's bundled models.dev snapshot, indexed once per process.
 fn bundled_catalog_index() -> &'static ContextIndex {
     static INDEX: OnceLock<ContextIndex> = OnceLock::new();
     INDEX.get_or_init(|| {
@@ -730,7 +730,7 @@ mod tests {
             no_project.context_window(Some(&session_dir), &target),
             Some(1_000)
         );
-        // A relative directory is not resolved against codeg's own.
+        // A relative directory is not resolved against RecurCode's own.
         assert_eq!(
             sources.context_window(Some(Path::new("packages/app")), &target),
             Some(1_000)

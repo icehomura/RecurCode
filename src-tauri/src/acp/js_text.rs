@@ -1,4 +1,4 @@
-//! JavaScript's string semantics, for the places codeg ports one of
+//! JavaScript's string semantics, for the places RecurCode ports one of
 //! codex-acp's helpers and has to read text exactly the way the adapter does
 //! (`acp::service_error`, `parsers::codex_desktop_attachments`).
 

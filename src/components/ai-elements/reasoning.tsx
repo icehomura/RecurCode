@@ -30,7 +30,7 @@ import { Shimmer } from "./shimmer"
 import { markdownLinkComponents } from "./markdown-link"
 import { mermaidComponents } from "./mermaid-block"
 import { LIVE_REMEND, normalizeMathDelimiters } from "./message"
-import { rehypePluginsAllowingCodeg } from "./rehype-allow-codeg"
+import { rehypePluginsAllowingRecurCode } from "./rehype-allow-RecurCode"
 import { remarkTrimCjkAutolinkTail } from "./remark-cjk-autolink-tail"
 import { withRelativeFileLinks } from "./rehype-relative-file-links"
 import { remarkRewriteFileUriLinks } from "./remark-file-uri-links"
@@ -214,12 +214,12 @@ const remarkPlugins = [
   remarkTrimCjkAutolinkTail,
 ]
 
-// The same links survive as in MessageResponse: `codeg://` references keep
-// their href through sanitize (rehype-allow-codeg), which would otherwise leave
+// The same links survive as in MessageResponse: `recurcode://` references keep
+// their href through sanitize (rehype-allow-RecurCode), which would otherwise leave
 // "@Codex [blocked]", and relative local links keep theirs through harden —
 // without that `./a.md` would leave harden as `/a.md` and a bare `a.md` would
 // be blocked (rehype-relative-file-links).
-const rehypePlugins = rehypePluginsAllowingCodeg(
+const rehypePlugins = rehypePluginsAllowingRecurCode(
   withRelativeFileLinks(defaultRehypePlugins)
 )
 

@@ -130,7 +130,7 @@ impl BinaryDirEntry {
 pub struct AcpAgentMeta {
     pub agent_type: AgentType,
     /// 是否经 ACP 线缆（session/new 的 `mcpServers` 字段）向该 agent 转发 MCP
-    /// 服务器——既包括用户配置的服务器，也包括内置 codeg-mcp 伴生进程。
+    /// 服务器——既包括用户配置的服务器，也包括内置 recur-code-mcp 伴生进程。
     /// OpenClaw 拒绝 `mcpServers` 中的任何服务器条目（会使 session/new 失败），
     /// 故置 false。注意空列表 `[]` 仍会按 ACP schema 序列化、OpenClaw 可接受——
     /// 闸门只是保证该列表对 OpenClaw 恒为空（不含任何条目）。
@@ -250,7 +250,7 @@ pub fn builtin_acp_agents() -> Vec<AgentType> {
     ]
 }
 
-/// Every agent codeg can currently drive: the fifteen built-ins followed by
+/// Every agent RecurCode can currently drive: the fifteen built-ins followed by
 /// the user's registered custom ACP agents (sorted by id).
 pub fn all_acp_agents() -> Vec<AgentType> {
     let mut agents = builtin_acp_agents();
@@ -311,17 +311,17 @@ pub fn from_registry_id(id: &str) -> Option<AgentType> {
     }
 }
 
-/// The vendor CLI wrapped by a codeg entry that is really a THIRD-PARTY ACP
+/// The vendor CLI wrapped by a RecurCode entry that is really a THIRD-PARTY ACP
 /// *adapter*.
 ///
 /// All but two of the built-ins distribute the vendor's own CLI (or, for
 /// Antigravity, the vendor's own ACP server), so a user's existing global
 /// install is found by the launch gate as-is. Claude Code and
-/// Codex are the exceptions: neither `claude` nor `codex` speaks ACP, so codeg
+/// Codex are the exceptions: neither `claude` nor `codex` speaks ACP, so RecurCode
 /// installs a separate adapter package (`claude-agent-acp` / `codex-acp`,
 /// maintained by the Agent Client Protocol org) whose command name has nothing
 /// to do with the vendor CLI's. That mismatch is the single most reported
-/// confusion ("I have claude installed, why does codeg say it isn't?"), so
+/// confusion ("I have claude installed, why does RecurCode say it isn't?"), so
 /// preflight and diagnostics probe the vendor CLI too and explain the split.
 #[derive(Debug, Clone, Copy)]
 pub struct AcpAdapterRelation {
@@ -339,7 +339,7 @@ pub struct AcpAdapterRelation {
     pub docs_url: &'static str,
 }
 
-/// Adapter relation for an agent, or `None` when codeg's entry IS the vendor's
+/// Adapter relation for an agent, or `None` when RecurCode's entry IS the vendor's
 /// own CLI (every agent except these two).
 ///
 /// Adding an entry here changes what preflight/diagnostics report — keep the
@@ -367,16 +367,16 @@ pub fn acp_adapter_relation(agent_type: AgentType) -> Option<AcpAdapterRelation>
 }
 
 /// Home-relative directories a vendor's OWN installer drops the agent binary
-/// into, for agents codeg can also manage itself.
+/// into, for agents RecurCode can also manage itself.
 ///
 /// Distinct from [`AcpAdapterRelation::extra_dirs`], which describes a vendor
-/// CLI codeg never launches; these are launchable binaries, just not where a
+/// CLI RecurCode never launches; these are launchable binaries, just not where a
 /// GUI-inherited PATH can see them. OpenCode's official install script uses
 /// `INSTALL_DIR=$HOME/.opencode/bin` and appends it to the user's shell rc — a
 /// file a desktop app launched from Finder or the Dock never reads, which is
 /// exactly how a working install reads as missing.
 ///
-/// Probed after PATH and `~/.local/bin`, so a codeg-managed copy and anything
+/// Probed after PATH and `~/.local/bin`, so a recur-code-managed copy and anything
 /// genuinely on PATH still win.
 pub fn binary_system_dirs(agent_type: AgentType) -> &'static [&'static str] {
     match agent_type {
@@ -406,14 +406,14 @@ pub const CLAUDE_AGENT_ACP_PACKAGE: &str = "@agentclientprotocol/claude-agent-ac
 
 /// Minimum adapter version whose `_session/steering` honors the
 /// `_meta.steering.idleBehavior = "promptRequired"` opt-in — one of the three
-/// gates for codeg's NATIVE live-feedback push channel (synthesized into
+/// gates for RecurCode's NATIVE live-feedback push channel (synthesized into
 /// `SessionState.native_steering_available` at initialize; see
 /// `connection.rs::init_advertises_steering`).
 ///
 /// `None` means "never steer natively" even when the adapter advertises
 /// `_meta.steering.supported`: an adapter that ignores the opt-in falls back
 /// to `startedNewTurn` on the turn-end race — a detached turn no host request
-/// owns, which codeg's turn-scoped runtime must never trigger. codex-acp
+/// owns, which RecurCode's turn-scoped runtime must never trigger. codex-acp
 /// ships `_session/steering` but not `promptRequired` — re-verified against
 /// the published 1.3.0 tarball (zero hits, same as 1.1.9) — so it stays
 /// `None` until a release implements the opt-in — then this is a one-line
@@ -436,7 +436,7 @@ pub fn steering_prompt_required_min_version(agent_type: AgentType) -> Option<&'s
         // ordinary result settled the owning `session/prompt` as a clean
         // `end_turn` while the steered work was still going — the continuation
         // then streamed with no turn in flight (#934, reported and reproduced
-        // from codeg). 0.65.0 records a steered turn's results instead of
+        // from RecurCode). 0.65.0 records a steered turn's results instead of
         // settling on them and settles at the SDK `idle` spanning both cycles,
         // so the floor is the FIRST release carrying that fix, not the one that
         // introduced the opt-in. Every 0.64.x — including 0.64.2, which only
@@ -448,7 +448,7 @@ pub fn steering_prompt_required_min_version(agent_type: AgentType) -> Option<&'s
         // the tool to the background and may join the running cycle (one result
         // naming both messages). The prompt still settles on the result that
         // answers the steer — measured live; see the claude entry's (qq) for
-        // what moving the tool cost codeg.
+        // what moving the tool cost RecurCode.
         AgentType::ClaudeCode => Some("0.65.0"),
         _ => None,
     }
@@ -536,7 +536,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (#881): when advertised (see `build_client_capabilities`),
             // subagent text/thought chunks stream with update-level
             // `_meta.claudeCode.parentToolUseId` instead of being filtered;
-            // codeg routes them into the live Agent capsule. Independent of
+            // RecurCode routes them into the live Agent capsule. Independent of
             // the capability, every tool_call now carries
             // `_meta.claudeCode.subagent: true` on Agent/Task launches and
             // `_meta.claudeCode.title` (the Bash `description` input) on
@@ -569,10 +569,10 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // turn settles at the SDK `idle` spanning both the interrupted and
             // the steered cycle, so the owning prompt stays in flight until the
             // steered work is actually done. That is the fix for #934, which
-            // had forced codeg's native push channel off; it is back on for
+            // had forced RecurCode's native push channel off; it is back on for
             // Claude alone via `steering_prompt_required_min_version` (see
             // `manager::submit_feedback` for the two channels). Its other
-            // releases carry nothing else for codeg: 0.64.2 reverted #938's
+            // releases carry nothing else for RecurCode: 0.64.2 reverted #938's
             // ExitPlanMode `plan_update` experiment outright, and 0.65.0's
             // remaining commits are devDependency bumps — the runtime deps and
             // the Node floor still match 0.64.0's.
@@ -583,7 +583,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // — {objective, status (active|paused|blocked|limited|complete),
             // iterations?, lastReason?, createdAt/updatedAt (Unix ms),
             // tokenBudget?, tokensUsed?, timeUsedSeconds?, controlMethod},
-            // `goal: null` clears. codeg picks the goal channel per connection
+            // `goal: null` clears. RecurCode picks the goal channel per connection
             // at initialize (advertised ⇒ neutral only; see the
             // SessionInfoUpdate arm in connection.rs), the same selection that
             // keeps codex goals alive after its silent 1.2.0 switch. #967
@@ -598,7 +598,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // records ONLY, no resolve/tombstone wire; publication is STRICTLY
             // gated on the client advertising
             // `clientCapabilities._meta.jetbrains.air = {version >= 1,
-            // capabilities: ["sessionFailure"]}`. codeg advertises it
+            // capabilities: ["sessionFailure"]}`. RecurCode advertises it
             // (`build_client_capabilities`) and projects the records into the
             // session-failure banner (`AcpEvent::SessionFailure`); on
             // session/load the adapter re-publishes still-active failures
@@ -623,12 +623,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // "notReported", "providerError", plus the new
             // `dist/file-change-audit.js`) — the AIR `agentFileChangeReport`
             // capability, shipped in lockstep with codex-acp 1.4.0. It is
-            // OFF unless the client asks for it twice, and codeg deliberately
+            // OFF unless the client asks for it twice, and RecurCode deliberately
             // asks for neither; see `build_client_capabilities` in
             // connection.rs for the reasoning. The only ambient change is that
             // `airSessionFailureCapabilityMeta` became variadic so the agent
             // can advertise `["sessionFailure", "agentFileChangeReport"]` — an
-            // ADDITIVE element in an array codeg only ever membership-tests,
+            // ADDITIVE element in an array RecurCode only ever membership-tests,
             // so the session-failure gate is unaffected.
             //
             // 0.70.0–0.73.0 is a large release (the package grows 692K → 1.1M
@@ -637,7 +637,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `sessionCapabilities.subagents: {}` and two new AIR capability
             // names. `sessionCapabilities.fork` was already there in 0.69.0, so
             // `supports_fork` has been on for Claude all along. Wire-visible
-            // changes, in the order they matter to codeg:
+            // changes, in the order they matter to RecurCode:
             //
             // (a) The permission layer was rebuilt into `dist/permissions/**`
             // and option-level `_meta.permission.changes[]` is GONE — the whole
@@ -657,7 +657,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // for <prefix> commands"), which the button already renders. The
             // option IDs were renamed too (`allow-once`, `allow-with-updates`,
             // `allow-skill-exact`, `allow-skill-prefix`, `exit-plan-*`,
-            // `reject`) — inert, codeg only echoes the selected id back.
+            // `reject`) — inert, RecurCode only echoes the selected id back.
             // `parsePermissionOptionChanges` is NOT dead code: `supports_custom_version()`
             // is true for npx, so a user pinned to 0.64.1–0.72.0 still gets
             // `changes[]`.
@@ -670,7 +670,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `session_info_update.title` — the channel `acp::session_title`
             // already consumes. It generates at most ONCE per session and adopts
             // `info.customTitle` (a user `/rename` or an earlier generated title)
-            // without re-titling, so codeg needs no extra guard.
+            // without re-titling, so RecurCode needs no extra guard.
             //
             // (c) `fork-session.js` reads the SAME AIR fork point codex 1.8.0
             // does — `_meta.jetbrains.air.fork = {version: 1, messageId}`, with
@@ -680,13 +680,13 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // sending all three is forward-compatible. The `messageId` to send
             // is the top-level one `applyMessageId` stamps on message/thought
             // chunks (present since ≤0.69.0; typed as the stable
-            // `ContentChunk::message_id` in the 1.x schema). codeg derives it
+            // `ContentChunk::message_id` in the 1.x schema). RecurCode derives it
             // from the parsed transcript rather than the live chunks — see
             // `acp::fork::ForkPoint`.
             //
             // (d) The AIR capability array grew to `["sessionFailure",
             // "agentFileChangeReport", "nativeSubagentSessions", "asyncTasks"]`
-            // (0.76.0 appends a fifth, "recommendedValue" — see (k)). codeg
+            // (0.76.0 appends a fifth, "recommendedValue" — see (k)). RecurCode
             // adopted `asyncTasks` and deliberately leaves the other two out, so
             // `native-subagents.js` and `file-change-audit.js` stay dark. See
             // `build_client_capabilities` for why each is in or out.
@@ -737,7 +737,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `auth_status` now also clears (agent-side bookkeeping; nothing
             // goes on the wire) when a real model answers, so an out-of-band
             // sign-in no longer leaves a stale row that makes the adapter
-            // dedupe away the NEXT sign-out — and codeg's `login` action is
+            // dedupe away the NEXT sign-out — and RecurCode's `login` action is
             // exactly that case, since it opens /settings/agents and the
             // credential is then fixed outside the query process. And
             // `createSession` now discards a query it spawned but never
@@ -747,7 +747,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (g) Inert here. `--hide-claude-auth` (new `hide-claude-auth.js`:
             // refuse turns a claude.ai subscription would pay for, plus the
             // sign-out respawn machinery) is argv-gated and `args` below is
-            // empty — codeg has no per-agent argv override, and a user who
+            // empty — RecurCode has no per-agent argv override, and a user who
             // builds a CUSTOM agent around that flag gets `AgentType::Custom`,
             // which is not advertised AIR at all. That also makes the record's
             // new `reason` field unreachable: `CLAUDE_SUBSCRIPTION_NOT_SUPPORTED_REASON`
@@ -756,12 +756,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // legacy gateway `authenticate` (an absent payload still succeeds;
             // a PRESENT one must now carry an absolute http(s) `baseUrl`) and
             // the containment of a per-session failure during
-            // `providers/set`/`providers/disable` — codeg calls neither method
+            // `providers/set`/`providers/disable` — RecurCode calls neither method
             // on claude.
             //
             // 0.75.0 + 0.75.1 (four feature commits) are additive: an
             // `initialize` handshake replayed against both 0.74.0 and 0.75.1
-            // with codeg's own `clientCapabilities` differs by exactly two
+            // with RecurCode's own `clientCapabilities` differs by exactly two
             // things — the version string and a new
             // `agentCapabilities._meta.authStatus: {}`. `sessionCapabilities`,
             // the AIR capability array, `steering`, `goal` and
@@ -807,7 +807,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // (j) `authStatus` (upstream #1080) — the agent pushes its own
             // sign-in identity over `_auth/status_update`, the connection-level
-            // notification codex-acp 1.9.0 introduced. codeg registers that
+            // notification codex-acp 1.9.0 introduced. RecurCode registers that
             // handler unconditionally (not per agent), so claude's pushes are
             // already claimed and nothing changes; see `handle_auth_status_update`
             // for what claude adds over codex (a per-prompt probe, so a push can
@@ -820,7 +820,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // adapter goes 2.1.257 → 2.1.270 (`manifest.json` `version`).
             //
             // (k) `recommendedValue` (upstream #1111), the release's headline
-            // and a NEW AIR capability codeg now advertises — to claude here,
+            // and a NEW AIR capability RecurCode now advertises — to claude here,
             // and to codex from 1.11.0, which shipped its own half of the same
             // capability (see the codex entry (a)); 1.10.0's bundle contained
             // zero occurrences of the string, so this was claude-only for
@@ -844,7 +844,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // The ambiguous row is the point. `current_model_id_from_opts` reads
             // the model selector's `current_value`, and that is the model id
-            // `record_turn_end` stamps onto every turn codeg journals — on the
+            // `record_turn_end` stamps onto every turn RecurCode journals — on the
             // `default` row it is the literal string `"default"`, which no
             // consumer can resolve to a model. With the capability on, a session
             // still riding the SDK default reports the concrete model instead.
@@ -857,13 +857,13 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `modelSettings.effortLevel` first, then the legacy top-level one,
             // and only falls through to the recommendation when both are absent.
             //
-            // Stale `"default"` picks in `codeg:selector-prefs` are the
+            // Stale `"default"` picks in `RecurCode:selector-prefs` are the
             // migration hazard: the connect-time replay would re-send a value
             // the agent now rejects, on every connect, forever, and the row the
             // user would have to re-pick to overwrite it is the one that went
             // away. `config_option_rejects_value` handles it off the agent's
             // OWN advertised value list rather than off this pin — which
-            // matters, because the pin only governs what codeg installs, while
+            // matters, because the pin only governs what RecurCode installs, while
             // `resolve_npx_command` launches whatever `claude-agent-acp` is on
             // PATH.
             //
@@ -878,11 +878,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // option is gone, along with custom-agent discovery. This one is NOT
             // gated on the capability — 0.77.0 answers `set_config_option(agent,
             // …)` with `Unknown config option: agent` no matter what the client
-            // advertised (verified on the same live build). codeg never built a
+            // advertised (verified on the same live build). RecurCode never built a
             // picker for it, but the option WAS advertised (and rendered by the
             // generic selector path) whenever the cwd had a custom agent
             // configured, so a user who picked a persona has it saved in
-            // `codeg:selector-prefs`.
+            // `RecurCode:selector-prefs`.
             //
             // That preference is deliberately left alone. The option is no
             // longer advertised at all, so `config_option_rejects_value` cannot
@@ -897,8 +897,8 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (m) `_meta.permission.defaultToNo` (SDK 0.3.268+, forwarded by
             // `presentation.js`): "the ask must not be approvable by a stray
             // keystroke". The adapter already lists the reject options FIRST for
-            // such an ask, and codeg renders options in wire order and
-            // pre-selects nothing, so the hard half was free. What codeg adds is
+            // such an ask, and RecurCode renders options in wire order and
+            // pre-selects nothing, so the hard half was free. What RecurCode adds is
             // the emphasis: `PermissionDialog` paints the decline as the primary
             // button and demotes every approve option to an outline, so the one
             // accent-coloured control on a dangerous card is not "Allow". Read
@@ -909,7 +909,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // always-allow button simply is not offered.
             //
             // (n) `<system-reminder>` blocks are stripped from replayed prompts
-            // (upstream #1040) — a codeg-visible fix that arrives for free. The
+            // (upstream #1040) — a recur-code-visible fix that arrives for free. The
             // CLI appends them to a user turn to steer the model; live they
             // never reach a client, but `session/load` replayed them verbatim
             // INSIDE the user's own bubble. `parsers::claude` has stripped them
@@ -923,14 +923,14 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `inferLiveToolName` reads, and upstream explicitly keeps that key
             // populated "for clients that key off it". Schema 1.9 types it
             // (`ToolCall::name`, stable), so reading it no longer needs a raw
-            // reader — it would simply be a second source for information codeg
+            // reader — it would simply be a second source for information RecurCode
             // already has, and one the other agents fill differently (see the
             // codex entry's (d)). The
             // multi-select custom-answer fix (#1031) lands in `elicitation.ts`,
-            // which claude never reaches: codeg advertises
+            // which claude never reaches: RecurCode advertises
             // `elicitation.form` for Codex and DeepSeek only. The `TaskList`
             // ReDoS fix (#1006) and the `allowDangerouslySkipPermissions: false`
-            // host opt-out (#1129) are adapter-internal — codeg WANTS the
+            // host opt-out (#1129) are adapter-internal — RecurCode WANTS the
             // `bypassPermissions` mode in the catalog, so it deliberately does
             // not send the opt-out.
             //
@@ -959,7 +959,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `clientCapabilities.session.compaction` being an object — a real
             // typed field, NOT an `_meta` key, so unlike every other opt-in on
             // this list it cannot be smuggled through `ClientCapabilities.meta`:
-            // the `agent-client-protocol-schema` 0.11.7 codeg pinned at the
+            // the `agent-client-protocol-schema` 0.11.7 RecurCode pinned at the
             // time had no `session` field on `ClientCapabilities` at all, and no
             // `CompactionUpdate` / `CompactionSummaryChunk` on `SessionUpdate`
             // (both arrived in schema 1.9 behind `unstable_session_compaction`).
@@ -967,7 +967,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // ⚠️ THIS ENTRY USED TO CALL THAT "out of reach at this schema pin".
             // It is not, and the correction is worth stating because the same
             // wrong inference was drawn twice more below. The pin limits what
-            // the TYPED STRUCTS can say, not what codeg can put on the wire:
+            // the TYPED STRUCTS can say, not what RecurCode can put on the wire:
             // `session/new` and `session/load` already go out as
             // `UntypedMessage`s, and `air_async_task_delta` already reads three
             // variants this very `SessionUpdate` cannot deserialize. Opting in
@@ -994,7 +994,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // carries — `recordSummary` early-returns unless the presentation
             // is `compaction_update`), and real `failed`/`cancelled` states.
             // The summary rides the synthetic call's `raw_output` under a
-            // `codeg.compactionSummary` claim and opens behind the divider's
+            // `RecurCode.compactionSummary` claim and opens behind the divider's
             // "Summary" toggle; the history divider opens onto the same summary,
             // folded in by `parsers::claude` from the transcript's continuation
             // record.
@@ -1035,7 +1035,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // because it is easy to get backwards. Claude's opening `tool_call`
             // carries `rawInput` (a deep clone of the SDK tool input), but the
             // `tool_call_update` the PostToolUse hook emits for Edit/Write
-            // carries the diff content and NO `rawInput` at all. codeg's update
+            // carries the diff content and NO `rawInput` at all. RecurCode's update
             // arm reads `raw_input` off THAT frame, finds none, and so runs
             // `synthesize_edit_input_from_diffs`, whose result REPLACES the
             // opening frame's input — so the card's "+N −M" ends up being
@@ -1046,9 +1046,9 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // collapsed count and the expanded body are held to a per-input
             // parity contract by the shared `exceedsLineDiffBudget` gate, and
             // both sides of it re-diff that text here; taking the adapter's
-            // numbers for the header while the body stays codeg's own re-diff
+            // numbers for the header while the body stays RecurCode's own re-diff
             // reintroduces exactly the drift the gate exists to prevent, for a
-            // number codeg can already compute exactly. And it would help
+            // number RecurCode can already compute exactly. And it would help
             // precisely where it is absent: the per-hunk blocks it marks are far
             // too small to reach the LCS budget, while the whole-file `Write`
             // fallback (`oldText: originalFile`) — the one shape that could — is
@@ -1083,11 +1083,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // and the text rides beside it as the tool's own
             // `annotations[question].notes` — and the "Other" box is relabelled
             // to say so. It lands in `elicitation.ts`, which claude never
-            // reaches, because codeg advertises `elicitation.form` for Codex and
+            // reaches, because RecurCode advertises `elicitation.form` for Codex and
             // DeepSeek only. Recorded because it is the near-twin of codex-acp
             // 1.12.0's `request_user_input` reshape (codex entry (a)): the same
             // "a free-text note must not eat the selection" idea, arriving in
-            // the same fortnight, on the one adapter where codeg is not the
+            // the same fortnight, on the one adapter where RecurCode is not the
             // client that sees it.
             //
             // 0.79.0 is two upstream changes (#1070, #1143) plus the release
@@ -1103,7 +1103,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // (t) **A shell approval's heading is now the COMMAND, not the
             // model's summary** (#1070, upstream #1068) — the one delta in this
-            // release that costs codeg code. Through 0.78.0
+            // release that costs RecurCode code. Through 0.78.0
             // `buildClaudePermissionPresentation` gave a `Bash`/`PowerShell`
             // request `shellTitle = compactText(input.description) ?? toolName`
             // and used it for BOTH the presentation's `toolCall.title` and its
@@ -1122,10 +1122,10 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the summary to the command the moment it started. They are now the
             // same string.
             //
-            // The other half is a regression codeg has to absorb, and it lands
+            // The other half is a regression RecurCode has to absorb, and it lands
             // exactly where the client was most careful. `_meta.permission.title`
             // is now byte-identical to `toolCall.title` AND to the command
-            // codeg renders in the card's own block; `parsePermissionToolCall`
+            // RecurCode renders in the card's own block; `parsePermissionToolCall`
             // prefers that meta title over the title precisely BECAUSE the title
             // used to be the command. So the heading turns into a second copy of
             // the command block, and the model's one-line label leaves the card
@@ -1152,10 +1152,10 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (`_meta.claudeCode.title` = the description), the terminal
             // `_meta` on the opening frame, and the error-result arm that yields
             // to the terminal channel. The terminal half is gated on the client
-            // `_meta.terminal_output` capability, which codeg does not advertise,
+            // `_meta.terminal_output` capability, which RecurCode does not advertise,
             // so it stays inert and the description keeps riding `content`.
             //
-            // codeg only half-knew the name, and the halves it knew were the
+            // RecurCode only half-knew the name, and the halves it knew were the
             // cheap ones. `getToolIcon` and `classifyToolKind` both carried a
             // `powershell` arm (added for pi, which swaps the same name in on
             // Windows), but `normalizeToolName` did not — so every dispatch
@@ -1177,22 +1177,22 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // runs. Settling the deferred turn on one of those would release
             // `session/prompt` with the promised text still ahead — the
             // out-of-turn delivery class upstream fixed in #864–#866 — so the
-            // hold now waits for `num_turns > 0`. codeg advertises `asyncTasks`
+            // hold now waits for `num_turns > 0`. RecurCode advertises `asyncTasks`
             // and runs claude background shells/workflows/monitors through it,
-            // so this is a fix codeg gets by bumping.
+            // so this is a fix RecurCode gets by bumping.
             //
             // `_meta.claudeCode.mcpServer` (SDK 0.3.274's `McpServerProvenance`,
             // `{name, source}`) is NOT consumed. It answers "which server serves
             // this `mcp__*` tool, and was it registered in-process by the host
-            // (`source: "sdk"`) or configured"; codeg injects codeg-mcp over
+            // (`source: "sdk"`) or configured"; RecurCode injects recur-code-mcp over
             // stdio, which is a configured source and never reads `sdk`, and the
-            // only trust question codeg asks of an MCP tool call — is this one of
+            // only trust question RecurCode asks of an MCP tool call — is this one of
             // the companions I minted? — it already answers from the tool name
             // it chose itself. What DOES change without asking is its sibling:
             // the block is now emitted when `mcpServer` is present even with no
             // `parentToolUseId`, so `_meta.claudeCode.toolName` reaches a
             // top-level MCP tool's PERMISSION frame for the first time. That is
-            // the signal `inferLiveToolName` resolves the codeg-mcp companion
+            // the signal `inferLiveToolName` resolves the recur-code-mcp companion
             // cards on, so a pending MCP approval now shows the right card
             // instead of flipping to it once the call runs and the streamed
             // frame (which always carried `toolName`) refines it.
@@ -1203,7 +1203,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `@anthropic-ai/claude-agent-sdk` goes 0.3.274 → 0.3.280, i.e. CLI
             // 2.1.274 → **2.1.280** (`manifest.json`); `engines.node` stays
             // ">=22". Three of the four need nothing here; the fourth is the
-            // only item in this whole bump that costs codeg code, and it costs
+            // only item in this whole bump that costs RecurCode code, and it costs
             // it in the HISTORY parser rather than on the wire.
             //
             // (w) **The subagent hand-back frame** (CLI-side, arrives with the
@@ -1213,7 +1213,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // provenance paragraph and indents every line of the report two
             // spaces. 0.81.0's `tools.ts` unwraps it (`unwrapHandbackFrame`)
             // before the report reaches a client, so the LIVE path is clean by
-            // bumping — but codeg also renders `Agent`/`Task` results from the
+            // bumping — but RecurCode also renders `Agent`/`Task` results from the
             // CLI's own JSONL (`parsers::claude::extract_tool_result_text` takes
             // the tool_result text; `toolUseResult` is only mined for
             // `structuredPatch` and agent stats), and there the frame is still
@@ -1224,13 +1224,13 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // of the 2.1.280 binary rather than transcribed from the adapter.
             // Note this is NOT gated on the adapter: a user whose standalone
             // Claude Code CLI reaches 2.1.277 writes the frame into every
-            // transcript codeg imports, adapter or no adapter.
+            // transcript RecurCode imports, adapter or no adapter.
             //
             // (x) `terminal_output_delta` (#1150, the twin of codex-acp 1.13.0's
             // #528). A client may now advertise `_meta.terminal_output_delta`
             // instead of `_meta.terminal_output`; the adapter treats EITHER as
             // "this client takes terminal output" and renames the key it emits.
-            // codeg advertises neither to claude, deliberately — see
+            // RecurCode advertises neither to claude, deliberately — see
             // `build_client_capabilities`, and (u) above for what the `content`
             // channel is still carrying because of it. Inert.
             //
@@ -1238,7 +1238,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // cancelled or errored turn calls `ContextCompactionLifecycle
             // ::interrupt()`, which settles the entity and refuses the late,
             // uncorrelated hooks the abandoned work keeps emitting until a new
-            // turn's dispatch calls `resume()`. codeg renders compaction from
+            // turn's dispatch calls `resume()`. RecurCode renders compaction from
             // the legacy `_meta.contextCompaction` tool call (the
             // the `compaction_update` presentation too, see (p)),
             // and that call is exactly what used to be left `in_progress`
@@ -1252,7 +1252,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // that as "the running total restarted" and take the reading itself
             // as the increment. `lastModelUsageReading` is now `undefined` on a
             // resumed session and the first result's rows come from its own
-            // per-turn `usage` instead. This lands straight in codeg's
+            // per-turn `usage` instead. This lands straight in RecurCode's
             // `_meta.quota.model_usage` consumer — the per-model rows on the
             // first turn after a resume were inflated by the entire prior
             // session. Nothing to do beyond the bump.
@@ -1274,7 +1274,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // * It takes over the AIR lane. The model-fallback advisory is
             //   `if (!supportsNotices && supportsAirSessionFailures(...))`, so
-            //   turning notices on stops feeding codeg's existing
+            //   turning notices on stops feeding RecurCode's existing
             //   `SessionFailure` banner; codex-acp says the same in its
             //   readme-dev ("notices take precedence over AIR advisory
             //   records"). ACCEPTED: advisories become notifications (a
@@ -1300,11 +1300,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // #1166) and moves NO dependency: `@anthropic-ai/claude-agent-sdk`
             // stays 0.3.280 (so the CLI is still 2.1.280), the ACP SDK stays
             // 1.5.0, `engines.node` stays ">=22", and the `initialize` response
-            // to codeg's handshake matches 0.81.0's field for field apart from
+            // to RecurCode's handshake matches 0.81.0's field for field apart from
             // the version (both probed live over stdio). Two items cost
-            // codeg code, (bb) and (cc). The rest arrive free or are inert, and
+            // RecurCode code, (bb) and (cc). The rest arrive free or are inert, and
             // they are written down because three of them settle something
-            // codeg reported upstream or already works around.
+            // RecurCode reported upstream or already works around.
             //
             // (bb) **File-tool argument aliases** (#1161). CLI 2.1.280 accepts
             // `path` for Write's `file_path` and `file_text` / `file_content`
@@ -1313,7 +1313,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // block, and with it `rawInput` and the JSONL, keeps the model's
             // spelling. The adapter fixed only its OWN title, diff and
             // locations (`normalizeWriteInput`); `rawInput` is still the raw
-            // clone, and every codeg card reads `rawInput`, so an aliased
+            // clone, and every RecurCode card reads `rawInput`, so an aliased
             // Write rendered with no path and no body. Edit has carried the
             // same kind of renames for longer — `path`, `old_str`, `new_str`,
             // `replace_name`, all already in the 2.1.274 binary — and the
@@ -1326,7 +1326,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // keyed on `_meta.claudeCode.toolName`. A permission request needs
             // nothing: the CLI parses, and so coerces, the input before
             // `canUseTool` sees it. Like (w), this is not gated on the adapter:
-            // any 2.1.280 CLI writes these spellings into the transcripts codeg
+            // any 2.1.280 CLI writes these spellings into the transcripts RecurCode
             // reads. On success the CLI also appends a model-directed note to
             // the Write result ("Note: Write's parameters are named `file_path`
             // and `content`. …"); it is short and true, and stays visible.
@@ -1351,7 +1351,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // for good. `session_modes_reject_id` screens it off the session's
             // own mode list, the same way.
             //
-            // (dd) Plan approval: two of the three defects codeg reported as
+            // (dd) Plan approval: two of the three defects RecurCode reported as
             // #1077 are fixed, and the third is not. #1163 — an allowed
             // ExitPlanMode now publishes the mode it leaves the session in, as
             // a `current_mode_update` plus a `mode` `config_option_update`, and
@@ -1359,7 +1359,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // fell back to acceptEdits reads as acceptEdits. Through 0.81.0
             // only the clear-context options did, and the composer kept
             // showing Plan while the session ran in Auto. Both frames land on
-            // paths codeg already has; claude's composer is driven by its
+            // paths RecurCode already has; claude's composer is driven by its
             // `mode` config option, which is not re-asserted at send time, so
             // the published mode holds for the rest of the connection. #1164 —
             // bypass is offered NEXT TO Auto instead of being dead code behind
@@ -1370,11 +1370,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // still gives the Claude-side session a fresh uuid
             // (`options.sessionId = publicSessionId ? randomUUID() :
             // sessionId`), so a later `session/load` of the public id is
-            // silently truncated at the plan. codeg still does not work
+            // silently truncated at the plan. RecurCode still does not work
             // around it.
             //
             // (ee) A steered turn settles on the result that answers the steer
-            // (#1166). codeg steers claude natively
+            // (#1166). RecurCode steers claude natively
             // (`steering_prompt_required_min_version`), and through 0.81.0 a
             // steered turn settled only at an SDK `idle` after the steer's
             // echo — so a steer the CLI never replayed, or an idle swallowed by
@@ -1382,7 +1382,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `session/prompt` parked until cancel or the next prompt (#1114).
             // A result whose `user_message_uuids` names the steer now settles
             // it, and the idle stays as the fallback. A free fix to exactly
-            // the turn boundary codeg's in-flight tracking keys on.
+            // the turn boundary RecurCode's in-flight tracking keys on.
             //
             // (ff) Usage. #1132: the CLI's synthetic frames (spend limit,
             // sign-in prompt, local command output — `model: "<synthetic>"`,
@@ -1406,11 +1406,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `systemPrompt` / `disableBuiltInTools`,
             // `_meta.claudeCode.emitRawSDKMessages` and every process-level
             // `_meta.claudeCode.options` key, skills normalized as a set — not
-            // just cwd and MCP servers. codeg sends the same `_meta`
+            // just cwd and MCP servers. RecurCode sends the same `_meta`
             // (`emitRawSDKMessages: true`, nothing else) on new, load and
             // resume, and the resume that follows a fork creates its session
             // cold (`unstable_forkSession` never enters the adapter's session
-            // map, so there is no fingerprint to compare), so no codeg flow
+            // map, so there is no fingerprint to compare), so no RecurCode flow
             // rebuilds a query it did not rebuild before.
             //
             // (hh) The rest need nothing. #1035: a marker-only custom slash-
@@ -1421,35 +1421,35 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // history path, so the two paths now agree. #1055 tags the
             // informational fallback line with `_meta.claudeCode.kind =
             // "informational"`, which only a client WITHOUT the notices
-            // capability ever receives; codeg advertises it (see (aa)). #1103:
+            // capability ever receives; RecurCode advertises it (see (aa)). #1103:
             // a successful result that merely MENTIONS `Please run /login` no
             // longer fails the turn as `auth_required`, nor rolls a goal back.
-            // #1104 touches only `providers/set`, which codeg never sends.
+            // #1104 touches only `providers/set`, which RecurCode never sends.
             // #1146: an unreadable managed-policy tier no longer kills the
             // adapter before it answers `initialize`.
             //
             // 0.81.2 + 0.82.0 are four upstream changes (#1170, #1173, #1153,
-            // #1179) and move no dependency that reaches codeg:
+            // #1179) and move no dependency that reaches RecurCode:
             // `@anthropic-ai/claude-agent-sdk` stays 0.3.280 (CLI 2.1.280), the
             // ACP SDK 1.5.0, `engines.node` ">=22"; the one new runtime
             // dependency is `diff` (the adapter now builds Git patches). The
-            // effect on codeg was MEASURED rather than read: both versions' own
+            // effect on RecurCode was MEASURED rather than read: both versions' own
             // scenario harness (`src/tests/acp-scenarios`, a mocked SDK, 40
-            // scenarios) re-run with codeg's exact `clientCapabilities`, and the
+            // scenarios) re-run with RecurCode's exact `clientCapabilities`, and the
             // two recordings diffed frame by frame.
             //
-            // (ii) **The AIR tool-call contract** (#1153) — BREAKING for codeg,
-            // because codeg is an AIR client: the adapter switches the whole
+            // (ii) **The AIR tool-call contract** (#1153) — BREAKING for RecurCode,
+            // because RecurCode is an AIR client: the adapter switches the whole
             // contract on the mere presence of
             // `clientCapabilities._meta.jetbrains.air` (`isAirClient`), which
-            // codeg sends for `sessionFailure` / `asyncTasks` /
+            // RecurCode sends for `sessionFailure` / `asyncTasks` /
             // `recommendedValue`. Plain and Zed clients keep the old fields.
-            // For an AIR client, and where codeg absorbs it
+            // For an AIR client, and where RecurCode absorbs it
             // (`crate::acp::air_contract` unless named otherwise):
             //   * a `tool_call_update`'s `_meta` carries only the keys that
             //     changed, per key inside `claudeCode` and `jetbrains.air`, so
             //     `toolName` / `parentToolUseId` ride the OPENING frame only.
-            //     Merged per call by `ToolCallMetaLedger`; codeg replaces a
+            //     Merged per call by `ToolCallMetaLedger`; RecurCode replaces a
             //     call's `_meta` whole, so the first partial update used to
             //     un-nest a subagent's child from its capsule.
             //   * `claudeCode.title` / `subagent` / `skill` / `skillPath` go to
@@ -1468,7 +1468,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //     (`permission_record`); the edit text is filled from the live
             //     call on the frontend (`fillStrippedEditInput`).
             //   * a Read, and a Grep/Glob that names a path, completes with NO
-            //     result text ("AIR shows … the list of viewed files"). codeg
+            //     result text ("AIR shows … the list of viewed files"). RecurCode
             //     already subscribes to the raw SDK stream
             //     (`emitRawSDKMessages`), where the `tool_result` arrives just
             //     before the completion: `claude_viewed_results` fills a BARE
@@ -1486,11 +1486,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //     `session_info_update._meta.goal`) → `_meta.jetbrains.air.goal`.
             //     `init_advertises_goal` / `session_info_goal_value` read both.
             //   * mode `_meta.kind`, the `_askUserQuestionCustomAnswer` marker
-            //     (→ `customAnswer`) and `diffStats` move or go. codeg maps no
+            //     (→ `customAnswer`) and `diffStats` move or go. RecurCode maps no
             //     mode meta, never reaches claude's elicitation, and never read
             //     `diffStats`; `question.rs` reads both marker spellings anyway.
             //   Free with it: a subagent's streamed text is no longer re-sent in
-            //   full after its chunks (codeg's capsule transcript showed that
+            //   full after its chunks (RecurCode's capsule transcript showed that
             //   paragraph twice), and a plan that repeats the previous one is
             //   not re-sent.
             //
@@ -1499,11 +1499,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // REQUEST, whose `oldText: null` placeholders the permission card
             // would read as an emptied file, and shows a live Write no diff at
             // all until approval; `rawInputRendering` and `planFile` remove the
-            // description / prompt / plan copies codeg's cards render.
+            // description / prompt / plan copies RecurCode's cards render.
             //
             // (jj) #1179: a sign-in failure is ONLY the ACP `authRequired`
             // rejection now — no AIR `access` record with a `login` action,
-            // which is where the Sign in button on codeg's notification came
+            // which is where the Sign in button on RecurCode's notification came
             // from. The `turn_failed_auth_required` verdict carries that button
             // itself now (frontend `notifyTurnFailure`), for every agent.
             //
@@ -1517,12 +1517,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // dependency bumps: `@anthropic-ai/claude-agent-sdk` 0.3.280 →
             // 0.3.283 → 0.3.284, i.e. the bundled CLI 2.1.280 → 2.1.284; the
             // ACP SDK 1.5.0 → 1.5.1; `engines.node` still ">=22". The ACP
-            // traffic codeg reads was measured the same way as for 0.82.0 and
+            // traffic RecurCode reads was measured the same way as for 0.82.0 and
             // did not move: the adapter's scenario harness (40 scenarios, mocked
-            // SDK) re-run on both tags with codeg's exact `clientCapabilities`,
+            // SDK) re-run on both tags with RecurCode's exact `clientCapabilities`,
             // and with each opt-in AIR capability added, is byte-identical, and
             // so is `initialize` minus the version. What moved is the CLI behind
-            // it — including the raw SDK stream codeg also reads, see (nn) —
+            // it — including the raw SDK stream RecurCode also reads, see (nn) —
             // measured live over stdio with no model call (a `UserPromptSubmit`
             // hook blocks the prompt).
             //
@@ -1547,7 +1547,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // (nn) Plugin load failures (CLI 2.1.283, `system/init`'s
             // `plugin_errors`) have "no ACP surface": the adapter only writes
-            // them to its stderr. codeg reads them off the raw SDK stream it
+            // them to its stderr. RecurCode reads them off the raw SDK stream it
             // already takes (`claude_plugin_load_failures`) and raises one
             // warning per new list. Measured: an ENABLED plugin that is merely
             // absent — an unknown marketplace plugin, or the `<id>@local` MCP
@@ -1563,7 +1563,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // burst of `count_tokens` requests (about 20 per call, counted at a
             // local gateway; 0.82.0 sends none), and SDK control requests are
             // serialized — so the NEXT control request waits for it, and so
-            // does a prompt. Measured with codeg's connect-time replay shape:
+            // does a prompt. Measured with RecurCode's connect-time replay shape:
             // the first `set_config_option` after `session/new` took ~0.5 s
             // (fast local gateway) / ~2 s (a remote gateway) instead of ~0.03 s,
             // the effort replay after a model switch the same again, and a
@@ -1572,7 +1572,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // were still blocked when the probe gave up (90–120 s).
             // `getContextUsage({ detail: "summary" })` returns the same
             // `rawMaxTokens` in ~0.1 s with no request at all (measured on both
-            // gateways), so the fix is a one-liner in the adapter. codeg has no
+            // gateways), so the fix is a one-liner in the adapter. RecurCode has no
             // lever on the call: the adapter is a global npm install, and the
             // CLI offers no setting for the default `detail`. Reported upstream
             // with a repro as agentclientprotocol/claude-agent-acp#1192; check
@@ -1581,22 +1581,22 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (pp) Inert: managed `deniedModels` now also filters the picker
             // (#1186); the adapter ignores the new `mcp_tool_listing` stream
             // event; `conversation_reset` gains `trigger` / `user_message_uuid`
-            // / `timestamp` and `system/init` gains `view_mode` — codeg reads
+            // / `timestamp` and `system/init` gains `view_mode` — RecurCode reads
             // none of those frames.
             //
             // 0.85.0 is three upstream changes (#1208, #1210, #1211). The
             // bundled `@anthropic-ai/claude-agent-sdk` goes 0.3.284 → 0.3.286,
             // i.e. CLI 2.1.284 → **2.1.286**; the ACP SDK stays 1.5.1 and
             // `engines.node` ">=22". As on 0.84.0, the adapter's own traffic did
-            // not move for codeg — its scenario harness (40 scenarios, mocked
-            // SDK) re-run on both tags with codeg's exact `clientCapabilities`
+            // not move for RecurCode — its scenario harness (40 scenarios, mocked
+            // SDK) re-run on both tags with RecurCode's exact `clientCapabilities`
             // is byte-identical, and so is `initialize` minus the version — but
             // the CLI behind it did. (qq) and (rr) were measured live over stdio
             // against a local fake Anthropic API (no model call), 0.84.0 and
             // 0.85.0 side by side.
             //
             // (qq) **A steer no longer waits on a foreground tool** (CLI
-            // 2.1.286, #1211). codeg steers claude natively, and a
+            // 2.1.286, #1211). RecurCode steers claude natively, and a
             // `_session/steering` that lands while a foreground Bash, MCP or
             // Agent call runs now moves that call to the background and lets the
             // steer through. 2.1.284 held a Bash steer until the command
@@ -1607,7 +1607,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `_meta.jetbrains.air.asyncTasks.backgrounded`; an
             // `async_task_spawned` (shell) takes over, the steer is answered and
             // the prompt settles; when the command exits, the CLI runs a turn of
-            // its own on the task notification. Two consequences for codeg:
+            // its own on the task notification. Two consequences for RecurCode:
             //   * The command card printed that notice as its output.
             //     `parseBackgroundLaunch` (frontend) now knows all four wordings
             //     the CLI acknowledges a background command with —
@@ -1615,7 +1615,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //     shows its Background badge and one line instead, live and from
             //     history alike.
             //   * An MCP call moves the same way ("MCP tool "…" was moved to the
-            //     background as task …"), and codeg's own blocking
+            //     background as task …"), and RecurCode's own blocking
             //     `ask_user_question` is one. Steering while its card was up left
             //     the question parked past the turn: the card gone with the
             //     turn, the one-per-connection slot held, every later ask on the
@@ -1645,14 +1645,14 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //   * #1208 hides other agents' and sessions' messages (`is_meta`
             //     user records whose `origin.kind` is peer, channel, observer,
             //     observer-activity or slack-ping) from `session/load` replay.
-            //     codeg never renders claude's replay (it resumes, and discards
+            //     RecurCode never renders claude's replay (it resumes, and discards
             //     a load's), and `parsers::claude` skips every `isMeta` record;
             //     the 2.1.286 binary writes peer and channel messages with
             //     `isMeta: true`.
             //   * #1208's other half keeps a settings-enabled `ultracode` on
-            //     across the adapter's effort applies; codeg writes neither key.
+            //     across the adapter's effort applies; RecurCode writes neither key.
             //   * #1210 sends the root `_askUserQuestionCustomAnswer` marker to
-            //     AIR again. codeg advertises no elicitation to claude, so the
+            //     AIR again. RecurCode advertises no elicitation to claude, so the
             //     adapter disallows AskUserQuestion here.
             //   * SDK 0.3.286: a `system/session_title_changed` raw frame (new
             //     in the binary, not seen on the probes; no consumer, and
@@ -1674,7 +1674,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the ACP SDK 1.5.1 → 1.6.0. The Claude SDK stays 0.3.286, so the
             // CLI is the same 2.1.286 binary (byte-identical in both installs),
             // and `engines.node` stays ">=22". The scenario harness is again
-            // byte-identical on both tags with codeg's `clientCapabilities`,
+            // byte-identical on both tags with RecurCode's `clientCapabilities`,
             // and so are `initialize` and `session/new` over stdio. The probes
             // below ran live against the local fake Anthropic API, 0.85.0 and
             // 0.85.1 side by side.
@@ -1690,7 +1690,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // steered Bash or MCP call completes with its background notice
             // before the turn ends; a tool call cut off at the output limit gets
             // an `InputValidationError` result from 2.1.286; approving or
-            // cancelling a plan answers `ExitPlanMode` (codeg is offered no
+            // cancelling a plan answers `ExitPlanMode` (RecurCode is offered no
             // clear-context option); and a CLI killed mid-tool ends with "The
             // connection to Claude was lost.", as on 0.85.0. A steer that lands
             // while a tool call is still streaming does trip it, see (fff). The
@@ -1699,11 +1699,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // (uu) #1205 restores background-task stops on `session/load`
             // replay instead of showing the `<task-notification>` as a prompt.
-            // codeg never renders that replay, and `parsers::claude` already
+            // RecurCode never renders that replay, and `parsers::claude` already
             // hides those records and strips one embedded in a prompt. But a
             // background shell's notification names the `Bash` call that started
             // it in `<tool-use-id>` — the probes show it, and so do transcripts
-            // from 2.1.257 on — and codeg's live settle path took every named
+            // from 2.1.257 on — and RecurCode's live settle path took every named
             // call for a sub-agent launch: it rewrote a background command's
             // card into the sub-agent lifecycle marker, which the command card
             // printed raw. Since 2.1.286 a steer that lands during a command
@@ -1713,14 +1713,14 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // (vv) #1216 answers `session/close` without awaiting the interrupt
             // reply: a fresh session closed in 519 ms on 0.85.0 and 2 ms on
-            // 0.85.1. codeg sends one close only, for the parent a fork leaves,
+            // 0.85.1. RecurCode sends one close only, for the parent a fork leaves,
             // and never awaits its answer, so the parent's CLI just exits
             // sooner.
             //
             // (ww) #1217's draft ACP v2 is opt-in
             // (`CLAUDE_AGENT_ACP_EXPERIMENTAL_V2=1`) and routes by the protocol
-            // version `initialize` asks for. codeg asks for 1; with the variable
-            // set, a whole codeg turn is frame-for-frame the same.
+            // version `initialize` asks for. RecurCode asks for 1; with the variable
+            // set, a whole RecurCode turn is frame-for-frame the same.
             //
             // (oo) still holds on 0.85.1: 15 `count_tokens` per `session/new`,
             // and #1201 is still open.
@@ -1730,7 +1730,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // ">=22". Most of its commits build the draft ACP v2 surface, which
             // stays opt-in (see (ww)); the rest add `/mcp` (#1218) and fix the
             // cancel, close and context-window paths. The scenario harness
-            // re-run on both tags with codeg's exact `clientCapabilities`
+            // re-run on both tags with RecurCode's exact `clientCapabilities`
             // differs in one frame, the same in all 40 scenarios:
             // `available_commands_update` now ends with the adapter's own `mcp`
             // entry. `initialize` is the same minus the version. The probes
@@ -1745,7 +1745,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // of the CLI's model-row builders now value a Fable row by the
             // family alias, as Opus, Sonnet and Haiku already were. Through a
             // gateway the row goes from `claude-fable-5-1` to `fable` under the
-            // same name and description. A Fable pick codeg saved before is
+            // same name and description. A Fable pick RecurCode saved before is
             // `claude-fable-5-1`, which the selector no longer lists, so every
             // connect would have dropped it for the default model (Opus there).
             // `heal_respelled_model_pick` replays it as the one row that names
@@ -1757,12 +1757,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // server list, and runs a reconnect, enable or disable through the
             // SDK control API, which 2.1.286 refused in an SDK session.
             // Measured: `/mcp` lists the probe server with its tool count, and
-            // `/mcp reconnect probe` reconnects it. codeg's slash menu lists it
+            // `/mcp reconnect probe` reconnects it. RecurCode's slash menu lists it
             // like any other command, and the reply renders as Markdown. The
             // transcript keeps only the command and Claude Code's own text, and
             // `parsers::claude` hides a local command with its output, so a
             // reload shows neither, as for `/usage`. A reconnect starts OAuth
-            // only for a client with URL elicitation, which codeg does not
+            // only for a client with URL elicitation, which RecurCode does not
             // advertise.
             //
             // (zz) The main-thread `agent` option is back (#1250, undoing
@@ -1770,7 +1770,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the user, the project or a plugin), `session/new` lists `agent`
             // with `default` and each custom agent, and a pick applies that
             // agent's prompt from the next turn (measured: the persona reaches
-            // the system prompt). codeg renders it as any other select and
+            // the system prompt). RecurCode renders it as any other select and
             // replays a saved pick through `config_option_rejects_value`, so an
             // agent no longer defined is skipped. With no custom agent the
             // option is absent, and an `agent` pick saved before 0.77.0 is still
@@ -1780,7 +1780,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (#1218): the mode of the last prompt, unless a plan was exited
             // after it. Measured: set `acceptEdits`, prompt, resume in a new
             // process — 0.85.1 comes back in `default`, 0.86.0 in `acceptEdits`.
-            // codeg still sets the saved composer mode at connect when it
+            // RecurCode still sets the saved composer mode at connect when it
             // differs (`apply_preferred_session_options`), so only a user who
             // never picked a mode sees the transcript's.
             //
@@ -1788,19 +1788,19 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // drops the user messages it abandons from Claude Code's queue
             // before the interrupt, so they no longer run after all. Measured
             // with a prompt queued behind a slow turn: 0.85.1 still sent it to
-            // the model after the cancel, 0.86.0 did not. codeg never queues a
+            // the model after the cancel, 0.86.0 did not. RecurCode never queues a
             // prompt behind a running turn (the `turn_in_flight` gate), so what
             // it gains is a steer the CLI still holds when the user stops (read
             // from the source); a steer the CLI has already taken in runs on
             // both, as measured. `session/close` now answers after the turns it
-            // cancels have ended (5 s at most); codeg's one close is for an idle
+            // cancels have ended (5 s at most); RecurCode's one close is for an idle
             // fork parent and is never awaited. Read from the source: a held
             // turn cancelled mid-follow-up now ends at its interrupt's idle,
             // after the follow-up's flushed output, and a force-cancel that
             // fires while an update is being sent no longer leaves the turn
             // open.
             //
-            // (ccc) Nothing to change in codeg, each checked:
+            // (ccc) Nothing to change in RecurCode, each checked:
             //   * #1241 counts a subagent's permission request as the turn
             //     waiting on the user. Over v1 that only makes a steer sent
             //     while such a card is open non-interrupting, as the main
@@ -1812,18 +1812,18 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //     `_meta.jetbrains.air.{kind: "skill", skillPath}`. Not adopted:
             //     the adapter resolves SKILL.md only under the session cwd and
             //     the home directory, so plugin and bundled skills never carry
-            //     it, and a marker in the slash menu would split codeg's skills
+            //     it, and a marker in the slash menu would split RecurCode's skills
             //     into two looks.
             //   * Write/Edit diffs and permission titles change only for the v2
-            //     surface or a `diffPatch` client, and codeg is neither for
+            //     surface or a `diffPatch` client, and RecurCode is neither for
             //     Claude.
             //   * CLI 2.1.287 offers MCP servers on the 2025-11-25 protocol
-            //     `elicitation: {form, url}` where 2.1.286 sent `{}`. codeg-mcp
+            //     `elicitation: {form, url}` where 2.1.286 sent `{}`. recur-code-mcp
             //     answers 2024-11-05 and reads no client capability, and a probe
             //     server with the same handshake still lists its tools.
             //   * A `context: fork` skill typed as `/<skill>` now streams its
             //     fork, parented to a synthetic `forked-command-<skill>` id that
-            //     no tool call carries. codeg drops parented text whose parent
+            //     no tool call carries. RecurCode drops parented text whose parent
             //     never arrived, and shows such tool calls as ordinary cards
             //     (under an Agent card instead while one is still running, by
             //     the positional fallback); the main thread's answer still
@@ -1842,7 +1842,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // dependencies). 0.88.0 (#1276) moves the Claude SDK 0.3.287 →
             // 0.3.293, i.e. CLI 2.1.287 → **2.1.293**. The ACP SDK stays 1.7.0
             // and `engines.node` stays ">=22". 0.88.0's scenario harness, run
-            // on the sources of both tags with codeg's exact
+            // on the sources of both tags with RecurCode's exact
             // `clientCapabilities`, is byte-identical in all 40 scenarios; the
             // Monitor scenario it replaced differs as (eee) says. The probes
             // below ran live against the local fake Anthropic API (no model
@@ -1855,19 +1855,19 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // answers it with that turn's result. The transcript records the
             // prompt as a `queued_command` attachment, which `parsers::claude`
             // renders as a user turn (`queued_human_prompt`) and the background
-            // watcher matches against the prompts codeg sent, so the rest of
+            // watcher matches against the prompts RecurCode sent, so the rest of
             // the turn stays off the overlay. 0.86.0 took the result for an
             // autonomous one and left the prompt open: measured, no answer in
-            // 45 s, so codeg's turn kept spinning. 0.88.0 settles it
+            // 45 s, so RecurCode's turn kept spinning. 0.88.0 settles it
             // (`end_turn`, 4.8 s after the send). A prompt that arrives while
             // the autonomous turn is still waiting on the model is not folded
             // on either version; it runs as its own turn afterwards.
             //
             // (eee) **Monitor tasks leave the async-task channel** (#1249). The
             // task of a `Monitor` call (the SDK reports it as `local_bash`) and
-            // a `local_monitor` task are no longer published. codeg's task strip
+            // a `local_monitor` task are no longer published. RecurCode's task strip
             // therefore lists no running monitor and offers no stop for one,
-            // and codeg cannot bring the control back:
+            // and RecurCode cannot bring the control back:
             // `_session/async_task/stop` refuses a task the adapter does not
             // publish. Measured on 0.86.0's Monitor scenario: 0.86.0 sends
             // `async_task_spawned` and two progress frames, 0.88.0 neither. The
@@ -1876,7 +1876,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // events), never from result text; a late frame of an earlier run
             // (`run_id`, SDK 0.3.292+) is dropped; and a subagent's task keeps
             // reporting to the subagent's session after the subagent finished.
-            // codeg's Bash card reads the launch text itself
+            // RecurCode's Bash card reads the launch text itself
             // (`parseBackgroundLaunch`), so a backgrounded command looks the
             // same.
             //
@@ -1887,7 +1887,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the turn through (tt): the prompt settled `end_turn` with an AIR
             // `sessionFailure` titled "Claude ended the turn without returning
             // results for tool calls: <id>" (actions retry and new session),
-            // and codeg's failure banner showed it over a turn that went fine.
+            // and RecurCode's failure banner showed it over a turn that went fine.
             // 0.88.0 reports no failure. It closes only that card as `failed`,
             // with "Claude stopped this tool call before it ran." The call never
             // reaches a complete assistant message, so the transcript has no
@@ -1914,25 +1914,25 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `file_path` when `path` is absent, a repeat dropped), while the
             // stream, `rawInput` and the JSONL keep the model's spelling, and
             // the result gains "Note: Grep's parameter for where to search is
-            // named `path`. …", which codeg's search parser keeps as a note.
+            // named `path`. …", which RecurCode's search parser keeps as a note.
             // `canonical_file_tool_input` makes the same repair, so the search
             // card shows the path. The native CLI offers no Grep tool by
             // default (it searches through Bash), so no probe reached it and
             // few setups will. The
             // Agent tool takes `effort`, and WebFetch takes `offset` to read on
             // past 100,000 characters. The adapter adds both to its own titles,
-            // which codeg does not show, so codeg's Agent and WebFetch cards
+            // which RecurCode does not show, so RecurCode's Agent and WebFetch cards
             // read them from `rawInput`.
             //
             // (iii) **MCP handshake** (CLI 2.1.292). A stdio server is first
             // offered protocol 2026-07-28 through a `server/discover` probe, with
-            // up to 3 s to answer before the 2025-11-25 `initialize`. codeg-mcp
+            // up to 3 s to answer before the 2025-11-25 `initialize`. recur-code-mcp
             // answers it at once with -32601 (method not found), and the CLI
             // falls back at once. Measured with the real binary: `initialize`
             // follows 6 ms after the probe, and `session/new` takes as long as
             // on 0.86.0.
             //
-            // (jjj) Nothing to change in codeg, each checked:
+            // (jjj) Nothing to change in RecurCode, each checked:
             //   * A resume and a load both come back in plan mode after a plan
             //     mode prompt, on both versions.
             //   * An async Agent launch keeps its result text; the structured
@@ -1940,15 +1940,15 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //   * `latest_per_family` keeps Fable 5.1, Opus 5.5 and Sonnet 5.5,
             //     and the Fable row keeps the value `fable`.
             //   * 2.1.292 honours `NO_PROXY` for the CLI's own sign-in and
-            //     policy requests, so the bypass list codeg exports with its
+            //     policy requests, so the bypass list RecurCode exports with its
             //     proxy setting now reaches them too.
             //
             // 0.89.0 changes the adapter only: the Claude SDK stays 0.3.293
             // (CLI 2.1.293), the ACP SDK moves 1.7.0 → 1.8.0 and
             // `engines.node` stays ">=22". Each tag's own scenario harness, run
-            // with codeg's exact `clientCapabilities`, is byte-identical in all
+            // with RecurCode's exact `clientCapabilities`, is byte-identical in all
             // 40 scenarios apart from `initialize`, whose AIR capability list
-            // gains "customInstructions" (codeg reads nothing off that list).
+            // gains "customInstructions" (RecurCode reads nothing off that list).
             // A live conversation against the local fake Anthropic API (a new
             // session, a Bash turn, then resume and load in fresh processes)
             // matches 0.88.0's frame for frame apart from timing.
@@ -1956,10 +1956,10 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (kkk) **Archived titles** (#1268). JetBrains AIR archives a
             // session by appending its title again as `[archived] <title>` (a
             // `custom-title` and an `agent-name` record). The adapter now
-            // publishes such a title to an AIR client, which codeg is, without
+            // publishes such a title to an AIR client, which RecurCode is, without
             // the marker, while the transcript keeps it: measured live, 0.88.0
             // publishes "[archived] Probe title" and 0.89.0 "Probe title" (the
-            // prefixed one still to a client that is not AIR). codeg's two
+            // prefixed one still to a client that is not AIR). RecurCode's two
             // title producers, the wire and the transcript, would then disagree
             // and the sidebar row flip between them, so both read a title
             // through `parsers::claude::displayed_session_title`, which drops
@@ -1968,19 +1968,19 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (lll) The session index (`sessionIndex`, #1268: an indexed
             // `session/list`, `_session/rename` / `archive` / `unarchive` and a
             // pushed `_session/list/subscribe`) is not adopted. It lives inside
-            // a running adapter, while codeg's list is read offline from the
+            // a running adapter, while RecurCode's list is read offline from the
             // transcripts, for every agent, and must work with none running.
             // Undeclared it is inert: a live trace shows the same one settings
             // watcher as 0.88.0, no timer and no extra scan of the projects
             // directory, about 0.6 MB more heap, and the new methods answer
             // -32601. Without it an AIR client's `session/delete` ARCHIVES
             // (appends the title records above and keeps the transcript) and
-            // `session/list` hides archived sessions; codeg sends neither.
+            // `session/list` hides archived sessions; RecurCode sends neither.
             //
             // (mmm) Custom instructions (#1177: `_meta.jetbrains.air.
             // customInstructions` on `session/new`, appended to the
             // `claude_code` preset, honoured from any client) are not adopted:
-            // no codeg surface supplies session-level instructions. Measured
+            // no RecurCode surface supplies session-level instructions. Measured
             // live, CLI 2.1.293 freezes a session's system prompt at its first
             // model request (a `prompt_snapshot` attachment replayed on every
             // resume, load and fork, and across a `/compact`), so instructions
@@ -1993,16 +1993,16 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // strictly: a malformed `mcpServers` entry (a stdio server without
             // `args` or `env`, an http one without `headers`, `env` as an
             // object) or a non-string `additionalDirectories` item now fails the
-            // request with -32602 where 0.88.0 dropped it. codeg builds its
+            // request with -32602 where 0.88.0 dropped it. RecurCode builds its
             // entries through the Rust crate's typed constructors, which always
             // write those fields, and they pass on both versions.
             //
-            // (ooo) Nothing else reaches codeg. `session/close` of a session
+            // (ooo) Nothing else reaches RecurCode. `session/close` of a session
             // that is not loaded answers `{}` instead of -32603
             // (`close_forked_parent` only logs either way). The message drain
             // yields to the event loop every 8 ms: timing only, and a
             // 30,000-delta flood with a cancel measured no difference. #1278
-            // recreates live sessions on the ACP `logout`, which codeg never
+            // recreates live sessions on the ACP `logout`, which RecurCode never
             // sends to Claude, and #1288–#1290 change the experimental ACP v2
             // surface only.
             //
@@ -2011,7 +2011,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // CLI binary is byte for byte the same 2.1.293; the ACP SDK 1.8.0)
             // and `engines.node` stays ">=22". The published package differs
             // from 0.89.0's in `dist/session-index/*` and `package.json`, as
-            // the tag diff does. Each tag's scenario harness, run with codeg's
+            // the tag diff does. Each tag's scenario harness, run with RecurCode's
             // exact `clientCapabilities`, is byte-identical in all 40
             // scenarios, `initialize` included. A live conversation against the
             // local fake Anthropic API (a new session, three turns, then a
@@ -2027,7 +2027,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // lookup listed the whole project directory per row and could read
             // another copy of the session. All of it serves a client that
             // declared `sessionIndex` (see (lll)), or the archive behind an
-            // AIR client's `session/delete`, which has no subscriber. codeg
+            // AIR client's `session/delete`, which has no subscriber. RecurCode
             // declares neither and sends none of these requests.
             //
             // (qqq) The rule the index now applies itself is the SDK's title
@@ -2038,8 +2038,8 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // else the AI title, else the newest `last-prompt` record, a
             // `summary` record or the first prompt. The adapter then collapses
             // white space and cuts at 256 UTF-16 units (`sanitizeTitle`).
-            // codeg's history parser titles an untitled session by its first
-            // prompt, reference links folded, and both of codeg's transcript
+            // RecurCode's history parser titles an untitled session by its first
+            // prompt, reference links folded, and both of RecurCode's transcript
             // readers keep a stored title's spacing. Measured with the CLI's
             // title request refused (a gateway may refuse it), adopting the
             // wire title flipped the row against every detail fetch: after
@@ -2052,7 +2052,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // login flow\n\nplease  look at auth.ts first" throughout. A
             // generated title that came back with a double space was stored
             // with it as an `ai-title` record and published collapsed. So for
-            // Claude codeg no longer writes the wire title while it can read
+            // Claude RecurCode no longer writes the wire title while it can read
             // the transcript: the notification loop holds it and wakes the
             // transcript watcher, which drops it, publishing it only while it
             // has no transcript it can read, as with a `CLAUDE_CONFIG_DIR` set
@@ -2061,7 +2061,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // reports apart from that fallback is a transcript record too: the
             // CLI appends a custom title before it writes the sidecar, and
             // stores a generated one as an `ai-title` record.
-            // codeg keeps its first-prompt fallback; showing the SDK's newest
+            // RecurCode keeps its first-prompt fallback; showing the SDK's newest
             // prompt instead would be a separate choice.
             distribution: AgentDistribution::Npx {
                 version: "0.89.1",
@@ -2081,12 +2081,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // agentclientprotocol org (TypeScript rewrite, npx-distributed).
             // 1.1.8 depends on `@openai/codex` ^0.145.0 and drives `codex
             // app-server`; since 1.0.1 it also resolves the resumed
-            // `model_provider` from `~/.codex/config.toml` (#224), so codeg no
+            // `model_provider` from `~/.codex/config.toml` (#224), so RecurCode no
             // longer injects `MODEL_PROVIDER` to keep resumed sessions on the
             // custom provider. 1.1.0 (#263) reports `/goal` transitions as a
             // structured `session_info_update` (`_meta.codex.goal`) rather than
             // live agent text — see `crate::acp::codex_goal`. 1.1.3+ adds three
-            // new live signals codeg handles in `connection::emit_conversation_update`:
+            // new live signals RecurCode handles in `connection::emit_conversation_update`:
             // `subAgentActivity` tool calls (#304, suppressed via
             // `is_codex_subagent_activity` — redundant with the collab capsule),
             // retryable turn errors (#289, `_meta.codex.error` → a transient
@@ -2095,17 +2095,17 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // call → a dedicated frontend card). 1.1.x also adds Plan mode: the
             // `collaboration_mode` config option (rendered by the generic
             // config-option path) and native `request_user_input`, delivered as
-            // an ACP `elicitation/create` request — codeg advertises
+            // an ACP `elicitation/create` request — RecurCode advertises
             // `elicitation.form` for Codex and bridges the WHOLE form surface
             // (Plan-mode questions, MCP-server forms, MCP tool-call approvals)
             // in `handle_elicitation_request` / `question::classify_elicitation`.
             // 1.1.5 (#322) also widened codex-acp's MCP config filtering to
-            // project `.codex` layers, which is why codeg forces
+            // project `.codex` layers, which is why RecurCode forces
             // `DISABLE_MCP_CONFIG_FILTERING` (see `apply_codex_env_policy`) so
-            // the injected `codeg-mcp` server always survives. 1.1.6 adds
+            // the injected `recur-code-mcp` server always survives. 1.1.6 adds
             // steering (#309): `_session/steering` injects a user prompt into
             // the LIVE turn (initialize advertises `_meta.steering.supported`)
-            // — codeg keeps codex on the MCP pull channel because 1.1.9 still
+            // — RecurCode keeps codex on the MCP pull channel because 1.1.9 still
             // lacks the `promptRequired` idle opt-in
             // (`steering_prompt_required_min_version` → None; flipping it on
             // is a one-liner once a release implements the opt-in AND its
@@ -2121,18 +2121,18 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // sends a `session/request_permission` marked
             // `_meta.codex = {kind:"plan_review", planItemId}` whose `toolCall`
             // (`plan-review:<itemId>`, kind `switch_mode`, `rawInput.plan`) was
-            // NEVER announced as a `tool_call` — codeg seeds it from the request
+            // NEVER announced as a `tool_call` — RecurCode seeds it from the request
             // (see `is_codex_plan_review` / `handle_permission_request`) so the
             // follow-up `tool_call_update` has a card to merge into. On approval
             // codex flips the mode back to default (a mid-turn
             // `config_option_update`) and runs the implementation turn inside
             // the SAME `session/prompt`. 1.1.8 (#342) also hangs a structured
             // `_meta.permission = {version, changes[]}` on each permission
-            // option, whose `changes[].description` codeg surfaces in the
+            // option, whose `changes[].description` RecurCode surfaces in the
             // permission card — the contract claude-agent-acp joined in 0.64.1
             // (#930), so that rendering is no longer codex-only. The
             // `clientCapabilities.plan` path (structured
-            // `plan_update`s) does NOT apply: codeg does not advertise that
+            // `plan_update`s) does NOT apply: RecurCode does not advertise that
             // capability (see `build_client_capabilities`), so plans keep
             // arriving as `agent_message_chunk`s. That also makes 1.1.9 (#354,
             // which coalesces streamed plan snapshots to one `plan_update`
@@ -2145,7 +2145,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // transitions move to the provider-neutral
             // `session_info_update._meta.goal` snapshot the claude adapter
             // speaks since 0.66.0 — the legacy `_meta.codex.goal` key is GONE,
-            // so codeg's initialize-pinned channel selection (SessionInfoUpdate
+            // so RecurCode's initialize-pinned channel selection (SessionInfoUpdate
             // arm, connection.rs) is what keeps GoalCard alive from this
             // release on. The neutral snapshot collapses usageLimited/
             // budgetLimited into status "limited", adds paused/blocked,
@@ -2156,7 +2156,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // to the final record shape in 1.3.0/#393, same wire as
             // claude-agent-acp 0.67.0 — see that entry): typed session
             // failures gated STRICTLY on the client advertising
-            // `clientCapabilities._meta.jetbrains.air`, which codeg does
+            // `clientCapabilities._meta.jetbrains.air`, which RecurCode does
             // (`build_client_capabilities`). Advertising REPLACES the legacy
             // surfaces on the wire: `_meta.codex.error` (both willRetry
             // branches), warning/config-warning text chunks and dropped
@@ -2180,7 +2180,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // switching). New in the bundle and fine on generic cards:
             // synthetic "Guardian Review" tool calls (kind "think") and
             // fuzzyFileSearch ids. Structured plan_update stays inert — its
-            // gate is the TOP-LEVEL `clientCapabilities.plan`, which codeg does
+            // gate is the TOP-LEVEL `clientCapabilities.plan`, which RecurCode does
             // not advertise. 1.3.0 still ships NO steering `promptRequired`
             // opt-in (tarball grep: zero hits ⇒ the arm below stays None) and
             // still declares no `engines.node`, so the 20.0.0 floor is
@@ -2195,7 +2195,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `sandbox: "read-only"`, `ephemeral: true`) and running an extra
             // turn on the fork; claude uses a Stop hook plus a hidden
             // continuation. Either way it is an extra model round-trip per
-            // prompt, and it is gated on a client advertisement codeg does not
+            // prompt, and it is gated on a client advertisement RecurCode does not
             // make — see `build_client_capabilities` in connection.rs.
             // 1.6.0/1.6.2 (no 1.5.0 or 1.6.1 was published) add NO new modules
             // and nothing wire-visible: `@openai/codex` moves to ^0.148.0,
@@ -2224,7 +2224,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // still emits `changes[]`, so that parser stays. Codex's option
             // IDs were also renamed (`allow_for_session`,
             // `accept_execpolicy_amendment`, `apply_network_policy_amendment:N`
-            // …) — inert here, codeg only echoes back the selected id — and
+            // …) — inert here, RecurCode only echoes back the selected id — and
             // network deny amendments introduce codex's first `reject_always`
             // option kind, which `handle_permission_request` already maps.
             // `_meta.codex = {kind: "plan_review", planItemId}` is unchanged,
@@ -2244,7 +2244,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // NOT adopted: native ACP subagent sessions (the draft subagent
             // RFD). The gate is bilateral — `clientCapabilities.subagents: {}`
-            // or AIR `nativeSubagentSessions` — and codeg advertises neither,
+            // or AIR `nativeSubagentSessions` — and RecurCode advertises neither,
             // so the lifecycle stays the legacy `subAgentActivity` tool call
             // whose shape (`_meta.codex.subagent = {threadId, path, activity}`)
             // is byte-identical to 1.4.0's. This entry used to call opting in
@@ -2253,7 +2253,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `subagent_state_update`. The v1 schema still carries neither (as
             // of 1.9), but that was never the blocker — a raw pre-dispatch
             // reader gets past it, as the AIR task frames show. What keeps it
-            // out is that advertising DELETES the tool call codeg anchors the
+            // out is that advertising DELETES the tool call RecurCode anchors the
             // sub-agent capsule on; `build_client_capabilities` records the
             // whole trade.
             // Likewise still not adopted: `agentFileChangeReport` (unchanged
@@ -2280,7 +2280,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // It resolves the id against `thread.turns[].items[].id` (stripping
             // a `:segment:\d+$` suffix first), then falls back to hashing each
             // `agentMessage` text and taking the Nth match. Absent the block it
-            // forks at the tail — codeg's current behaviour. claude-agent-acp
+            // forks at the tail — RecurCode's current behaviour. claude-agent-acp
             // 0.73.0 reads the same block (messageId only), so ONE client-side
             // implementation covers both.
             //
@@ -2331,7 +2331,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // stdio, WITH and WITHOUT the advertisement — see the wire trace in
             // `build_client_capabilities`. The control run is the argument for
             // opting in: without it the launching `execute` tool call sits at
-            // `in_progress` for the rest of the connection and codeg learns
+            // `in_progress` for the rest of the connection and RecurCode learns
             // nothing at all about the process behind it.
             //
             // (b) 1.9.0 — **`_auth/status_update`**, a connection-level (NO
@@ -2339,7 +2339,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the `initialize` response, then on each authenticate / logout /
             // session create, and on the app-server's `account/updated`. It is
             // NOT capability-gated in either direction; the agent only
-            // ANNOUNCES it via `agentCapabilities._meta.authStatus = {}`. codeg
+            // ANNOUNCES it via `agentCapabilities._meta.authStatus = {}`. RecurCode
             // claims and drops it in `handle_auth_status_update` — see there for
             // why a silent drop is not an option.
             //
@@ -2347,16 +2347,16 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // refreshes the rate limits before printing instead of showing
             // whatever the last turn happened to report, prints an extra
             // "individual spend limit" line, and flips the context line from
-            // "N% left" to "N% used". All three are agent TEXT that codeg
+            // "N% left" to "N% used". All three are agent TEXT that RecurCode
             // renders as markdown — the whole repo has no `/status` parser
-            // (`lib/codex-command-action.ts`, codeg's only codex-text reader,
+            // (`lib/codex-command-action.ts`, RecurCode's only codex-text reader,
             // handles tool-call titles and command-result envelopes, never a
             // slash-command's reply), so this is display-only.
             //
             // (d) 1.9.0 — `sessionState.lastTokenUsage` is reset when a turn
             // actually STARTS rather than when a prompt is received, so a prompt
             // that dies before its turn opens no longer blanks the last usage.
-            // codeg reads `usage_update` frames and is unaffected.
+            // RecurCode reads `usage_update` frames and is unaffected.
             //
             // `thread/backgroundTerminals/{list,terminate}` are the app-server
             // half of (a) and never reach ACP. Steering STILL ships no
@@ -2370,7 +2370,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // and the literal-set delta is six strings in (`recommendedValue`,
             // `thread/turns/list`, `paginated`, `legacy`, `desc`, the version)
             // against three out (`GPT`, `Mini`, the version). Four changes reach
-            // codeg:
+            // RecurCode:
             //
             // (a) AIR **`recommendedValue`** — the reason for the bump, and the
             // only new client-facing surface. `createSessionConfigOptions` now
@@ -2390,7 +2390,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // See `build_client_capabilities` for the live three-run trace and
             // why it is safe.
             //
-            // (b) Model display names are REFORMATTED, and codeg shows them
+            // (b) Model display names are REFORMATTED, and RecurCode shows them
             // verbatim. `MODEL_NAME_TOKEN_OVERRIDES` (gpt→GPT, mini→Mini,
             // codex→Codex, dashes kept) is replaced by `formatModelDisplayName`,
             // which STRIPS a leading `gpt-`, splits on `[-/]+` and title-cases
@@ -2400,7 +2400,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // VALUES (`gpt-6-astra`, …) are unchanged, and the model picker
             // groups by value prefix (`lib/model-config-groups.ts`), so nothing
             // regroups — but the composer chip now reads `5.5` rather than
-            // `GPT-5.5`, which is a deliberate upstream change, not a codeg bug.
+            // `GPT-5.5`, which is a deliberate upstream change, not a RecurCode bug.
             //
             // (c) `session/load` history now pages through `thread/turns/list`
             // (50/page, `sortDirection: "desc"`, `itemsView: "full"`, with a
@@ -2408,7 +2408,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `historyMode: "paginated"`, instead of one `thread/read
             // {includeTurns: true}`. `session/resume`, `session/fork` and the
             // audit fork additionally pass `excludeTurns: true`, so the turns no
-            // longer ride the resume response at all. codeg's codex sessions
+            // longer ride the resume response at all. RecurCode's codex sessions
             // take the resume path and do not drain a replay (see the "No drain"
             // note in connection.rs), so this is invisible to the timeline and
             // strictly cheaper on long threads.
@@ -2416,14 +2416,14 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (d) A standalone MCP-elicitation tool call is now FINALIZED. When
             // codex falls back to `session/request_permission` for an
             // elicitation — a message-only form, or a `url` elicitation, both of
-            // which codeg hits because it advertises `elicitation.form` but
+            // which RecurCode hits because it advertises `elicitation.form` but
             // deliberately not `elicitation.url` — 1.10.0 posted a `pending`
             // tool call and never updated it, leaving it pending for the life of
             // the connection. 1.11.0 answers with a `tool_call_update`
             // (`completed`, `rawOutput: {action}`) and the request now carries a
             // `title` ("MCP tool call approval" / "Question from MCP server" /
             // "MCP server requests to open a URL") plus `rawInput.description`.
-            // Pure gain for codeg's permission card and tool-call row; no client
+            // Pure gain for RecurCode's permission card and tool-call row; no client
             // change needed.
             //
             // Everything else holds: no literal was removed except the two
@@ -2434,21 +2434,21 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // moves ^0.153.3 → ^0.153.4 (a patch).
             //
             // 1.12.0 is a MUCH bigger bump than 1.11.0 — +624/-599 bundle lines
-            // — and unlike that one it carries a REGRESSION for codeg as well as
+            // — and unlike that one it carries a REGRESSION for RecurCode as well as
             // gains. Five deltas, in descending order of what they cost us:
             //
             // (a) **`request_user_input` was reshaped**, and reading it the old
             // way is not cosmetic. `buildUserInputRequest` swapped its two
             // strings — `title` was the short tab header and `description` the
             // question; now `title` IS the question and `description` the
-            // header (emitted only when the model supplied one). codeg reads
+            // header (emitted only when the model supplied one). RecurCode reads
             // `description`-first, so the card would have shown a codex ask
             // BACKWARDS: on a single-question ask there is no tab strip, so the
             // only thing on screen would be the header ("Approach") and the
             // question itself would never be displayed. The companion field
             // moved too: `<id>__other` / `_meta.codex.isOtherAnswer` (titled
             // "Other") became `<id>_note` / `_meta.codex.role = "user_note"`
-            // (titled "Additional answer or note"), so codeg's companion skip
+            // (titled "Additional answer or note"), so RecurCode's companion skip
             // missed it and rendered it as a duplicate question; and an
             // `isOther` question's `oneOf` now ends with an injected "None of
             // the above" pointing at that hidden note field. `question.rs`
@@ -2466,7 +2466,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // WHETHER any of it applies at all is a separate gate, and a
             // stricter one: `ElicitationPeer`, taken from the connection's agent
-            // type. codeg advertises `elicitation.form` to DeepSeek too, and
+            // type. RecurCode advertises `elicitation.form` to DeepSeek too, and
             // either adapter can relay an arbitrary MCP server's form down the
             // same handler, so the parser may not decide "this is codex" from
             // `_meta.codex.*` in the payload — `_meta` is an open namespace and
@@ -2475,10 +2475,10 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // regardless of what the form carries.
             //
             // Two more deltas of the same rework need no client change: every
-            // question is now in `required` (codeg's card requires an answer or
+            // question is now in `required` (RecurCode's card requires an answer or
             // a decline either way), and the request `message` is the constant
             // "Codex needs your input to continue." instead of the single
-            // question's text — which codeg drops on the Questions path and
+            // question's text — which RecurCode drops on the Questions path and
             // never displayed.
             //
             // (b) The AIR **`agentFileChangeReport`** is no longer a model
@@ -2487,7 +2487,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (`AgentFileChangeReportBudget`, a 30s budget, interrupt/unsubscribe
             // plumbing); 1.12.0 deletes all of that and parses the
             // `turn/diff/updated` unified diff instead, buffered per turn behind
-            // the same capability gate (`collectTurnDiffs`), 8MiB cap. codeg
+            // the same capability gate (`collectTurnDiffs`), 8MiB cap. RecurCode
             // still does not advertise it, and the cost half of that decision is
             // now moot — but the coverage half got STRONGER, not weaker: the
             // report hard-codes `uncertainty` to "Codex turn diffs may omit
@@ -2495,21 +2495,21 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // including shell commands, version-control commands, generators,
             // and child processes", i.e. it is now explicitly narrower than the
             // model audit it replaced, and far narrower than the recursive
-            // `notify` watcher codeg already runs. See `build_client_capabilities`.
+            // `notify` watcher RecurCode already runs. See `build_client_capabilities`.
             //
             // (c) **`diffStats`** — a new AIR key, and the only one here that is
             // NOT capability-gated: `withAirMeta(…, AIR_DIFF_STATS_KEY, …)` is
             // called unconditionally on every add/update/delete file-change
             // `_meta` (`{version: 1, added, removed}`, derived from the real
             // patch hunks; `null` and therefore omitted when the patch does not
-            // parse). So it already arrives, and codeg already ignores it —
+            // parse). So it already arrives, and RecurCode already ignores it —
             // deliberately. The edit card's collapsed "+N −M" and its expanded
             // diff body are held to a hard per-input parity contract
             // (`exceedsLineDiffBudget`, one shared budget across
             // `estimateChangedLineStats` and `generateUnifiedDiff`), and codex
-            // ships FULL old/new file text in the ACP `Diff` block, which codeg
+            // ships FULL old/new file text in the ACP `Diff` block, which RecurCode
             // re-diffs itself. Taking the agent's hunk counts for the header
-            // while the body stays codeg's own re-diff is exactly the drift that
+            // while the body stays RecurCode's own re-diff is exactly the drift that
             // contract exists to prevent. claude-agent-acp 0.78.0 shipped the
             // same key from the other direction (claude entry (r)) — per
             // structuredPatch hunk rather than per file — and is declined for
@@ -2521,15 +2521,15 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `request_permissions`, and `<namespace><tool>` for dynamic tool
             // calls — on the live stream, the completion updates, the permission
             // request and the `session/load` function-call replay alike. When
-            // this was written the schema crate codeg pinned (0.11.x) dropped
+            // this was written the schema crate RecurCode pinned (0.11.x) dropped
             // the field; schema 1.9 types it as a stable `ToolCall::name`, so
             // reading it no longer takes a raw reader — but it is still not
             // read, because it adds nothing: every surface it names is one
-            // codeg already classifies from `kind` + `title` — command
+            // RecurCode already classifies from `kind` + `title` — command
             // executions are `kind: "execute"` with the command as the title,
             // `view_image` is `kind: "read"` with a resource_link, and a dynamic
             // tool call's title already IS the tool name (`name` only adds the
-            // namespace prefix, which codeg does not render). MCP tool calls,
+            // namespace prefix, which RecurCode does not render). MCP tool calls,
             // the one place an exact name would help, get NO `name` at all —
             // they keep `mcp.<server>.<tool>` plus `_meta.is_mcp_tool_call`.
             //
@@ -2550,7 +2550,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `engines.node`, so the 20.0.0 floor stays. One config delta needs
             // no action: `forceGitRootTurnDiffPaths` now pins
             // `features.cwd_relative_turn_diffs = false` in the merged config so
-            // turn-diff paths are git-root relative — codeg writes no such key
+            // turn-diff paths are git-root relative — RecurCode writes no such key
             // (repo grep: zero hits) and reads no turn diff.
             //
             // 1.13.0 is six upstream changes (#515, #523, #525, #528, #531,
@@ -2571,7 +2571,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // What codex adds to the claude-side note is the LIST of what
             // moves: with notices on, config warnings, deprecation notices,
             // plain warnings, model rerouting and the legacy `thread/compacted`
-            // advisory all leave the channels codeg reads today for `notice`
+            // advisory all leave the channels RecurCode reads today for `notice`
             // updates. Two of those are a straight UPGRADE rather than a
             // trade, because their current channel is not a surface at all:
             // `modelRerouted` is a THOUGHT chunk today (it pollutes reasoning
@@ -2591,14 +2591,14 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the legacy `_meta.contextCompaction` shape, so none of that costs
             // the card a line.
             //
-            // (g) **codeg now reads codex's terminal output channel** (#528 is
+            // (g) **RecurCode now reads codex's terminal output channel** (#528 is
             // what made this legible, but the channel itself is older). codex
-            // has always had pi's #519 shape and codeg never noticed, because
+            // has always had pi's #519 shape and RecurCode never noticed, because
             // codex ALSO repeats the output as `rawOutput` at the end:
             // `createTerminalCommandEvent` names a terminal by the item's own id
-            // (codeg never created it — every poll misses and ages out at
+            // (RecurCode never created it — every poll misses and ages out at
             // `TERMINAL_POLL_MISSING_LIMIT`), and the real output streams as
-            // `_meta.terminal_output_delta` deltas that codeg dropped on the
+            // `_meta.terminal_output_delta` deltas that RecurCode dropped on the
             // floor. So a codex shell card sat on the `[Terminal: …]`
             // placeholder for the whole command and then filled in at once.
             // `hosted_terminal_*` in `connection.rs` now covers codex alongside
@@ -2611,7 +2611,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // returns `terminal_output_delta` by DEFAULT, so the streaming above
             // needed nothing on the wire; what the flag buys is that
             // `completeCommandExecutionEvent` stops repeating the whole
-            // aggregated output as `rawOutput`, which codeg used to parse only to
+            // aggregated output as `rawOutput`, which RecurCode used to parse only to
             // discard. It was first held back for the `search`/`listFiles`
             // cards, on the premise that they render from the
             // `{formatted_output, exit_code}` envelope — but that premise was
@@ -2642,19 +2642,19 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // interrupted now closes ALL child sessions rather than only the one
             // whose thread id matched (`closingChildSessions`), and `wait()`
             // returns `"timed_out"` so the caller finalizes pending child
-            // updates before closing them — both of which used to leave codeg's
+            // updates before closing them — both of which used to leave RecurCode's
             // collab capsules hanging. `/compact` now reports a real turn
             // (`onTurnStarted` + a returned `turn/completed`) instead of
             // resolving with nothing. `thread/attachment/updated` and the
             // `ThreadAttachment*` app-server v2 types are new upstream surface
             // the adapter itself maps to nothing (`return null`), and
             // `FeedbackUploadResponse.promptHash` belongs to a feedback upload
-            // codeg does not drive.
+            // RecurCode does not drive.
             //
             // 1.13.1 is one upstream change (#541): `@openai/codex` ^0.155.1 →
             // **^0.156.1** (a caret on a 0.x minor, so it stays inside
             // 0.156.x). The adapter's own code moves by a single function (see
-            // (l)), and the `initialize` response to codeg's handshake matches
+            // (l)), and the `initialize` response to RecurCode's handshake matches
             // 1.13.0's field for field apart from the version (both probed
             // live over stdio). `engines` is still absent, so the 20.0.0 floor
             // stays.
@@ -2689,7 +2689,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (k) Inert: codex 0.156 retires the `friendly` / `pragmatic`
             // personality styles and removes the deprecated `thread/rollback`
             // API (a legacy `thread_rolled_back` rollout record still parses).
-            // codeg exposes no personality, never calls the API, and
+            // RecurCode exposes no personality, never calls the API, and
             // `parsers::codex` has never read the record. `ThreadResumeResponse`
             // gains `collaborationMode`, which 1.13.1 does not read: its
             // `collaboration_mode` option still comes from the
@@ -2698,12 +2698,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (l) Rollout and replay shapes. A user image can now be a FILE
             // reference — `input_image` with `file_id` instead of `image_url`,
             // and `user_message` gains `file_ids` / `image_order` — which only
-            // a client uploading to the Files API produces; codeg sends inline
+            // a client uploading to the Files API produces; RecurCode sends inline
             // and local images. `parsers::codex` skips an image with no inline
             // data (an image-only turn still renders as "Attached resources").
             // The adapter's one code change renders such an input as
             // `image:<fileId>` text in `session/load` replay (and audio /
-            // mention inputs as nothing), which never reaches codeg: codex
+            // mention inputs as nothing), which never reaches RecurCode: codex
             // sessions are resumed without draining a replay. The other new
             // fields (`root_turn_id`, MCP `turn_id` / `mcp_app_ui`,
             // `disabledPluginIds`, `availableAccessPrograms`, MCP
@@ -2716,7 +2716,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (^0.156.1 → **^0.158.0**). `engines` is still absent, so the
             // 20.0.0 floor stays. Measured like the claude side: both versions'
             // own scenario harness (33 scenarios, a mocked app-server) re-run
-            // with codeg's exact `clientCapabilities` and diffed.
+            // with RecurCode's exact `clientCapabilities` and diffed.
             //
             // (m) The AIR tool-call contract (#530), codex side
             // (`crate::acp::air_contract` unless named otherwise):
@@ -2738,7 +2738,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //     jetbrains.air.permission`; `_meta.commandAction` →
             //     `jetbrains.air.commandAction` (`is_config_option_state_command`);
             //     the goal → `jetbrains.air.goal`; `_meta.codex.phase` →
-            //     `jetbrains.air.phase` (codeg reads no chunk `_meta` live).
+            //     `jetbrains.air.phase` (RecurCode reads no chunk `_meta` live).
             //   * fileChange: ONE diff block PER HUNK — context and changed lines,
             //     no line numbers — for EVERY client; 1.13.x read the file and
             //     sent its whole old and new text in one block. Keyed by path,
@@ -2798,13 +2798,13 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // byte-identical to 0.159.1's). `engines` is still absent, so the
             // 20.0.0 floor stays. The adapter's own code moves by one table row
             // (see (v)): its scenario harness (33 scenarios, a mocked app-server)
-            // replays byte-identically under codeg's exact `clientCapabilities`
+            // replays byte-identically under RecurCode's exact `clientCapabilities`
             // on both tags, and the live `initialize` response matches 2.0.0's
             // field for field apart from the version.
             //
             // (s) **GPT-6.1 Sol** (0.159.1) is codex's new DEFAULT: priority 1,
             // ahead of GPT-6 Astra, taking the catalog from 10 slugs to 11. Live
-            // on a throwaway `CODEX_HOME` in codeg's bound-provider shape, a
+            // on a throwaway `CODEX_HOME` in RecurCode's bound-provider shape, a
             // fresh `session/new` opens on `gpt-6.1-sol` (2.0.0: `gpt-6-astra`),
             // the AIR `recommendedValue` follows, and the `model` option reads
             // 6.1 Sol / 6 Astra / 6 Sol / 6 Luna / 5.6 Sol / 5.6 Terra /
@@ -2819,28 +2819,28 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (t) The catalog's FILE order stopped being priority order: GPT-6.1
             // Sol sits second in `models.json`, and in `debug models --bundled`,
             // behind GPT-6 Astra's priority 2. codex sorts by priority, but
-            // codeg's generated `model_catalog_json` renumbered the officials by
+            // RecurCode's generated `model_catalog_json` renumbered the officials by
             // position — a user with custom models or removed officials would
             // have got 6 Astra ahead of 6.1 Sol, and as the default. Both catalog
             // loaders now sort (`codex_model_catalog::sort_by_priority`), and so
             // do the expansion and the root-`model` fallback.
             //
-            // (u) That generated catalog is a whole-table replace which codeg
+            // (u) That generated catalog is a whole-table replace which RecurCode
             // only rewrote on a settings save, so those same users would not
             // have seen GPT-6.1 Sol at all after upgrading. Installing or
             // upgrading codex-acp now refreshes the official catalog from the
-            // codex it drives and re-expands codeg's catalog from its stored
+            // codex it drives and re-expands RecurCode's catalog from its stored
             // intent (`resync_codex_generated_catalog` in commands/acp.rs).
             //
             // (v) Inert or not adopted. A live stdio diff shows one more change:
             // the `$plugin-creator` skill command is gone (0.159.0 removed the
-            // bundled skill; codeg never referenced it). `tooManyDenials` joins
+            // bundled skill; RecurCode never referenced it). `tooManyDenials` joins
             // the error table as `provider_error` — the typed cause 0.159 gives
             // its Guardian circuit breaker behind the opt-in
-            // `auto_review.circuit_break_action = "strict"`, which codeg does
+            // `auto_review.circuit_break_action = "strict"`, which RecurCode does
             // not write. Strict mode puts it on an INTERRUPTED turn's `error`
             // and sends no `error` notification, while `handleFailedTurn`
-            // reports FAILED turns only, so codeg sees no typed failure from it
+            // reports FAILED turns only, so RecurCode sees no typed failure from it
             // either way; the rollout's `turn_aborted` gains the same optional
             // `error`, and `parsers::codex` does not read `turn_aborted`.
             // `features.instant_interrupt` (new input preempting a streaming
@@ -2860,17 +2860,17 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // ^0.159.1, which a fresh install now resolves to 0.159.3: a
             // TUI-only backport whose `debug models --bundled` output is
             // byte-identical to the snapshot), and `engines` is still absent.
-            // Live over stdio with codeg's exact `clientCapabilities`, the
+            // Live over stdio with RecurCode's exact `clientCapabilities`, the
             // `initialize` and `session/new` responses and every frame after
             // them match 2.0.1's apart from the version.
             //
-            // (w) #570, `request_user_input` for AIR clients, which codeg is.
+            // (w) #570, `request_user_input` for AIR clients, which RecurCode is.
             // An `isOther` question no longer gets the synthetic "None of the
             // above" choice, its note field gains
             // `_meta.jetbrains.air.customAnswer: true`, and a choice-field
             // string that matches no option is the user's own answer, handed
             // to codex as `["None of the above", "user_note: <text>"]` —
-            // codex's own encoding, the one its TUI writes for "Other". codeg
+            // codex's own encoding, the one its TUI writes for "Other". RecurCode
             // already sent the card's "Other" text that way (main field,
             // verbatim), so the round trip needs nothing. What changed is the
             // reloaded rollout: 2.0.1 handed codex `["<text>"]`, and the pair
@@ -2880,11 +2880,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // The marker is a bare `true` here and `{questionId,
             // isCustomAnswer: true}` on claude; `question::
             // is_custom_answer_property` reads both. Recorded off the adapter's
-            // own handler driven with codeg's capabilities, on both tags.
+            // own handler driven with RecurCode's capabilities, on both tags.
             //
             // (x) #564: a `session/load` / `session/resume` of a thread another
             // app-server holds — the Codex app, the CLI, an IDE extension, or
-            // codeg's own forking connection — fails with -32600 and
+            // RecurCode's own forking connection — fails with -32600 and
             // `data.reason: "thread_active_writer"` instead of a -32603
             // carrying codex's raw text. `classify_session_load_error` keys the
             // `session_busy` banner on the reason; the text match stays for
@@ -2892,7 +2892,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // holder (it named only the fork). Reproduced live on both tags
             // with two adapter processes on one `CODEX_HOME`; once the holder
             // exits, the same load succeeds, so the banner's Reload recovers.
-            // codeg's own forking connection no longer holds on until it
+            // RecurCode's own forking connection no longer holds on until it
             // exits: it closes the parent right after the step that resumes
             // the child (`connection::close_forked_parent`), and codex then
             // unloads the thread after `thread_unload_delay_secs` (60 by
@@ -2904,7 +2904,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // unchanged (a fresh install still resolves `@openai/codex`
             // 0.159.3) and `engines` is still absent; the published bundle
             // differs from 2.1.0's by the three fixes and the version. Measured
-            // live over stdio with codeg's exact `clientCapabilities` against a
+            // live over stdio with RecurCode's exact `clientCapabilities` against a
             // scripted Responses server: a plain turn's frames match 2.1.0's
             // apart from the version, and each fix shows up as below.
             //
@@ -2912,15 +2912,15 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `{"type":"error","status":4xx|5xx,"error":{"type":…,"message":…}}`
             // with one of nine known error types, the body codex passes on
             // verbatim for an HTTP 400 — the `sessionFailure` title (and the
-            // legacy text chunk codeg does not get) carry `error.message`
-            // instead of the JSON. codeg shows the title as sent, so the
+            // legacy text chunk RecurCode does not get) carry `error.message`
+            // instead of the JSON. RecurCode shows the title as sent, so the
             // banner reads the sentence with no change here. Live, a 400 with
             // that body ends the prompt `end_turn` with the failure on its
             // `_meta`, titled with the JSON on 2.1.0 and with the message on
             // 2.1.1. The adapter leaves one place undecoded: a failed
             // compaction's `error` (`compaction_update`), which the compaction
             // card shows. Live, a compaction whose request got that 400 put the
-            // JSON on the card beside the readable banner, so codeg reads the
+            // JSON on the card beside the readable banner, so RecurCode reads the
             // card's error down itself (`acp::service_error`, the adapter's
             // rule ported, with JavaScript's idea of a blank message; only a
             // body escaping a lone surrogate, which serde_json refuses, stays
@@ -2939,11 +2939,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // Codex desktop app writes into a user message (`# Files mentioned
             // by the user:` … `## My request:`) as one `resource_link` per file
             // plus the request text, and a native local image, audio file or
-            // file mention as a `resource_link`. codeg never renders that
+            // file mention as a `resource_link`. RecurCode never renders that
             // replay (the transcript comes from the rollout), so
             // `parsers::codex` decodes the same envelope itself
             // (`parsers::codex_desktop_attachments`): each file becomes the
-            // link codeg renders any attachment as, a badge plus a chip, with
+            // link RecurCode renders any attachment as, a badge plus a chip, with
             // the request after it. It also reads the early desktop marker
             // `## My request for Codex:`, which 2.1.1 replays as text. Live on
             // both tags: 2.1.0 replays either envelope as one text block, 2.1.1
@@ -2955,7 +2955,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // npm. `@openai/codex` moves ^0.159.1 → **^0.160.1** (a fresh
             // install resolves 0.160.1), whose `debug models --bundled` output
             // is byte-identical to 0.159.3's, so the offline snapshot stands;
-            // `engines` is still absent. Under codeg's exact
+            // `engines` is still absent. Under RecurCode's exact
             // `clientCapabilities` the adapter's 33-scenario harness differs
             // between the tags only by two AIR capabilities in `initialize`
             // ("customInstructions", "codexHooks") and the `/mcp` entry of (ee).
@@ -2974,11 +2974,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // but useless: a turn in flight never answered (a cancel did not
             // help), an open permission card was never withdrawn, every later
             // prompt ended in an internal-error failure and every open failed
-            // with "Connection is disposed." until codeg respawned the adapter.
+            // with "Connection is disposed." until RecurCode respawned the adapter.
             // Now a turn in flight settles at once, `end_turn` with a
             // `connection` `sessionFailure`, its open tool calls failed and its
             // permission requests withdrawn by `$/cancel_request` (all of which
-            // codeg already renders), and the next request restarts the
+            // RecurCode already renders), and the next request restarts the
             // app-server and reopens the session. A request that meets the loss
             // fails with code 1001 and `data.restartable`
             // (`connection::codex_app_server_lost`). A restartable loss costs
@@ -2993,7 +2993,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // thread, which is read from the source.
             //
             // (dd) A fork stays subscribed (#590), so it takes a prompt at once.
-            // codeg's resume after the fork is redundant on 2.2 but harmless
+            // RecurCode's resume after the fork is redundant on 2.2 but harmless
             // (measured: fork → resume → close the parent → prompt works on
             // both tags) and stays for older adapters. The fork still never
             // releases the parent, so `close_forked_parent` stays as well.
@@ -3001,25 +3001,25 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (ee) `/mcp` (#579) reports each server's live status in markdown
             // and takes `reconnect`, which its entry now names as the input
             // hint `[reconnect]`. Every status read briefly starts one more copy
-            // of each session MCP server, codeg-mcp included, which is harmless:
-            // codeg-mcp opens its socket on `tools/call` only. `$skill` commands
+            // of each session MCP server, recur-code-mcp included, which is harmless:
+            // recur-code-mcp opens its socket on `tools/call` only. `$skill` commands
             // carry their SKILL.md path in `_meta.jetbrains.air.skillPath`,
-            // which codeg does not show.
+            // which RecurCode does not show.
             //
-            // (ff) Inert for codeg. #587 reports the servers config.toml
+            // (ff) Inert for RecurCode. #587 reports the servers config.toml
             // replaces only when `DISABLE_MCP_CONFIG_FILTERING` is not "true",
-            // and `apply_codex_env_policy` sets it. That has to stay: codeg
+            // and `apply_codex_env_policy` sets it. That has to stay: RecurCode
             // forwards config.toml's servers under their own names, and each
             // would otherwise come back as a failed `mcp__<name>__startup` card.
             // #588's hook trust needs `CODEX_CONFIG.hooks` (and cross-spawn a
-            // Windows `CODEX_PATH`), neither of which codeg sets. #546's custom
+            // Windows `CODEX_PATH`), neither of which RecurCode sets. #546's custom
             // instructions are read from `session/new`'s `_meta` only (they
             // become the thread's developer instructions and persist in the
-            // rollout), which codeg does not send. #594 changes `authenticate`,
-            // which codeg never calls for codex. The session index (#590) needs
+            // rollout), which RecurCode does not send. #594 changes `authenticate`,
+            // which RecurCode never calls for codex. The session index (#590) needs
             // the `sessionIndex` capability, as on claude (lll). The prompt
             // response's `usage` now sums the whole prompt and reports
-            // `cachedWriteTokens`; codeg reads neither, and the context ring
+            // `cachedWriteTokens`; RecurCode reads neither, and the context ring
             // follows `usage_update`, which is unchanged.
             //
             // (gg) codex 0.160 itself. The rollout gains one record, a
@@ -3029,28 +3029,28 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // persisted formats are otherwise unchanged. The catalog's new
             // `model_messages.content_filter_guidance` is strict
             // (`codex_model_catalog::model_messages_override_is_safe`). A
-            // provider's `model_catalog_url` is now authoritative; codeg never
+            // provider's `model_catalog_url` is now authoritative; RecurCode never
             // writes one. Hooks behave as on 0.159: an untrusted hook in the
             // user's config.toml is skipped silently.
             //
             // (hh) Found on the way, and older than this pin: codex counts a
             // prompt-cache WRITE inside `input_tokens`
-            // (`cache_write_input_tokens`, which codeg's bound provider
+            // (`cache_write_input_tokens`, which RecurCode's bound provider
             // reports), and `parsers::codex` split out only the read, so every
             // write read as fresh input. 2.2.0 corrected its own counter the
             // same way (`TokenCount`); the parser now splits both
             // (`codex_usage_counters`, token-usage `FACT_SCHEMA_VERSION` 4).
             //
-            // 2.2.2 changes one thing (#606), and nothing codeg reads: a
+            // 2.2.2 changes one thing (#606), and nothing RecurCode reads: a
             // `session/list` row, and a pushed `_session/list/changes` row, is
             // titled by the first non-blank of the thread's `name`, `title`,
             // `summary` and `preview`, collapsed to one line and no longer cut
-            // to 256. codeg sends no `session/list` and subscribes to no list.
+            // to 256. RecurCode sends no `session/list` and subscribes to no list.
             // The published bundle differs from 2.2.1's by that change and the
             // version only. Fresh installs of the two pins lock the same
             // package versions bar the adapter's own and the same codex 0.160.1
             // binary, and `initialize` (bar the version) is identical. The
-            // `session_info_update` titles codeg does read are unchanged, still
+            // `session_info_update` titles RecurCode does read are unchanged, still
             // collapsed and cut at 256 — measured live on both tags: the
             // first-prompt fallback, the generated title, a `/rename` echo and
             // the title `session/load` republishes (`session/resume` publishes
@@ -3080,7 +3080,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             name: "Gemini CLI",
             description: "Google's official CLI for Gemini",
             // 0.59.0 → 0.60.0 is a sandbox / path-security release and touches
-            // nothing codeg reads. Verified by slicing both bundles on their
+            // nothing RecurCode reads. Verified by slicing both bundles on their
             // `// packages/<pkg>/src/<file>.ts` source markers and diffing per
             // source file, after normalising two esbuild artefacts that make an
             // unnormalised diff useless here: identifier renumbering (`fs30` →
@@ -3092,7 +3092,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // What survives is all sandbox managers (new, per-OS), the
             // extensions registry, MCP OAuth, the policy engine and path
-            // security. Of the surfaces codeg depends on:
+            // security. Of the surfaces RecurCode depends on:
             //
             // - `loadConversationRecord` (the parser's contract — the four
             //   record kinds) is byte-identical modulo the renumbering.
@@ -3109,7 +3109,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `mcp-client.ts` now drops MCP-server env entries whose key is in
             // `BLOCKED_EXECUTION_ENVS`. That list is loader/interpreter hijacks
             // (`NODE_OPTIONS`, `LD_PRELOAD`, `DYLD_*`, `PYTHONPATH`, `BASH_ENV`,
-            // …); codeg injects `codeg-mcp` with `CODEG_*`, so nothing we send
+            // …); RecurCode injects `recur-code-mcp` with `RECUR_CODE_*`, so nothing we send
             // is dropped. `engines.node` stays `>=20`.
             distribution: AgentDistribution::Npx {
                 version: "0.60.0",
@@ -3123,7 +3123,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
         AgentType::OpenClaw => AcpAgentMeta {
             agent_type,
             // OpenClaw 拒绝 `mcpServers` 中的任何服务器条目（会使 session/new 失败），
-            // 故不向其转发任何 MCP 条目（含 codeg-mcp 伴生进程）。详见 supports_mcp 字段注释。
+            // 故不向其转发任何 MCP 条目（含 recur-code-mcp 伴生进程）。详见 supports_mcp 字段注释。
             supports_mcp: false,
             name: "OpenClaw",
             description: "OpenClaw is a personal AI assistant you run on your own devices.",
@@ -3141,7 +3141,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 // `NODE_RELEASE_FLOORS` are literally `{24,16,0}` and
                 // `{26,1,0}`. A Node 22 user with the old floor would pass
                 // preflight and then hard-fail at launch, so the floor tracks
-                // the LOWEST supported release. (codeg's `node_required` is a
+                // the LOWEST supported release. (RecurCode's `node_required` is a
                 // single minimum, so it cannot express the excluded 25.x and
                 // 26.0.x windows.) 2026.9.4 through 2026.9.8 leave that range
                 // and those floors untouched (`node-version.mjs` is
@@ -3152,25 +3152,25 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 // `loadSession`, `resumeSession`), with `acp` registered in
                 // `dist/acp-cli-*.mjs`.
                 //
-                // 2026.9.8 moves nothing codeg touches. Its ACP bridge
+                // 2026.9.8 moves nothing RecurCode touches. Its ACP bridge
                 // (`dist/server-*.mjs`) matches 2026.9.7's line for line apart
                 // from the order and hashed names of its imports;
                 // `dist/acp-cli-*.mjs`, which defines the `--url`, `--session`
-                // and `--reset-session` flags codeg passes, is unchanged; and
+                // and `--reset-session` flags RecurCode passes, is unchanged; and
                 // `@agentclientprotocol/sdk` stays at 1.4.0. The one launch-path
                 // change is Windows-only: a compile-cache path longer than 200
                 // characters now turns the cache off and says so on stderr.
                 //
                 // 2026.9.7 leaves `initialize` and the update kinds alone and
-                // changes two paths codeg only sees through their output. A
+                // changes two paths RecurCode only sees through their output. A
                 // streamed reply is merged from delta-only gateway frames
-                // (`mergeChatStreamMessage`), still reaching codeg as message
+                // (`mergeChatStreamMessage`), still reaching RecurCode as message
                 // and thought chunks. And a prompt cut off by a gateway
                 // disconnect is now rebuilt from the session's chat history;
                 // when that fails, the bridge sends an `agent_message_chunk`
                 // "[OpenClaw interruption] Full reply recovery unavailable
                 // (<reason>). Check the session history." and fails the
-                // `session/prompt` with that message, which codeg reports like
+                // `session/prompt` with that message, which RecurCode reports like
                 // any other failed prompt.
                 //
                 // 2026.9.6's one wire-visible change is ORDER: `session/update`s
@@ -3178,7 +3178,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 // `session/new` answer has been written
                 // (`AcpSessionNewOrdering`). The ACP SDK writes a result only
                 // after its handler returns, so updates sent from inside
-                // `session/new` used to reach the wire first. codeg is
+                // `session/new` used to reach the wire first. RecurCode is
                 // indifferent to which order it gets: it can only register a
                 // session's router once the answer names the id, and anything
                 // that arrives before then is parked and replayed into that
@@ -3207,11 +3207,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // The ACP surface is unchanged in 3.0.70: `apps/cli/src/acp` has
             // no diff since 3.0.65, the rest of `apps/cli/src` changed since
-            // 3.0.68 only in subcommands and flags codeg does not pass, `--acp`
+            // 3.0.68 only in subcommands and flags RecurCode does not pass, `--acp`
             // still sets `enableAgentTeams: false`, and `initialize` /
             // `session/new` match 3.0.68 but for the version (and, under the
             // `cline` provider, a refreshed model catalog). What moved for
-            // codeg is in the SDK. Since 3.0.69 a reply whose finish reason the
+            // RecurCode is in the SDK. Since 3.0.69 a reply whose finish reason the
             // AI SDK does not recognise is continued once, and the nudge cline
             // sends for it ("Previous turn ended unexpectedly. Continue from
             // where you left off.") is persisted as a `role:"user"` message
@@ -3219,7 +3219,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // out of the transcript along with cline's other model-only
             // messages; live, the two halves arrive as one message. 3.0.69 also
             // raised the stdio MCP connect budget from 3 s to 10 s
-            // (`DEFAULT_MCP_CONNECT_TIMEOUT_MS`), which gives the codeg-mcp
+            // (`DEFAULT_MCP_CONNECT_TIMEOUT_MS`), which gives the recur-code-mcp
             // companion more headroom. What moved in 3.0.66 is token
             // accounting; see `outputTokens` in `parsers::cline`.
             distribution: AgentDistribution::Npx {
@@ -3340,16 +3340,16 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // teknium1 published. Its `uv.lock` gained 70 packages, but on
             // macOS arm64 `--extra all` installs 106 of them (103 before).
             //
-            // Upstream's `acp_adapter/` delta since v2026.9.24 reaches codeg in
+            // Upstream's `acp_adapter/` delta since v2026.9.24 reaches RecurCode in
             // one place. At stdio shutdown the adapter now stamps `ended_at`
             // (`end_reason = 'acp_disconnect'`) on every session it holds, and
             // `session/load` / `session/resume` clear it, so the column no
             // longer means the transcript's end; `parsers::hermes` reads a
             // session's last activity from its newest message instead. The rest
-            // leaves codeg's assumptions standing: the per-platform toolset
+            // leaves RecurCode's assumptions standing: the per-platform toolset
             // resolver (`platform_toolsets.acp`, `agent.disabled_toolsets`;
-            // codeg writes neither), every enabled `mcp_servers` entry switched
-            // on by default, and servers handed over on `session/new` (codeg-mcp
+            // RecurCode writes neither), every enabled `mcp_servers` entry switched
+            // on by default, and servers handed over on `session/new` (recur-code-mcp
             // included) appended unconditionally as `mcp-<name>`. A fresh
             // session's default toolset now also carries six browser and
             // password-vault tools (`browser_exec`, `browser_vault_*`), the
@@ -3365,7 +3365,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // that, an official-installer `hermes` (which self-updates)
             // outranks the npm-managed copy even when the app's PATH lacks
             // `~/.local/bin`. The npm global install is the managed/one-click
-            // channel codeg's Install button drives.
+            // channel RecurCode's Install button drives.
             distribution: AgentDistribution::Npx {
                 version: "0.21.6",
                 package: "hermes-agent@0.21.6",
@@ -3385,7 +3385,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // 2.160.0 through 2.161.2 loaded `esbuild` unguarded at startup
             // while listing it only as an OPTIONAL dependency, so an install
             // that skipped optional deps died on `--acp` ("Cannot find module
-            // 'esbuild'"); codeg's own `npm install -g` passes
+            // 'esbuild'"); RecurCode's own `npm install -g` passes
             // `--include=optional`, so managed installs always had it. 2.161.3
             // dropped `esbuild` entirely (no dependency lists it, no bundle
             // loads it), and 2.164.0 still answers `initialize` from an install
@@ -3394,12 +3394,12 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // runs `dist/codebuddy-headless.js`, which the launcher picks for
             // it, not `dist/codebuddy.js`.
             //
-            // 2.162.0 through 2.164.0 leave the wire codeg reads alone:
+            // 2.162.0 through 2.164.0 leave the wire RecurCode reads alone:
             // `initialize` and the unauthenticated `session/new` answer match
             // 2.161.4, no `sessionUpdate` kind or `session/*` method came or
             // went, and argument streaming is the same code. Those
             // `tool_call_update` frames carry the sub-agent link
-            // (`codebuddy.ai/parentToolCallId`) inside `_meta`, where codeg
+            // (`codebuddy.ai/parentToolCallId`) inside `_meta`, where RecurCode
             // nests child calls from, and after a call's first frame they are
             // merged over a 100 ms window (flushed early at 64 KiB), each
             // merged frame carrying the latest `rawInput` and `_meta`. Two
@@ -3414,7 +3414,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // while loaded they send `_codebuddy.ai/modSlots` and
             // `_codebuddy.ai/modRenderInvalidate` notifications to every
             // connection; they name no session, so they are never parked for a
-            // session router, and codeg maps them to nothing.
+            // session router, and RecurCode maps them to nothing.
             distribution: AgentDistribution::Npx {
                 version: "2.164.0",
                 package: "@tencent-ai/codebuddy-code@2.164.0",
@@ -3433,8 +3433,8 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `session/new` (and `session/load` / `session/resume`) with "ACP
             // stdio MCP server <name> does not declare a runtime identity" as
             // soon as any stdio server rides the wire — for Kimi that is always
-            // the codeg-mcp companion, so the whole agent was unusable, not
-            // just delegation. codeg sat on 0.36.1 until 0.39.0 restored it.
+            // the recur-code-mcp companion, so the whole agent was unusable, not
+            // just delegation. RecurCode sat on 0.36.1 until 0.39.0 restored it.
             //
             // Root cause, if it ever regresses: 0.37.x added a SECOND converter
             // (`acpMcpServersToConfigRecord`), pointed the three session entry
@@ -3443,7 +3443,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // threw on an absent `type` — which is how ACP spells stdio. 0.39.0
             // gives it a stdio arm again (`{transport:"stdio", …,
             // runtime_id:"local"}`), feeding the `runtime_id` that Kimi's own
-            // session-scoped connection manager demands; codeg sends nothing
+            // session-scoped connection manager demands; RecurCode sends nothing
             // extra. Diffing the old converter or the handshake proves nothing
             // — both were byte-identical across the break.
             //
@@ -3465,7 +3465,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // through it (`session/fork` deliberately warns and ignores
             // `mcpServers`, inheriting the source session's), and the "does not
             // declare a runtime identity" throw is nowhere in the bundle. The
-            // rest of the surface codeg touches is unmoved too: the same
+            // rest of the surface RecurCode touches is unmoved too: the same
             // `mcp.json` Zod schema (see `commands/mcp.rs`) and an `initialize`
             // answering `sessionCapabilities: {list, resume, close, delete,
             // fork, additionalDirectories}` with image + embeddedContext
@@ -3482,7 +3482,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // on xstate actors and the whole LLM provider layer is replaced
             // (`KimiChatProvider` and friends are gone as named classes), which
             // drops ~2.2 MB off `dist/main.mjs` and moves hundreds of symbols.
-            // None of it reaches codeg: every surface we touch is byte-identical
+            // None of it reaches RecurCode: every surface we touch is byte-identical
             // once bundler renumbering (`init_src$7` → `init_src$8`) is ignored.
             // The mandated check passes verbatim — same absent-`type` stdio arm
             // with `runtime_id:"local"`, same three entry points routing through
@@ -3528,7 +3528,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // anywhere in the bundle), and `engines.node` is still >=22.19.0.
             // Region-by-region the whole `packages/acp-server` set is
             // byte-identical to 0.43.1 except one line of `slash.ts`, and every
-            // other surface codeg touches (`config.toml`'s provider/model Zod
+            // other surface RecurCode touches (`config.toml`'s provider/model Zod
             // schemas — `max_context_size` still `int().min(1)` and still the
             // same six provider types; `mcp.json`; the credentials gate;
             // `skillRoots`; `wire/wireService`) differs only by bundler
@@ -3538,11 +3538,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // an improvement: skills carrying the new `scopes: ("tui"|"web")[]`
             // field are dropped from ACP `availableCommands`, so the TUI-only
             // `custom-theme` theme editor (and the new `/desktop`) stop showing
-            // up in codeg's slash menu. Live A/B confirms it — 17 commands on
+            // up in RecurCode's slash menu. Live A/B confirms it — 17 commands on
             // 0.43.1, the same 16 minus `custom-theme` on 2.0.0.
             //
             // Backed by a live run as for 0.39.0 and 0.42.0, because a major
-            // bump deserves one: `kimi acp` driven with the codeg-managed
+            // bump deserves one: `kimi acp` driven with the recur-code-managed
             // config.toml block and the synthetic gate token answers
             // `initialize` / `session/new` / `session/prompt` / `session/list`
             // with byte-identical payloads (same capabilities, same four modes,
@@ -3555,7 +3555,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // layout. The upstream steering fixes in this release ride on
             // `transcript`'s `groupTurns`, which the ACP replay does not use
             // (`replay.ts` projects the raw context history), so they do not
-            // reach codeg.
+            // reach RecurCode.
             //
             // 2.0.1 is a patch release and reads like one. The mandated check
             // passes verbatim — the converter's absent-`type` arm is
@@ -3588,7 +3588,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // are DELETED outright — all of them `packages/kap-server/` (ws v3,
             // projection, protocol messages, history routes). That is the
             // `kimi web` server, booted only from `cli/sub/web` and the TUI
-            // `/web` command; codeg drives `kimi acp` over stdio and never
+            // `/web` command; RecurCode drives `kimi acp` over stdio and never
             // reaches it. Every `packages/acp-server/` region is renumber-only,
             // as are `wire/record` + `wireService`, `skillRoots`, config.toml's
             // `max_context_size` Zod and `mcp.json`. The 24 real regions are
@@ -3627,9 +3627,9 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (`KIMI_CODE_WATCH=1` or `[watch] enabled = true` turn it back
             // on), so config.toml, `mcp.json` and skill roots are no longer
             // watched mid-process.
-            // Nothing codeg does at launch depends on that — config.toml is
-            // written before the spawn and codeg-mcp rides `session/new` — but
-            // an MCP server or skill added from codeg's settings while a Kimi
+            // Nothing RecurCode does at launch depends on that — config.toml is
+            // written before the spawn and recur-code-mcp rides `session/new` — but
+            // an MCP server or skill added from RecurCode's settings while a Kimi
             // session is open now lands on the next connect. The bundled
             // models.dev catalog grew, yet its `moonshotai` rows are untouched,
             // so the `infer_context_window_max_tokens` mirror still holds. A
@@ -3639,18 +3639,18 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `mcp__<server>__<tool>`), and the `agents/main/wire.jsonl` record
             // and loop-event type sets.
             //
-            // ONE change does reach codeg: a new symlink-escape guard in the
+            // ONE change does reach RecurCode: a new symlink-escape guard in the
             // `Read` / `Glob` / `Grep` / `ReadMediaFile` / `Edit` / `Write`
             // tools refuses a path that is lexically inside `cwd` +
             // `additionalDirectories` + the skill roots but whose real path
             // lands outside all of them ("… through a symbolic link that
             // points outside the working directory. Access is blocked; use the
             // real path directly or add the target directory to the
-            // workspace."). codeg builds two things in exactly that shape, and
+            // workspace."). RecurCode builds two things in exactly that shape, and
             // 2.0.2 read through both: a multi-folder workspace's folders are
-            // real symlinks under the cwd (codeg sends no
+            // real symlinks under the cwd (RecurCode sends no
             // `additionalDirectories`), and an expert or office skill is
-            // `~/.kimi-code/skills/<id>` linked to `~/.codeg/skills/<id>` —
+            // `~/.kimi-code/skills/<id>` linked to `~/.recurcode/skills/<id>` —
             // still listed as `skill:<id>`, but a `Read` of the skill's own
             // supporting files through the link is now refused. Both degrade
             // rather than break: the error names the real path, and reading
@@ -3673,7 +3673,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `path-access`, `workspaceDirsService`, `projectLocalConfigService`
             // and `watch` are back to their 2.0.2 regions once bundler
             // renumbering is ignored — the build that read through both of
-            // codeg's link shapes — and `local.toml` is read without the trust
+            // RecurCode's link shapes — and `local.toml` is read without the trust
             // gate again. With watching back on, the 2.1.0 note above about
             // settings changes landing only on the next connect no longer
             // applies. The same rollback also drops 2.1.0's hardening of
@@ -3703,7 +3703,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `true` only to satisfy the `only_openclaw_opts_out_of_mcp`
             // invariant — actual wire forwarding is short-circuited in
             // `connection.rs` (see the skip-list), so neither user servers nor
-            // the codeg-mcp companion are futilely forwarded.
+            // the recur-code-mcp companion are futilely forwarded.
             supports_mcp: true,
             name: "Pi",
             description: "Self-extensible coding agent (ACP via pi-acp)",
@@ -3737,7 +3737,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // which predates the `grok agent stdio` ACP subcommand — so the pinned
             // version isn't resolvable there.
             //
-            // Both concerns are handled by codeg's shared `npm install -g` path
+            // Both concerns are handled by RecurCode's shared `npm install -g` path
             // (`install_npm_global_package_streaming` in commands/acp.rs), which
             // always passes `--include=optional` (pulls the platform binary) and
             // `--registry=https://registry.npmjs.org` (bypasses lagging mirrors)
@@ -3746,7 +3746,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // leading `KEY=value` argv and the spawn layer's `parse_env_var` only accepts
             // `[A-Za-z0-9_]` env names, which npm's `@scope:registry` key is not.)
             //
-            // 1.0.0 changed ONE thing that reaches codeg without any code change
+            // 1.0.0 changed ONE thing that reaches RecurCode without any code change
             // here: its `initialize` advertises `sessionCapabilities.resume`
             // (0.2.118 advertised only `list`), so reconnecting to an existing
             // Grok session takes `connect_agent`'s resume → load → new chain at
@@ -3755,7 +3755,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // reply carries the `_meta["x.ai/sessionConfig"]` and per-model
             // `models` that the composer's selectors and context ring read, and
             // prompting straight after it works. It also skips `session/load`'s
-            // history replay, which codeg only drained to discard. The 1.0.1–
+            // history replay, which RecurCode only drained to discard. The 1.0.1–
             // 1.0.51 patches add nothing further here: re-probed live against
             // the 1.0.51 binary (with 1.0.46 as the A/B; both refuse
             // `session/new` and `session/resume` without a credential, so those
@@ -3766,7 +3766,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // carries `x.ai/sessionConfig` and the per-model `models`, so the
             // resume rung stands. The one `_meta` change in those replies,
             // `x.ai/memoryMode` giving way to `x.ai/memoryNotesWritable`, is a
-            // key codeg does not read; neither does it map the two status
+            // key RecurCode does not read; neither does it map the two status
             // updates 1.0.50 added on `_x.ai/session/update`, `login_refused`
             // (with a `remedy` text) and `backend_responsive`, any more than
             // grok's other status updates. A session's directory, its
@@ -3783,17 +3783,17 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `x.ai/memoryNotesWritable`. Version Status offers no "upgrade"
             // back to 1.0.50, since it only offers a strictly newer `latest`.
             //
-            // One tool input codeg renders did change after 1.0.41:
+            // One tool input RecurCode renders did change after 1.0.41:
             // `run_terminal_command` dropped `background` and `timeout` for
             // `block_until_ms` (how long to wait before backgrounding the
             // command: 30000 by default, 0 at once), so a grok shell card no
             // longer has a timeout to show; 1.0.51 still takes it. A background
             // launch answers with the text "Background task <id> started"
             // (seen live through 1.0.46; the literal is still in the 1.0.51
-            // binary), which is what codeg's launch matcher
+            // binary), which is what RecurCode's launch matcher
             // (`parseBackgroundLaunch`) reads.
             //
-            // 1.0.40 DID add one thing that reaches codeg, and it needed a fix
+            // 1.0.40 DID add one thing that reaches RecurCode, and it needed a fix
             // on our side: it narrates `session/new` progress on the
             // `_x.ai/session/setup` notification, whose first five phases carry
             // `"sessionId": null` because they run before the id exists. The
@@ -3809,7 +3809,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `persistence_init` on (`agent_build` among them), carries the id.
             // Since 1.0.50 `_x.ai/mcp/servers_updated`, which has no
             // `sessionId` field at all, arrives before those phases instead of
-            // after the id exists. codeg does not read it, and a frame without
+            // after the id exists. RecurCode does not read it, and a frame without
             // the field is never parked, so the move changes nothing.
             distribution: AgentDistribution::Npx {
                 version: "1.0.51",
@@ -3845,7 +3845,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // entry is a shell script that resolves its own directory and
             // execs the sibling `node`, so the tree must stay intact —
             // `dir_entry` switches the binary cache to whole-tree extraction.
-            // codeg deliberately does NOT run Cursor's official install
+            // RecurCode deliberately does NOT run Cursor's official install
             // script: it symlinks `~/.local/bin/agent`, which collides with
             // Grok's CLI of the same name (observed overwriting it).
             // URL layout follows the ACP registry's `cursor` entry
@@ -3914,7 +3914,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `deepseek-acp` is the community editor bridge for DeepSeek
             // Harness (DSH): the harness's own `@deepseek-ai/dsh-acp` is an
             // automation-only transport (no streaming, no tool presentation,
-            // rejects MCP), so codeg drives this adapter instead. It speaks
+            // rejects MCP), so RecurCode drives this adapter instead. It speaks
             // ACP over stdio with NO arguments; auth is the `DEEPSEEK_API_KEY`
             // env (or `~/.dsh/.credentials.yaml`), and per-session model /
             // reasoning-effort / sandbox selection arrives through standard
@@ -3924,7 +3924,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // It advertises loadSession + sessionCapabilities.list/resume and
             // accepts wire `mcpServers` (stdio + streamable HTTP; SSE and the
             // `acp` transport are explicitly rejected), so both the resume rung
-            // and the codeg-mcp companion work out of the box. Since 0.3.0 it
+            // and the recur-code-mcp companion work out of the box. Since 0.3.0 it
             // mounts the upstream skills chain (`skill_storage_spec` mirrors
             // its roots) and, since 0.2.0, offers `--setup` terminal auth for
             // storing the key in `$DSH_HOME/.credentials.yaml`.
@@ -3934,18 +3934,18 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // first fragment's id/name and dispatch an empty tool name); 0.5.0
             // sends a terminal `tool_call`'s `rawInput` as the
             // `{command, description?, cwd?}` OBJECT rather than a bare command
-            // string, i.e. the codex-acp shape codeg's tool cards already parse.
+            // string, i.e. the codex-acp shape RecurCode's tool cards already parse.
             //
             // 0.6.0 is the first bump that MOVES the handshake, because its
             // `dsh-*` deps went 0.1.0-rc.7 → 0.1.1-rc.2 and it wired up what
-            // that unlocked. Four of the five new capabilities cost codeg
+            // that unlocked. Four of the five new capabilities cost RecurCode
             // nothing — they land on paths that already read the agent's own
             // advertisement:
             //
             // * `sessionCapabilities.fork` is now advertised unconditionally,
             //   so `supports_fork` flips on by itself and `acp::fork`'s
             //   `{sessionId, cwd}` request is exactly what it accepts (it
-            //   rejects `additionalDirectories`, which codeg never sends).
+            //   rejects `additionalDirectories`, which RecurCode never sends).
             // * `promptCapabilities.image` went from a hardwired `false` to
             //   "true whenever the attachment store is mounted", which the
             //   stock composition always does — so the composer's upload path
@@ -3958,7 +3958,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //   `deriveModelGroups` already yields to server groups verbatim,
             //   and single-provider installs (i.e. nearly all of them) keep
             //   emitting bare model ids, so the selector is unaffected either
-            //   way. codeg does not drive the new `providers/*` UNSTABLE plane;
+            //   way. RecurCode does not drive the new `providers/*` UNSTABLE plane;
             //   routes are configured in `settings.yaml`, and the DeepSeek
             //   settings panel still owns `DEEPSEEK_BASE_URL`/`DEEPSEEK_API_KEY`
             //   for the built-in `deepseek-official` route.
@@ -3987,7 +3987,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // shapes: `image` content blocks (bytes live in the content-
             // addressed `$DSH_HOME/attachments/v1` store, the log keeps only a
             // `sha256:` ref) and the `compaction/*` lifecycle. The three
-            // upstream layouts codeg mirrors — `dsh-home-paths`'
+            // upstream layouts RecurCode mirrors — `dsh-home-paths`'
             // `resolveDshHome`, `dsh-skill-filesystem`'s roots,
             // `dsh-session-persistence-jsonl`'s `session.jsonl[.zstd]` tree —
             // are unchanged across rc.7 → rc.2, so nothing else moved.
@@ -3999,14 +3999,14 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // * `session/load` + `session/fork` 的 cwd 校验从裸字符串相等换成
             //   `sameWorkspace()`（realpath.native，fail-closed）。这是**放宽**：
-            //   codeg 送的工作区路径以前只要拼写与日志里记的不同就被拒——macOS
+            //   RecurCode 送的工作区路径以前只要拼写与日志里记的不同就被拒——macOS
             //   的 `/var` → `/private/var`、Windows 8.3 短名——恢复会莫名失败。
             //   `session/list` 的 cwd 过滤同样改成按目录判定。
             // * Windows 上模型面向的 shell 工具从 `bash` 换成 `pwsh`
             //   (`composition/shell.js` 的 `mountNativeShell`)；非 Windows 仍是
             //   `bash`。`dsh-tool-pwsh` 的 `presentCall` 与 `dsh-tool-bash` 逐字
             //   同形（前台 `card: "terminal"` + `{title, description, cwd?}`，
-            //   后台才是 `card: "generic"` + 裸字符串 `rawInput`），所以 codeg
+            //   后台才是 `card: "generic"` + 裸字符串 `rawInput`），所以 RecurCode
             //   的终端工具卡在两个平台上拿到的形状一致。
             //
             // 0.8.0 加的是**消息级 fork**，读的就是 claude-agent-acp 0.73.0 与
@@ -4017,24 +4017,24 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // * id 侧**两种都认**：它自己盖在 message/thought chunk 上的 wire id
             //   （`<turn>:<step>`），以及会话日志里那条 `message.id`。后者是
             //   `parsers::deepseek` 现在记进 `agent_message_id` 的那个——上游把它
-            //   明写成「留给直接读 JSONL 的客户端」，codeg 正是。
+            //   明写成「留给直接读 JSONL 的客户端」，RecurCode 正是。
             //   `dependencies` 与 0.7.0 逐字节相同（`dsh-*` 全停在 0.1.1-rc.2，
             //   `@agentclientprotocol/sdk` 停在 1.4.0），日志布局因此没动。
             // * 指纹侧**同时按逐条消息和逐回合两种口径算**，两边都中且指向不同回合
             //   时报 `-32602`（而不是被 `rethrowMissingSession` 误判成 `-32002`，
-            //   那会让客户端把一条好会话从列表里摘掉）。codeg 一个日志回合只渲染
+            //   那会让客户端把一条好会话从列表里摘掉）。RecurCode 一个日志回合只渲染
             //   一条 assistant 气泡，命中的是逐回合那一档；id 命中时指纹压根不看，
             //   所以那条歧义路径实际走不到。
             // * `initialize.js` 的 diff 只有 `AGENT_INFO.version` 一行，
             //   `sessionCapabilities`（含无条件的 `fork: {}`）与
             //   `promptCapabilities` 都没动，上面那串能力断言仍然成立。
             // * `agent_message_chunk` / `agent_thought_chunk` / `user_message_chunk`
-            //   现在带 `messageId`。对 codeg 是**惰性**的：1.x schema 里它是稳定的
+            //   现在带 `messageId`。对 RecurCode 是**惰性**的：1.x schema 里它是稳定的
             //   `ContentChunk::message_id`（当年 pin 的 0.11 把它放在没开的
             //   `unstable_message_id` feature 后面、被 serde 当未知字段丢掉），但
-            //   codeg 不读它——分叉点取自解析出来的日志而不是 live 转写。
+            //   RecurCode 不读它——分叉点取自解析出来的日志而不是 live 转写。
             //
-            // 0.9.0 唯一需要 codeg 跟着改的是**模型目录**，而它落在设置面板那条线上
+            // 0.9.0 唯一需要 RecurCode 跟着改的是**模型目录**，而它落在设置面板那条线上
             // （`commands::deepseek_settings`），不在协议层：
             //
             // * 目录的来源换人了。`boot.ts` 现在把自己的 `DEEPSEEK_MODELS` 作为
@@ -4053,7 +4053,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // * 新增 `systemPromptUpdate: "in-history"`，agent 自己的默认条目就带着
             //   它；漏写不报错，只是让那个模型静默换一种系统提示投递方式。
             // * prompt 现在等 `sessions.flush()` 才结算，落盘失败以 `-32603` 拒绝
-            //   而不是照回 `end_turn`。codeg 把它渲染成一次失败的回合，正是要的
+            //   而不是照回 `end_turn`。RecurCode 把它渲染成一次失败的回合，正是要的
             //   结局——回成功再把这一轮历史丢掉才是无声的。
             // * **`assistant/chunk` / `*-chunks` 不再逐条落库**（紧凑流搬进
             //   `assistant/message` 的 `stream` 字段）。`parsers::deepseek` 里那条
@@ -4083,7 +4083,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // community bridge): verified handshake advertises `loadSession`
             // plus the full `sessionCapabilities` set (list/resume/fork/close/
             // delete/additionalDirectories), image + embeddedContext prompts,
-            // and MCP http+sse — so the resume rung and the codeg-mcp
+            // and MCP http+sse — so the resume rung and the recur-code-mcp
             // companion work with no adapters in between. Auth is the qoder
             // account (`qoder login`, or the IDE's qoder-browser flow); there
             // is no API-key env to manage. Model, mode and reasoning effort
@@ -4092,7 +4092,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // acceptEdits/auto/dontAsk/yolo, `yolo` being the one labelled
             // "Bypass Permissions" (`bypassPermissions` is accepted as an alias
             // for it, `plan` is rejected) — re-read live on 1.1.64, 1.1.65 and
-            // 1.1.67, and nothing in codeg names them. Session logs land as
+            // 1.1.67, and nothing in RecurCode names them. Session logs land as
             // `$QODER_CONFIG_DIR/projects/<encoded-cwd>/<sessionId>.jsonl`
             // (default `~/.qoder/...`) in the Claude-Code-style chunk-log
             // envelope, which `parsers::qoder` reads for history — including
@@ -4111,7 +4111,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (`ai-title` comes only from the interactive TUI, never an ACP
             // session). The one protocol change is in 1.1.67: the
             // `reasoning_effort` option moves from `category: "model"` to
-            // `"thought_level"`. codeg needs nothing for it: the model-label
+            // `"thought_level"`. RecurCode needs nothing for it: the model-label
             // store finds the model selector by its `model` id first, the
             // composer's model-only handling (search, provider groups) never
             // applied to a short effort list, and saved preferences still
@@ -4119,7 +4119,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // `QODER_EXPOSE_TOKEN_USAGE` turns OFF qoder's own token-count
             // redaction, and without it every qoder session reports zero tokens
-            // everywhere codeg can see. The CLI passes each response's usage
+            // everywhere RecurCode can see. The CLI passes each response's usage
             // through a sanitizer that keeps the real counters only when the
             // model came from a BYO/custom provider or that env is truthy
             // (`1`/`true`/`yes`); otherwise it rewrites `input_tokens`,
@@ -4187,7 +4187,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `-32000 Authentication required` unless
             // `$GEMINI_HOME/antigravity-acp/settings.json` declares
             // `auth.type` (env-based selection was removed upstream; the
-            // server's own message says so). codeg does not implement the ACP
+            // server's own message says so). RecurCode does not implement the ACP
             // `authenticate` request, so the launch path writes that file
             // instead — see `sync_antigravity_settings_file` in connection.rs
             // and the Antigravity settings panel that feeds it. With
@@ -4215,19 +4215,19 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // 1.3.0, checked against 1.2.1: every archive is still flat with
             // the same two executables and modes, and `tools.py`,
             // `config_options.py`, `paths.py`, `settings.py` and `oauth/` are
-            // byte-identical. So the MCP `rawInput` codeg folds, the mode
+            // byte-identical. So the MCP `rawInput` RecurCode folds, the mode
             // values, the token paths and the loopback OAuth flow the login
             // relay drives are unchanged. `initialize` matches, and
             // `session/new` still fails `-32000 Authentication required` until
             // settings.json declares `auth.type`, which gained a `gateway`
-            // value codeg does not offer. New on the wire is `usage_update`,
+            // value RecurCode does not offer. New on the wire is `usage_update`,
             // which reaches the context ring like any agent's, and the Windows
-            // server is still the PyInstaller onefile that codeg's TMP/TEMP
+            // server is still the PyInstaller onefile that RecurCode's TMP/TEMP
             // scratch and `_MEI*` reaping are built for. One launch detail
             // moved: `main.py` now appends `localhost,127.0.0.1,::1` to both
-            // `NO_PROXY` spellings whenever a proxy variable is set. codeg
+            // `NO_PROXY` spellings whenever a proxy variable is set. RecurCode
             // already exports those hosts, so its value passes through, except
-            // `*`, which codeg sends alone because Python skips a `*` inside a
+            // `*`, which RecurCode sends alone because Python skips a `*` inside a
             // list. The server turns it into `*,localhost,127.0.0.1,::1`, so
             // with a proxy configured and a `*` bypass list, its urllib and
             // requests traffic is proxied again.
@@ -4299,9 +4299,9 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             agent_type,
             // RecurAgent's ACP server IGNORES `session/new`'s `mcpServers`: its
             // ACP entry point never builds an MCP client, so neither the built-in
-            // codeg-mcp companion nor a user's own servers ever reach its model
+            // recur-code-mcp companion nor a user's own servers ever reach its model
             // (probed: a server handed to `session/new` is never spawned).
-            // Declaring `false` is what keeps codeg from injecting a companion
+            // Declaring `false` is what keeps RecurCode from injecting a companion
             // whose `delegate_to_agent` / live-feedback tools the agent can never
             // call — and from steering a prompt at tools that do not exist. Same
             // posture as OpenClaw, and stricter than pi's `agent_delivers_wire_mcp`
@@ -4648,7 +4648,7 @@ mod tests {
 
     #[test]
     fn goal_control_is_out_of_band_gates_codex_only() {
-        // codex changes the goal through an app-server RPC, so codeg may follow
+        // codex changes the goal through an app-server RPC, so RecurCode may follow
         // a pause/clear with the interrupt that actually stops the work. claude
         // delivers the same request as the prompt text "/goal clear" — killing
         // that turn would kill the clear — and every unverified adapter fails
@@ -4703,7 +4703,7 @@ mod tests {
             Some("22.0.0"),
         );
         // Kimi Code must never land on 0.37.0–0.38.0: every session in that
-        // range dies on the codeg-mcp stdio entry (see the registry entry).
+        // range dies on the recur-code-mcp stdio entry (see the registry entry).
         assert_npx_version(
             AgentType::KimiCode,
             "2.1.1",
@@ -4830,7 +4830,7 @@ mod tests {
                 "unexpected adapter relation for {agent_type:?}"
             );
             // The whole point is that the vendor CLI's name differs from the
-            // adapter command codeg actually launches.
+            // adapter command RecurCode actually launches.
             if let Some(relation) = relation {
                 match get_agent_meta(agent_type).distribution {
                     AgentDistribution::Npx { cmd, .. } => {

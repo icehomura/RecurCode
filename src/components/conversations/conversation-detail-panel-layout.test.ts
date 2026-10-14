@@ -59,7 +59,7 @@ describe("ConversationDetailPanel new conversation layout", () => {
     const welcomeBranch = source.slice(welcomeBranchStart, nextBranchStart)
     expect(welcomeBranch).toContain("<ChatInput")
     // The welcome page scrolls with the app's shared overlay scrollbar (the
-    // sidebar's os-theme-codeg bar), not the platform's native one. `min-h-full`
+    // sidebar's os-theme-RecurCode bar), not the platform's native one. `min-h-full`
     // on the inner column preserves the spacer layout the old
     // `overflow-y-auto` flex column had.
     expect(welcomeBranch).toContain("<ScrollArea")
@@ -603,7 +603,7 @@ describe("ConversationDetailPanel session-load failure surface", () => {
     // wrote. `detail` is null while any (re)fetch is in flight, so writing null
     // to the store in that window discards a session id we already know — and a
     // reconnect with no session id takes session/new, which is precisely how a
-    // conversation's history gets stranded (codeg#500). The backend now refuses
+    // conversation's history gets stranded (RecurCode#500). The backend now refuses
     // to destroy the history either way; this keeps the frontend from steering
     // into it in the first place.
     const effectStart = source.indexOf(

@@ -1,18 +1,18 @@
 "use client"
 
 /**
- * Inline card for the codeg-mcp *workbench* companion tools — `get_session_info`,
+ * Inline card for the recur-code-mcp *workbench* companion tools — `get_session_info`,
  * `task_progress`, `task_complete`, `create_automation`, `create_work_task` and
  * `resume_delegation`.
  *
  * One collapsed line framed around what the agent was actually doing ("读取会话
  * #2122", "进度：tests passing", "任务完成 · 成功"), with a status badge and an
  * inline expansion for the result text. Deliberately the same shape and visual
- * language as `DelegationStatusCard` / `DelegationStatusRow` so every codeg-mcp
+ * language as `DelegationStatusCard` / `DelegationStatusRow` so every recur-code-mcp
  * companion reads as one family in the transcript instead of these five landing
  * on the generic tool shell as a raw `{"message": "…"}` argument dump.
  *
- * Parsing lives in `@/lib/codeg-mcp-tool` — it handles the per-host argument
+ * Parsing lives in `@/lib/recur-code-mcp-tool` — it handles the per-host argument
  * wrapping and result envelopes, so this component is presentation-only.
  */
 
@@ -31,9 +31,9 @@ import {
 
 import { cn } from "@/lib/utils"
 import {
-  parseCodegMcpToolCall,
-  type CodegMcpWorkbenchTool,
-} from "@/lib/codeg-mcp-tool"
+  parseRecurCodeMcpToolCall,
+  type RecurCodeMcpWorkbenchTool,
+} from "@/lib/recur-code-mcp-tool"
 import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 import { MessageResponse } from "@/components/ai-elements/message"
 import { Shimmer } from "@/components/ai-elements/shimmer"
@@ -41,7 +41,7 @@ import { StatusBadge } from "@/components/message/delegation-status-badge"
 
 interface Props {
   /** Canonical tool name — selects the label, icon and argument to state. */
-  tool: CodegMcpWorkbenchTool
+  tool: RecurCodeMcpWorkbenchTool
   /** Raw JSON arguments the agent sent to the tool. */
   input?: string | null
   output?: string | null
@@ -49,7 +49,7 @@ interface Props {
   state?: ToolCallState
 }
 
-const ICONS: Record<CodegMcpWorkbenchTool, typeof BookOpen> = {
+const ICONS: Record<RecurCodeMcpWorkbenchTool, typeof BookOpen> = {
   get_session_info: BookOpen,
   task_progress: Signpost,
   task_complete: CircleCheckBig,
@@ -58,19 +58,19 @@ const ICONS: Record<CodegMcpWorkbenchTool, typeof BookOpen> = {
   resume_delegation: RotateCcw,
 }
 
-export function CodegMcpToolCard({
+export function RecurCodeMcpToolCard({
   tool,
   input,
   output,
   errorText,
   state,
 }: Props) {
-  const t = useTranslations("Folder.chat.codegMcpTool")
+  const t = useTranslations("Folder.chat.recurcodeMcpTool")
   const [expanded, setExpanded] = useState(false)
   const panelId = useId()
 
   const model = useMemo(
-    () => parseCodegMcpToolCall({ tool, input, output, errorText, state }),
+    () => parseRecurCodeMcpToolCall({ tool, input, output, errorText, state }),
     [tool, input, output, errorText, state]
   )
 
@@ -157,7 +157,7 @@ export function CodegMcpToolCard({
 
   return (
     <div
-      data-testid="codeg-mcp-tool-card"
+      data-testid="recur-code-mcp-tool-card"
       data-tool={tool}
       className={cn(
         "overflow-hidden rounded-lg border text-xs ws-msg-card",

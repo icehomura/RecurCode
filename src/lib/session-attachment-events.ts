@@ -1,6 +1,6 @@
 import type { DbConversationSummary } from "@/lib/types"
 
-export const ATTACH_FILE_TO_SESSION_EVENT = "codeg:attach-file-to-session"
+export const ATTACH_FILE_TO_SESSION_EVENT = "RecurCode:attach-file-to-session"
 
 export interface AttachFileToSessionDetail {
   tabId: string
@@ -25,7 +25,7 @@ export function emitAttachFileToSession(
   )
 }
 
-export const ATTACH_SESSION_TO_SESSION_EVENT = "codeg:attach-session-to-session"
+export const ATTACH_SESSION_TO_SESSION_EVENT = "RecurCode:attach-session-to-session"
 
 export interface AttachSessionToSessionDetail {
   /** The conversation tab whose composer receives the mention badge. */
@@ -33,7 +33,7 @@ export interface AttachSessionToSessionDetail {
   /**
    * The conversation being mentioned. Carried whole (rather than by id) so the
    * consumer builds the badge through the same `sessionToSuggestion` adapter the
-   * `@` panel uses — one source of truth for the label / `codeg://session/<id>`
+   * `@` panel uses — one source of truth for the label / `recurcode://session/<id>`
    * uri / agent + status + branch meta.
    */
   conversation: DbConversationSummary
@@ -51,7 +51,7 @@ export function emitAttachSessionToSession(
   )
 }
 
-export const ATTACH_PAGE_TO_SESSION_EVENT = "codeg:attach-page-to-session"
+export const ATTACH_PAGE_TO_SESSION_EVENT = "RecurCode:attach-page-to-session"
 
 /**
  * Something from the built-in browser going to a conversation: an element the
@@ -96,7 +96,7 @@ export function emitAttachPageToSession(
   return event.detail.accepted === true
 }
 
-export const APPEND_TEXT_TO_SESSION_EVENT = "codeg:append-text-to-session"
+export const APPEND_TEXT_TO_SESSION_EVENT = "RecurCode:append-text-to-session"
 
 export interface AppendTextToSessionDetail {
   tabId: string

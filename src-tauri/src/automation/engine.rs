@@ -105,8 +105,8 @@ struct ResolvedCwd {
 /// exclusive engine lock. So the engine runs *only* while provably the sole
 /// engine on the DB (`engine()` stays unset otherwise, and manual run/cancel
 /// return a clean "engine not running" error). `None` happens when another live
-/// codeg process already holds the lock (e.g. a desktop app and a server pointed
-/// at the same `CODEG_DATA_DIR`), or — rarely — when the lock can't be
+/// RecurCode process already holds the lock (e.g. a desktop app and a server pointed
+/// at the same `RECUR_CODE_DATA_DIR`), or — rarely — when the lock can't be
 /// established at all (a real IO error on the lock file, e.g. a filesystem
 /// without lock support): we never start a lockless engine, since its other
 /// guards (`automation_locks`, `root_locks`) are process-local, not cross-process.
@@ -121,7 +121,7 @@ pub fn build_engine(
         Ownership::Exclusive(file) => file,
         Ownership::Taken => {
             tracing::info!(
-                "[automation] another codeg process owns the automation engine for {}; \
+                "[automation] another RecurCode process owns the automation engine for {}; \
                  this process will not drive automations",
                 data_dir.display()
             );
@@ -167,7 +167,7 @@ enum Ownership {
 
 /// Path of the per-DB engine lock: the DB filename plus a `.lock` suffix, so it
 /// contends exactly when the `automation_run` table is shared — a debug desktop's
-/// isolated `codeg-dev.db` never blocks a release `codeg.db`, and vice versa.
+/// isolated `recur-code-dev.db` never blocks a release `RecurCode.db`, and vice versa.
 fn engine_lock_path(data_dir: &Path) -> PathBuf {
     data_dir.join(format!("{}.lock", crate::db::database_file_name()))
 }
@@ -214,7 +214,7 @@ fn acquire_engine_ownership(data_dir: &Path) -> Ownership {
 /// Long-running engine driver: boot recovery, then a single select loop over the
 /// completion event stream + the reconcile interval. Spawn once per process in
 /// each boot path (`lib.rs` setup via `tauri::async_runtime::spawn`, and
-/// `bin/codeg_server.rs` via `tokio::spawn`).
+/// `bin/recur_code_server.rs` via `tokio::spawn`).
 pub async fn run_automation_engine(engine: Arc<AutomationEngine>) {
     // Boot recovery: a fresh process has no live connections, so any run still
     // `running` in the DB is an interruption — fail it (never re-fire here). This

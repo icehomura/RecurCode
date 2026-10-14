@@ -39,7 +39,7 @@ pub struct LogFileInfo {
 const READ_LOG_MAX_BYTES: usize = 16 * 1024 * 1024;
 
 /// What the Settings UI needs to render the capture controls: the persisted
-/// global level and per-target overrides, plus whether `CODEG_LOG`/`RUST_LOG`
+/// global level and per-target overrides, plus whether `RECUR_CODE_LOG`/`RUST_LOG`
 /// currently locks them (env owns the live level, so the UI shows them
 /// read-only to avoid silent divergence).
 #[derive(Debug, Clone, Serialize)]
@@ -90,7 +90,7 @@ pub async fn set_log_settings_core(
     app_metadata_service::upsert_value(conn, LOGGING_LEVEL_KEY, &serialized)
         .await
         .map_err(AppCommandError::from)?;
-    // The env var (CODEG_LOG/RUST_LOG) owns the live level when set; persist the
+    // The env var (RECUR_CODE_LOG/RUST_LOG) owns the live level when set; persist the
     // choice for when it's later removed, but don't override it at runtime — the
     // UI locks the control in that case, so this also guards a stale client.
     if !crate::logging::init::env_level_is_set() {
@@ -150,7 +150,7 @@ pub(crate) fn filter_recent(
 fn logs_dir() -> std::path::PathBuf {
     crate::logging::panic_hook::log_file_dir()
         .map(std::path::Path::to_path_buf)
-        .unwrap_or_else(crate::paths::codeg_logs_root)
+        .unwrap_or_else(crate::paths::recur_code_logs_root)
 }
 
 /// List `.log` files in the logs dir, newest first. Empty if the dir is absent.
@@ -372,20 +372,20 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         temp_env::with_vars(
             [
-                ("CODEG_HOME", None::<&str>),
-                ("CODEG_DATA_DIR", Some(tmp.path().to_str().unwrap())),
+                ("RECUR_CODE_HOME", None::<&str>),
+                ("RECUR_CODE_DATA_DIR", Some(tmp.path().to_str().unwrap())),
             ],
             || {
-                let logs = crate::paths::codeg_logs_root();
+                let logs = crate::paths::recur_code_logs_root();
                 std::fs::create_dir_all(&logs).unwrap();
-                std::fs::write(logs.join("codeg.2026-01-01.log"), b"0123456789").unwrap();
+                std::fs::write(logs.join("RecurCode.2026-01-01.log"), b"0123456789").unwrap();
                 assert_eq!(
-                    read_log_file_core("codeg.2026-01-01.log", None).unwrap(),
+                    read_log_file_core("RecurCode.2026-01-01.log", None).unwrap(),
                     "0123456789"
                 );
                 // Capped read returns the newest tail.
                 assert_eq!(
-                    read_log_file_core("codeg.2026-01-01.log", Some(4)).unwrap(),
+                    read_log_file_core("RecurCode.2026-01-01.log", Some(4)).unwrap(),
                     "6789"
                 );
             },
@@ -397,11 +397,11 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         temp_env::with_vars(
             [
-                ("CODEG_HOME", None::<&str>),
-                ("CODEG_DATA_DIR", Some(tmp.path().to_str().unwrap())),
+                ("RECUR_CODE_HOME", None::<&str>),
+                ("RECUR_CODE_DATA_DIR", Some(tmp.path().to_str().unwrap())),
             ],
             || {
-                let logs = crate::paths::codeg_logs_root();
+                let logs = crate::paths::recur_code_logs_root();
                 std::fs::create_dir_all(&logs).unwrap();
                 std::fs::write(logs.join("a.log"), b"a").unwrap();
                 std::fs::write(logs.join("b.txt"), b"b").unwrap();
@@ -414,22 +414,22 @@ mod tests {
 
     /// With no file sink in the process (tests never build one), the logs
     /// directory is where `paths` resolves it: under the data directory, or
-    /// under `CODEG_HOME` when that is set, as uploads and pets are.
+    /// under `RECUR_CODE_HOME` when that is set, as uploads and pets are.
     #[test]
-    fn logs_dir_follows_the_data_directory_and_codeg_home() {
+    fn logs_dir_follows_the_data_directory_and_recur_code_home() {
         let data = tempfile::tempdir().unwrap();
         let home = tempfile::tempdir().unwrap();
         temp_env::with_vars(
             [
-                ("CODEG_HOME", None::<&str>),
-                ("CODEG_DATA_DIR", Some(data.path().to_str().unwrap())),
+                ("RECUR_CODE_HOME", None::<&str>),
+                ("RECUR_CODE_DATA_DIR", Some(data.path().to_str().unwrap())),
             ],
             || assert_eq!(logs_dir(), data.path().join("logs")),
         );
         temp_env::with_vars(
             [
-                ("CODEG_HOME", Some(home.path().to_str().unwrap())),
-                ("CODEG_DATA_DIR", Some(data.path().to_str().unwrap())),
+                ("RECUR_CODE_HOME", Some(home.path().to_str().unwrap())),
+                ("RECUR_CODE_DATA_DIR", Some(data.path().to_str().unwrap())),
             ],
             || assert_eq!(logs_dir(), home.path().join("logs")),
         );
@@ -444,16 +444,16 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         temp_env::with_vars(
             [
-                ("CODEG_HOME", None::<&str>),
-                ("CODEG_DATA_DIR", Some(tmp.path().to_str().unwrap())),
+                ("RECUR_CODE_HOME", None::<&str>),
+                ("RECUR_CODE_DATA_DIR", Some(tmp.path().to_str().unwrap())),
             ],
             || {
-                let logs = crate::paths::codeg_logs_root();
+                let logs = crate::paths::recur_code_logs_root();
                 std::fs::create_dir_all(&logs).unwrap();
                 let mut open = std::fs::OpenOptions::new()
                     .create(true)
                     .append(true)
-                    .open(logs.join("codeg.2026-10-08.log"))
+                    .open(logs.join("RecurCode.2026-10-08.log"))
                     .unwrap();
                 open.write_all(b"{\"level\":\"INFO\"}\n").unwrap();
                 open.flush().unwrap();

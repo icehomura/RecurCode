@@ -21,7 +21,7 @@ export function sessionKey(session: {
 
 /** Whether a scanned session can be checked for the next import run.
  *
- *  `new` always is. `deleted` is only reachable behind `includeDeleted`: codeg
+ *  `new` always is. `deleted` is only reachable behind `includeDeleted`: RecurCode
  *  soft-deletes, so importing such a session restores the existing row rather
  *  than inserting a duplicate — but a deletion was deliberate, so it takes an
  *  explicit opt-in before select-all and the folder tri-state can sweep it up.
@@ -124,7 +124,7 @@ export const FolderHeaderRow = memo(function FolderHeaderRow({
           <AgentIcon key={agent} agentType={agent} className="h-3.5 w-3.5" />
         ))}
       </span>
-      {!folder.exists_in_codeg && (
+      {!folder.exists_in_recur_code && (
         <Badge variant="secondary" className="shrink-0 text-3xs">
           {t("folderNew")}
         </Badge>

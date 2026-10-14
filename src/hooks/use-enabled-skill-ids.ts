@@ -109,15 +109,15 @@ function releaseFocusRefresh(): void {
  * enabled — i.e. symlinked into the given agent's skill directory — for the
  * passed agent. Mirrors the settings page's "enabled" definition: a
  * `(skillId, agentType)` pair counts as enabled only when its install status is
- * `linked_to_codeg`.
+ * `linked_to_recur_code`.
  *
  * `ready` is false until the first snapshot resolves successfully, so callers
  * can avoid marking everything as "not enabled" during the initial async load
  * (or after an error, where we deliberately stay not-ready and fail open).
  *
- * `supported` is false for an agent codeg's skill store can't manage — today
+ * `supported` is false for an agent RecurCode's skill store can't manage — today
  * only a pi pointed at a custom `PI_CODING_AGENT_DIR`, whose skills live in a
- * per-agent dir codeg's default-dir store never touches. For such an agent
+ * per-agent dir RecurCode's default-dir store never touches. For such an agent
  * `enabledIds` is forced empty (so no consumer can surface a default-dir link
  * as enabled) and skill UIs should hide their shortcuts rather than show a
  * dead-end "enable in Settings" path the Settings matrices also hide. pi is
@@ -167,7 +167,7 @@ export function useEnabledSkillIds(agentType: AgentType | null): {
     return () => releaseFocusRefresh()
   }, [])
 
-  // A pi pointed at a custom PI_CODING_AGENT_DIR isn't managed by codeg's
+  // A pi pointed at a custom PI_CODING_AGENT_DIR isn't managed by RecurCode's
   // default-dir skill store. The custom dir lives in the agent registry's
   // env_json, so pi is held unmanaged until that registry is first `fresh`
   // (pessimistic — a custom-dir pi must never expose default-dir shortcuts
@@ -196,7 +196,7 @@ export function useEnabledSkillIds(agentType: AgentType | null): {
     for (const status of snapshot) {
       if (
         status.agentType === agentType &&
-        status.state === "linked_to_codeg"
+        status.state === "linked_to_recur_code"
       ) {
         set.add(status.expertId)
       }

@@ -7,7 +7,7 @@ const UPLOADED_IMAGE: PromptInputBlock = {
   type: "image",
   data: "QkFTRTY0",
   mime_type: "image/png",
-  uri: "file:///home/me/.codeg/uploads/ab/shot.png",
+  uri: "file:///home/me/.recurcode/uploads/ab/shot.png",
 }
 
 const PASTED_IMAGE_NO_URI: PromptInputBlock = {
@@ -19,7 +19,7 @@ const PASTED_IMAGE_NO_URI: PromptInputBlock = {
 
 const UPLOADED_IMAGE_RESOURCE: PromptInputBlock = {
   type: "resource",
-  uri: "file:///home/me/.codeg/uploads/ab/pasted.png",
+  uri: "file:///home/me/.recurcode/uploads/ab/pasted.png",
   mime_type: "image/png",
   text: null,
   blob: "QkFTRTY0",
@@ -58,7 +58,7 @@ describe("stripUploadedImagePayloads", () => {
   it("does not touch a non-image resource blob", () => {
     const block: PromptInputBlock = {
       type: "resource",
-      uri: "file:///home/me/.codeg/uploads/ab/data.bin",
+      uri: "file:///home/me/.recurcode/uploads/ab/data.bin",
       mime_type: "application/octet-stream",
       text: null,
       blob: "QkFTRTY0",

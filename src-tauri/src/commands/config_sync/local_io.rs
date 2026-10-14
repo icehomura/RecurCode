@@ -53,7 +53,7 @@ pub const MAX_IMPORT_BYTES: usize = 8 * 1024 * 1024;
 pub struct ConfigExportFile {
     /// Presence of this field is what distinguishes an export envelope from a
     /// bare `config.json`.
-    pub codeg_config_export: u32,
+    pub recur_code_config_export: u32,
     pub manifest: ConfigManifest,
     pub config: ConfigSnapshot,
 }
@@ -91,7 +91,7 @@ pub async fn build_export_core(
     let bytes = serialize_snapshot(&snapshot)?;
     let manifest = build_manifest(&bytes, app_version, snapshot.counts(), ENCRYPTION_NONE);
     Ok(ConfigExportFile {
-        codeg_config_export: EXPORT_FORMAT_VERSION,
+        recur_code_config_export: EXPORT_FORMAT_VERSION,
         manifest,
         config: snapshot,
     })
@@ -164,14 +164,14 @@ pub fn parse_export_bytes(
     }
 
     let value: serde_json::Value = serde_json::from_slice(bytes).map_err(|e| {
-        AppCommandError::invalid_input("Not a codeg config file")
+        AppCommandError::invalid_input("Not a RecurCode config file")
             .with_detail(e.to_string())
             .with_i18n(CONFIG_SYNC_I18N_KEY_INVALID_SNAPSHOT, BTreeMap::new())
     })?;
 
-    if value.get("codegConfigExport").is_some() {
+    if value.get("recurCodeConfigExport").is_some() {
         let export: ConfigExportFile = serde_json::from_value(value).map_err(|e| {
-            AppCommandError::invalid_input("Malformed codeg config export")
+            AppCommandError::invalid_input("Malformed RecurCode config export")
                 .with_detail(e.to_string())
                 .with_i18n(CONFIG_SYNC_I18N_KEY_INVALID_SNAPSHOT, BTreeMap::new())
         })?;
@@ -199,7 +199,7 @@ fn synthesize_export(snapshot_bytes: &[u8]) -> Result<ConfigExportFile, AppComma
     let canonical = serialize_snapshot(&snapshot)?;
     let manifest = build_manifest(&canonical, "unknown", snapshot.counts(), ENCRYPTION_NONE);
     Ok(ConfigExportFile {
-        codeg_config_export: EXPORT_FORMAT_VERSION,
+        recur_code_config_export: EXPORT_FORMAT_VERSION,
         manifest,
         config: snapshot,
     })
@@ -281,7 +281,7 @@ async fn apply_import(
 /// `dir` is a parameter rather than a call to [`rollback_dir`] for the same
 /// reason [`write_rollback_snapshot`] takes one: the command layer supplies the
 /// real directory, and a test supplies a temporary one instead of writing into
-/// the developer's `~/.codeg`.
+/// the developer's `~/.recurcode`.
 pub async fn apply_rollback_core(
     conn: &DatabaseConnection,
     dir: &Path,
@@ -374,7 +374,7 @@ mod tests {
         seed_message(&source.conn, "Exported").await;
 
         let dir = tempfile::tempdir().expect("tempdir");
-        let dest = dir.path().join("nested").join("codeg-config.json");
+        let dest = dir.path().join("nested").join("recur-code-config.json");
         let summary = export_to_file_core(&source.conn, "9.9.9", &dest)
             .await
             .expect("export");
@@ -419,7 +419,7 @@ mod tests {
 
     /// The encrypted `config.json` the sync uploads has to come back in through
     /// the same door: a user who downloads it from their cloud drive's web UI
-    /// should not be told their own file is not a codeg config.
+    /// should not be told their own file is not a RecurCode config.
     #[tokio::test]
     async fn an_encrypted_remote_config_json_is_accepted_with_the_stored_passphrase() {
         let _guard = credentials::test_guard().await;
@@ -584,7 +584,7 @@ mod tests {
     /// snapshots live. They did not: the reader took a directory and the writer
     /// called [`rollback_dir`] regardless, so an import driven against a
     /// temporary directory still wrote into — and PRUNED — the real
-    /// `~/.codeg/config-snapshots`. The button showed nothing while the test
+    /// `~/.recurcode/config-snapshots`. The button showed nothing while the test
     /// suite quietly evicted the developer's own eleventh-newest snapshot.
     #[tokio::test]
     async fn an_import_saves_its_rollback_point_where_the_list_will_look() {
@@ -637,7 +637,7 @@ mod tests {
         seed_role(&source.conn, "Reviewer").await;
 
         let dir = tempfile::tempdir().expect("tempdir");
-        let path = dir.path().join("codeg-config.json");
+        let path = dir.path().join("recur-code-config.json");
         let summary = export_to_file_core(&source.conn, "9.9.9", &path)
             .await
             .expect("export");

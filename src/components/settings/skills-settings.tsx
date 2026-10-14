@@ -187,7 +187,7 @@ export function SkillsSettings() {
   // etc. Folder-scope maps to the backend's `project` AgentSkillScope — no new
   // scope type, just threading the folder path through as `workspacePath`.
   const [skillsScope, setSkillsScope] = useState<"global" | "folder">("global")
-  // Only folders registered in the DB (opened at least once via codeg).
+  // Only folders registered in the DB (opened at least once via RecurCode).
   // loadFolderHistory() is O(folders), while listFolders() aggregates from
   // every conversation — slow on large histories.
   const [folderList, setFolderList] = useState<FolderHistoryEntry[]>([])

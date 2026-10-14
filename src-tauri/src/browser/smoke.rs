@@ -3,7 +3,7 @@
 //!
 //! The desktop app cannot be driven from outside without macOS Accessibility
 //! rights, which the automation environment does not have, so P0 verification
-//! drives the app from the inside instead: when `CODEG_BROWSER_SMOKE_DIR` is
+//! drives the app from the inside instead: when `RECUR_CODE_BROWSER_SMOKE_DIR` is
 //! set, a task polls `<dir>/cmd.json` for `{ "id": n, "op": "...", ... }`,
 //! executes the operation through the same `_core` functions the commands
 //! use, and writes `<dir>/result-<n>.json`. Screenshots are taken from the
@@ -21,7 +21,7 @@ use crate::browser::types::{Bounds, SurfaceChoice};
 use crate::commands::browser as browser_commands;
 
 pub fn spawn_if_enabled(app: AppHandle) {
-    let Ok(dir) = std::env::var("CODEG_BROWSER_SMOKE_DIR") else {
+    let Ok(dir) = std::env::var("RECUR_CODE_BROWSER_SMOKE_DIR") else {
         return;
     };
     let dir = PathBuf::from(dir);
@@ -572,7 +572,7 @@ async fn execute(app: &AppHandle, cmd: &Value) -> Result<Value, String> {
             // someone answers it, so there is no later turn to drive it from.
             // The driver waits for the picker to appear, then dispatches an
             // untrusted event, which the picker takes only because
-            // `__codegAcceptUntrusted` is set here, in a world no page script
+            // `__recur_codeAcceptUntrusted` is set here, in a world no page script
             // can reach.
             let driver = match (
                 cmd.get("click").and_then(Value::as_str),
@@ -592,10 +592,10 @@ async fn execute(app: &AppHandle, cmd: &Value) -> Result<Value, String> {
             if let Some(driver) = driver {
                 let surface = registry.surface(&tab_id).ok_or("no such tab")?;
                 let arm = format!(
-                    "(function(){{ globalThis.__codegAcceptUntrusted = true; var n = 0; \
+                    "(function(){{ globalThis.__recur_codeAcceptUntrusted = true; var n = 0; \
                      var t = setInterval(function(){{ n += 1; \
                        if (n > 100) {{ clearInterval(t); return }} \
-                       if (!globalThis.__codegPicker) return; \
+                       if (!globalThis.__recur_codePicker) return; \
                        clearInterval(t); try {{ {driver} }} catch (e) {{ void e }} }}, 50); \
                      return 'armed' }})()"
                 );
@@ -790,14 +790,14 @@ async fn execute(app: &AppHandle, cmd: &Value) -> Result<Value, String> {
         // Ask the frontend to open a URL as a browser tab (exercises the real
         // tab record → surface host → browser_open_tab path).
         // Mint a companion token against the live broker socket, so the real
-        // `codeg-mcp` binary can be driven against this running app the way an
+        // `recur-code-mcp` binary can be driven against this running app the way an
         // agent CLI drives it. Verifying the browser tools end to end otherwise
         // means starting a real agent session and asking it nicely; this reaches
         // the same listener, over the same UDS, with the same token policy —
         // the only thing skipped is which process asked for the token.
         //
         // Dev-only twice over: the `browser-smoke` feature is never in a release
-        // build, and the puppet does nothing without `CODEG_BROWSER_SMOKE_DIR`.
+        // build, and the puppet does nothing without `RECUR_CODE_BROWSER_SMOKE_DIR`.
         "mcp_companion_handle" => {
             let tokens = app
                 .try_state::<std::sync::Arc<crate::acp::delegation::listener::TokenRegistry>>()

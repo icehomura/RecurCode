@@ -5,7 +5,7 @@
 //! means the same thing in a listing, in a refusal and in the frontend's
 //! mirror of these types (`src/lib/computer/types.ts`).
 //!
-//! Compiled in both runtimes: the codeg-mcp plumbing that carries these is
+//! Compiled in both runtimes: the recur-code-mcp plumbing that carries these is
 //! shared code, and server mode has to be able to say "no desktop here" in the
 //! same shapes.
 
@@ -68,7 +68,7 @@ pub struct AgentAppSummary {
     /// its menus and its own shortcuts — when the user shared it so.
     #[serde(default, skip_serializing_if = "not_shared")]
     pub level: GrantLevel,
-    /// Why none of its windows can be shared, when that is so — codeg itself,
+    /// Why none of its windows can be shared, when that is so — RecurCode itself,
     /// or an application on the blocklist.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
@@ -89,7 +89,7 @@ pub struct AgentAppSummary {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentWindowSummary {
-    /// codeg's own name for this window. Stable for as long as the window and
+    /// RecurCode's own name for this window. Stable for as long as the window and
     /// the process that owns it are the same ones; a new process — even the
     /// same application relaunched — gets a new id.
     pub target_id: String,
@@ -495,7 +495,7 @@ impl ComputerActRequest {
     /// Whether the window can be brought to the front for this action
     /// ([`ActDelivery::Foreground`]). A value is set through the
     /// application's accessibility interface, which no window has to be in
-    /// front for, and a restore is codeg's own call: those two only ever go
+    /// front for, and a restore is RecurCode's own call: those two only ever go
     /// in the background.
     pub fn can_come_forward(&self) -> bool {
         matches!(
@@ -549,7 +549,7 @@ pub enum ActRoute {
     SystemApi,
     Dom,
     TrustedInput,
-    /// A route this codeg does not know by name.
+    /// A route this RecurCode does not know by name.
     #[serde(other)]
     Other,
 }

@@ -79,7 +79,7 @@ function status(overrides: Partial<ComputerStatus> = {}): ComputerStatus {
       accessibility: true,
       screenRecording: false,
     },
-    codeg: {
+    RecurCode: {
       accessibility: false,
       screenRecording: false,
       selfResponsible: true,
@@ -161,13 +161,13 @@ describe("ComputerUseSettings", () => {
     expect(screen.getByText("/cache/cua-driver")).toBeInTheDocument()
   })
 
-  /** An older release in the cache is an upgrade to the one this codeg
+  /** An older release in the cache is an upgrade to the one this RecurCode
    *  runs — never a choice of another. */
   it("offers the pinned release over an older one", async () => {
     api.computerDriverInfo.mockResolvedValue(driver({ installed: ["0.27.0"] }))
     mount()
     expect(
-      await screen.findByText("0.27.0 is installed; this codeg runs 0.28.2.")
+      await screen.findByText("0.27.0 is installed; this RecurCode runs 0.28.2.")
     ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Upgrade to 0.28.2" })
@@ -213,7 +213,7 @@ describe("ComputerUseSettings", () => {
   })
 
   /** The helper's permissions are only there to ask about while computer
-   *  use is on; then each missing one can be requested — and codeg holding
+   *  use is on; then each missing one can be requested — and RecurCode holding
    *  one itself is said, not held against anything. */
   it("shows the helper's permissions while computer use is on", async () => {
     mount()
@@ -226,7 +226,7 @@ describe("ComputerUseSettings", () => {
 
     api.computerStatus.mockResolvedValue(
       status({
-        codeg: {
+        RecurCode: {
           accessibility: true,
           screenRecording: false,
           selfResponsible: true,
@@ -246,7 +246,7 @@ describe("ComputerUseSettings", () => {
       )
     )
     expect(
-      screen.getByText(/codeg itself has Accessibility/)
+      screen.getByText(/RecurCode itself has Accessibility/)
     ).toBeInTheDocument()
   })
 

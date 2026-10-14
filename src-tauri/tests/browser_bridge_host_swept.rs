@@ -10,10 +10,10 @@ use axum::http::{header, StatusCode};
 use axum::response::Response;
 use axum::routing::get;
 use axum::Router;
-use codeg_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
+use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
 
-const WORKBENCH: &str = "codeg.test";
-/// Codeg's own port here; no target can ever be opened on it, so a name
+const WORKBENCH: &str = "RecurCode.test";
+/// RecurCode's own port here; no target can ever be opened on it, so a name
 /// built from it is one the bridge never handed out.
 const RESERVED_PORT: u16 = 1;
 
@@ -49,9 +49,9 @@ async fn spawn_upstream() -> u16 {
     port
 }
 
-async fn spawn_codeg() -> u16 {
+async fn spawn_recur_code() -> u16 {
     let app = Router::new()
-        .fallback(|| async { "codeg's own page" })
+        .fallback(|| async { "RecurCode's own page" })
         .layer(axum::middleware::from_fn(browser_bridge::route_by_host));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -74,25 +74,25 @@ fn cookie_for(grant: &BridgeGrant) -> String {
         .entry_path
         .strip_prefix(browser_bridge::ENTER_PREFIX)
         .unwrap();
-    format!("codeg-bridge-{}={cap}", grant.target_port)
+    format!("recur-code-bridge-{}={cap}", grant.target_port)
 }
 
 /// A name the bridge handed out stays the bridge's after its target idles
 /// away. The origin outlives the target: a page that ran there may have
-/// left a service worker behind, and codeg's own pages served under that
+/// left a service worker behind, and RecurCode's own pages served under that
 /// name would be served through it.
 #[tokio::test]
-async fn a_name_that_was_handed_out_never_becomes_codegs() {
+async fn a_name_that_was_handed_out_never_becomes_recur_codes() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let codeg = spawn_codeg().await;
+    let RecurCode = spawn_recur_code().await;
     let grant = browser_bridge::open(upstream, "tab-swept", Some(WORKBENCH))
         .await
         .unwrap();
-    let host = format!("{}:{codeg}", grant.bridge_host.as_deref().unwrap());
+    let host = format!("{}:{RecurCode}", grant.bridge_host.as_deref().unwrap());
     let get = |host: String, cookie: bool| {
         let mut request = client()
-            .get(format!("http://127.0.0.1:{codeg}/hello"))
+            .get(format!("http://127.0.0.1:{RecurCode}/hello"))
             .header(header::HOST, host)
             .header("sec-fetch-site", "same-origin");
         if cookie {
@@ -112,18 +112,18 @@ async fn a_name_that_was_handed_out_never_becomes_codegs() {
     );
     assert_eq!(browser_bridge::listener_count(), 0);
 
-    // No target holds the name now — and it is still not codeg's.
+    // No target holds the name now — and it is still not RecurCode's.
     let response = get(host.clone(), true).await.unwrap();
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
     assert!(response.text().await.unwrap().contains("no longer valid"));
 
     // A name of the same shape that was never handed out still reaches
-    // codeg: under `auto` the shape alone is nobody's claim, or a workbench
+    // RecurCode: under `auto` the shape alone is nobody's claim, or a workbench
     // on a numeric-leading hostname would lose its own pages.
-    let response = get(format!("{RESERVED_PORT}.{WORKBENCH}:{codeg}"), false)
+    let response = get(format!("{RESERVED_PORT}.{WORKBENCH}:{RecurCode}"), false)
         .await
         .unwrap();
-    assert_eq!(response.text().await.unwrap(), "codeg's own page");
+    assert_eq!(response.text().await.unwrap(), "RecurCode's own page");
 
     // Nor does reconfiguring the bridge hand the name back. The browser's
     // memory of that origin is not reconfigured with it, so switching the
@@ -150,11 +150,11 @@ async fn a_name_that_was_handed_out_never_becomes_codegs() {
         browser_bridge::configure(config);
         let response = get(host.clone(), true).await.unwrap();
         assert_eq!(response.status(), StatusCode::FORBIDDEN, "off: {off}");
-        // And a name never handed out still reaches codeg, whichever way
+        // And a name never handed out still reaches RecurCode, whichever way
         // the bridge is pointed now.
-        let response = get(format!("{RESERVED_PORT}.{WORKBENCH}:{codeg}"), false)
+        let response = get(format!("{RESERVED_PORT}.{WORKBENCH}:{RecurCode}"), false)
             .await
             .unwrap();
-        assert_eq!(response.text().await.unwrap(), "codeg's own page", "off: {off}");
+        assert_eq!(response.text().await.unwrap(), "RecurCode's own page", "off: {off}");
     }
 }

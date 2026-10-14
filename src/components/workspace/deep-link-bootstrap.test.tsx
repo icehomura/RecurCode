@@ -48,7 +48,7 @@ describe("DeepLinkBootstrap", () => {
   })
   afterEach(() => cleanup())
 
-  // A cold-start `codeg://session/<id>` lands here as this query string on
+  // A cold-start `recurcode://session/<id>` lands here as this query string on
   // Windows/Linux. `conversations` is fetched in parallel with the folders, so
   // it routinely settles after `foldersHydrated` flips — and the URL is cleared
   // on the way out, so a premature check would reject the link for good.

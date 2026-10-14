@@ -17,7 +17,7 @@
  * construction only exists inside a live session.
  */
 
-export const BACKGROUND_TASK_MARKER = "[[codeg-background-task]]"
+export const BACKGROUND_TASK_MARKER = "[[recur-code-background-task]]"
 
 /**
  * Agents whose OUT-OF-TURN transcript activity already has a live render path.

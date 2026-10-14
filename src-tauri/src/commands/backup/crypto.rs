@@ -1,7 +1,7 @@
 //! Optional passphrase encryption for backup archives.
 //!
 //! When a passphrase is supplied, the plaintext ZIP payload is wrapped in a
-//! `.codegbak` envelope: an unencrypted header (magic + KDF params + salt +
+//! `.recurcodebak` envelope: an unencrypted header (magic + KDF params + salt +
 //! nonce prefix) followed by the ZIP encrypted with AES-256-GCM in a chunked
 //! STREAM construction. The header is plaintext because the salt/nonce must be
 //! readable before the key can be derived; the GCM tag on the first chunk is
@@ -28,7 +28,7 @@ use crate::app_error::{AppCommandError, BACKUP_I18N_KEY_BAD_PASSPHRASE};
 use super::cancelled_error;
 
 /// First 8 bytes of an encrypted backup.
-pub const ENVELOPE_MAGIC: &[u8; 8] = b"CODEGBAK";
+pub const ENVELOPE_MAGIC: &[u8; 8] = b"RECURBAK";
 /// First 4 bytes of a plaintext ZIP (`PK\x03\x04`), used to disambiguate.
 pub const ZIP_MAGIC: &[u8; 4] = b"PK\x03\x04";
 pub const ENVELOPE_HEADER_VERSION: u8 = 1;
@@ -81,7 +81,7 @@ impl Default for KdfParams {
     }
 }
 
-/// Cleartext header at the front of a `.codegbak` file. Carries everything
+/// Cleartext header at the front of a `.recurcodebak` file. Carries everything
 /// needed to re-derive the key and decrypt — it is the single source of truth
 /// for crypto parameters (the in-archive manifest stays crypto-agnostic).
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,7 +119,7 @@ fn derive_key(passphrase: &str, salt: &[u8], params: &KdfParams) -> Result<[u8; 
     Ok(key)
 }
 
-/// Encrypt the plaintext ZIP at `src` into a `.codegbak` envelope at `dest`.
+/// Encrypt the plaintext ZIP at `src` into a `.recurcodebak` envelope at `dest`.
 /// Synchronous — run under `spawn_blocking`.
 pub fn encrypt_file(
     src: &Path,
@@ -186,7 +186,7 @@ pub fn encrypt_file(
     Ok(())
 }
 
-/// Decrypt a `.codegbak` envelope at `src` into a plaintext ZIP at `dest`.
+/// Decrypt a `.recurcodebak` envelope at `src` into a plaintext ZIP at `dest`.
 /// A wrong passphrase (or tampering) surfaces as an authentication error.
 pub fn decrypt_file(
     src: &Path,
@@ -339,7 +339,7 @@ mod tests {
     fn roundtrip(plain: &[u8]) {
         let dir = tempfile::tempdir().unwrap();
         let src = write_tmp(dir.path(), "plain.zip", plain);
-        let enc = dir.path().join("out.codegbak");
+        let enc = dir.path().join("out.recurcodebak");
         let dec = dir.path().join("back.zip");
         let cancel = CancellationToken::new();
 
@@ -398,7 +398,7 @@ mod tests {
     fn wrong_passphrase_fails_authentication() {
         let dir = tempfile::tempdir().unwrap();
         let src = write_tmp(dir.path(), "plain.zip", b"secret payload");
-        let enc = dir.path().join("out.codegbak");
+        let enc = dir.path().join("out.recurcodebak");
         let dec = dir.path().join("back.zip");
         let cancel = CancellationToken::new();
 

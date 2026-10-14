@@ -445,11 +445,11 @@ mod tests {
     fn a_command_error_publishes_its_explanation_alongside_the_message() {
         let h = new_handle();
         let e = EventEmitter::Noop;
-        let err = AppCommandError::permission_denied("Update target is not writable: /opt/codeg")
+        let err = AppCommandError::permission_denied("Update target is not writable: /opt/RecurCode")
             .with_detail("Permission denied (os error 13)")
             .with_i18n(
                 "SystemSettings.updateErrors.permissionDenied",
-                std::collections::BTreeMap::from([("path".to_string(), "/opt/codeg".to_string())]),
+                std::collections::BTreeMap::from([("path".to_string(), "/opt/RecurCode".to_string())]),
             );
 
         assert!(try_begin(&h, &e).0);
@@ -459,13 +459,13 @@ mod tests {
         // clients that only classify strings, `errorInfo` carries the rest.
         let wire = serde_json::to_value(&snap).unwrap();
         assert_eq!(wire["status"], "error");
-        assert_eq!(wire["error"], "Update target is not writable: /opt/codeg");
+        assert_eq!(wire["error"], "Update target is not writable: /opt/RecurCode");
         assert_eq!(wire["errorInfo"]["code"], "permission_denied");
         assert_eq!(
             wire["errorInfo"]["i18n_key"],
             "SystemSettings.updateErrors.permissionDenied"
         );
-        assert_eq!(wire["errorInfo"]["i18n_params"]["path"], "/opt/codeg");
+        assert_eq!(wire["errorInfo"]["i18n_params"]["path"], "/opt/RecurCode");
 
         // A retry must not carry the old explanation into the new attempt.
         let (started, retry) = try_begin(&h, &e);

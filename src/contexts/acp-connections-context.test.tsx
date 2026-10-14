@@ -587,7 +587,7 @@ describe("AcpConnectionsProvider preview-tab release (disconnectIfIdle)", () => 
         "turn_complete",
         expect.objectContaining({
           title: "Fix the flaky upload test",
-          redactedTitle: "api - Codeg",
+          redactedTitle: "api - RecurCode",
           body: "api · notificationTurnComplete",
         })
       )
@@ -1024,7 +1024,7 @@ describe("AcpConnectionsProvider AIR session-failure lifecycle", () => {
 // A failed turn closes on one muted line in the transcript, live as on reload
 // (where the parsers read the agent's own record of the failure). Live, it is
 // a `turn_error` block the reducer appends to the turn's message: the
-// adapter's terminal record, a prompt the agent rejected, or codeg's verdict
+// adapter's terminal record, a prompt the agent rejected, or RecurCode's verdict
 // that the turn failed — never a turn that merely ended early with output.
 describe("AcpConnectionsProvider failed-turn line", () => {
   async function promptingOwner(): Promise<AttachHandlers> {
@@ -1111,7 +1111,7 @@ describe("AcpConnectionsProvider failed-turn line", () => {
     ])
   })
 
-  it("keeps the agent's own words over codeg's verdict, whichever comes first", async () => {
+  it("keeps the agent's own words over RecurCode's verdict, whichever comes first", async () => {
     const handlers = await promptingOwner()
     emitAcpEvent(handlers, {
       seq: 2,
@@ -1121,7 +1121,7 @@ describe("AcpConnectionsProvider failed-turn line", () => {
       agent_type: "claude_code",
       code: "turn_failed_empty",
     })
-    // codeg's verdict, in its localized wording (this harness's `t` echoes
+    // RecurCode's verdict, in its localized wording (this harness's `t` echoes
     // the key).
     expect(lineOf()).toEqual([
       {
@@ -2988,7 +2988,7 @@ describe("streaming flush window widens with the run it re-renders", () => {
     }
   })
 
-  // Codeg runs several agents at once by design. A window sized from what one
+  // RecurCode runs several agents at once by design. A window sized from what one
   // conversation is re-rendering must not be charged to another — least of all
   // to a background one that costs nothing to flush and gains nothing by
   // waiting.
@@ -3503,7 +3503,7 @@ describe("AcpConnectionsProvider Grok cross-agent-type model switch", () => {
     const handlers = latestAttachHandlers()
     h.toastError.mockClear()
     const instructions =
-      "Pi is too old for this version of Codeg: opening a session needs Pi 0.81.0 or newer."
+      "Pi is too old for this version of RecurCode: opening a session needs Pi 0.81.0 or newer."
     emitAcpEvent(handlers, {
       seq: 1,
       connection_id: "spawned-conn",
@@ -6668,7 +6668,7 @@ describe("AIR session failures are told as notifications", () => {
     expect(handler).not.toHaveBeenCalled()
   })
 
-  it("tells one failed turn once — the typed record first, then codeg's verdict", async () => {
+  it("tells one failed turn once — the typed record first, then RecurCode's verdict", async () => {
     const handlers = await connectOwner()
     startTurn(handlers)
     emit(handlers, { type: "session_failure", record: failure() })
@@ -6699,7 +6699,7 @@ describe("AIR session failures are told as notifications", () => {
     )
   })
 
-  it("tells one failed turn once — codeg's verdict first, then the typed record", async () => {
+  it("tells one failed turn once — RecurCode's verdict first, then the typed record", async () => {
     const handlers = await connectOwner()
     startTurn(handlers)
     emit(handlers, {

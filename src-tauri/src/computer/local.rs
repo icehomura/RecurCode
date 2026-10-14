@@ -1,32 +1,32 @@
-//! codeg's side of the helper: find it, launch it as its own TCC principal,
+//! RecurCode's side of the helper: find it, launch it as its own TCC principal,
 //! check that it is our helper, and talk to it.
 //!
 //! **Launch.** On macOS the helper is spawned with responsibility disclaimed,
-//! so it is the TCC principal and codeg is not — from a copy of its app
-//! outside codeg's bundle, since inside it macOS would charge its Screen
-//! Recording to codeg all the same (`helper_app`) — over a socketpair duplicated
+//! so it is the TCC principal and RecurCode is not — from a copy of its app
+//! outside RecurCode's bundle, since inside it macOS would charge its Screen
+//! Recording to RecurCode all the same (`helper_app`) — over a socketpair duplicated
 //! onto its stdin and stdout — the only rendezvous there is, with no path in
 //! the filesystem for another process to get to first. Its other descriptors
 //! are closed on exec, its environment is a fixed few variables. Elsewhere it
 //! is an ordinary child on pipes.
 //!
-//! **Check.** A release codeg launches the helper under a launch requirement
+//! **Check.** A release RecurCode launches the helper under a launch requirement
 //! (this build's Team ID and the helper's identifier), so the kernel runs
 //! nothing else from that path — the bundle is writable by the user, and a
 //! wrapper started in the helper's place could keep a copy of the socket. The
-//! helper then speaks first; on macOS codeg asks the kernel who is on the
+//! helper then speaks first; on macOS RecurCode asks the kernel who is on the
 //! other end of its socket and checks that process against the helper's
-//! designated requirement (`CODEG_COMPUTER_HELPER_REQUIREMENT`), and every
-//! later frame against the process it verified. A development codeg checks
+//! designated requirement (`RECUR_CODE_COMPUTER_HELPER_REQUIREMENT`), and every
+//! later frame against the process it verified. A development RecurCode checks
 //! instead that the helper was built from its own sources (the fingerprint
-//! `build.rs` compiles into both): `pnpm tauri dev` rebuilds only codeg after
-//! an edit — and not the helper at all under `CODEG_SKIP_SIDECAR=1` — and a
+//! `build.rs` compiles into both): `pnpm tauri dev` rebuilds only RecurCode after
+//! an edit — and not the helper at all under `RECUR_CODE_SKIP_SIDECAR=1` — and a
 //! helper left over would answer with the old code.
 //!
-//! **Life.** One helper per codeg, started on first use, restarted on the next
+//! **Life.** One helper per RecurCode, started on first use, restarted on the next
 //! call after it dies, stopped when computer use is switched off — and not
 //! started again until it is switched back on, whatever call was already on
-//! its way. It exits on its own when codeg does: its stdin closes.
+//! its way. It exits on its own when RecurCode does: its stdin closes.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -52,30 +52,30 @@ use super::protocol::{
 use super::types::{ActDelivery, VerifyRequest};
 
 /// The helper's designated requirement, compiled into release builds.
-pub const HELPER_REQUIREMENT: Option<&str> = option_env!("CODEG_COMPUTER_HELPER_REQUIREMENT");
+pub const HELPER_REQUIREMENT: Option<&str> = option_env!("RECUR_CODE_COMPUTER_HELPER_REQUIREMENT");
 
 /// This build's Team ID, compiled into release builds with the requirement:
 /// the helper is launched only as a Developer ID build of this team.
-pub const HELPER_TEAM_ID: Option<&str> = option_env!("CODEG_COMPUTER_TEAM_ID");
+pub const HELPER_TEAM_ID: Option<&str> = option_env!("RECUR_CODE_COMPUTER_TEAM_ID");
 
 /// The helper's signing identifier (its designated requirement names it too):
 /// on macOS, the bundle identifier of the helper app.
-pub const HELPER_SIGNING_ID: &str = "app.codeg.computer-helper";
+pub const HELPER_SIGNING_ID: &str = "app.recurcode.computer-helper";
 
-/// The helper's own app inside codeg's on macOS, in `Contents/Helpers/`. macOS
+/// The helper's own app inside RecurCode's on macOS, in `Contents/Helpers/`. macOS
 /// charges an executable's permissions to the app bundle it sits in, so a
-/// helper beside codeg in `Contents/MacOS/` would hold codeg's — every
+/// helper beside RecurCode in `Contents/MacOS/` would hold RecurCode's — every
 /// agent's shell's — and none of its own. In an app of its own it is a
 /// principal of its own for Accessibility; for Screen Recording only once it
-/// is out of codeg's bundle, which is why codeg runs a copy of this app
+/// is out of RecurCode's bundle, which is why RecurCode runs a copy of this app
 /// (`helper_app`).
-pub const HELPER_APP: &str = "codeg-computer-helper.app";
+pub const HELPER_APP: &str = "recur-code-computer-helper.app";
 
 // A release build pins both or neither: a requirement checked after launch
 // without the launch requirement would let a wrapper run first.
 const _: () = assert!(
     HELPER_REQUIREMENT.is_some() == HELPER_TEAM_ID.is_some(),
-    "CODEG_COMPUTER_HELPER_REQUIREMENT and CODEG_COMPUTER_TEAM_ID are set together"
+    "RECUR_CODE_COMPUTER_HELPER_REQUIREMENT and RECUR_CODE_COMPUTER_TEAM_ID are set together"
 );
 
 /// How long one request may take to go out. A helper that stops reading is
@@ -88,15 +88,15 @@ const READY_TIMEOUT: Duration = Duration::from_secs(15);
 /// Why a helper that never said it was ready failed. On macOS a helper
 /// macOS has not seen before can be held at launch by a question of the
 /// system's own — whether it may read from a removable volume, for one, when
-/// codeg lives on another disk — until the person answers it.
+/// RecurCode lives on another disk — until the person answers it.
 const NOT_STARTED: &str = if cfg!(target_os = "macos") {
     "the helper did not start in time — if macOS is asking about \
-     codeg-computer-helper, answer it and try again"
+     recur-code-computer-helper, answer it and try again"
 } else {
     "the helper did not start in time"
 };
 
-/// How long a helper that has been told codeg is done gets to exit on its
+/// How long a helper that has been told RecurCode is done gets to exit on its
 /// own: it stops its driver first — one still starting once it has started —
 /// within its own bound (`helper::SHUTDOWN_GRACE`, 60 s). Past this it is
 /// stopped by signal.
@@ -125,23 +125,23 @@ const MAX_ASK_OUTPUT: u64 = 256;
 
 pub fn helper_file_name() -> &'static str {
     if cfg!(windows) {
-        "codeg-computer-helper.exe"
+        "recur-code-computer-helper.exe"
     } else {
-        "codeg-computer-helper"
+        "recur-code-computer-helper"
     }
 }
 
 /// The helper that shipped with the running executable: inside
-/// [`HELPER_APP`] when codeg runs from an app bundle on macOS, next to it
+/// [`HELPER_APP`] when RecurCode runs from an app bundle on macOS, next to it
 /// otherwise — the install directory, or `target/<profile>/` in development
 /// (the build copies it there). Deliberately no `PATH` lookup: a helper found
 /// somewhere else is not the one that shipped. A debug build also honours
-/// `CODEG_COMPUTER_HELPER_BIN`, for running a freshly built helper; a release
-/// build ignores it, since the variable can be set for codeg by anything that
+/// `RECUR_CODE_COMPUTER_HELPER_BIN`, for running a freshly built helper; a release
+/// build ignores it, since the variable can be set for RecurCode by anything that
 /// can set a launch environment.
 pub fn locate_helper_binary() -> Option<PathBuf> {
     if cfg!(debug_assertions) {
-        if let Some(raw) = std::env::var_os("CODEG_COMPUTER_HELPER_BIN") {
+        if let Some(raw) = std::env::var_os("RECUR_CODE_COMPUTER_HELPER_BIN") {
             let path = PathBuf::from(raw);
             if path.is_file() {
                 return Some(path);
@@ -153,7 +153,7 @@ pub fn locate_helper_binary() -> Option<PathBuf> {
     candidate.is_file().then_some(candidate)
 }
 
-/// Where the helper of a codeg running as `exe` is, on macOS (`mac`) or
+/// Where the helper of a RecurCode running as `exe` is, on macOS (`mac`) or
 /// elsewhere.
 fn helper_for(exe: &Path, mac: bool) -> Option<PathBuf> {
     let dir = exe.parent()?;
@@ -177,7 +177,7 @@ fn helper_for(exe: &Path, mac: bool) -> Option<PathBuf> {
 }
 
 /// The helper to start: on macOS, when the shipped helper app sits inside
-/// codeg's bundle, its copy outside it — made or brought up to date first —
+/// RecurCode's bundle, its copy outside it — made or brought up to date first —
 /// and the shipped helper itself otherwise.
 async fn helper_to_run() -> Result<PathBuf, BackendError> {
     let shipped = locate_helper_binary().ok_or_else(|| {
@@ -254,7 +254,7 @@ fn nested_helper_app(helper: &Path) -> Option<&Path> {
 }
 
 /// What to show in the Finder for adding the helper to System Settings by
-/// hand: the helper app codeg runs, where there is one — the executable
+/// hand: the helper app RecurCode runs, where there is one — the executable
 /// inside it would be listed by its path, which macOS never asks about — and
 /// the helper itself otherwise.
 pub async fn helper_to_reveal() -> Result<PathBuf, BackendError> {
@@ -336,7 +336,7 @@ impl Connection {
         self.child.stop().await;
     }
 
-    /// End the helper the way codeg quitting does: its input ends, it stops
+    /// End the helper the way RecurCode quitting does: its input ends, it stops
     /// its driver — one still starting included, once that has started — and
     /// exits. Stopped by signal if it has not within [`HELPER_EXIT_GRACE`].
     async fn shut_down(&self) {
@@ -482,7 +482,7 @@ impl LocalBackend {
     /// Stop the helper, if one is running, and start none until [`open`] —
     /// computer use was switched off. Taken under the same lock a start is
     /// made under, so once this returns no helper runs and none will. The
-    /// helper is let go as when codeg quits, so its driver — even one still
+    /// helper is let go as when RecurCode quits, so its driver — even one still
     /// starting — is gone with it.
     ///
     /// [`open`]: Self::open
@@ -599,7 +599,7 @@ impl LocalBackend {
     /// may have died after delivering it, and a second send would do it
     /// twice. Actions are sent once (see `act`).
     async fn call<T: serde::de::DeserializeOwned>(&self, op: HelperOp) -> Result<T, BackendError> {
-        // A read is held to the Stops counted as it goes out; codeg withholds
+        // A read is held to the Stops counted as it goes out; RecurCode withholds
         // one that a later Stop overtakes anyway.
         let stop = self.stopped.load(Ordering::Acquire);
         let connection = self.connection().await?;
@@ -706,7 +706,7 @@ impl ComputerBackend for LocalBackend {
         let stopped = || {
             BackendError::Refused(
                 ActRefusal::Stopped,
-                "The user pressed Stop in codeg's Computer use panel.".into(),
+                "The user pressed Stop in RecurCode's Computer use panel.".into(),
             )
         };
         // As an action: checked before a helper is started for it and again
@@ -794,11 +794,11 @@ impl ComputerBackend for LocalBackend {
         let stopped = || {
             BackendError::Refused(
                 ActRefusal::Stopped,
-                "The user pressed Stop in codeg's Computer use panel.".into(),
+                "The user pressed Stop in RecurCode's Computer use panel.".into(),
             )
         };
         // Before a helper is started for it, and again with the helper in
-        // hand, as late as codeg can: a Stop that came while one was being
+        // hand, as late as RecurCode can: a Stop that came while one was being
         // started stops this action too. The helper holds it to the same
         // count, for a Stop that overtakes it on the way there.
         if self.stopped.load(Ordering::Acquire) > stop {
@@ -849,7 +849,7 @@ impl ComputerBackend for LocalBackend {
         let stopped = || {
             BackendError::Refused(
                 ActRefusal::Stopped,
-                "The user pressed Stop in codeg's Computer use panel.".into(),
+                "The user pressed Stop in RecurCode's Computer use panel.".into(),
             )
         };
         // As an action on a window: checked before a helper is started for
@@ -895,7 +895,7 @@ impl ComputerBackend for LocalBackend {
         let stopped = || {
             BackendError::Refused(
                 ActRefusal::Stopped,
-                "The user pressed Stop in codeg's Computer use panel.".into(),
+                "The user pressed Stop in RecurCode's Computer use panel.".into(),
             )
         };
         // As an action: the person's clipboard is changed by it, once.
@@ -986,7 +986,7 @@ async fn launch(path: &std::path::Path) -> Result<Arc<Connection>, BackendError>
         return Err(abandon(
             child,
             &format!(
-                "the helper speaks protocol {}, this codeg {PROTOCOL_VERSION} — reinstall codeg",
+                "the helper speaks protocol {}, this RecurCode {PROTOCOL_VERSION} — reinstall RecurCode",
                 ready.protocol
             ),
         )
@@ -1050,17 +1050,17 @@ async fn launch(path: &std::path::Path) -> Result<Arc<Connection>, BackendError>
     }))
 }
 
-/// Why a development codeg will not use a helper built from other sources
+/// Why a development RecurCode will not use a helper built from other sources
 /// than its own — which is what `pnpm tauri dev` leaves running after an edit:
 /// it builds the helper once, as it starts (never, under
-/// `CODEG_SKIP_SIDECAR=1`), and only codeg after that, and a stale helper
+/// `RECUR_CODE_SKIP_SIDECAR=1`), and only RecurCode after that, and a stale helper
 /// answers with code that is no longer there. The words name the step that
-/// rebuilds it. A release codeg ships with its own helper and does not ask.
+/// rebuilds it. A release RecurCode ships with its own helper and does not ask.
 fn stale_development_helper(source: Option<&str>) -> Option<&'static str> {
     (cfg!(debug_assertions) && source != Some(SOURCE_FINGERPRINT)).then_some(
         "this development build's helper was built from other sources — run \
          `pnpm tauri:prepare-sidecars` (which `pnpm tauri dev` skips under \
-         CODEG_SKIP_SIDECAR=1), then restart `pnpm tauri dev`",
+         RECUR_CODE_SKIP_SIDECAR=1), then restart `pnpm tauri dev`",
     )
 }
 
@@ -1070,7 +1070,7 @@ async fn abandon(child: HelperChild, why: &str) -> BackendError {
     BackendError::Unavailable(why.to_string())
 }
 
-/// The socket descriptor codeg keeps, for asking the kernel who is on the
+/// The socket descriptor RecurCode keeps, for asking the kernel who is on the
 /// other end. `None` off macOS.
 type PeerFd = Option<i32>;
 
@@ -1273,19 +1273,19 @@ fn check_helper(peer_fd: PeerFd, peer: PeerCheck) -> Result<Option<VerifiedPeer>
         tracing::warn!("[computer] development build: not checking the helper's signature");
         return Ok(None);
     };
-    // A release codeg only ever launches a release helper, which checks
-    // codeg in turn; one that did not is not the helper that shipped.
+    // A release RecurCode only ever launches a release helper, which checks
+    // RecurCode in turn; one that did not is not the helper that shipped.
     if peer != PeerCheck::Verified {
         return Err(
-            "the helper did not check codeg's signature; it is not the release helper".into(),
+            "the helper did not check RecurCode's signature; it is not the release helper".into(),
         );
     }
     let fd = peer_fd.ok_or("no socket to check")?;
     let token = peer_audit_token(fd).map_err(|e| format!("no peer token for the helper: {e}"))?;
     let info = check_guest(Guest::Audit(token), requirement)
-        .map_err(|e| format!("the helper is not codeg's: {e}"))?;
+        .map_err(|e| format!("the helper is not RecurCode's: {e}"))?;
     info.entitlements_clean()
-        .map_err(|e| format!("the helper is not one codeg trusts: {e}"))?;
+        .map_err(|e| format!("the helper is not one RecurCode trusts: {e}"))?;
     Ok(Some(VerifiedPeer { fd, token }))
 }
 
@@ -1294,7 +1294,7 @@ fn check_helper(_peer_fd: PeerFd, _peer: PeerCheck) -> Result<Option<VerifiedPee
     Ok(None)
 }
 
-/// The helper's stderr (and, through it, the driver's) into codeg's log.
+/// The helper's stderr (and, through it, the driver's) into RecurCode's log.
 async fn forward_stderr(stderr: Box<dyn AsyncRead + Send + Unpin>) {
     let mut lines = BufReader::new(stderr).lines();
     while let Ok(Some(line)) = lines.next_line().await {
@@ -1306,7 +1306,7 @@ async fn forward_stderr(stderr: Box<dyn AsyncRead + Send + Unpin>) {
 mod tests {
     use super::*;
 
-    /// The whole codeg side against a real helper and the real pinned
+    /// The whole RecurCode side against a real helper and the real pinned
     /// driver: launch disclaimed over a socketpair, the first-frame
     /// handshake, `Configure`, and reads that do and do not need a TCC
     /// permission. Ignored by default because it needs both binaries on disk,
@@ -1314,16 +1314,16 @@ mod tests {
     /// one blocks in dyld on a "removable volume" consent prompt):
     ///
     /// ```text
-    /// CODEG_TEST_HELPER=/tmp/codeg-computer-helper \
-    /// CODEG_TEST_DRIVER=/tmp/cua-driver \
+    /// RECUR_CODE_TEST_HELPER=/tmp/recur-code-computer-helper \
+    /// RECUR_CODE_TEST_DRIVER=/tmp/cua-driver \
     ///   cargo test --features test-utils --lib computer::local -- --ignored
     /// ```
     #[cfg(target_os = "macos")]
     #[tokio::test]
     #[ignore = "needs a built helper and the pinned cua-driver on an internal volume"]
-    async fn codeg_drives_a_real_helper_and_driver() {
-        let helper = std::env::var("CODEG_TEST_HELPER").expect("CODEG_TEST_HELPER");
-        let driver_file = std::env::var("CODEG_TEST_DRIVER").expect("CODEG_TEST_DRIVER");
+    async fn recur_code_drives_a_real_helper_and_driver() {
+        let helper = std::env::var("RECUR_CODE_TEST_HELPER").expect("RECUR_CODE_TEST_HELPER");
+        let driver_file = std::env::var("RECUR_CODE_TEST_DRIVER").expect("RECUR_CODE_TEST_DRIVER");
         let home = tempfile::tempdir().unwrap();
         // Pre-seed the binary cache so `ensure_driver` finds it without a
         // download.
@@ -1350,10 +1350,10 @@ mod tests {
         temp_env::async_with_vars(
             [
                 (
-                    "CODEG_HOME",
+                    "RECUR_CODE_HOME",
                     Some(home.path().to_string_lossy().to_string()),
                 ),
-                ("CODEG_COMPUTER_HELPER_BIN", Some(helper.clone())),
+                ("RECUR_CODE_COMPUTER_HELPER_BIN", Some(helper.clone())),
             ],
             async {
                 let report = backend.permissions().await.expect("the helper answers");
@@ -1390,11 +1390,11 @@ mod tests {
         ));
     }
 
-    /// A development codeg (every test build is one) takes only a helper built
+    /// A development RecurCode (every test build is one) takes only a helper built
     /// from its own sources: not one from other sources, nor one too old to
     /// say.
     #[test]
-    fn a_development_codeg_refuses_a_stale_helper() {
+    fn a_development_recur_code_refuses_a_stale_helper() {
         assert_eq!(stale_development_helper(Some(SOURCE_FINGERPRINT)), None);
         assert!(stale_development_helper(Some("0000000000000000")).is_some());
         assert!(stale_development_helper(None)
@@ -1434,7 +1434,7 @@ mod tests {
                 .unwrap_err(),
             BackendError::Refused(
                 ActRefusal::Stopped,
-                "The user pressed Stop in codeg's Computer use panel.".into()
+                "The user pressed Stop in RecurCode's Computer use panel.".into()
             )
         );
         // Nothing was started for the refused action.
@@ -1464,19 +1464,19 @@ mod tests {
         assert_eq!(backend.stopped.load(Ordering::Acquire), 1);
     }
 
-    /// A debug build takes the helper from `CODEG_COMPUTER_HELPER_BIN` when
+    /// A debug build takes the helper from `RECUR_CODE_COMPUTER_HELPER_BIN` when
     /// it names a file, and otherwise looks only beside the executable.
     #[test]
-    fn the_helper_is_looked_for_beside_codeg() {
-        assert!(helper_file_name().starts_with("codeg-computer-helper"));
+    fn the_helper_is_looked_for_beside_recur_code() {
+        assert!(helper_file_name().starts_with("recur-code-computer-helper"));
         let dir = tempfile::tempdir().unwrap();
         let fake = dir.path().join(helper_file_name());
         std::fs::write(&fake, b"").unwrap();
-        temp_env::with_var("CODEG_COMPUTER_HELPER_BIN", Some(&fake), || {
+        temp_env::with_var("RECUR_CODE_COMPUTER_HELPER_BIN", Some(&fake), || {
             assert_eq!(locate_helper_binary().as_deref(), Some(fake.as_path()));
         });
         temp_env::with_var(
-            "CODEG_COMPUTER_HELPER_BIN",
+            "RECUR_CODE_COMPUTER_HELPER_BIN",
             Some(dir.path().join("absent")),
             || {
                 let found = locate_helper_binary();
@@ -1487,28 +1487,28 @@ mod tests {
         );
     }
 
-    /// On macOS a codeg in an app bundle runs the helper inside the helper
+    /// On macOS a RecurCode in an app bundle runs the helper inside the helper
     /// app, never one beside it in `Contents/MacOS/`; anywhere else the
-    /// helper is beside codeg.
+    /// helper is beside RecurCode.
     #[test]
-    fn a_bundled_codeg_on_macos_runs_the_helper_app() {
+    fn a_bundled_recur_code_on_macos_runs_the_helper_app() {
         let name = helper_file_name();
-        let bundled = Path::new("/Applications/codeg.app/Contents/MacOS/codeg");
+        let bundled = Path::new("/Applications/RecurCode.app/Contents/MacOS/RecurCode");
         assert_eq!(
             helper_for(bundled, true).unwrap(),
-            Path::new("/Applications/codeg.app/Contents/Helpers")
+            Path::new("/Applications/RecurCode.app/Contents/Helpers")
                 .join(HELPER_APP)
                 .join("Contents/MacOS")
                 .join(name)
         );
         assert_eq!(
             helper_for(bundled, false).unwrap(),
-            Path::new("/Applications/codeg.app/Contents/MacOS").join(name)
+            Path::new("/Applications/RecurCode.app/Contents/MacOS").join(name)
         );
         for unbundled in [
-            "/src/codeg/src-tauri/target/debug/codeg",
-            "/tmp/MacOS/codeg",
-            "/tmp/codeg.bundle/Contents/MacOS/codeg",
+            "/src/RecurCode/src-tauri/target/debug/RecurCode",
+            "/tmp/MacOS/RecurCode",
+            "/tmp/RecurCode.bundle/Contents/MacOS/RecurCode",
         ] {
             let exe = Path::new(unbundled);
             assert_eq!(
@@ -1523,35 +1523,35 @@ mod tests {
     /// identifier — rather than the executable inside it.
     #[test]
     fn the_helper_app_is_what_is_revealed() {
-        let copy = Path::new("/Users/u/Library/Application Support/app.codeg/computer-helper")
+        let copy = Path::new("/Users/u/Library/Application Support/app.recurcode/computer-helper")
             .join(HELPER_APP);
         assert_eq!(
             app_of(copy.join("Contents/MacOS").join(helper_file_name())),
             copy
         );
-        let bare = Path::new("/src/codeg/src-tauri/target/debug").join(helper_file_name());
+        let bare = Path::new("/src/RecurCode/src-tauri/target/debug").join(helper_file_name());
         assert_eq!(app_of(bare.clone()), bare);
     }
 
-    /// The helper app shipped inside codeg's bundle is run from a copy —
-    /// inside it macOS charges Screen Recording to codeg — and a helper in no
+    /// The helper app shipped inside RecurCode's bundle is run from a copy —
+    /// inside it macOS charges Screen Recording to RecurCode — and a helper in no
     /// app, or in an app of its own, from where it is.
     #[test]
     fn only_a_helper_app_inside_another_is_copied_to_run() {
         let name = helper_file_name();
-        let shipped = Path::new("/Applications/codeg.app/Contents/Helpers").join(HELPER_APP);
+        let shipped = Path::new("/Applications/RecurCode.app/Contents/Helpers").join(HELPER_APP);
         assert_eq!(
             nested_helper_app(&shipped.join("Contents/MacOS").join(name)),
             Some(shipped.as_path())
         );
         for alone in [
-            Path::new("/src/codeg/src-tauri/target/debug").join(name),
-            Path::new("/Applications/codeg.app/Contents/MacOS").join(name),
-            Path::new("/Users/u/Library/Application Support/app.codeg/computer-helper")
+            Path::new("/src/RecurCode/src-tauri/target/debug").join(name),
+            Path::new("/Applications/RecurCode.app/Contents/MacOS").join(name),
+            Path::new("/Users/u/Library/Application Support/app.recurcode/computer-helper")
                 .join(HELPER_APP)
                 .join("Contents/MacOS")
                 .join(name),
-            Path::new("/Applications/codeg.app/Contents/Helpers/other.app/Contents/MacOS")
+            Path::new("/Applications/RecurCode.app/Contents/Helpers/other.app/Contents/MacOS")
                 .join(name),
             shipped.join("Contents/Resources").join(name),
         ] {
@@ -1564,12 +1564,12 @@ mod tests {
     #[test]
     fn the_copy_runs_only_in_an_app_of_its_own() {
         let exe = |app: &Path| app.join("Contents/MacOS").join(helper_file_name());
-        let home = Path::new("/Users/u/Library/Application Support/app.codeg/computer-helper");
+        let home = Path::new("/Users/u/Library/Application Support/app.recurcode/computer-helper");
         assert!(alone_in_its_app(&exe(&home.join(HELPER_APP))));
         for wrong in [
-            exe(&Path::new("/Applications/codeg.app/Contents/Helpers").join(HELPER_APP)),
+            exe(&Path::new("/Applications/RecurCode.app/Contents/Helpers").join(HELPER_APP)),
             exe(Path::new(
-                "/Applications/codeg.app/Contents/Helpers/other.app",
+                "/Applications/RecurCode.app/Contents/Helpers/other.app",
             )),
             home.join(helper_file_name()),
         ] {
@@ -1580,12 +1580,12 @@ mod tests {
     /// The helper app is put together from files the compiler never sees —
     /// the Info.plist the sidecar step fills in, the bundle configuration
     /// that carries the app, the binary target's feature gate — and they
-    /// must agree with what codeg looks for and launches.
+    /// must agree with what RecurCode looks for and launches.
     #[test]
-    fn the_helper_ships_as_codeg_looks_for_it() {
+    fn the_helper_ships_as_recur_code_looks_for_it() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"));
         let plist =
-            std::fs::read_to_string(root.join("macos/codeg-computer-helper.plist")).unwrap();
+            std::fs::read_to_string(root.join("macos/recur-code-computer-helper.plist")).unwrap();
         let value = |key: &str| -> Option<String> {
             let rest = plist
                 .split(&format!("<key>{key}</key>"))
@@ -1607,12 +1607,12 @@ mod tests {
         );
         assert_eq!(
             value("CFBundleExecutable").as_deref(),
-            Some("codeg-computer-helper")
+            Some("recur-code-computer-helper")
         );
         // The name System Settings lists it by, as the settings page names it.
         assert_eq!(
             value("CFBundleName").as_deref(),
-            Some("codeg-computer-helper")
+            Some("recur-code-computer-helper")
         );
         assert_eq!(value("CFBundlePackageType").as_deref(), Some("APPL"));
         // No Dock icon for a process that never shows a window.
@@ -1632,13 +1632,13 @@ mod tests {
         let mac = config("tauri.macos.conf.json");
         assert!(sidecars(&mac)
             .iter()
-            .all(|b| !b.contains("codeg-computer-helper")));
+            .all(|b| !b.contains("recur-code-computer-helper")));
         assert_eq!(
             mac["bundle"]["macOS"]["files"][format!("Helpers/{HELPER_APP}")].as_str(),
             Some(format!("binaries/{HELPER_APP}").as_str())
         );
         let base = config("tauri.conf.json");
-        assert!(sidecars(&base).contains(&"binaries/codeg-computer-helper".to_string()));
+        assert!(sidecars(&base).contains(&"binaries/recur-code-computer-helper".to_string()));
 
         // The copy `tauri build` would compile stays out of every bundle: the
         // CLI bundles a binary target only when its features are among those
@@ -1651,7 +1651,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .find(|b| b["name"].as_str() == Some("codeg-computer-helper"))
+            .find(|b| b["name"].as_str() == Some("recur-code-computer-helper"))
             .unwrap();
         assert_eq!(
             helper_bin["required-features"].as_array().unwrap(),

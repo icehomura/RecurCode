@@ -87,7 +87,7 @@ const SAVED = {
   hasPassword: true,
   encrypt: false,
   hasPassphrase: false,
-  remoteDir: "codeg",
+  remoteDir: "RecurCode",
   profile: "default",
   autoSync: true,
   intervalMinutes: 5,
@@ -153,7 +153,7 @@ describe("ConfigSyncSettings — availability", () => {
   /// Regression: the panel used to `return null` for anything but a local
   /// desktop window, because the commands were registered on the Tauri
   /// runtime only. They exist on the HTTP API now, and a browser pointed at a
-  /// codeg-server has exactly the same configuration worth syncing.
+  /// recur-code-server has exactly the same configuration worth syncing.
   it("renders in a browser, where the commands now exist too", async () => {
     env.desktop = false
     renderPanel()
@@ -326,7 +326,7 @@ describe("ConfigSyncSettings — file import", () => {
       source: {
         kind: "content" as const,
         content: '{"schemaVersion":1,"domains":{}}',
-        label: "codeg-config.json",
+        label: "recur-code-config.json",
       },
       preview: { manifest: manifest(), counts: { quickMessages: 1 } },
     }
@@ -362,7 +362,7 @@ describe("ConfigSyncSettings — file import", () => {
 
   it("reports a file the backend refused instead of opening a dialog", async () => {
     vi.mocked(pickConfigFileToImport).mockRejectedValue(
-      new Error("Not a codeg config snapshot")
+      new Error("Not a RecurCode config snapshot")
     )
     await renderLoaded()
     fireEvent.click(screen.getByRole("button", { name: t.importButton }))

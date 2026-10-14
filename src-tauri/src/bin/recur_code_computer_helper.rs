@@ -1,17 +1,17 @@
-//! `codeg-computer-helper`: the executor behind codeg's `computer_*` tools.
+//! `recur-code-computer-helper`: the executor behind RecurCode's `computer_*` tools.
 //!
-//! Everything it does lives in `codeg_lib::computer::helper`; this file holds
-//! only the one thing that must not be linked into codeg itself — the calls
+//! Everything it does lives in `recur_code_lib::computer::helper`; this file holds
+//! only the one thing that must not be linked into RecurCode itself — the calls
 //! that *ask* macOS for a permission. Raised from here, the request names the
-//! helper; raised from codeg, it would name codeg, and a person who clicked
+//! helper; raised from RecurCode, it would name RecurCode, and a person who clicked
 //! "Allow" would have handed the permission to every agent's shell.
 //!
-//! They run in a helper codeg starts for the one request
+//! They run in a helper RecurCode starts for the one request
 //! (`--request-permission <name>`), not in the one serving it: macOS takes a
 //! request from each process once.
 
-use codeg_lib::computer::helper::{run, EXIT_FAILED};
-use codeg_lib::computer::protocol::{OsPermission, PermissionAsked, REQUEST_PERMISSION_ARG};
+use recur_code_lib::computer::helper::{run, EXIT_FAILED};
+use recur_code_lib::computer::protocol::{OsPermission, PermissionAsked, REQUEST_PERMISSION_ARG};
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -27,7 +27,7 @@ fn main() {
 fn request_permission(name: Option<&str>) -> i32 {
     let Some(permission) = name.and_then(OsPermission::from_arg) else {
         eprintln!(
-            "usage: codeg-computer-helper {REQUEST_PERMISSION_ARG} accessibility|screen-recording"
+            "usage: recur-code-computer-helper {REQUEST_PERMISSION_ARG} accessibility|screen-recording"
         );
         return EXIT_FAILED;
     };
@@ -56,8 +56,8 @@ mod macos {
     use std::ffi::c_void;
     use std::time::{Duration, Instant};
 
-    use codeg_lib::computer::protocol::OsPermission;
-    use codeg_lib::computer::tcc;
+    use recur_code_lib::computer::protocol::OsPermission;
+    use recur_code_lib::computer::tcc;
     use core_foundation::base::TCFType;
     use core_foundation::boolean::CFBoolean;
     use core_foundation::dictionary::CFDictionary;
@@ -97,7 +97,7 @@ mod macos {
     /// Ask for `permission`, and say whether a dialog of the system's came up
     /// for it. The system does not put one up for a permission already
     /// granted, nor once the person has turned the switch off in System
-    /// Settings — only then is it for codeg to open that pane.
+    /// Settings — only then is it for RecurCode to open that pane.
     pub fn request(permission: OsPermission) -> bool {
         if granted(permission) {
             return false;

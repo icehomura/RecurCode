@@ -304,7 +304,7 @@ pub fn build_task_engine(
         Ownership::Exclusive(file) => file,
         Ownership::Taken => {
             tracing::info!(
-                "[work_task] another codeg process owns the task engine for {}; \
+                "[work_task] another RecurCode process owns the task engine for {}; \
                  this process will not drive tasks",
                 data_dir.display()
             );
@@ -1825,8 +1825,8 @@ impl TaskEngine {
 
         // Per-task ref names: these fetches run in the shared project folder,
         // where `FETCH_HEAD` belongs to whoever wrote it last.
-        let base_ref_local = format!("refs/codeg/task-{}/pr-base", task.id);
-        let head_ref_local = format!("refs/codeg/task-{}/pr-head", task.id);
+        let base_ref_local = format!("refs/RecurCode/task-{}/pr-base", task.id);
+        let head_ref_local = format!("refs/RecurCode/task-{}/pr-head", task.id);
         // Fetched with the account the task was triggered by, over an explicit
         // URL — NOT through the folder's `origin`. This is the engine's only
         // setup step that touches the network, and a private repository's
@@ -1912,7 +1912,7 @@ impl TaskEngine {
             return;
         }
         for suffix in ["pr-base", "pr-head"] {
-            task_git::delete_ref(&root.path, &format!("refs/codeg/task-{}/{suffix}", task.id)).await;
+            task_git::delete_ref(&root.path, &format!("refs/RecurCode/task-{}/{suffix}", task.id)).await;
         }
     }
 
@@ -2639,7 +2639,7 @@ impl TaskEngine {
         // an ordinary resume — but not when a `session/load` failure the
         // adapter swallowed fell through to `session/new`, which `spawn_agent`
         // still reports as success, so the launch still reads as `resumed`
-        // (see the codeg#500 note in `send_prompt_linked_with_message_id`).
+        // (see the RecurCode#500 note in `send_prompt_linked_with_message_id`).
         // Measuring the old session and compacting the new one would spend a
         // whole turn shrinking a context that is already empty, so the fallback
         // is only trusted when the two ids match exactly.
@@ -3210,7 +3210,7 @@ impl TaskEngine {
                     .unwrap_or(false)
             }
             // What the agent reported for this turn (a rejected prompt's own
-            // message, codeg's reading of an empty turn) says more than the
+            // message, RecurCode's reading of an empty turn) says more than the
             // bare stop reason, which is all a turn that reported nothing has.
             other => work_task_service::fail(
                 &self.db.conn,
@@ -3282,7 +3282,7 @@ impl TaskEngine {
         }
     }
 
-    // ── codeg-mcp task reporting tools ──────────────────────────────────────
+    // ── recur-code-mcp task reporting tools ──────────────────────────────────────
 
     /// `task_progress`: attribute the report through the connection index and
     /// append an `agent_progress` event (the card/timeline milestone).
@@ -4310,7 +4310,7 @@ impl TaskEngine {
                 })?;
             // The push lands in the recorded HEAD repository — the fork, when
             // the pull request comes from one. Resolvability is re-checked
-            // here, before the CAS, so a row whose fork codeg cannot name
+            // here, before the CAS, so a row whose fork RecurCode cannot name
             // (written by an older build, or hydrated while the fork was
             // already gone) is refused with the task left exactly as it was.
             pull_push_repo(&meta)?;
@@ -4922,7 +4922,7 @@ impl TaskEngine {
         // and two of them may legitimately be about the same item or even the
         // same commit — a shared name would let one force-update or delete the
         // ref between another's fetch and its ancestry check.
-        let probe = format!("refs/codeg/task-{task_id}/merged-probe");
+        let probe = format!("refs/RecurCode/task-{task_id}/merged-probe");
         let fetched = self
             .forge
             .fetch_ref(
@@ -6419,7 +6419,7 @@ fn classify_push_refusal(error: &str) -> PushRefusal {
 /// repository recorded at trigger time — the fork, when the pull request comes
 /// from one. A row that recorded none falls back to the source repository:
 /// builds that predate the field refused forks at trigger, so their rows are
-/// same-repo by construction. `Err` is the one head codeg cannot push to ever —
+/// same-repo by construction. `Err` is the one head RecurCode cannot push to ever —
 /// a fork it cannot name (GitLab's unresolved `project-{id}` placeholder, or a
 /// fork deleted since GitHub hydrated the row).
 fn pull_push_repo(meta: &ForgeSourceMeta) -> Result<String, String> {
@@ -6431,7 +6431,7 @@ fn pull_push_repo(meta: &ForgeSourceMeta) -> Result<String, String> {
         .unwrap_or(&meta.owner_repo);
     crate::forge::normalize_repo(recorded).ok_or_else(|| {
         format!(
-            "{} #{} comes from a fork whose repository codeg cannot see (it may be private or \
+            "{} #{} comes from a fork whose repository RecurCode cannot see (it may be private or \
              deleted), so there is nowhere to push the work back to — its commits stay on the \
              task's local branch",
             meta.provider.change_noun(),
@@ -7263,7 +7263,7 @@ fn round1(percent: f64) -> f64 {
 /// Marker file (in the worktree's PRIVATE git dir, so it can never show up in
 /// `git status` or be committed) recording that the folder's init command
 /// completed successfully in this worktree.
-const SETUP_MARKER: &str = "codeg-task-init-ok";
+const SETUP_MARKER: &str = "recur-code-task-init-ok";
 
 async fn setup_marker_present(wt_path: &str) -> bool {
     match task_git::git_dir(wt_path).await {
@@ -7478,7 +7478,7 @@ fn expand_home(path: &str, home: Option<&Path>) -> PathBuf {
     }
 }
 
-/// codeg-mcp `task_progress` / `task_complete` access handed to the delegation
+/// recur-code-mcp `task_progress` / `task_complete` access handed to the delegation
 /// listener at boot. Resolves the process-global engine at CALL time — the
 /// listener is constructed before the engine, and a process that never wins the
 /// engine lock cleanly rejects every report.
@@ -10743,7 +10743,7 @@ mod tests {
         comment_error: Option<String>,
         get_pull_error: Option<String>,
         /// What the pull request looks like once the push has happened — how
-        /// a test says "someone closed / retargeted / merged it while codeg
+        /// a test says "someone closed / retargeted / merged it while RecurCode
         /// was pushing", which is the whole window the settle check guards.
         after_push: Mutex<Option<ForgePr>>,
         /// A file dropped into the worktree the moment the push runs. Opens
@@ -11692,7 +11692,7 @@ mod tests {
 
     /// Completing a pull-request task that pushed nothing — a review-only
     /// report, or a review that stopped at an unsound approach — must not tell
-    /// the pull request's thread it was "accepted". That is codeg's word for
+    /// the pull request's thread it was "accepted". That is RecurCode's word for
     /// signing off on the TASK; on a pull request it reads as approval of the
     /// change, which may be the opposite of what the review found. The thread
     /// hears what happened to its pull request: nothing was pushed to it.
@@ -13257,11 +13257,11 @@ mod tests {
         );
     }
 
-    /// Every `refs/codeg/*` ref left in a repository — the engine's scratch
+    /// Every `refs/RecurCode/*` ref left in a repository — the engine's scratch
     /// namespace, which nothing outside it may ever find.
     async fn probe_refs(root: &std::path::Path) -> Vec<String> {
         let out = crate::process::tokio_command("git")
-            .args(["for-each-ref", "--format=%(refname)", "refs/codeg/"])
+            .args(["for-each-ref", "--format=%(refname)", "refs/RecurCode/"])
             .current_dir(root)
             .output()
             .await
@@ -13457,7 +13457,7 @@ mod tests {
         assert!(closed.forge.pushes.lock().await.is_empty());
         assert_eq!(row(&closed.engine, closed.task_id).await.status, WorkTaskStatus::Review);
 
-        // A fork codeg cannot NAME — GitLab's unresolved `project-{id}`
+        // A fork RecurCode cannot NAME — GitLab's unresolved `project-{id}`
         // placeholder — has no push URL, ever. Refused before the CAS.
         let fork = delivery_fixture(FakeForge::default()).await;
         as_pull_request_task(&fork, open_pull("x", "feature", "project-4711")).await;
@@ -13845,7 +13845,7 @@ mod tests {
     }
 
     /// The explicit setting is what gets sent, verbatim — it exists precisely
-    /// for the agents codeg has no default for.
+    /// for the agents RecurCode has no default for.
     #[tokio::test]
     async fn the_configured_command_is_sent_verbatim() {
         let mut f = compact_fixture(Some((90_000, 100_000))).await;

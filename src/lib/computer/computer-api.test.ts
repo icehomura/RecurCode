@@ -80,7 +80,7 @@ describe("computer use availability", () => {
     expect(await askComputerServed()).toBe(false)
     expect(transport.call).toHaveBeenCalledTimes(2)
 
-    // Restarted with CODEG_COMPUTER_USE: heard when the transport is back.
+    // Restarted with RECUR_CODE_COMPUTER_USE: heard when the transport is back.
     transport.call.mockResolvedValueOnce({ available: true, platform: "macos" })
     const { result } = renderHook(() => useComputerAvailable())
     expect(result.current).toBe(false)

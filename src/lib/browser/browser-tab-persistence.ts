@@ -34,7 +34,7 @@ export interface PersistedBrowserTab {
    *  existed has none and comes back in the default one; the restorer maps a
    *  profile that has since been deleted to the default one as well. */
   profile: string
-  /** An address on the remote codeg host (`BrowserTabSeed.remote`). Written
+  /** An address on the remote RecurCode host (`BrowserTabSeed.remote`). Written
    *  only when set, so records of every other tab keep their old shape. */
   remote?: true
   /** The device the tab shows its page as (`BrowserTabSeed.device`). Written

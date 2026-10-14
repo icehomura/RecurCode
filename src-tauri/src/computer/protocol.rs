@@ -1,6 +1,6 @@
-//! Frames between codeg and `codeg-computer-helper`.
+//! Frames between RecurCode and `recur-code-computer-helper`.
 //!
-//! One private channel per helper: the socketpair codeg created and handed to
+//! One private channel per helper: the socketpair RecurCode created and handed to
 //! the helper as its stdin/stdout on macOS, plain pipes elsewhere. Frames are
 //! the broker's length-prefixed JSON ([`write_frame`] / [`read_frame`]), with
 //! the broker's 16 MiB cap — which is also the most the broker can hand an
@@ -8,9 +8,9 @@
 //! have been delivered anyway.
 //!
 //! **The helper speaks first**, with [`HelperMessage::Ready`]. That ordering is
-//! load-bearing on macOS: codeg created both ends of the socketpair, so until
-//! the helper has written to its end the kernel still reports codeg itself as
-//! the peer, and a signature check of "the peer" would check codeg. codeg
+//! load-bearing on macOS: RecurCode created both ends of the socketpair, so until
+//! the helper has written to its end the kernel still reports RecurCode itself as
+//! the peer, and a signature check of "the peer" would check RecurCode. RecurCode
 //! verifies the helper only after the first frame arrives.
 //!
 //! The ops are a closed list. The driver behind the helper advertises dozens
@@ -41,33 +41,33 @@ use super::types::{
 };
 
 /// Bumped whenever a frame changes shape. The helper ships in the same bundle
-/// as codeg, so a mismatch means a broken install (a helper left behind by a
-/// partial update), and codeg refuses to talk to it rather than guess.
+/// as RecurCode, so a mismatch means a broken install (a helper left behind by a
+/// partial update), and RecurCode refuses to talk to it rather than guess.
 pub const PROTOCOL_VERSION: u32 = 14;
 
-/// A fingerprint of the sources the helper is built from, the same in codeg
+/// A fingerprint of the sources the helper is built from, the same in RecurCode
 /// and the helper when both are built from one tree (see `build.rs`). The
-/// helper says it in [`HelperReady::source`]; a development codeg checks it.
-pub const SOURCE_FINGERPRINT: &str = env!("CODEG_COMPUTER_SOURCE");
+/// helper says it in [`HelperReady::source`]; a development RecurCode checks it.
+pub const SOURCE_FINGERPRINT: &str = env!("RECUR_CODE_COMPUTER_SOURCE");
 
-/// codeg → helper.
+/// RecurCode → helper.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HelperRequest {
     pub id: u64,
     pub op: HelperOp,
-    /// How many of the person's Stops codeg had counted when it let this
+    /// How many of the person's Stops RecurCode had counted when it let this
     /// request through. The helper serves nothing of a request from before
     /// a Stop it has heard of ([`HelperOp::Halt`]) — whichever of the two
     /// frames reached it first — and holds nothing against one from after.
     pub stop: u64,
 }
 
-/// The `stop` of a [`HelperOp::Halt`] that ends everything: codeg is closing
+/// The `stop` of a [`HelperOp::Halt`] that ends everything: RecurCode is closing
 /// the helper, and nothing it was asked before is served.
 pub const STOP_ALL: u64 = u64::MAX;
 
-/// What codeg may ask the helper for.
+/// What RecurCode may ask the helper for.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum HelperOp {
@@ -80,7 +80,7 @@ pub enum HelperOp {
         driver_version: String,
     },
     /// The helper's own OS permissions. Read-only: never raises a dialog.
-    /// (Asking for one is not an op: codeg starts a helper of its own for
+    /// (Asking for one is not an op: RecurCode starts a helper of its own for
     /// that — see [`REQUEST_PERMISSION_ARG`].)
     Permissions,
     ListApps,
@@ -143,7 +143,7 @@ pub enum HelperOp {
         window_id: u64,
         request: VerifyRequest,
     },
-    /// Act on one window. codeg has checked the grant, the addressing, the
+    /// Act on one window. RecurCode has checked the grant, the addressing, the
     /// keys and — for the front — that the person allows it; the helper
     /// checks again what only it can see at the moment of delivery — that
     /// the pid is still the process the window was shared from, and the
@@ -209,7 +209,7 @@ pub enum HelperOp {
     ClipboardWrite {
         text: String,
     },
-    /// The person pressed Stop — codeg's `stop`-th — or codeg is closing the
+    /// The person pressed Stop — RecurCode's `stop`-th — or RecurCode is closing the
     /// helper ([`STOP_ALL`]): kill the driver started for a request from
     /// before it, now, whatever it is in the middle of, and serve nothing
     /// more of any request from before it. A `Halt` older than one already
@@ -222,8 +222,8 @@ pub enum HelperOp {
 }
 
 /// The argument that starts the helper for one permission request instead
-/// of serving codeg: `codeg-computer-helper --request-permission
-/// accessibility`. codeg starts it as it starts the helper — its own TCC
+/// of serving RecurCode: `recur-code-computer-helper --request-permission
+/// accessibility`. RecurCode starts it as it starts the helper — its own TCC
 /// principal — so the request names the helper; and a fresh process each
 /// time, because macOS takes a request from each process once. It asks for
 /// that permission alone, then prints a [`PermissionAsked`] line and exits.
@@ -432,9 +432,9 @@ pub struct RawAct {
     pub clipboard: Option<u64>,
 }
 
-/// Who may never be seen or touched over the entire screen: codeg itself,
+/// Who may never be seen or touched over the entire screen: RecurCode itself,
 /// and the applications on the blocklist — which the helper judges on its
-/// own there, window by window, as codeg judges a window it shares.
+/// own there, window by window, as RecurCode judges a window it shares.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScreenRules {
@@ -462,7 +462,7 @@ pub struct ClipboardUse {
     /// changes the clipboard, and say what to.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub track: bool,
-    /// The clipboard as the agent last put it there itself, when codeg holds
+    /// The clipboard as the agent last put it there itself, when RecurCode holds
     /// that it still may be pasted: an action that pastes — a paste key, a
     /// menu command or a control that pastes — goes only while the clipboard
     /// is still this. Without it, nothing that pastes goes at all.
@@ -479,7 +479,7 @@ pub struct RawClipboard {
     pub text: Option<String>,
 }
 
-/// helper → codeg.
+/// helper → RecurCode.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum HelperMessage {
@@ -492,24 +492,24 @@ pub enum HelperMessage {
 #[serde(rename_all = "camelCase")]
 pub struct HelperReady {
     pub protocol: u32,
-    /// The helper's own crate version, which is codeg's.
+    /// The helper's own crate version, which is RecurCode's.
     pub version: String,
     /// What the helper knows about who it is talking to.
     pub peer: PeerCheck,
     /// [`SOURCE_FINGERPRINT`] as the helper was built. Absent from a helper
-    /// older than the field, which a development codeg takes for a stale one.
+    /// older than the field, which a development RecurCode takes for a stale one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<String>,
 }
 
-/// Whether the helper checked codeg's code signature before serving it.
+/// Whether the helper checked RecurCode's code signature before serving it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum PeerCheck {
-    /// It did, and codeg passed (macOS release builds).
+    /// It did, and RecurCode passed (macOS release builds).
     Verified,
     /// A development build: no requirement was compiled in to check against.
-    /// Said out loud so codeg can show it.
+    /// Said out loud so RecurCode can show it.
     Development,
     /// No code signature to check on this platform.
     NotApplicable,
@@ -517,7 +517,7 @@ pub enum PeerCheck {
 
 /// The answer to one [`HelperRequest`]: exactly one of `ok` / `error`.
 ///
-/// `ok` travels as a plain JSON value because codeg knows which op it asked
+/// `ok` travels as a plain JSON value because RecurCode knows which op it asked
 /// and decodes it into that op's type ([`HelperReply::decode`]); a tagged
 /// union here would only repeat the op kind the id already names.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -642,7 +642,7 @@ impl RawApp {
 }
 
 /// An installed application as the driver lists it: who it is — its bundle
-/// identifier, or its executable — for codeg to judge by, and the command
+/// identifier, or its executable — for RecurCode to judge by, and the command
 /// that starts it, which is not who it is: a launch command carries
 /// arguments, and on Linux may be a wrapper (`flatpak run …`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -864,7 +864,7 @@ impl HelperError {
         };
         Self {
             code: HelperErrorCode::PermissionMissing,
-            message: format!("codeg-computer-helper has not been granted {what}"),
+            message: format!("recur-code-computer-helper has not been granted {what}"),
             permission: Some(permission),
         }
     }
@@ -973,7 +973,7 @@ mod tests {
         assert_eq!(err.permission, Some(OsPermission::ScreenRecording));
     }
 
-    /// Every request carries codeg's count of Stops, and so does a Stop: they
+    /// Every request carries RecurCode's count of Stops, and so does a Stop: they
     /// are held one against the other by it, not by the order they arrive in.
     #[test]
     fn requests_and_stops_carry_the_stop_count() {
@@ -990,7 +990,7 @@ mod tests {
             serde_json::from_value::<HelperRequest>(wire).unwrap(),
             request
         );
-        // A request without one is not a request from this codeg.
+        // A request without one is not a request from this RecurCode.
         assert!(serde_json::from_value::<HelperRequest>(serde_json::json!({
             "id": 1, "op": {"kind": "listApps"}
         }))

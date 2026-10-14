@@ -1,6 +1,6 @@
 //! Custom (user-authored) skills management.
 //!
-//! The fourth "skill pack" in codeg's central store `~/.codeg/skills/<id>/`.
+//! The fourth "skill pack" in RecurCode's central store `~/.recurcode/skills/<id>/`.
 //! Unlike experts/science/office — which bundle *read-only* content into the
 //! binary — custom skills are created, edited, imported and deleted by the
 //! user. They live in the SAME central store and are enabled for an ACP agent
@@ -12,7 +12,7 @@
 //! store that holds a `SKILL.md` and whose id is NOT claimed by a bundled pack
 //! (experts ∪ science ∪ office ∪ the generative-UI skill). This keeps the store's disjoint-id-namespace
 //! safety model (see `science.rs`) holding for custom too, and lets a user drop
-//! a folder into `~/.codeg/skills` and have it appear on refresh. The startup
+//! a folder into `~/.recurcode/skills` and have it appear on refresh. The startup
 //! extraction of bundled packs is id-scoped (hash + manifest + backup, never a
 //! wipe), so it never touches unclaimed custom directories.
 //!
@@ -164,7 +164,7 @@ fn reserved_ids() -> BTreeSet<String> {
     set.extend(crate::commands::science::bundled_ids());
     set.extend(crate::commands::office_tools::bundled_skill_ids());
     // `ui-render` (and 0.35.0's `json-render`, until startup moves it over)
-    // only while the directory is the copy Codeg wrote: a skill of that name
+    // only while the directory is the copy RecurCode wrote: a skill of that name
     // the user made themselves stays theirs to see and edit.
     set.extend(crate::commands::generative_ui::reserved_skill_ids());
     set
@@ -265,7 +265,7 @@ fn collect_custom_ids() -> Result<Vec<String>, CustomSkillsError> {
         let entry = entry.map_err(|e| CustomSkillsError::Io(e.to_string()))?;
         let file_name = entry.file_name();
         let name = file_name.to_string_lossy();
-        // Skip codeg-owned dotfiles (`.manifest.json`, `.manifest.science.json`).
+        // Skip recur-code-owned dotfiles (`.manifest.json`, `.manifest.science.json`).
         if name.starts_with('.') {
             continue;
         }
@@ -367,7 +367,7 @@ fn link_one_locked(
         Ok(is_copy) => copy_mode = is_copy,
         Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
             match classify_link(&link_path, &central) {
-                ExpertLinkState::LinkedToCodeg => {} // idempotent success
+                ExpertLinkState::LinkedToRecurCode => {} // idempotent success
                 ExpertLinkState::BlockedByRealDirectory => {
                     return Err(CustomSkillsError::NameCollision {
                         path: link_path.to_string_lossy().to_string(),
@@ -407,7 +407,7 @@ fn link_one_locked(
 /// Remove one custom skill's link from one agent's skill dirs. **Assumes the
 /// mutation lock is already held.** Scans ALL of the agent's global dirs to
 /// handle shared-dir agents (`~/.agents/skills`). Only ever removes OUR links
-/// (LinkedToCodeg / Broken) — foreign links and real dirs are left untouched.
+/// (LinkedToRecurCode / Broken) — foreign links and real dirs are left untouched.
 fn unlink_one_locked(id: &str, agent_type: AgentType) -> Result<(), CustomSkillsError> {
     let id = validate_skill_id(id).map_err(|e| CustomSkillsError::Metadata(e.to_string()))?;
     let dirs = scoped_skill_dirs(agent_type, AgentSkillScope::Global, None)
@@ -422,7 +422,7 @@ fn unlink_one_locked(id: &str, agent_type: AgentType) -> Result<(), CustomSkills
         let state = classify_link(&candidate, &central);
         if matches!(
             state,
-            ExpertLinkState::LinkedToCodeg | ExpertLinkState::Broken
+            ExpertLinkState::LinkedToRecurCode | ExpertLinkState::Broken
         ) {
             remove_skill_entry(&candidate).map_err(|e| {
                 CustomSkillsError::Io(format!("remove link {}: {e}", candidate.display()))
@@ -865,7 +865,7 @@ mod tests {
         // Absolute on every platform — a unix literal would not be on Windows.
         let dedicated = dirs::home_dir()
             .unwrap_or_else(|| PathBuf::from("."))
-            .join("codeg-dedicated-skills");
+            .join("recur-code-dedicated-skills");
 
         assert!(hydrate(std::slice::from_ref(&def)).is_empty());
         assert!(
@@ -919,12 +919,12 @@ mod tests {
     async fn apply_links_does_not_deadlock() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-codeg-custom-batch-absent-aaa".into(),
+                expert_id: "zzz-recur-code-custom-batch-absent-aaa".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },
             LinkOp {
-                expert_id: "zzz-codeg-custom-batch-absent-bbb".into(),
+                expert_id: "zzz-recur-code-custom-batch-absent-bbb".into(),
                 agent_type: AgentType::Codex,
                 enable: false,
             },
@@ -942,13 +942,13 @@ mod tests {
         let ops = vec![
             LinkOp {
                 // Idempotent disable of an absent link → ok.
-                expert_id: "zzz-codeg-custom-batch-absent".into(),
+                expert_id: "zzz-recur-code-custom-batch-absent".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },
             LinkOp {
                 // Enable of a skill with no central copy → fails its op.
-                expert_id: "zzz-codeg-custom-not-installed".into(),
+                expert_id: "zzz-recur-code-custom-not-installed".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: true,
             },
@@ -966,8 +966,8 @@ mod tests {
         // Deleting ids with no central dir + no links is an idempotent success;
         // this never touches real content.
         let results = custom_delete_skills(vec![
-            "zzz-codeg-custom-delete-absent-1".into(),
-            "zzz-codeg-custom-delete-absent-2".into(),
+            "zzz-recur-code-custom-delete-absent-1".into(),
+            "zzz-recur-code-custom-delete-absent-2".into(),
         ])
         .await
         .expect("batch returns Ok");
@@ -993,8 +993,8 @@ mod tests {
         let results = custom_import_from_agent(
             AgentType::ClaudeCode,
             vec![
-                "zzz-codeg-custom-import-absent-1".into(),
-                "zzz-codeg-custom-import-absent-2".into(),
+                "zzz-recur-code-custom-import-absent-1".into(),
+                "zzz-recur-code-custom-import-absent-2".into(),
             ],
         )
         .await
@@ -1106,17 +1106,17 @@ mod tests {
         .await;
     }
 
-    /// The generative-UI skill shares the central store but is only Codeg's
+    /// The generative-UI skill shares the central store but is only RecurCode's
     /// once its marker is there; until then a `ui-render` is the user's.
     #[cfg(unix)]
     #[tokio::test]
-    async fn fs_ui_render_stays_custom_until_codeg_marks_it() {
+    async fn fs_ui_render_stays_custom_until_recur_code_marks_it() {
         with_temp_home(|| async {
             let id = crate::commands::generative_ui::SKILL_ID;
             let content = "---\nname: ui-render\n---\nmine\n";
             custom_create_skill(id.into(), content.into())
                 .await
-                .expect("free until Codeg claims it");
+                .expect("free until RecurCode claims it");
             let listed = |items: Vec<CustomSkillItem>| items.iter().any(|s| s.id == id);
             assert!(listed(custom_list().await.expect("list")));
 

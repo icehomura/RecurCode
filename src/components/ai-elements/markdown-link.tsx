@@ -6,7 +6,7 @@ import { FileText, Globe, Mail, Phone, type LucideIcon } from "lucide-react"
 import type { Components, LinkSafetyModalProps } from "streamdown"
 
 import { ReferenceBadge } from "@/components/chat/composer/badges/reference-badge"
-import { parseCodegReferenceUri } from "@/components/chat/composer/reference-uri"
+import { parseRecurCodeReferenceUri } from "@/components/chat/composer/reference-uri"
 import { FileReferenceActions } from "@/components/message/file-reference-actions"
 import type { ReferenceAttrs } from "@/components/chat/composer/types"
 import { classifyResourceKind, type ResourceKind } from "@/lib/resource-kind"
@@ -106,14 +106,14 @@ export function MarkdownLink({
     )
   }
 
-  // A codeg:// reference link renders as an inline badge, mirroring the
+  // A recurcode:// reference link renders as an inline badge, mirroring the
   // composer's reference chips: session / commit / agent links, plus the inert
-  // `codeg://embedded/…` badge a path-less pasted attachment serializes to (its
+  // `recurcode://embedded/…` badge a path-less pasted attachment serializes to (its
   // bytes travel out of band, so it has no openable target). The same parser the
   // editor uses on draft restore recovers refType/id/meta from the uri; the link
   // text is the label.
-  if (href.toLowerCase().startsWith("codeg:")) {
-    const reference = parseCodegReferenceUri(href, nodeText(children))
+  if (href.toLowerCase().startsWith("RecurCode:")) {
+    const reference = parseRecurCodeReferenceUri(href, nodeText(children))
     if (reference) return <ReferenceBadge data={reference} />
   }
 

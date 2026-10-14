@@ -45,7 +45,7 @@ const COMPACTION_ADVISORY = /\bmultiple compactions\b/i
  * Whether a notice only restates a context compaction.
  *
  * Compaction already has its own surface: the transcript's compaction card
- * (running / done with the token delta / failed with the reason), which codeg
+ * (running / done with the token delta / failed with the reason), which RecurCode
  * renders for every adapter it advertises `session.compaction` to — and
  * notices are only advertised together with it. Raising a toast as well turned
  * every compaction into a card plus a warning, so these are dropped:
@@ -53,7 +53,7 @@ const COMPACTION_ADVISORY = /\bmultiple compactions\b/i
  * - codex's advisory above, which carries nothing the card lacks except advice
  *   that repeats on every single compaction;
  * - codex-acp's legacy "Context compacted" notice, sent in place of the
- *   compaction frames to a client WITHOUT the capability. codeg always has it,
+ *   compaction frames to a client WITHOUT the capability. RecurCode always has it,
  *   so this is defensive — but if it ever arrives, the card (or its absence) is
  *   still the honest place to say so.
  */
@@ -66,7 +66,7 @@ export function isCompactionEchoNotice(notice: SessionNotice): boolean {
   )
 }
 
-/** A level codeg cannot grade renders as `info`, the gentlest one. */
+/** A level RecurCode cannot grade renders as `info`, the gentlest one. */
 function noticeLevel(severity: string): NoticeToastLevel {
   return severity === "error" || severity === "warning" ? severity : "info"
 }

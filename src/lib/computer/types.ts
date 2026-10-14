@@ -10,7 +10,7 @@ export type GrantLevel = "none" | "read" | "control"
 /** A macOS permission the helper may need. */
 export type OsPermission = "accessibility" | "screenRecording"
 
-/** The helper's own OS permissions — never codeg's. */
+/** The helper's own OS permissions — never RecurCode's. */
 export interface PermissionReport {
   /** Whether this platform has per-application permissions at all. */
   required: boolean
@@ -35,7 +35,7 @@ export type BackendState =
   | "ready"
   | "failed"
 
-/** Whether the running helper checked codeg's code signature. */
+/** Whether the running helper checked RecurCode's code signature. */
 export type PeerCheck = "verified" | "development" | "notApplicable"
 
 export interface BackendStatus {
@@ -45,8 +45,8 @@ export interface BackendStatus {
   peer?: PeerCheck
 }
 
-/** codeg's own TCC standing (macOS only). */
-export interface CodegTccStatus {
+/** RecurCode's own TCC standing (macOS only). */
+export interface RecurCodeTccStatus {
   accessibility: boolean
   screenRecording: boolean
   /** When false, the two flags are the launching terminal's. */
@@ -100,7 +100,7 @@ export interface ComputerStatus {
   verifiedPlatform: boolean
   backend: BackendStatus
   permissions?: PermissionReport
-  codeg?: CodegTccStatus
+  RecurCode?: RecurCodeTccStatus
   shared: SharedWindow[]
   /** Whether the share picker offers the entire screen: macOS and Windows,
    *  with its switch on in Settings. */
@@ -115,7 +115,7 @@ export interface Rect {
 }
 
 /** Why a window can never be shared. */
-export type NotGrantable = "codeg" | "blocklisted" | "unidentified"
+export type NotGrantable = "RecurCode" | "blocklisted" | "unidentified"
 
 /** One window as the share picker shows it. */
 export interface PickerWindow {
@@ -271,7 +271,7 @@ export type DriverTask =
 
 /** cua-driver as Settings shows it (`computer_driver_info`). Desktop only. */
 export interface DriverInfo {
-  /** The release this codeg runs — the only one it will run. */
+  /** The release this RecurCode runs — the only one it will run. */
   version: string
   /** Whether that release has a build for this platform. */
   supported: boolean

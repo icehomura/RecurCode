@@ -12,9 +12,9 @@ import {
 } from "lucide-react"
 
 /**
- * How codeg's own tool groups are named and drawn, in one table.
+ * How RecurCode's own tool groups are named and drawn, in one table.
  *
- * Two surfaces render this list: the codeg-mcp popover in the bottom-right of
+ * Two surfaces render this list: the recur-code-mcp popover in the bottom-right of
  * the workspace (`components/layout/status-bar-mcp.tsx`) and the "tools an
  * agent may use" panel in Collaboration settings
  * (`components/settings/agent-tools-settings.tsx`). They used to hold a table
@@ -62,7 +62,7 @@ export interface AgentToolGroupPresentation {
   icon: LucideIcon
   /** The slug this one lives inside, when it lives inside one. Shown off and
    *  not touchable until its parent is on, in both surfaces. The backend
-   *  sends the same relation on the wire (`CodegMcpToolGroup.requires`); this
+   *  sends the same relation on the wire (`RecurCodeMcpToolGroup.requires`); this
    *  is the copy for the settings panel, which reads the switches from their
    *  own endpoints rather than from the status report. */
   requires?: string

@@ -3,9 +3,9 @@
 //! Without a hook, a Rust panic leaves **nothing** behind. On Windows the
 //! runtime's `abort()` raises `STATUS_STACK_BUFFER_OVERRUN` (`0xc0000409`), so
 //! all the user has is a Windows Error Reporting `BEX64` bucket naming
-//! `codeg.exe`, and the rolling log simply stops mid-file: no message, no
+//! `RecurCode.exe`, and the rolling log simply stops mid-file: no message, no
 //! location, no backtrace, nothing that names the code that failed. A report of
-//! exactly that shape (0.30.6, faulting module `codeg.exe`, exception
+//! exactly that shape (0.30.6, faulting module `RecurCode.exe`, exception
 //! `0xc0000409`, and a log whose last line predates the crash by days) is why
 //! this module exists.
 //!
@@ -57,11 +57,11 @@ use std::sync::OnceLock;
 ///
 /// Deliberately **not** the module path, even though `tracing` would default to
 /// it. The `TARGET_BACKSTOPS` table in [`crate::logging::init`] pins
-/// `codeg_lib::logging` to `Off` so the logging stack cannot log about itself,
-/// and a record emitted from `codeg_lib::logging::panic_hook` would inherit
+/// `recur_code_lib::logging` to `Off` so the logging stack cannot log about itself,
+/// and a record emitted from `recur_code_lib::logging::panic_hook` would inherit
 /// that and be filtered out before it reached any sink. It is also the string a
 /// user greps their log for, so it should name the event and not the plumbing.
-pub const PANIC_TARGET: &str = "codeg_lib::panic";
+pub const PANIC_TARGET: &str = "recur_code_lib::panic";
 
 /// Ceiling on the payload text carried in the record.
 ///
@@ -159,7 +159,7 @@ impl PanicReport {
 /// Where the rolling file sink writes, so the hook can append to the same file.
 ///
 /// Recorded by [`set_log_file`] once the appender it describes has been built.
-/// Absent in the stderr-only modes (`codeg-mcp`, the `--supervise` supervisor,
+/// Absent in the stderr-only modes (`recur-code-mcp`, the `--supervise` supervisor,
 /// the credential helper), which have no file to append to; there the hook
 /// still emits its `tracing::error!` and stderr carries the record.
 static FILE_SINK: OnceLock<FileSink> = OnceLock::new();
@@ -394,18 +394,18 @@ fn append_line(
 mod tests {
     use super::*;
 
-    /// The record's target must escape the `codeg_lib::logging=off` backstop
+    /// The record's target must escape the `recur_code_lib::logging=off` backstop
     /// that every constructed filter carries. Emitting from the module path
     /// would land inside it and silently drop the one line the hook exists to
     /// write, with no symptom other than the original silence.
     #[test]
     fn the_panic_target_escapes_the_logging_backstop() {
         assert!(
-            !PANIC_TARGET.starts_with("codeg_lib::logging"),
+            !PANIC_TARGET.starts_with("recur_code_lib::logging"),
             "{PANIC_TARGET} would be filtered out by the logging backstop"
         );
         // And it is still a well-formed target, so the Settings UI and
-        // CODEG_LOG can name it.
+        // RECUR_CODE_LOG can name it.
         assert!(PANIC_TARGET
             .split("::")
             .all(|seg| !seg.is_empty()
@@ -417,7 +417,7 @@ mod tests {
             thread: "tokio-runtime-worker (ThreadId(7))".into(),
             location: "src/acp/idle_sweep.rs:42:9".into(),
             payload: "called `Option::unwrap()` on a `None` value".into(),
-            backtrace: "0: codeg_lib::acp::idle_sweep::sweep".into(),
+            backtrace: "0: recur_code_lib::acp::idle_sweep::sweep".into(),
         }
     }
 
@@ -506,7 +506,7 @@ mod tests {
         let now = chrono::Utc::now();
         let path = dir
             .path()
-            .join(crate::logging::budget::daily_file_name("codeg", "log", now));
+            .join(crate::logging::budget::daily_file_name("RecurCode", "log", now));
 
         // The REAL accounting, against a local counter — the process-global
         // one is shared with every other test in this binary and must not be
@@ -517,9 +517,9 @@ mod tests {
         for _ in 0..(MAX_APPEND_BYTES / line.len() + 100) {
             match reserve_append(&spent, line.len()) {
                 Reservation::Refused => continue,
-                Reservation::Granted => append_line(dir.path(), "codeg", "log", now, &line),
+                Reservation::Granted => append_line(dir.path(), "RecurCode", "log", now, &line),
                 Reservation::Last => {
-                    append_line(dir.path(), "codeg", "log", now, &line);
+                    append_line(dir.path(), "RecurCode", "log", now, &line);
                     notices += 1;
                 }
             }
@@ -589,10 +589,10 @@ mod tests {
     fn append_line_creates_todays_file_and_appends_to_it() {
         let dir = tempfile::tempdir().unwrap();
         let now = chrono::Utc::now();
-        append_line(dir.path(), "codeg", "log", now, "first\n");
-        append_line(dir.path(), "codeg", "log", now, "second\n");
+        append_line(dir.path(), "RecurCode", "log", now, "first\n");
+        append_line(dir.path(), "RecurCode", "log", now, "second\n");
 
-        let name = crate::logging::budget::daily_file_name("codeg", "log", now);
+        let name = crate::logging::budget::daily_file_name("RecurCode", "log", now);
         let body = std::fs::read_to_string(dir.path().join(name)).expect("record written");
         assert_eq!(body, "first\nsecond\n");
     }
@@ -603,7 +603,7 @@ mod tests {
         // location has to be a no-op.
         let dir = tempfile::tempdir().unwrap();
         let missing = dir.path().join("no").join("such").join("dir");
-        append_line(&missing, "codeg", "log", chrono::Utc::now(), "dropped\n");
+        append_line(&missing, "RecurCode", "log", chrono::Utc::now(), "dropped\n");
     }
 
     /// The capture path, exercised against a real panic. `PanicHookInfo` cannot
