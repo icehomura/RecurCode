@@ -1085,6 +1085,8 @@ export const STATUS_COLORS: Record<ConversationStatus, string> = {
 }
 
 export const AGENT_DISPLAY_ORDER: BuiltinAgentType[] = [
+  // RecurCode's pinned-top default agent (headless `ra-headless acp`).
+  "recur_agent",
   "codex",
   "claude_code",
   "open_code",
@@ -1100,7 +1102,6 @@ export const AGENT_DISPLAY_ORDER: BuiltinAgentType[] = [
   "deepseek",
   "qoder",
   "antigravity",
-  "recur_agent",
 ]
 
 const AGENT_DISPLAY_ORDER_INDEX = new Map<AgentType, number>(
