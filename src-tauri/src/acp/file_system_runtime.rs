@@ -695,18 +695,18 @@ fn agent_root_slots(agent_type: AgentType) -> &'static [RootSlot] {
             },
         ],
         AgentType::RecurAgent => &[
+            // RecurAgent's data root (`RA_HOME` else `~/.ra`). Widening the root
+            // itself covers every session tree under it: `sessions/`,
+            // `users/*/sessions/`, and `profiles/*/data/...`.
             RootSlot {
-                candidates: &[("RECUR_AGENT_DIR", "", VERBATIM)],
+                candidates: &[("RA_HOME", "", VERBATIM)],
                 trims: false,
-                default_rel: &[".ra", "agent"],
+                default_rel: &[".ra"],
             },
             RootSlot {
-                candidates: &[
-                    ("RECUR_AGENT_SESSIONS_DIR", "", VERBATIM),
-                    ("RECUR_AGENT_DIR", "sessions", VERBATIM),
-                ],
+                candidates: &[("RA_HOME", "sessions", VERBATIM)],
                 trims: false,
-                default_rel: &[".ra", "agent", "sessions"],
+                default_rel: &[".ra", "sessions"],
             },
         ],
         // A custom ACP agent has no recur-code-known private directory layout —
