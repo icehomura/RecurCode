@@ -117,7 +117,7 @@ pub struct LogGuard {
 ///   `.sqlx_logging(false)`, but that is a per-call-site opt-out that a new
 ///   connection can forget; this makes forgetting harmless. Slow-query lines are
 ///   WARN and survive.
-/// - `recur_code_lib::logging` → `Off` — the logging stack must not log about itself
+/// - `rc_lib::logging` → `Off` — the logging stack must not log about itself
 ///   (cross-thread feedback-loop backstop; the layer's thread-local guard
 ///   handles the same-thread case).
 ///
@@ -129,7 +129,7 @@ const TARGET_BACKSTOPS: &[(&str, LogLevel)] = &[
     ("tungstenite", LogLevel::Debug),
     ("tungstenite::handshake::client", LogLevel::Debug),
     ("sqlx::query", LogLevel::Warn),
-    ("recur_code_lib::logging", LogLevel::Off),
+    ("rc_lib::logging", LogLevel::Off),
 ];
 
 /// The one target that is refused structurally rather than by level.
@@ -262,7 +262,7 @@ fn env_override_directives(s: &str) -> String {
 ///   out of `split(',')` and both sides of `=` are compared as-is.
 ///
 /// **With nothing applicable the answer is `Off`, not "unbounded".** An
-/// expression like `recur_code_lib=info` enables nothing else — `EnvFilter::builder()`
+/// expression like `rc_lib=info` enables nothing else — `EnvFilter::builder()`
 /// leaves `default_directive` unset (`builder.rs:353`), so an unmatched target is
 /// disabled — and a ceiling emitted as `agent_client_protocol=warn` there would *turn agent_client_protocol on*, a
 /// floor masquerading as a ceiling, which is the whole bug this clamp prevents.
@@ -391,8 +391,8 @@ pub fn build_env_filter(settings: &LogSettings) -> EnvFilter {
 /// recursion backstop.
 fn is_valid_target(target: &str) -> bool {
     if target.is_empty()
-        || target == "recur_code_lib::logging"
-        || target.starts_with("recur_code_lib::logging::")
+        || target == "rc_lib::logging"
+        || target.starts_with("rc_lib::logging::")
     {
         return false;
     }
@@ -597,13 +597,13 @@ pub fn init_server() -> LogGuard {
 }
 
 fn init_with_file(prefix: &str) -> LogGuard {
-    let dir = crate::paths::recur_code_logs_root();
+    let dir = crate::paths::rc_logs_root();
     let (reload, guard) = build_subscriber(LogLevel::default(), Some(&dir), prefix);
     LogHub::install(reload);
     // Under the `paths` target: the logging stack's own target is switched
     // off (`TARGET_BACKSTOPS`), and this is about where the files are.
     if let Some(dir) = crate::logging::panic_hook::log_file_dir() {
-        tracing::info!(target: "recur_code_lib::paths", "[paths] logs go to {}", dir.display());
+        tracing::info!(target: "rc_lib::paths", "[paths] logs go to {}", dir.display());
     }
     LogGuard { _guard: guard }
 }
@@ -658,7 +658,7 @@ mod tests {
             level: LogLevel::Info,
             targets: vec![
                 TargetDirective {
-                    target: "recur_code_lib::acp".into(),
+                    target: "rc_lib::acp".into(),
                     level: LogLevel::Debug,
                 },
                 // Whitespace-only target is skipped, not emitted as a bare "=trace".
@@ -667,22 +667,22 @@ mod tests {
                     level: LogLevel::Trace,
                 },
                 TargetDirective {
-                    target: "recur_code_lib::web".into(),
+                    target: "rc_lib::web".into(),
                     level: LogLevel::Warn,
                 },
             ],
         };
         let rendered = build_env_filter(&settings).to_string();
         assert!(
-            rendered.contains("recur_code_lib::acp=debug"),
+            rendered.contains("rc_lib::acp=debug"),
             "missing acp override: {rendered}"
         );
         assert!(
-            rendered.contains("recur_code_lib::web=warn"),
+            rendered.contains("rc_lib::web=warn"),
             "missing web override: {rendered}"
         );
         assert!(
-            rendered.contains("recur_code_lib::logging=off"),
+            rendered.contains("rc_lib::logging=off"),
             "missing backstop: {rendered}"
         );
         assert!(
@@ -701,21 +701,21 @@ mod tests {
                     level: LogLevel::Trace,
                 },
                 TargetDirective {
-                    target: "recur_code_lib::logging".into(), // backstop override attempt → dropped
+                    target: "rc_lib::logging".into(), // backstop override attempt → dropped
                     level: LogLevel::Trace,
                 },
                 TargetDirective {
-                    target: "recur_code_lib::acp".into(),
+                    target: "rc_lib::acp".into(),
                     level: LogLevel::Debug,
                 },
             ],
         };
         let rendered = build_env_filter(&settings).to_string();
-        assert!(rendered.contains("recur_code_lib::acp=debug"), "{rendered}");
+        assert!(rendered.contains("rc_lib::acp=debug"), "{rendered}");
         assert!(!rendered.contains("bad-target"), "{rendered}");
         // The logging module stays off; the override attempt is dropped.
-        assert!(rendered.contains("recur_code_lib::logging=off"), "{rendered}");
-        assert!(!rendered.contains("recur_code_lib::logging=trace"), "{rendered}");
+        assert!(rendered.contains("rc_lib::logging=off"), "{rendered}");
+        assert!(!rendered.contains("rc_lib::logging=trace"), "{rendered}");
     }
 
     #[test]
@@ -740,7 +740,7 @@ mod tests {
             "tungstenite=info",
             // Every SQL statement at INFO if a ConnectOptions forgets to opt out.
             "sqlx::query=warn",
-            "recur_code_lib::logging=off",
+            "rc_lib::logging=off",
         ] {
             assert!(rendered.contains(pin), "missing backstop {pin}: {rendered}");
         }
@@ -870,10 +870,10 @@ mod tests {
             crate::logging::panic_hook::PANIC_TARGET
         ));
         for other in [
-            "recur_code_lib::acp::connection",
-            "recur_code_lib::panic_hook",
-            "recur_code_lib::panicky",
-            "recur_code_lib",
+            "rc_lib::acp::connection",
+            "rc_lib::panic_hook",
+            "rc_lib::panicky",
+            "rc_lib",
             "panic",
         ] {
             assert!(
@@ -915,7 +915,7 @@ mod tests {
         tracing::subscriber::with_default(subscriber, || {
             tracing::trace!(target: "tungstenite::handshake::client", "Request: bearer s3cret");
             tracing::trace!(target: "tungstenite::protocol", "frame");
-            tracing::trace!(target: "recur_code_lib::acp", "unrelated");
+            tracing::trace!(target: "rc_lib::acp", "unrelated");
         });
 
         let seen = seen.lock().unwrap();
@@ -928,7 +928,7 @@ mod tests {
             "frame tracing must still arrive: {seen:?}"
         );
         assert!(
-            seen.iter().any(|t| t == "recur_code_lib::acp"),
+            seen.iter().any(|t| t == "rc_lib::acp"),
             "unrelated targets must still arrive: {seen:?}"
         );
     }
@@ -977,7 +977,7 @@ mod tests {
 
         tracing::subscriber::with_default(subscriber, || {
             tracing::error!(target: crate::logging::panic_hook::PANIC_TARGET, "panic in thread …");
-            tracing::info!(target: "recur_code_lib::acp", "ordinary event");
+            tracing::info!(target: "rc_lib::acp", "ordinary event");
         });
 
         let seen = seen.lock().unwrap();
@@ -995,7 +995,7 @@ mod tests {
         );
         assert_eq!(
             seen.iter()
-                .filter(|(_, target)| target == "recur_code_lib::acp")
+                .filter(|(_, target)| target == "rc_lib::acp")
                 .count(),
             2,
             "an ordinary event still reaches both sinks: {seen:?}"
@@ -1010,7 +1010,7 @@ mod tests {
         assert_eq!(
             env_override_directives("debug"),
             "debug,kill_tree=warn,agent_client_protocol=warn,tungstenite=debug,\
-             tungstenite::handshake::client=debug,sqlx::query=warn,recur_code_lib::logging=off"
+             tungstenite::handshake::client=debug,sqlx::query=warn,rc_lib::logging=off"
         );
         // And the parsed filter still carries the clamps under a global debug.
         let rendered = EnvFilter::builder()
@@ -1059,7 +1059,7 @@ mod tests {
         assert_eq!(
             env_override_directives("OFF"),
             "OFF,kill_tree=off,agent_client_protocol=off,tungstenite=off,\
-             tungstenite::handshake::client=off,sqlx::query=off,recur_code_lib::logging=off",
+             tungstenite::handshake::client=off,sqlx::query=off,rc_lib::logging=off",
             "a bare off override collapses the ceilings, case-insensitively"
         );
     }
@@ -1077,7 +1077,7 @@ mod tests {
         assert_eq!(
             env_override_directives("agent_client_protocol=off"),
             "agent_client_protocol=off,kill_tree=off,agent_client_protocol=off,tungstenite=off,\
-             tungstenite::handshake::client=off,sqlx::query=off,recur_code_lib::logging=off"
+             tungstenite::handshake::client=off,sqlx::query=off,rc_lib::logging=off"
         );
         // ...but the same target asking for MORE is still refused: that is the
         // firehose this whole clamp exists to keep shut.
@@ -1087,16 +1087,16 @@ mod tests {
         );
         // A compound expression's bare level is the ceiling for targets it
         // doesn't name.
-        let compound = env_override_directives("off,recur_code_lib::acp=trace");
+        let compound = env_override_directives("off,rc_lib::acp=trace");
         assert!(compound.contains("agent_client_protocol=off"), "{compound}");
         assert!(!compound.contains("agent_client_protocol=warn"), "{compound}");
-        let error_compound = env_override_directives("error,recur_code_lib::acp=info");
+        let error_compound = env_override_directives("error,rc_lib::acp=info");
         assert!(error_compound.contains("agent_client_protocol=error"), "{error_compound}");
         assert!(!error_compound.contains("agent_client_protocol=warn"), "{error_compound}");
         // No bare level at all: EnvFilter leaves unmatched targets disabled, so a
         // ceiling of `off` is the honest answer — emitting `warn` here would turn
         // agent_client_protocol ON in an expression that never asked for it.
-        let targeted = env_override_directives("recur_code_lib::acp=info");
+        let targeted = env_override_directives("rc_lib::acp=info");
         assert!(targeted.contains("agent_client_protocol=off"), "{targeted}");
         assert!(!targeted.contains("agent_client_protocol=warn"), "{targeted}");
     }
@@ -1299,8 +1299,8 @@ mod tests {
 
     #[test]
     fn is_valid_target_grammar() {
-        assert!(is_valid_target("recur_code_lib::acp"));
-        assert!(is_valid_target("recur_code_lib::acp::delegation"));
+        assert!(is_valid_target("rc_lib::acp"));
+        assert!(is_valid_target("rc_lib::acp::delegation"));
         assert!(is_valid_target("a"));
         assert!(!is_valid_target(""));
         assert!(!is_valid_target("bad-target"));
@@ -1308,8 +1308,8 @@ mod tests {
         assert!(!is_valid_target("trailing::"));
         assert!(!is_valid_target("a:::b"));
         assert!(!is_valid_target("has space"));
-        assert!(!is_valid_target("recur_code_lib::logging"));
-        assert!(!is_valid_target("recur_code_lib::logging::hub"));
+        assert!(!is_valid_target("rc_lib::logging"));
+        assert!(!is_valid_target("rc_lib::logging::hub"));
     }
 
     #[test]

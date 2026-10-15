@@ -27,8 +27,8 @@
 
 use std::path::PathBuf;
 
-use recur_code_lib::models::{ContentBlock, TurnRole};
-use recur_code_lib::parsers::{antigravity::AntigravityParser, AgentParser};
+use rc_lib::models::{ContentBlock, TurnRole};
+use rc_lib::parsers::{antigravity::AntigravityParser, AgentParser};
 
 fn fixture_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

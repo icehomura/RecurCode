@@ -50,7 +50,7 @@ fn features_tauri_build_is_given() -> Vec<String> {
 }
 
 #[test]
-fn only_recur_code_is_a_binary_target_tauri_build_bundles() {
+fn only_rc_is_a_binary_target_tauri_build_bundles() {
     let manifest: toml::Table = std::fs::read_to_string(root().join("Cargo.toml"))
         .unwrap()
         .parse()

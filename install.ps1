@@ -47,7 +47,7 @@ if (Test-Path -LiteralPath (Join-Path $InstallDir "RecurCode.exe") -PathType Lea
 # Names of binaries this installer manages. rc-server is the user-facing
 # entry point; rc-mcp is the stdio MCP companion that the server's ACP
 # layer spawns per session for delegation. Both must live in the same
-# directory — `locate_recur_code_mcp_binary()` in src-tauri/src/acp/connection.rs
+# directory — `locate_rc_mcp_binary()` in src-tauri/src/acp/connection.rs
 # resolves the companion as a sibling of the running server executable.
 $ManagedBins = @("rc-server", "rc-mcp")
 
@@ -468,7 +468,7 @@ Write-Host "rc-mcp    installed to $InstallDir\rc-mcp.exe"
 Write-Host "Version: $InstalledVer"
 
 # Final smoke: rc-mcp.exe must exist next to rc-server.exe so the
-# runtime's `locate_recur_code_mcp_binary()` exe-sibling lookup hits. A failure
+# runtime's `locate_rc_mcp_binary()` exe-sibling lookup hits. A failure
 # here means the zip was malformed or a previous Copy-Item was silently
 # blocked — surface it loudly rather than ship a half-broken install.
 $McpPath = Join-Path $InstallDir "rc-mcp.exe"

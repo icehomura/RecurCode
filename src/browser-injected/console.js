@@ -37,7 +37,7 @@
   "use strict"
   var console = globalThis.console
   if (!console || typeof console.log !== "function") return
-  var mark = "__recur_codeConsoleShim"
+  var mark = "__rcConsoleShim"
   if (console[mark]) return
   try {
     Object.defineProperty(console, mark, { value: true })

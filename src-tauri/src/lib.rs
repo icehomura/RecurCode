@@ -691,7 +691,7 @@ mod tauri_app {
 
                 // Unify the data root across every consumer:
                 //   * SQLite database (initialised below)
-                //   * `paths::recur_code_uploads_root` / `recur_code_pets_root`
+                //   * `paths::rc_uploads_root` / `rc_pets_root`
                 //   * `AppState.data_dir` and every desktop command
                 //     that injects a git credential helper / askpass
                 //     into a subprocess (terminal, ACP, folder ops)
@@ -731,7 +731,7 @@ mod tauri_app {
                 }
 
                 // `RC_HOME` overrides `RC_DATA_DIR` inside
-                // `paths::recur_code_uploads_root` / `recur_code_pets_root` for
+                // `paths::rc_uploads_root` / `rc_pets_root` for
                 // backwards-compatibility with the legacy `~/.recurcode/`
                 // layout. If both are set and point at different roots,
                 // uploads/pets land on `RC_HOME` while the database
@@ -1294,7 +1294,7 @@ mod tauri_app {
 
                 // Automation engine: drives manual + scheduled fires, settles
                 // runs off the event bus, reconciles, and recovers on boot. One
-                // per process; mirrored in `bin/recur_code_server.rs`.
+                // per process; mirrored in `bin/rc_server.rs`.
                 if let Some(engine) = crate::automation::build_engine(
                     crate::db::AppDatabase {
                         conn: app.state::<crate::db::AppDatabase>().conn.clone(),
@@ -1311,7 +1311,7 @@ mod tauri_app {
 
                 // Work-task engine: drives the todo→…→done pipeline, settles
                 // runs off the event bus, recovers merges from git truth on
-                // boot. One per process; mirrored in `bin/recur_code_server.rs`.
+                // boot. One per process; mirrored in `bin/rc_server.rs`.
                 if let Some(engine) = crate::work_task::build_task_engine(
                     crate::db::AppDatabase {
                         conn: app.state::<crate::db::AppDatabase>().conn.clone(),
@@ -1909,9 +1909,9 @@ mod tauri_app {
                 logging_commands::open_logs_dir,
                 delegation_commands::get_delegation_settings,
                 delegation_commands::set_delegation_settings,
-                crate::commands::mcp_service::get_recur_code_mcp_service_status,
-                crate::commands::mcp_service::start_recur_code_mcp_service,
-                crate::commands::mcp_service::set_recur_code_mcp_tool_group,
+                crate::commands::mcp_service::get_rc_mcp_service_status,
+                crate::commands::mcp_service::start_rc_mcp_service,
+                crate::commands::mcp_service::set_rc_mcp_tool_group,
                 feedback_commands::get_feedback_settings,
                 feedback_commands::set_feedback_settings,
                 feedback_commands::submit_session_feedback,

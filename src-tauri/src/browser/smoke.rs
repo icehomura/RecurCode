@@ -572,7 +572,7 @@ async fn execute(app: &AppHandle, cmd: &Value) -> Result<Value, String> {
             // someone answers it, so there is no later turn to drive it from.
             // The driver waits for the picker to appear, then dispatches an
             // untrusted event, which the picker takes only because
-            // `__recur_codeAcceptUntrusted` is set here, in a world no page script
+            // `__rcAcceptUntrusted` is set here, in a world no page script
             // can reach.
             let driver = match (
                 cmd.get("click").and_then(Value::as_str),
@@ -592,10 +592,10 @@ async fn execute(app: &AppHandle, cmd: &Value) -> Result<Value, String> {
             if let Some(driver) = driver {
                 let surface = registry.surface(&tab_id).ok_or("no such tab")?;
                 let arm = format!(
-                    "(function(){{ globalThis.__recur_codeAcceptUntrusted = true; var n = 0; \
+                    "(function(){{ globalThis.__rcAcceptUntrusted = true; var n = 0; \
                      var t = setInterval(function(){{ n += 1; \
                        if (n > 100) {{ clearInterval(t); return }} \
-                       if (!globalThis.__recur_codePicker) return; \
+                       if (!globalThis.__rcPicker) return; \
                        clearInterval(t); try {{ {driver} }} catch (e) {{ void e }} }}, 50); \
                      return 'armed' }})()"
                 );

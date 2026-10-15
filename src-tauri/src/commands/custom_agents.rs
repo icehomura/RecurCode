@@ -141,7 +141,7 @@ pub async fn acp_delete_custom_agent_core(
     // transcripts is what actually loses history, so it is opt-in.
     if delete_transcripts {
         if let Err(e) = crate::acp_transcript::remove_agent_transcripts_in(
-            &crate::paths::recur_code_acp_transcripts_root(),
+            &crate::paths::rc_acp_transcripts_root(),
             &registry_id,
         ) {
             tracing::warn!("[custom-agent] failed to remove transcripts for {registry_id}: {e}");

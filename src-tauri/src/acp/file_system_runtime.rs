@@ -1603,8 +1603,8 @@ mod tests {
     /// leaving the one it does use unwritable. The `default_rel` branch already
     /// went through `child_home_dir`; this makes the override branch agree.
     #[test]
-    fn tilde_expands_against_the_childs_home_not_recur_codes() {
-        let recur_code_home = dirs::home_dir().expect("home dir");
+    fn tilde_expands_against_the_childs_home_not_rcs() {
+        let rc_home = dirs::home_dir().expect("home dir");
         // Platform-native: `child_home_dir` refuses a relative home, and a
         // unix-style `/srv/agy` is NOT absolute on Windows (no drive prefix),
         // so a shared literal would make this pass on unix and fail in the
@@ -1621,7 +1621,7 @@ mod tests {
             "the child's own home must anchor the expansion, got {roots:?}"
         );
         assert!(
-            !roots.contains(&recur_code_home.join("profile")),
+            !roots.contains(&rc_home.join("profile")),
             "RecurCode's home must not: {roots:?}"
         );
     }
@@ -1936,7 +1936,7 @@ mod tests {
     #[cfg(not(windows))]
     #[test]
     fn home_relative_defaults_follow_the_childs_home() {
-        let recur_code_home = dirs::home_dir().expect("home dir");
+        let rc_home = dirs::home_dir().expect("home dir");
         let isolated = PathBuf::from("/tmp/rc-isolated-home");
         let runtime_env =
             BTreeMap::from([("HOME".to_string(), isolated.to_string_lossy().to_string())]);
@@ -1953,9 +1953,9 @@ mod tests {
                 isolated.join(rel).display()
             );
             assert!(
-                !roots.contains(&recur_code_home.join(rel)),
+                !roots.contains(&rc_home.join(rel)),
                 "{agent_type:?}: inactive {} must not stay writable, got {roots:?}",
-                recur_code_home.join(rel).display()
+                rc_home.join(rel).display()
             );
         }
     }
@@ -1991,7 +1991,7 @@ mod tests {
     #[test]
     fn removed_child_home_refuses_the_slot() {
         let runtime_env = BTreeMap::from([("HOME".to_string(), String::new())]);
-        let recur_code_home = dirs::home_dir().expect("home dir");
+        let rc_home = dirs::home_dir().expect("home dir");
 
         for agent_type in ALL_AGENT_TYPES {
             if agent_relocated_by_process_env(agent_type) {
@@ -2003,7 +2003,7 @@ mod tests {
                 roots.is_empty(),
                 "{agent_type:?}: a removed HOME must yield no root (never RecurCode's \
                  {}), got {roots:?}",
-                recur_code_home.display()
+                rc_home.display()
             );
         }
     }

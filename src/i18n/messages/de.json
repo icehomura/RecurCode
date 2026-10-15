@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "Nicht aktiviert",
-      "linked_to_recur_code": "Aktiviert",
+      "linked_to_rc": "Aktiviert",
       "linked_elsewhere": "Blockiert — ein anderer Link existiert",
       "blocked_by_real_directory": "Blockiert — ein benutzerdefinierter Skill belegt diesen Namen",
       "broken": "Defekter Link"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "Nicht aktiviert",
-      "linked_to_recur_code": "Aktiviert",
+      "linked_to_rc": "Aktiviert",
       "linked_elsewhere": "Blockiert — ein anderer Link existiert",
       "blocked_by_real_directory": "Blockiert — ein benutzerdefinierter Skill belegt diesen Namen",
       "broken": "Defekter Link"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "Nicht aktiviert",
-      "linked_to_recur_code": "Aktiviert",
+      "linked_to_rc": "Aktiviert",
       "linked_elsewhere": "Blockiert — ein anderer Link existiert",
       "blocked_by_real_directory": "Blockiert — ein benutzerdefinierter Skill belegt diesen Namen",
       "broken": "Defekter Link"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "Nicht aktiviert",
-      "linked_to_recur_code": "Aktiviert",
+      "linked_to_rc": "Aktiviert",
       "linked_elsewhere": "Blockiert — ein anderer Link existiert",
       "blocked_by_real_directory": "Blockiert — ein benutzerdefinierter Skill belegt diesen Namen",
       "broken": "Defekter Link"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "Die Datei ist groß; die neuesten {size} wurden heruntergeladen. Die vollständige Datei befindet sich im Log-Verzeichnis.",
     "captureEnvLocked": "Die Protokollebene wird durch die Umgebungsvariable RUST_LOG / RC_LOG gesteuert; ändere sie dort, damit es wirksam wird.",
     "targetsTitle": "Modulspezifische Überschreibungen",
-    "targetsDescription": "Lege für bestimmte Module (z. B. recur_code_lib::acp) eine andere Stufe fest, ohne die globale Stufe zu ändern.",
+    "targetsDescription": "Lege für bestimmte Module (z. B. rc_lib::acp) eine andere Stufe fest, ohne die globale Stufe zu ändern.",
     "targetsAdd": "Hinzufügen",
     "targetsRemove": "Überschreibung entfernen",
     "toggleDetails": "Details umschalten"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "Benutzerdefinierte Skills nach Name, ID oder Beschreibung suchen",
     "states": {
       "not_linked": "Nicht aktiviert",
-      "linked_to_recur_code": "Aktiviert",
+      "linked_to_rc": "Aktiviert",
       "linked_elsewhere": "Anderweitig verknüpft",
       "blocked_by_real_directory": "Durch echten Ordner blockiert",
       "broken": "Defekter Link"

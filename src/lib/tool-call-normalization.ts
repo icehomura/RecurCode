@@ -125,7 +125,7 @@ const EXACT_TOOL_NAME_ALIASES: Record<string, string> = {
   delegate_to_agent: "delegate_to_agent",
   "mcp__rc-mcp__delegate_to_agent": "delegate_to_agent",
   "mcp__rc-delegate__delegate_to_agent": "delegate_to_agent",
-  mcp__recur_code__delegate_to_agent: "delegate_to_agent",
+  mcp__rc__delegate_to_agent: "delegate_to_agent",
   get_delegation_status: "get_delegation_status",
   cancel_delegation: "cancel_delegation",
   resume_delegation: "resume_delegation",
@@ -141,10 +141,10 @@ const EXACT_TOOL_NAME_ALIASES: Record<string, string> = {
   create_work_task: "create_work_task",
   // rc-mcp live-feedback poll (server prefix varies by host; the suffix rule
   // in `normalizeToolName` covers the other separators). Codex persists it under
-  // the bare `check_user_feedback` name, dropping the `mcp__recur_code_mcp` namespace.
+  // the bare `check_user_feedback` name, dropping the `mcp__rc_mcp` namespace.
   check_user_feedback: "check_user_feedback",
   "mcp__rc-mcp__check_user_feedback": "check_user_feedback",
-  mcp__recur_code__check_user_feedback: "check_user_feedback",
+  mcp__rc__check_user_feedback: "check_user_feedback",
   // OpenCode
   delegate_task: "task",
   call_omo_agent: "agent",

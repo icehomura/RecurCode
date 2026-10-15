@@ -5,7 +5,7 @@
 // rules, multi-tenant prefixing, etc.) doesn't have to be remembered at every
 // call site.
 
-const TOKEN_KEY = "recur_code_token"
+const TOKEN_KEY = "rc_token"
 
 export function getRecurCodeToken(): string {
   return localStorage.getItem(TOKEN_KEY) ?? ""

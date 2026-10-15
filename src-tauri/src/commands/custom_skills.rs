@@ -1110,7 +1110,7 @@ mod tests {
     /// once its marker is there; until then a `ui-render` is the user's.
     #[cfg(unix)]
     #[tokio::test]
-    async fn fs_ui_render_stays_custom_until_recur_code_marks_it() {
+    async fn fs_ui_render_stays_custom_until_rc_marks_it() {
         with_temp_home(|| async {
             let id = crate::commands::generative_ui::SKILL_ID;
             let content = "---\nname: ui-render\n---\nmine\n";

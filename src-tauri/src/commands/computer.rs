@@ -142,7 +142,7 @@ impl RecurCodeTccStatus {
 }
 
 #[cfg(target_os = "macos")]
-fn recur_code_tcc() -> Option<RecurCodeTccStatus> {
+fn rc_tcc() -> Option<RecurCodeTccStatus> {
     use crate::computer::tcc;
     let me = std::process::id();
     Some(RecurCodeTccStatus {
@@ -153,7 +153,7 @@ fn recur_code_tcc() -> Option<RecurCodeTccStatus> {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn recur_code_tcc() -> Option<RecurCodeTccStatus> {
+fn rc_tcc() -> Option<RecurCodeTccStatus> {
     None
 }
 
@@ -2400,7 +2400,7 @@ pub async fn computer_status_core(
         verified_platform: false,
         backend: service.backend.status().await,
         permissions,
-        RecurCode: recur_code_tcc(),
+        RecurCode: rc_tcc(),
         shared: service.targets.shared(),
         screen_offered: cfg!(any(target_os = "macos", windows)) && config.screen_enabled,
     })
@@ -2871,7 +2871,7 @@ mod tests {
     /// its agents; a development build under a terminal reports the
     /// terminal's grants, which the agents already have.
     #[test]
-    fn only_a_self_responsible_recur_code_leaks() {
+    fn only_a_self_responsible_rc_leaks() {
         let status = |a, s, own| RecurCodeTccStatus {
             accessibility: a,
             screen_recording: s,

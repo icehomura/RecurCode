@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 COPY dist/${TARGETARCH}/rc-server /usr/local/bin/rc-server
 # rc-mcp is the stdio MCP companion the runtime injects per session
 # (see acp/delegation/companion.rs). It must ship next to rc-server so
-# `locate_recur_code_mcp_binary()` finds it via the exe-sibling lookup.
+# `locate_rc_mcp_binary()` finds it via the exe-sibling lookup.
 COPY dist/${TARGETARCH}/rc-mcp /usr/local/bin/rc-mcp
 COPY dist/web /app/web
 

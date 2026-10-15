@@ -22,7 +22,7 @@
 //! schema so only agents enabled in settings are advertised.
 //! Everything heavyweight — JSON-RPC dispatch, UDS round-trip, MCP tool
 //! schema, cancellation tracking — lives in
-//! `recur_code_lib::acp::delegation::{companion, transport}` so it's
+//! `rc_lib::acp::delegation::{companion, transport}` so it's
 //! unit-testable without spawning a process.
 //!
 //! Stdin lines are dispatched concurrently: synchronous methods
@@ -36,11 +36,11 @@ use std::io::Write;
 use std::process::ExitCode;
 use std::sync::Arc;
 
-use recur_code_lib::acp::delegation::companion::{
+use rc_lib::acp::delegation::companion::{
     dispatch_line, drain_and_cancel_all, CompanionContext, CompanionFeatures, InflightCalls,
     JsonRpcResponse, LineAction, SpawnResult,
 };
-use recur_code_lib::acp::delegation::parent_watcher::{wait_for_parent_exit, DEFAULT_POLL_INTERVAL};
+use rc_lib::acp::delegation::parent_watcher::{wait_for_parent_exit, DEFAULT_POLL_INTERVAL};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Stdout};
 use tokio::sync::Mutex;
 
@@ -181,7 +181,7 @@ async fn write_response(
 async fn main() -> ExitCode {
     // Stderr-only subscriber: stdout is the JSON-RPC protocol channel, and
     // concurrent mcp processes share no log file. No hub/buffer/emitter.
-    let _log_guard = recur_code_lib::logging::init::init_mcp();
+    let _log_guard = rc_lib::logging::init::init_mcp();
 
     let args = match parse_args() {
         Ok(a) => a,

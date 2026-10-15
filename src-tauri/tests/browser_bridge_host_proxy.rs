@@ -11,7 +11,7 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::Response;
 use axum::routing::get;
 use axum::Router;
-use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
+use rc_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
 
 /// The hostname the proxy in front publishes RecurCode at.
 const PUBLIC: &str = "RecurCode.test";
@@ -49,7 +49,7 @@ async fn spawn_upstream() -> u16 {
     port
 }
 
-async fn spawn_recur_code() -> u16 {
+async fn spawn_rc() -> u16 {
     let app = Router::new()
         .fallback(|| async { "RecurCode's own page" })
         .layer(axum::middleware::from_fn(browser_bridge::route_by_host));
@@ -81,7 +81,7 @@ fn cookie_for(grant: &BridgeGrant) -> String {
 async fn the_proxys_forwarded_host_routes_and_a_pages_cannot_escape() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-proxy", None).await.unwrap();
     // Behind a declared proxy the public hostname is what a target is named
     // after, whether or not the request carried a name of its own.

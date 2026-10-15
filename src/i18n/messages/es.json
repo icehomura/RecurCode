@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "No habilitado",
-      "linked_to_recur_code": "Habilitado",
+      "linked_to_rc": "Habilitado",
       "linked_elsewhere": "Bloqueado — existe otro vínculo",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Vínculo roto"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "No habilitado",
-      "linked_to_recur_code": "Habilitado",
+      "linked_to_rc": "Habilitado",
       "linked_elsewhere": "Bloqueado — existe otro vínculo",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Vínculo roto"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "No activado",
-      "linked_to_recur_code": "Activado",
+      "linked_to_rc": "Activado",
       "linked_elsewhere": "Bloqueado — existe otro enlace",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Enlace roto"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "No habilitado",
-      "linked_to_recur_code": "Habilitado",
+      "linked_to_rc": "Habilitado",
       "linked_elsewhere": "Bloqueado — existe otro vínculo",
       "blocked_by_real_directory": "Bloqueado — una habilidad personalizada ocupa este nombre",
       "broken": "Vínculo roto"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "El archivo es grande; se descargaron los {size} más recientes. El archivo completo está en el directorio de registros.",
     "captureEnvLocked": "El nivel de registro está controlado por la variable de entorno RUST_LOG / RC_LOG; cámbialo ahí para que surta efecto.",
     "targetsTitle": "Anulaciones por módulo",
-    "targetsDescription": "Establece un nivel distinto para módulos específicos (p. ej. recur_code_lib::acp) sin cambiar el nivel global.",
+    "targetsDescription": "Establece un nivel distinto para módulos específicos (p. ej. rc_lib::acp) sin cambiar el nivel global.",
     "targetsAdd": "Añadir",
     "targetsRemove": "Quitar anulación",
     "toggleDetails": "Mostrar detalles"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "Buscar habilidades personalizadas por nombre, ID o descripción",
     "states": {
       "not_linked": "No habilitada",
-      "linked_to_recur_code": "Habilitada",
+      "linked_to_rc": "Habilitada",
       "linked_elsewhere": "Vinculada en otro lugar",
       "blocked_by_real_directory": "Bloqueada por una carpeta real",
       "broken": "Enlace roto"

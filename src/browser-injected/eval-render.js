@@ -20,7 +20,7 @@
 // The names below are called by the wrapper the host appends after this file.
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-var __recur_codeEvalClip = function (text, limit) {
+var __rcEvalClip = function (text, limit) {
   if (typeof text !== "string") text = String(text)
   if (text.length <= limit) return [text, false]
   var end = limit
@@ -30,8 +30,8 @@ var __recur_codeEvalClip = function (text, limit) {
   if (last >= 0xd800 && last <= 0xdbff) end -= 1
   return [text.slice(0, end), true]
 }
-var __recur_codeEvalEnvelope = function (kind, text) {
-  var clipped = __recur_codeEvalClip(text, 4000)
+var __rcEvalEnvelope = function (kind, text) {
+  var clipped = __rcEvalClip(text, 4000)
   return JSON.stringify({
     ok: true,
     kind: kind,
@@ -39,7 +39,7 @@ var __recur_codeEvalEnvelope = function (kind, text) {
     truncated: clipped[1],
   })
 }
-var __recur_codeEvalError = function (e) {
+var __rcEvalError = function (e) {
   var text
   try {
     // V8 begins a stack with the `Name: message` line; JavaScriptCore's is
@@ -72,35 +72,35 @@ var __recur_codeEvalError = function (e) {
   } catch {
     text = "the page threw something that cannot be described"
   }
-  var clipped = __recur_codeEvalClip(text, 4000)
+  var clipped = __rcEvalClip(text, 4000)
   return JSON.stringify({
     ok: false,
     error: clipped[0],
     truncated: clipped[1],
   })
 }
-var __recur_codeEvalRender = function (v) {
-  if (v === undefined) return __recur_codeEvalEnvelope("undefined", "undefined")
-  if (v === null) return __recur_codeEvalEnvelope("null", "null")
+var __rcEvalRender = function (v) {
+  if (v === undefined) return __rcEvalEnvelope("undefined", "undefined")
+  if (v === null) return __rcEvalEnvelope("null", "null")
   var kind = typeof v
-  if (kind === "string") return __recur_codeEvalEnvelope("string", v)
+  if (kind === "string") return __rcEvalEnvelope("string", v)
   if (kind === "boolean" || kind === "number" || kind === "bigint") {
-    return __recur_codeEvalEnvelope(kind, String(v))
+    return __rcEvalEnvelope(kind, String(v))
   }
-  if (kind === "symbol") return __recur_codeEvalEnvelope("symbol", String(v))
+  if (kind === "symbol") return __rcEvalEnvelope("symbol", String(v))
   if (kind === "function") {
     var name = ""
     try {
       name = String(v.name || "")
     } catch {}
-    return __recur_codeEvalEnvelope(
+    return __rcEvalEnvelope(
       "function",
       "function " + (name || "(anonymous)")
     )
   }
   try {
     if (typeof v.then === "function") {
-      return __recur_codeEvalEnvelope(
+      return __rcEvalEnvelope(
         "promise",
         "a promise. This evaluates one expression and does not wait: return the " +
           "settled state instead, or read it back with browser_eval once it has settled."
@@ -117,7 +117,7 @@ var __recur_codeEvalRender = function (v) {
           described += "." + cls.trim().split(/\s+/).slice(0, 3).join(".")
         }
       } catch {}
-      return __recur_codeEvalEnvelope("node", "<" + described + ">")
+      return __rcEvalEnvelope("node", "<" + described + ">")
     }
   } catch {}
   var text
@@ -135,5 +135,5 @@ var __recur_codeEvalRender = function (v) {
   try {
     array = Array.isArray(v)
   } catch {}
-  return __recur_codeEvalEnvelope(array ? "array" : "object", text)
+  return __rcEvalEnvelope(array ? "array" : "object", text)
 }

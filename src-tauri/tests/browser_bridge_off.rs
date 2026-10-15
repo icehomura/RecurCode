@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use axum::http::header;
 use axum::Router;
-use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant};
+use rc_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant};
 
 fn configure() {
     browser_bridge::configure(Some(BridgeConfig {

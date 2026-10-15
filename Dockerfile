@@ -16,7 +16,7 @@ WORKDIR /app/src-tauri
 COPY src-tauri/ ./
 # rc-mcp is the stdio MCP companion the runtime injects per session
 # (see acp/delegation/companion.rs). It must ship next to rc-server so
-# `locate_recur_code_mcp_binary()` finds it via the exe-sibling lookup.
+# `locate_rc_mcp_binary()` finds it via the exe-sibling lookup.
 RUN cargo build --release --bin rc-server --no-default-features --features server-bin \
  && cargo build --release --bin rc-mcp --no-default-features --features mcp-bin
 

@@ -55,7 +55,7 @@ pub enum HostToolsPolicy {
     /// OS sandbox and permission rules govern every read, write and command.
     ///
     /// It also withholds rc-mcp's `delegation` tool group (see
-    /// `inject_recur_code_mcp`). `delegate_to_agent` is a third door into the same
+    /// `inject_rc_mcp`). `delegate_to_agent` is a third door into the same
     /// room: it has RecurCode spawn a SECOND agent, in RecurCode's process tree under
     /// that agent's own policy, and relays its output back — so a sandboxed
     /// agent that cannot read `.env` itself would simply ask a sibling to read

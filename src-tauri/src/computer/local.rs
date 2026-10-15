@@ -1321,7 +1321,7 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[tokio::test]
     #[ignore = "needs a built helper and the pinned cua-driver on an internal volume"]
-    async fn recur_code_drives_a_real_helper_and_driver() {
+    async fn rc_drives_a_real_helper_and_driver() {
         let helper = std::env::var("RC_TEST_HELPER").expect("RC_TEST_HELPER");
         let driver_file = std::env::var("RC_TEST_DRIVER").expect("RC_TEST_DRIVER");
         let home = tempfile::tempdir().unwrap();
@@ -1394,7 +1394,7 @@ mod tests {
     /// from its own sources: not one from other sources, nor one too old to
     /// say.
     #[test]
-    fn a_development_recur_code_refuses_a_stale_helper() {
+    fn a_development_rc_refuses_a_stale_helper() {
         assert_eq!(stale_development_helper(Some(SOURCE_FINGERPRINT)), None);
         assert!(stale_development_helper(Some("0000000000000000")).is_some());
         assert!(stale_development_helper(None)
@@ -1467,7 +1467,7 @@ mod tests {
     /// A debug build takes the helper from `RC_COMPUTER_HELPER_BIN` when
     /// it names a file, and otherwise looks only beside the executable.
     #[test]
-    fn the_helper_is_looked_for_beside_recur_code() {
+    fn the_helper_is_looked_for_beside_rc() {
         assert!(helper_file_name().starts_with("rc-computer-helper"));
         let dir = tempfile::tempdir().unwrap();
         let fake = dir.path().join(helper_file_name());
@@ -1491,7 +1491,7 @@ mod tests {
     /// app, never one beside it in `Contents/MacOS/`; anywhere else the
     /// helper is beside RecurCode.
     #[test]
-    fn a_bundled_recur_code_on_macos_runs_the_helper_app() {
+    fn a_bundled_rc_on_macos_runs_the_helper_app() {
         let name = helper_file_name();
         let bundled = Path::new("/Applications/RecurCode.app/Contents/MacOS/RecurCode");
         assert_eq!(
@@ -1582,7 +1582,7 @@ mod tests {
     /// that carries the app, the binary target's feature gate — and they
     /// must agree with what RecurCode looks for and launches.
     #[test]
-    fn the_helper_ships_as_recur_code_looks_for_it() {
+    fn the_helper_ships_as_rc_looks_for_it() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"));
         let plist =
             std::fs::read_to_string(root.join("macos/rc-computer-helper.plist")).unwrap();

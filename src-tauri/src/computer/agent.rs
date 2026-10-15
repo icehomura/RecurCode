@@ -794,7 +794,7 @@ mod tests {
     /// case is RecurCode's only where the filesystem ignores case: on Linux it
     /// names another file.
     #[test]
-    fn recur_code_is_never_grantable_however_it_is_described() {
+    fn rc_is_never_grantable_however_it_is_described() {
         let me = SelfIdentity {
             pid: 100,
             exe: Some(PathBuf::from(
@@ -952,7 +952,7 @@ mod tests {
     /// name a blocklist could match, cannot be shared: the grant could not be
     /// held to it.
     #[test]
-    fn an_application_recur_code_cannot_identify_is_not_grantable() {
+    fn an_application_rc_cannot_identify_is_not_grantable() {
         let me = SelfIdentity::default();
         let list = Blocklist::new(&[]);
         let mut no_start = app(1, Some("com.apple.TextEdit"), None);

@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "Não ativado",
-      "linked_to_recur_code": "Ativado",
+      "linked_to_rc": "Ativado",
       "linked_elsewhere": "Bloqueado — outro vínculo existe",
       "blocked_by_real_directory": "Bloqueado — uma habilidade personalizada ocupa este nome",
       "broken": "Vínculo quebrado"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "Não ativado",
-      "linked_to_recur_code": "Ativado",
+      "linked_to_rc": "Ativado",
       "linked_elsewhere": "Bloqueado — outro vínculo existe",
       "blocked_by_real_directory": "Bloqueado — uma habilidade personalizada ocupa este nome",
       "broken": "Vínculo quebrado"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "Não ativado",
-      "linked_to_recur_code": "Ativado",
+      "linked_to_rc": "Ativado",
       "linked_elsewhere": "Bloqueado — existe outro link",
       "blocked_by_real_directory": "Bloqueado — uma habilidade personalizada ocupa este nome",
       "broken": "Link quebrado"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "Não ativado",
-      "linked_to_recur_code": "Ativado",
+      "linked_to_rc": "Ativado",
       "linked_elsewhere": "Bloqueado — outro vínculo existe",
       "blocked_by_real_directory": "Bloqueado — uma habilidade personalizada ocupa este nome",
       "broken": "Vínculo quebrado"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "O arquivo é grande; foram baixados os {size} mais recentes. O arquivo completo está no diretório de logs.",
     "captureEnvLocked": "O nível de registro é controlado pela variável de ambiente RUST_LOG / RC_LOG; altere-a lá para ter efeito.",
     "targetsTitle": "Substituições por módulo",
-    "targetsDescription": "Defina um nível diferente para módulos específicos (ex.: recur_code_lib::acp) sem alterar o nível global.",
+    "targetsDescription": "Defina um nível diferente para módulos específicos (ex.: rc_lib::acp) sem alterar o nível global.",
     "targetsAdd": "Adicionar",
     "targetsRemove": "Remover substituição",
     "toggleDetails": "Alternar detalhes"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "Pesquisar habilidades personalizadas por nome, ID ou descrição",
     "states": {
       "not_linked": "Não ativada",
-      "linked_to_recur_code": "Ativada",
+      "linked_to_rc": "Ativada",
       "linked_elsewhere": "Vinculada em outro lugar",
       "blocked_by_real_directory": "Bloqueada por uma pasta real",
       "broken": "Link quebrado"

@@ -5,7 +5,7 @@
 //! its RecurCode tools if ANY of them is missing:
 //!
 //!   1. the **companion binary** on disk — `rc-mcp`, which the agent CLI
-//!      spawns as a stdio MCP server (see `acp::connection::inject_recur_code_mcp`);
+//!      spawns as a stdio MCP server (see `acp::connection::inject_rc_mcp`);
 //!   2. the **broker socket** inside this process, which every companion
 //!      round-trips through (see `acp::delegation::service`);
 //!   3. at least one **enabled tool group** — with all of them off, injection
@@ -19,7 +19,7 @@
 //! popover can offer exactly one next step.
 //!
 //! Only #2 is startable from here — #1 needs a reinstall. #3 is a settings
-//! write, which [`set_recur_code_mcp_tool_group_core`] performs through the very
+//! write, which [`set_rc_mcp_tool_group_core`] performs through the very
 //! same `_core` setters the settings window uses.
 
 // Only the Tauri command signatures (and the tests) name `Arc` directly; the
@@ -50,7 +50,7 @@ use crate::web::event_bridge::EventEmitter;
 #[serde(rename_all = "snake_case")]
 pub enum RecurCodeMcpServiceState {
     /// The broker socket isn't answering. Companions would launch and fail to
-    /// reach RecurCode. Fixable here — see [`start_recur_code_mcp_service_core`].
+    /// reach RecurCode. Fixable here — see [`start_rc_mcp_service_core`].
     Stopped,
     /// The socket is fine but the `rc-mcp` binary isn't on disk, so nothing
     /// gets injected into an agent's MCP config. Needs a reinstall or
@@ -144,7 +144,7 @@ pub struct RecurCodeMcpStatusSources<'a> {
 
 /// Build the report. Probes the socket for real (one ping round-trip), so
 /// callers should treat this as a network-ish call, not a field read.
-pub async fn recur_code_mcp_service_status_core(
+pub async fn rc_mcp_service_status_core(
     sources: RecurCodeMcpStatusSources<'_>,
 ) -> RecurCodeMcpServiceStatus {
     let handle = service::current();
@@ -164,7 +164,7 @@ pub async fn recur_code_mcp_service_status_core(
         None => Default::default(),
     };
 
-    let binary_path = crate::acp::connection::locate_recur_code_mcp_binary()
+    let binary_path = crate::acp::connection::locate_rc_mcp_binary()
         .map(|p| p.to_string_lossy().to_string());
 
     let delegation_cfg = sources.broker.config_snapshot().await;
@@ -242,7 +242,7 @@ pub struct RecurCodeMcpToolGroupTargets<'a> {
     pub computer: &'a ComputerToolsRuntimeConfig,
 }
 
-/// Flip one tool group by the same slug [`recur_code_mcp_service_status_core`]
+/// Flip one tool group by the same slug [`rc_mcp_service_status_core`]
 /// reports.
 ///
 /// This dispatches into each feature's own settings module rather than writing
@@ -258,7 +258,7 @@ pub struct RecurCodeMcpToolGroupTargets<'a> {
 /// read-modify-write of the pair loses whichever flip lands first. `feedback`,
 /// `ask` and `sessions` each own a single-field record, so their existing
 /// writer is already narrow.
-pub async fn set_recur_code_mcp_tool_group_core(
+pub async fn set_rc_mcp_tool_group_core(
     conn: &DatabaseConnection,
     targets: RecurCodeMcpToolGroupTargets<'_>,
     emitter: &EventEmitter,
@@ -356,7 +356,7 @@ pub async fn set_recur_code_mcp_tool_group_core(
 /// Bind the broker socket if it isn't already answering. Idempotent — a click
 /// on an already-healthy service is a no-op success, not an error, because the
 /// UI's view of "stopped" can be a probe or two out of date.
-pub async fn start_recur_code_mcp_service_core() -> Result<(), AppCommandError> {
+pub async fn start_rc_mcp_service_core() -> Result<(), AppCommandError> {
     let Some(handle) = service::current() else {
         return Err(AppCommandError::configuration_invalid(
             "rc-mcp broker socket is not managed by this process",
@@ -371,10 +371,10 @@ pub async fn start_recur_code_mcp_service_core() -> Result<(), AppCommandError> 
 // -------- Tauri commands -----------------------------------------------------
 
 // Seven sources, injected positionally as Tauri managed state — see the note
-// on `set_recur_code_mcp_tool_group`.
+// on `set_rc_mcp_tool_group`.
 #[allow(clippy::too_many_arguments)]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-pub async fn get_recur_code_mcp_service_status(
+pub async fn get_rc_mcp_service_status(
     #[cfg(feature = "tauri-runtime")] broker: tauri::State<'_, Arc<DelegationBroker>>,
     #[cfg(feature = "tauri-runtime")] tokens: tauri::State<'_, Arc<TokenRegistry>>,
     #[cfg(feature = "tauri-runtime")] feedback: tauri::State<'_, FeedbackRuntimeConfig>,
@@ -386,7 +386,7 @@ pub async fn get_recur_code_mcp_service_status(
 ) -> Result<RecurCodeMcpServiceStatus, AppCommandError> {
     #[cfg(feature = "tauri-runtime")]
     {
-        Ok(recur_code_mcp_service_status_core(RecurCodeMcpStatusSources {
+        Ok(rc_mcp_service_status_core(RecurCodeMcpStatusSources {
             broker: broker.inner(),
             tokens: tokens.inner(),
             feedback: feedback.inner(),
@@ -406,8 +406,8 @@ pub async fn get_recur_code_mcp_service_status(
 }
 
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-pub async fn start_recur_code_mcp_service() -> Result<(), AppCommandError> {
-    start_recur_code_mcp_service_core().await
+pub async fn start_rc_mcp_service() -> Result<(), AppCommandError> {
+    start_rc_mcp_service_core().await
 }
 
 // Seven runtime configs plus the db, the app handle and the two payload fields.
@@ -415,7 +415,7 @@ pub async fn start_recur_code_mcp_service() -> Result<(), AppCommandError> {
 // `RecurCodeMcpToolGroupTargets` bundles them for the `_core` helper below.
 #[allow(clippy::too_many_arguments)]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-pub async fn set_recur_code_mcp_tool_group(
+pub async fn set_rc_mcp_tool_group(
     #[cfg(feature = "tauri-runtime")] app: tauri::AppHandle,
     #[cfg(feature = "tauri-runtime")] db: tauri::State<'_, crate::db::AppDatabase>,
     #[cfg(feature = "tauri-runtime")] broker: tauri::State<'_, Arc<DelegationBroker>>,
@@ -433,7 +433,7 @@ pub async fn set_recur_code_mcp_tool_group(
         // `app.emit` fans out to every window, so the settings window's own
         // switch for this group converges with the one just flipped here.
         let emitter = EventEmitter::Tauri(app);
-        set_recur_code_mcp_tool_group_core(
+        set_rc_mcp_tool_group_core(
             &db.conn,
             RecurCodeMcpToolGroupTargets {
                 broker: broker.inner(),
@@ -520,7 +520,7 @@ mod tests {
         }
 
         async fn status(&self) -> RecurCodeMcpServiceStatus {
-            recur_code_mcp_service_status_core(self.sources()).await
+            rc_mcp_service_status_core(self.sources()).await
         }
 
         async fn set_group(
@@ -529,7 +529,7 @@ mod tests {
             key: &str,
             enabled: bool,
         ) -> Result<(), AppCommandError> {
-            set_recur_code_mcp_tool_group_core(
+            set_rc_mcp_tool_group_core(
                 conn,
                 RecurCodeMcpToolGroupTargets {
                     broker: &self.broker,
@@ -558,7 +558,7 @@ mod tests {
         assert_eq!(status.state, RecurCodeMcpServiceState::Stopped);
         assert!(!status.listening);
         assert!(!status.can_start);
-        assert!(start_recur_code_mcp_service_core().await.is_err());
+        assert!(start_rc_mcp_service_core().await.is_err());
     }
 
     /// The socket verdict outranks the tool switches: turning every group on

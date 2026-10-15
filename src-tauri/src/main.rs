@@ -16,10 +16,10 @@ fn main() {
         // Subprocess mode, before the desktop logging init in `run()`: install a
         // stderr-only subscriber so helper diagnostics aren't dropped, while
         // stdout stays the git credential protocol channel.
-        let _log_guard = recur_code_lib::logging::init::init_stderr_only();
-        recur_code_lib::git_credential::run_credential_helper();
+        let _log_guard = rc_lib::logging::init::init_stderr_only();
+        rc_lib::git_credential::run_credential_helper();
         return;
     }
 
-    recur_code_lib::run()
+    rc_lib::run()
 }

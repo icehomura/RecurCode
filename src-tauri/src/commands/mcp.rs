@@ -2854,7 +2854,7 @@ fn remove_qoder_server_at(path: &Path, id: &str) -> Result<bool, AppCommandError
 // (with Hermes/Kimi/Grok/Cursor/Qoder). The server would in fact MERGE the two
 // sources by name with the wire winning, so a double-mount is not possible —
 // but defining the same server twice is still noise, and the built-in
-// `rc-mcp` companion is injected separately by `inject_recur_code_mcp`, so
+// `rc-mcp` companion is injected separately by `inject_rc_mcp`, so
 // delegation keeps working either way.
 // ---------------------------------------------------------------------------
 
@@ -3301,7 +3301,7 @@ pub fn read_servers_for_agent_type(
 // Because Kimi loads this file natively at session start, `KimiCode` is on the
 // ACP forward skip list in `connection.rs` (like Hermes) so the same user
 // servers aren't double-registered over `session/new`. The built-in `rc-mcp`
-// companion is injected separately by `inject_recur_code_mcp`, so it still reaches
+// companion is injected separately by `inject_rc_mcp`, so it still reaches
 // Kimi regardless.
 // ---------------------------------------------------------------------------
 
@@ -3632,7 +3632,7 @@ fn remove_kimi_code_server_at(path: &Path, id: &str) -> Result<bool, AppCommandE
 // Because Grok loads this file natively at session start, `Grok` is on the ACP
 // forward skip list in `connection.rs` (like Hermes/Kimi) so the same user
 // servers aren't double-registered over `session/new`. The built-in `rc-mcp`
-// companion is injected separately by `inject_recur_code_mcp`, so it still reaches
+// companion is injected separately by `inject_rc_mcp`, so it still reaches
 // Grok over the wire regardless.
 // ---------------------------------------------------------------------------
 
@@ -3961,7 +3961,7 @@ fn remove_grok_server_at(path: &Path, id: &str) -> Result<bool, AppCommandError>
 // Because Cursor loads this file natively at session start, `Cursor` is on the
 // ACP forward skip list in `connection.rs` (like Hermes/Kimi/Grok) so the same
 // user servers aren't double-registered over `session/new`. The built-in
-// `rc-mcp` companion is injected separately by `inject_recur_code_mcp`, so it
+// `rc-mcp` companion is injected separately by `inject_rc_mcp`, so it
 // still reaches Cursor over the wire regardless.
 // ---------------------------------------------------------------------------
 

@@ -13,7 +13,7 @@
 use std::fs;
 use std::path::Path;
 
-use recur_code_lib::parsers::{
+use rc_lib::parsers::{
     claude::ClaudeParser, cline::ClineParser, codex::CodexParser, gemini::GeminiParser,
     hermes::HermesParser, kimi_code::KimiCodeParser, openclaw::OpenClawParser,
     opencode::OpenCodeParser, recur::RecurParser, AgentParser,

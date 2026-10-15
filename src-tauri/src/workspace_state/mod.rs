@@ -385,7 +385,7 @@ fn canonicalize_watch_root(root: &Path) -> Result<(PathBuf, String), AppCommandE
     Ok((canonical, key))
 }
 
-fn is_recur_code_edit_temp_path(path: &Path) -> bool {
+fn is_rc_edit_temp_path(path: &Path) -> bool {
     path.file_name()
         .map(|name| {
             let name = name.to_string_lossy();
@@ -593,7 +593,7 @@ fn is_ignored_watch_path(path: &Path, root: &Path) -> bool {
         return false;
     };
 
-    if is_recur_code_edit_temp_path(relative) {
+    if is_rc_edit_temp_path(relative) {
         return true;
     }
 

@@ -96,7 +96,7 @@ function scanFixture(): ScanResult {
       {
         path: "/tmp/alpha",
         name: "alpha",
-        exists_in_recur_code: false,
+        exists_in_rc: false,
         folder_id: null,
         agent_types: ["claude_code", "codex"],
         sessions: [
@@ -108,7 +108,7 @@ function scanFixture(): ScanResult {
       {
         path: "/tmp/beta",
         name: "beta",
-        exists_in_recur_code: true,
+        exists_in_rc: true,
         folder_id: 7,
         agent_types: ["gemini"],
         sessions: [

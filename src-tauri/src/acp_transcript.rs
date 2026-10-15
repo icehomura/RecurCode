@@ -27,7 +27,7 @@
 //!
 //! ## File layout
 //!
-//! `<paths::recur_code_acp_transcripts_root()>/<registry-id>/<session-id>.jsonl`
+//! `<paths::rc_acp_transcripts_root()>/<registry-id>/<session-id>.jsonl`
 //!
 //! Line 0 is a [`TranscriptHeader`]; every later line is a [`TranscriptEntry`]:
 //!
@@ -844,7 +844,7 @@ pub fn record_header(
     agent_dir: &str,
     header: &TranscriptHeader,
 ) -> tokio::sync::oneshot::Receiver<()> {
-    record_header_in(&crate::paths::recur_code_acp_transcripts_root(), agent_dir, header)
+    record_header_in(&crate::paths::rc_acp_transcripts_root(), agent_dir, header)
 }
 
 /// Root-injectable core of [`record_header`].
@@ -867,7 +867,7 @@ pub fn record_entry(
     payload: serde_json::Value,
 ) -> tokio::sync::oneshot::Receiver<()> {
     record_entry_in(
-        &crate::paths::recur_code_acp_transcripts_root(),
+        &crate::paths::rc_acp_transcripts_root(),
         agent_dir,
         session_id,
         kind,
@@ -901,7 +901,7 @@ pub fn record_steer(
     payload: serde_json::Value,
 ) -> tokio::sync::oneshot::Receiver<()> {
     record_steer_in(
-        &crate::paths::recur_code_acp_transcripts_root(),
+        &crate::paths::rc_acp_transcripts_root(),
         agent_dir,
         session_id,
         payload,
@@ -981,7 +981,7 @@ pub fn append_line_in(root: &Path, agent_dir: &str, session_id: &str, line: &str
 /// cannot poison the rest of the history.
 pub fn read_transcript(agent_dir: &str, session_id: &str) -> Transcript {
     read_transcript_in(
-        &crate::paths::recur_code_acp_transcripts_root(),
+        &crate::paths::rc_acp_transcripts_root(),
         agent_dir,
         session_id,
     )
@@ -1101,7 +1101,7 @@ pub fn read_header_in(root: &Path, agent_dir: &str, session_id: &str) -> Option<
 /// that was redundant anyway.
 pub fn has_recorded_history(agent_dir: &str, session_id: &str) -> bool {
     has_recorded_history_in(
-        &crate::paths::recur_code_acp_transcripts_root(),
+        &crate::paths::rc_acp_transcripts_root(),
         agent_dir,
         session_id,
     )
@@ -1233,7 +1233,7 @@ pub fn continuation_ancestors_in(root: &Path, agent_dir: &str, session_id: &str)
 /// [`continuation_ancestors_in`] against the real transcripts root.
 pub fn continuation_ancestors(agent_dir: &str, session_id: &str) -> Vec<String> {
     continuation_ancestors_in(
-        &crate::paths::recur_code_acp_transcripts_root(),
+        &crate::paths::rc_acp_transcripts_root(),
         agent_dir,
         session_id,
     )

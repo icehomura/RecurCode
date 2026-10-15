@@ -135,7 +135,7 @@ pub struct InstallReport {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct Manifest {
     #[serde(default)]
-    recur_code_version: String,
+    rc_version: String,
     #[serde(default)]
     installed_at: String,
     #[serde(default)]
@@ -404,7 +404,7 @@ fn ensure_central_science_installed_blocking() -> InstallReport {
         }
     }
 
-    manifest.recur_code_version = env!("CARGO_PKG_VERSION").to_string();
+    manifest.rc_version = env!("CARGO_PKG_VERSION").to_string();
     manifest.installed_at = Utc::now().to_rfc3339();
     if let Err(e) = save_manifest(&manifest) {
         report.errors.push(format!("save manifest: {e}"));

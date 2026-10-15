@@ -1,6 +1,6 @@
 /**
  * Acting on an element an agent named in a snapshot — the other half of
- * `__recur_codeAgent`, and the reason refs exist at all.
+ * `__rcAgent`, and the reason refs exist at all.
  *
  * Everything here is JavaScript dispatching events at the element, which the
  * host reports as `synthetic` fidelity. A page cannot tell these apart from a
@@ -419,7 +419,7 @@ function obstructionAt(x: number, y: number, target: Element): Element | null {
   // A property read rather than a platform fact, but not one a page can
   // arrange: the prototype this resolves against is *this world's*, and a
   // page defining its own reaches only its own — the isolation that keeps
-  // `__recur_codeAgent` out of the page's reach, read from the other side.
+  // `__rcAgent` out of the page's reach, read from the other side.
   if (typeof document.elementFromPoint !== "function") return null
   const hit = deepElementFromPoint(x, y)
   if (!hit) return document.documentElement

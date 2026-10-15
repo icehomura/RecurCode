@@ -737,12 +737,12 @@ export interface ScanSession {
 }
 
 /** Mirrors Rust `ScanFolder`: sessions sharing a normalize-matched cwd, plus
- *  how that path reconciles against the folder table. `exists_in_recur_code: false`
+ *  how that path reconciles against the folder table. `exists_in_rc: false`
  *  with a `folder_id` means the row is soft-deleted and import will reopen it. */
 export interface ScanFolder {
   path: string
   name: string
-  exists_in_recur_code: boolean
+  exists_in_rc: boolean
   folder_id: number | null
   agent_types: AgentType[]
   sessions: ScanSession[]
@@ -3838,7 +3838,7 @@ export interface ExpertListItem {
 
 export type ExpertLinkState =
   | "not_linked"
-  | "linked_to_recur_code"
+  | "linked_to_rc"
   | "linked_elsewhere"
   | "blocked_by_real_directory"
   | "broken"
@@ -4070,7 +4070,7 @@ export interface CloseRequestPayload {
 
 export type LogLevel = "off" | "error" | "warn" | "info" | "debug" | "trace"
 
-/** A per-target level override, e.g. `recur_code_lib::acp` at `debug` while the
+/** A per-target level override, e.g. `rc_lib::acp` at `debug` while the
  * global level stays `info`. `target` is a tracing target (a Rust module path). */
 export interface TargetDirective {
   target: string

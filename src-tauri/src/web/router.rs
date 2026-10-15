@@ -66,16 +66,16 @@ pub fn build_router(
             post(handlers::delegation::set_delegation_settings),
         )
         .route(
-            "/get_recur_code_mcp_service_status",
-            post(handlers::mcp_service::get_recur_code_mcp_service_status),
+            "/get_rc_mcp_service_status",
+            post(handlers::mcp_service::get_rc_mcp_service_status),
         )
         .route(
-            "/start_recur_code_mcp_service",
-            post(handlers::mcp_service::start_recur_code_mcp_service),
+            "/start_rc_mcp_service",
+            post(handlers::mcp_service::start_rc_mcp_service),
         )
         .route(
-            "/set_recur_code_mcp_tool_group",
-            post(handlers::mcp_service::set_recur_code_mcp_tool_group),
+            "/set_rc_mcp_tool_group",
+            post(handlers::mcp_service::set_rc_mcp_tool_group),
         )
         .route(
             "/get_feedback_settings",

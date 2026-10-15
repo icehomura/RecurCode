@@ -1221,7 +1221,7 @@ impl ConnectionManager {
         // agent all see the full bytes.
         crate::acp::prompt_hydration::hydrate_prompt_blocks(
             &mut blocks,
-            &crate::paths::recur_code_uploads_root(),
+            &crate::paths::rc_uploads_root(),
         )
         .await?;
 
@@ -3176,7 +3176,7 @@ impl ConnectionManager {
             Some(mut blocks) => {
                 crate::acp::prompt_hydration::hydrate_prompt_blocks(
                     &mut blocks,
-                    &crate::paths::recur_code_uploads_root(),
+                    &crate::paths::rc_uploads_root(),
                 )
                 .await?;
                 // Hydration is the ONLY await this path puts between admission
@@ -5057,7 +5057,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn a_codex_goal_clear_interrupts_even_when_recur_code_thinks_it_is_idle() {
+    async fn a_codex_goal_clear_interrupts_even_when_rc_thinks_it_is_idle() {
         // RecurCode's `Prompting` only covers turns IT started. A goal loop's
         // continuations are started by codex — detached turns no host request
         // owns — so the session reads "connected" while the agent is very much

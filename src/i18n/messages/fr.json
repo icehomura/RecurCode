@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "Non activé",
-      "linked_to_recur_code": "Activé",
+      "linked_to_rc": "Activé",
       "linked_elsewhere": "Bloqué — un autre lien existe",
       "blocked_by_real_directory": "Bloqué — une compétence personnalisée occupe ce nom",
       "broken": "Lien cassé"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "Non activé",
-      "linked_to_recur_code": "Activé",
+      "linked_to_rc": "Activé",
       "linked_elsewhere": "Bloqué — un autre lien existe",
       "blocked_by_real_directory": "Bloqué — une compétence personnalisée occupe ce nom",
       "broken": "Lien cassé"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "Non activé",
-      "linked_to_recur_code": "Activé",
+      "linked_to_rc": "Activé",
       "linked_elsewhere": "Bloqué — un autre lien existe",
       "blocked_by_real_directory": "Bloqué — une compétence personnalisée occupe ce nom",
       "broken": "Lien cassé"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "Non activé",
-      "linked_to_recur_code": "Activé",
+      "linked_to_rc": "Activé",
       "linked_elsewhere": "Bloqué — un autre lien existe",
       "blocked_by_real_directory": "Bloqué — une compétence personnalisée occupe ce nom",
       "broken": "Lien cassé"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "Le fichier est volumineux ; les {size} les plus récents ont été téléchargés. Le fichier complet se trouve dans le répertoire des journaux.",
     "captureEnvLocked": "Le niveau de journalisation est contrôlé par la variable d'environnement RUST_LOG / RC_LOG ; modifiez-la là pour qu'elle prenne effet.",
     "targetsTitle": "Remplacements par module",
-    "targetsDescription": "Définissez un niveau différent pour des modules spécifiques (p. ex. recur_code_lib::acp) sans changer le niveau global.",
+    "targetsDescription": "Définissez un niveau différent pour des modules spécifiques (p. ex. rc_lib::acp) sans changer le niveau global.",
     "targetsAdd": "Ajouter",
     "targetsRemove": "Supprimer le remplacement",
     "toggleDetails": "Afficher les détails"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "Rechercher des compétences personnalisées par nom, ID ou description",
     "states": {
       "not_linked": "Non activée",
-      "linked_to_recur_code": "Activée",
+      "linked_to_rc": "Activée",
       "linked_elsewhere": "Liée ailleurs",
       "blocked_by_real_directory": "Bloquée par un dossier réel",
       "broken": "Lien rompu"

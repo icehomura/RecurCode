@@ -439,7 +439,7 @@ mod tests {
     }
 
     #[test]
-    fn argv_keeps_only_recur_code_urls() {
+    fn argv_keeps_only_rc_urls() {
         let argv = [
             "/Applications/RecurCode.app/Contents/MacOS/RecurCode",
             "recurcode://session/12",

@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "غير مُفعَّل",
-      "linked_to_recur_code": "مُفعَّل",
+      "linked_to_rc": "مُفعَّل",
       "linked_elsewhere": "محظور — يوجد رابط آخر",
       "blocked_by_real_directory": "محظور — مهارة مخصصة تشغل هذا الاسم",
       "broken": "رابط معطوب"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "غير مُفعَّل",
-      "linked_to_recur_code": "مُفعَّل",
+      "linked_to_rc": "مُفعَّل",
       "linked_elsewhere": "محظور — يوجد رابط آخر",
       "blocked_by_real_directory": "محظور — مهارة مخصصة تشغل هذا الاسم",
       "broken": "رابط معطوب"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "غير مفعّل",
-      "linked_to_recur_code": "مفعّل",
+      "linked_to_rc": "مفعّل",
       "linked_elsewhere": "محظور — يوجد رابط آخر",
       "blocked_by_real_directory": "محظور — مهارة مخصصة تشغل هذا الاسم",
       "broken": "رابط معطل"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "غير مُفعَّل",
-      "linked_to_recur_code": "مُفعَّل",
+      "linked_to_rc": "مُفعَّل",
       "linked_elsewhere": "محظور — يوجد رابط آخر",
       "blocked_by_real_directory": "محظور — مهارة مخصصة تشغل هذا الاسم",
       "broken": "رابط معطوب"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "الملف كبير، تم تنزيل أحدث {size}. الملف الكامل موجود في دليل السجلات.",
     "captureEnvLocked": "يتم التحكم في مستوى السجل عبر متغير البيئة RUST_LOG / RC_LOG؛ غيّره هناك ليصبح ساريًا.",
     "targetsTitle": "تجاوزات حسب الوحدة",
-    "targetsDescription": "عيّن مستوى مختلفًا لوحدات محددة (مثل recur_code_lib::acp) دون تغيير المستوى العام.",
+    "targetsDescription": "عيّن مستوى مختلفًا لوحدات محددة (مثل rc_lib::acp) دون تغيير المستوى العام.",
     "targetsAdd": "إضافة",
     "targetsRemove": "إزالة التجاوز",
     "toggleDetails": "تبديل التفاصيل"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "ابحث عن المهارات المخصّصة بالاسم أو المعرّف أو الوصف",
     "states": {
       "not_linked": "غير مُفعّلة",
-      "linked_to_recur_code": "مُفعّلة",
+      "linked_to_rc": "مُفعّلة",
       "linked_elsewhere": "مرتبطة في مكان آخر",
       "blocked_by_real_directory": "محجوبة بمجلد فعلي",
       "broken": "رابط معطوب"

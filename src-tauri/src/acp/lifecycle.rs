@@ -986,7 +986,7 @@ mod delegation_title_tests {
             None
         ));
         assert!(is_delegation_invocation(
-            "Run mcp__recur_code__delegate_to_agent",
+            "Run mcp__rc__delegate_to_agent",
             None
         ));
     }

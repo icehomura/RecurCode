@@ -12,7 +12,7 @@ export default function Page() {
       return
     }
     // Web mode: validate token before entering app
-    const token = localStorage.getItem("recur_code_token")
+    const token = localStorage.getItem("rc_token")
     if (!token) {
       router.replace("/login")
       return
@@ -33,7 +33,7 @@ export default function Page() {
         }
         if (res.status === 401) {
           // Token genuinely rejected → clear it and re-authenticate.
-          localStorage.removeItem("recur_code_token")
+          localStorage.removeItem("rc_token")
           router.replace("/login")
           return
         }

@@ -502,7 +502,7 @@ pub fn revoke_if_departed(state: &mut BrowserTabState) -> Option<AgentGrant> {
 pub const AGENT_BUNDLE: &str = include_str!("js/agent.bundle.js");
 
 /// Name the bundle publishes in the isolated world.
-pub const AGENT_GLOBAL: &str = "__recur_codeAgent";
+pub const AGENT_GLOBAL: &str = "__rcAgent";
 
 /// What a caller asks a snapshot for.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -587,7 +587,7 @@ pub fn epoch(generation: u64, nav_epoch: u64) -> String {
 /// would be an object, so it cannot be mistaken for one.
 pub const ENGINE_ABSENT: &str = "absent";
 
-/// `JSON.stringify(__recur_codeAgent.snapshot({…}))`.
+/// `JSON.stringify(__rcAgent.snapshot({…}))`.
 ///
 /// `epoch` is the host's, from [`epoch`]; `request` is the caller's. Both go
 /// in through `serde_json`, so neither can break out of the expression. An
@@ -829,7 +829,7 @@ pub fn ref_is_current(generation: &str, epoch: &str) -> bool {
     quoted_nav == nav_epoch && quoted_tab == tab_generation
 }
 
-/// `JSON.stringify(__recur_codeAgent.act(generation, ref, action))`, or
+/// `JSON.stringify(__rcAgent.act(generation, ref, action))`, or
 /// [`ENGINE_ABSENT`] when the engine is not in this document — which for an
 /// action means no snapshot was ever taken here, so whatever ref the caller
 /// holds is from another document and is stale.
@@ -847,7 +847,7 @@ pub fn act_call(request: &ActionRequest) -> String {
     )
 }
 
-/// `JSON.stringify(__recur_codeAgent.locate(generation, ref))`: where a pointer
+/// `JSON.stringify(__rcAgent.locate(generation, ref))`: where a pointer
 /// would have to land, for a platform that delivers its own.
 pub fn locate_call(generation: &str, target: &str) -> String {
     format!(
@@ -900,7 +900,7 @@ pub struct ViewportAnswer {
     pub viewport: SnapshotViewport,
 }
 
-/// `JSON.stringify(__recur_codeAgent.rectOf(generation, ref))`: the element's
+/// `JSON.stringify(__rcAgent.rectOf(generation, ref))`: the element's
 /// visible box, for a capture cropped to it. [`ENGINE_ABSENT`] when no
 /// snapshot was ever taken in this document, which makes the ref stale.
 pub fn rect_call(generation: &str, target: &str) -> String {
@@ -1335,11 +1335,11 @@ mod tests {
     #[test]
     fn the_expression_probes_before_it_calls() {
         let js = probe_and_snapshot(&SnapshotRequest { max_chars: Some(2000) }, "7.2");
-        assert!(js.starts_with("typeof globalThis.__recur_codeAgent === 'undefined'"));
+        assert!(js.starts_with("typeof globalThis.__rcAgent === 'undefined'"));
         assert!(js.contains(r#""absent""#));
         assert!(js.contains(r#""epoch":"7.2""#));
         assert!(js.contains(r#""maxChars":2000"#));
-        assert!(js.contains("JSON.stringify(globalThis.__recur_codeAgent.snapshot("));
+        assert!(js.contains("JSON.stringify(globalThis.__rcAgent.snapshot("));
     }
 
     /// No cap is no cap: the option is absent rather than zero, which the
@@ -1361,7 +1361,7 @@ mod tests {
         let js = install_and_snapshot(&SnapshotRequest::default(), "1.0");
         assert!(js.starts_with("(function(){\n"));
         assert!(js.ends_with(";})()"), "must be an immediately invoked expression");
-        assert!(js.contains(";return JSON.stringify(globalThis.__recur_codeAgent.snapshot("));
+        assert!(js.contains(";return JSON.stringify(globalThis.__rcAgent.snapshot("));
         // The bundle goes in whole, and it is a program: statements at the
         // top, no trailing expression of its own to be confused with ours.
         assert!(js.contains(AGENT_BUNDLE));
@@ -1413,7 +1413,7 @@ mod tests {
             },
         };
         let call = act_call(&request);
-        assert!(call.starts_with("typeof globalThis.__recur_codeAgent === 'undefined' ? \"absent\" :"));
+        assert!(call.starts_with("typeof globalThis.__rcAgent === 'undefined' ? \"absent\" :"));
         assert!(call.contains(".act(\"k9x2.3.1\", \"e7\", {"));
         assert!(call.contains("\"kind\":\"type\""));
         assert!(call.contains("\"submit\":true"));
@@ -1429,7 +1429,7 @@ mod tests {
 
         let locate = locate_call("g", "e1");
         assert!(locate.contains(".locate(\"g\", \"e1\"))"));
-        assert!(locate.starts_with("typeof globalThis.__recur_codeAgent === 'undefined'"));
+        assert!(locate.starts_with("typeof globalThis.__rcAgent === 'undefined'"));
     }
 
     /// The wire shapes both sides agree on: kebab-case kinds and errors, the

@@ -35,7 +35,7 @@ fn fingerprint_helper_sources() {
     }
 
     let mut files = Vec::new();
-    for source in ["src/computer", "src/bin/recur_code_computer_helper.rs"] {
+    for source in ["src/computer", "src/bin/rc_computer_helper.rs"] {
         println!("cargo:rerun-if-changed={source}");
         collect(Path::new(source), &mut files);
     }

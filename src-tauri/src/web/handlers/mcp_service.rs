@@ -13,15 +13,15 @@ use serde::Deserialize;
 use crate::app_error::AppCommandError;
 use crate::app_state::AppState;
 use crate::commands::mcp_service::{
-    recur_code_mcp_service_status_core, set_recur_code_mcp_tool_group_core, start_recur_code_mcp_service_core,
+    rc_mcp_service_status_core, set_rc_mcp_tool_group_core, start_rc_mcp_service_core,
     RecurCodeMcpServiceStatus, RecurCodeMcpStatusSources, RecurCodeMcpToolGroupTargets,
 };
 
-pub async fn get_recur_code_mcp_service_status(
+pub async fn get_rc_mcp_service_status(
     Extension(state): Extension<Arc<AppState>>,
 ) -> Result<Json<RecurCodeMcpServiceStatus>, AppCommandError> {
     Ok(Json(
-        recur_code_mcp_service_status_core(RecurCodeMcpStatusSources {
+        rc_mcp_service_status_core(RecurCodeMcpStatusSources {
             broker: &state.delegation_broker,
             tokens: &state.delegation_tokens,
             feedback: &state.feedback_config,
@@ -35,8 +35,8 @@ pub async fn get_recur_code_mcp_service_status(
     ))
 }
 
-pub async fn start_recur_code_mcp_service() -> Result<Json<()>, AppCommandError> {
-    start_recur_code_mcp_service_core().await?;
+pub async fn start_rc_mcp_service() -> Result<Json<()>, AppCommandError> {
+    start_rc_mcp_service_core().await?;
     Ok(Json(()))
 }
 
@@ -46,11 +46,11 @@ pub struct SetRecurCodeMcpToolGroupParams {
     pub enabled: bool,
 }
 
-pub async fn set_recur_code_mcp_tool_group(
+pub async fn set_rc_mcp_tool_group(
     Extension(state): Extension<Arc<AppState>>,
     Json(params): Json<SetRecurCodeMcpToolGroupParams>,
 ) -> Result<Json<()>, AppCommandError> {
-    set_recur_code_mcp_tool_group_core(
+    set_rc_mcp_tool_group_core(
         &state.db.conn,
         RecurCodeMcpToolGroupTargets {
             broker: &state.delegation_broker,

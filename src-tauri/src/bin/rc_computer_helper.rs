@@ -1,6 +1,6 @@
 //! `rc-computer-helper`: the executor behind RecurCode's `computer_*` tools.
 //!
-//! Everything it does lives in `recur_code_lib::computer::helper`; this file holds
+//! Everything it does lives in `rc_lib::computer::helper`; this file holds
 //! only the one thing that must not be linked into RecurCode itself — the calls
 //! that *ask* macOS for a permission. Raised from here, the request names the
 //! helper; raised from RecurCode, it would name RecurCode, and a person who clicked
@@ -10,8 +10,8 @@
 //! (`--request-permission <name>`), not in the one serving it: macOS takes a
 //! request from each process once.
 
-use recur_code_lib::computer::helper::{run, EXIT_FAILED};
-use recur_code_lib::computer::protocol::{OsPermission, PermissionAsked, REQUEST_PERMISSION_ARG};
+use rc_lib::computer::helper::{run, EXIT_FAILED};
+use rc_lib::computer::protocol::{OsPermission, PermissionAsked, REQUEST_PERMISSION_ARG};
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -56,8 +56,8 @@ mod macos {
     use std::ffi::c_void;
     use std::time::{Duration, Instant};
 
-    use recur_code_lib::computer::protocol::OsPermission;
-    use recur_code_lib::computer::tcc;
+    use rc_lib::computer::protocol::OsPermission;
+    use rc_lib::computer::tcc;
     use core_foundation::base::TCFType;
     use core_foundation::boolean::CFBoolean;
     use core_foundation::dictionary::CFDictionary;

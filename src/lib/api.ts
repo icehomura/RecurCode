@@ -5429,12 +5429,12 @@ export interface RecurCodeMcpServiceStatus {
 }
 
 export async function getRecurCodeMcpServiceStatus(): Promise<RecurCodeMcpServiceStatus> {
-  return getTransport().call("get_recur_code_mcp_service_status")
+  return getTransport().call("get_rc_mcp_service_status")
 }
 
 /** Bind the broker socket if it isn't already answering. Idempotent. */
 export async function startRecurCodeMcpService(): Promise<void> {
-  return getTransport().call("start_recur_code_mcp_service")
+  return getTransport().call("start_rc_mcp_service")
 }
 
 /** Flip one tool group by the slug the status report uses. The backend
@@ -5444,7 +5444,7 @@ export async function setRecurCodeMcpToolGroup(
   key: string,
   enabled: boolean
 ): Promise<void> {
-  return getTransport().call("set_recur_code_mcp_tool_group", { key, enabled })
+  return getTransport().call("set_rc_mcp_tool_group", { key, enabled })
 }
 
 // ─── Generative UI (the ui-render skill) ────────────────────────────────

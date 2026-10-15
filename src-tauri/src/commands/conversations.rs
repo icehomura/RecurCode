@@ -589,7 +589,7 @@ fn build_scan_result(
     struct GroupAcc {
         path: String,
         name: String,
-        exists_in_recur_code: bool,
+        exists_in_rc: bool,
         folder_id: Option<i32>,
         agent_types: Vec<AgentType>,
         sessions: Vec<ScanSession>,
@@ -619,7 +619,7 @@ fn build_scan_result(
                     .map(|r| r.name.clone())
                     .or_else(|| summary.folder_name.clone())
                     .unwrap_or_else(|| folder_name_from_path(&raw_path)),
-                exists_in_recur_code: row.map(|r| !r.deleted).unwrap_or(false),
+                exists_in_rc: row.map(|r| !r.deleted).unwrap_or(false),
                 folder_id: row.map(|r| r.id),
                 agent_types: Vec::new(),
                 sessions: Vec::new(),
@@ -654,7 +654,7 @@ fn build_scan_result(
             ScanFolder {
                 path: g.path,
                 name: g.name,
-                exists_in_recur_code: g.exists_in_recur_code,
+                exists_in_rc: g.exists_in_rc,
                 folder_id: g.folder_id,
                 agent_types: g.agent_types,
                 sessions: g.sessions,
@@ -3407,7 +3407,7 @@ mod tests {
     #[test]
     fn inject_delegation_meta_falls_back_to_the_task_id() {
         let mut turns = vec![
-            tool_use_turn(Some("call_73UFK2"), "mcp__recur_code_mcp__delegate_to_agent"),
+            tool_use_turn(Some("call_73UFK2"), "mcp__rc_mcp__delegate_to_agent"),
             tool_result_turn(
                 "call_73UFK2",
                 "Delegation successful. task_id=8ff4c14c-740c-4482-b758-8f2091f97063. \
@@ -5643,7 +5643,7 @@ mod tests {
         assert_eq!(result.folders.len(), 1);
         let folder = &result.folders[0];
         assert_eq!(folder.path, "/tmp/proj");
-        assert!(!folder.exists_in_recur_code);
+        assert!(!folder.exists_in_rc);
         assert_eq!(folder.folder_id, None);
         assert_eq!(
             folder.agent_types,
@@ -5727,7 +5727,7 @@ mod tests {
         let folder = &result.folders[0];
         assert_eq!(folder.path, "/tmp/proj", "live row's stored path wins");
         assert_eq!(folder.name, "proj");
-        assert!(folder.exists_in_recur_code);
+        assert!(folder.exists_in_rc);
         assert_eq!(folder.folder_id, Some(2));
     }
 
@@ -5750,7 +5750,7 @@ mod tests {
 
         let folder = &result.folders[0];
         assert!(
-            !folder.exists_in_recur_code,
+            !folder.exists_in_rc,
             "a soft-deleted row is not a live folder — import will reopen it"
         );
         assert_eq!(folder.folder_id, Some(9));

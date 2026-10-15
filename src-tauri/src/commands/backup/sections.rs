@@ -65,7 +65,7 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
         id: "uploads",
         kind: SectionKind::Dir,
         policy: SectionPolicy::AlwaysReplace,
-        live_path: |_| crate::paths::recur_code_uploads_root(),
+        live_path: |_| crate::paths::rc_uploads_root(),
     },
     ManagedSection {
         // The conversation text of every custom ACP agent. `acp_transcript.rs`
@@ -74,7 +74,7 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
         id: "acp-transcripts",
         kind: SectionKind::Dir,
         policy: SectionPolicy::AlwaysReplace,
-        live_path: |_| crate::paths::recur_code_acp_transcripts_root(),
+        live_path: |_| crate::paths::rc_acp_transcripts_root(),
     },
     ManagedSection {
         // Per-turn wall-clock spans for agents whose native store has no
@@ -82,7 +82,7 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
         id: "turn-timings",
         kind: SectionKind::Dir,
         policy: SectionPolicy::AlwaysReplace,
-        live_path: |_| crate::paths::recur_code_turn_timings_root(),
+        live_path: |_| crate::paths::rc_turn_timings_root(),
     },
     ManagedSection {
         // `preferences.json` records the chosen background by filename, so the
@@ -90,13 +90,13 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
         id: "backgrounds",
         kind: SectionKind::Dir,
         policy: SectionPolicy::AlwaysReplace,
-        live_path: |_| crate::paths::recur_code_backgrounds_root(),
+        live_path: |_| crate::paths::rc_backgrounds_root(),
     },
     ManagedSection {
         id: "pets",
         kind: SectionKind::Dir,
         policy: SectionPolicy::AlwaysReplace,
-        live_path: |_| crate::paths::recur_code_pets_root(),
+        live_path: |_| crate::paths::rc_pets_root(),
     },
     ManagedSection {
         // Includes user-authored skills, which exist nowhere else. Built-in
@@ -123,7 +123,7 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
         id: "preferences.json",
         kind: SectionKind::File,
         policy: SectionPolicy::ReplaceIfPresent,
-        live_path: |_| crate::paths::recur_code_home_dir().join("preferences.json"),
+        live_path: |_| crate::paths::rc_home_dir().join("preferences.json"),
     },
 ];
 

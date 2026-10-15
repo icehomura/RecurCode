@@ -1250,14 +1250,14 @@ pub enum ConnectionCommand {
 /// Sentinel string embedded in a `agent_client_protocol::Error` when the Initialize
 /// handshake times out. Converted back to `AcpError::InitializeTimeout`
 /// by the outer `.map_err(...)` in `run_connection`.
-const INIT_TIMEOUT_SENTINEL: &str = "__recur_code_init_timeout__";
+const INIT_TIMEOUT_SENTINEL: &str = "__rc_init_timeout__";
 
 /// Sentinel appended to a `session/new` failure when RecurCode had just forwarded
 /// MCP servers to a *custom* agent, so the outer `.map_err(...)` can raise
 /// `AcpError::McpRejectedByAgent` and point the user at the `supports_mcp`
 /// switch. Same trick as [`INIT_TIMEOUT_SENTINEL`] — the inner future is typed
 /// to `agent_client_protocol::Error`, which has nowhere to carry a RecurCode error kind.
-const MCP_SUSPECT_SENTINEL: &str = "__recur_code_mcp_suspect__";
+const MCP_SUSPECT_SENTINEL: &str = "__rc_mcp_suspect__";
 
 /// Sentinel appended to a `session/new` failure the agent answered with ACP's
 /// `authRequired`, so the outer `.map_err(...)` can raise
@@ -1266,13 +1266,13 @@ const MCP_SUSPECT_SENTINEL: &str = "__recur_code_mcp_suspect__";
 /// typed to, and this is the one classification that has to be made while it
 /// is still there — the wire text alone is the agent's own wording, which for
 /// cursor-agent names a command that does not exist.
-const AUTH_REQUIRED_SENTINEL: &str = "__recur_code_auth_required__";
+const AUTH_REQUIRED_SENTINEL: &str = "__rc_auth_required__";
 
 /// Sentinel appended to a `session/new` or `session/load` failure that is pi-acp
 /// reporting a pi too old for it ([`pi_runtime_is_outdated`]), so the outer
 /// `.map_err(...)` can raise `AcpError::AgentRuntimeOutdated`. Same trick as
 /// [`INIT_TIMEOUT_SENTINEL`].
-const PI_RUNTIME_OUTDATED_SENTINEL: &str = "__recur_code_pi_runtime_outdated__";
+const PI_RUNTIME_OUTDATED_SENTINEL: &str = "__rc_pi_runtime_outdated__";
 
 /// [`pi_runtime_is_outdated`]'s verdict, carried out of the typed inner future
 /// on [`PI_RUNTIME_OUTDATED_SENTINEL`].
@@ -5292,7 +5292,7 @@ fn load_mcp_servers_for_agent(agent_type: AgentType) -> Vec<McpServer> {
     // (`mcpServers`, shared with the IDE). RecurCode manages those files directly
     // via the MCP settings UI, so forwarding the same servers over the ACP
     // wire here would double-register them — skip it. (The built-in
-    // `rc-mcp` companion is injected separately by `inject_recur_code_mcp`, so
+    // `rc-mcp` companion is injected separately by `inject_rc_mcp`, so
     // it still reaches them.)
     //
     // DeepSeek is deliberately NOT in this set: deepseek-acp reads no MCP file
@@ -5474,7 +5474,7 @@ pub struct DelegationInjection {
 /// injection — never paper over with a phantom path, because that fails
 /// inside the agent's MCP spawn loop and may take the entire ACP session
 /// down on stricter agents.
-pub fn locate_recur_code_mcp_binary() -> Option<PathBuf> {
+pub fn locate_rc_mcp_binary() -> Option<PathBuf> {
     let filename = if cfg!(windows) {
         "rc-mcp.exe"
     } else {
@@ -5632,7 +5632,7 @@ struct CompanionInjection {
     delegation_enabled: bool,
 }
 
-async fn inject_recur_code_mcp(
+async fn inject_rc_mcp(
     servers: &mut Vec<McpServer>,
     injection: &DelegationInjection,
     parent_connection_id: &str,
@@ -5640,19 +5640,19 @@ async fn inject_recur_code_mcp(
     tasks_enabled: bool,
     host_tools: HostToolsPolicy,
 ) -> Option<CompanionInjection> {
-    inject_recur_code_mcp_with_binary_locator(
+    inject_rc_mcp_with_binary_locator(
         servers,
         injection,
         parent_connection_id,
         working_dir,
         tasks_enabled,
         host_tools,
-        locate_recur_code_mcp_binary,
+        locate_rc_mcp_binary,
     )
     .await
 }
 
-async fn inject_recur_code_mcp_with_binary_locator<F>(
+async fn inject_rc_mcp_with_binary_locator<F>(
     servers: &mut Vec<McpServer>,
     injection: &DelegationInjection,
     parent_connection_id: &str,
@@ -6081,9 +6081,9 @@ async fn run_connection(
                     // An approval gating RecurCode's OWN ask tool is a dialog asking
                     // permission to show a dialog; allow it so the user sees only
                     // the interactive question card (see
-                    // `recur_code_ask_auto_allow_option`).
+                    // `rc_ask_auto_allow_option`).
                     let responder =
-                        match try_auto_allow_recur_code_ask(&perm_ask_access, &req, responder).await {
+                        match try_auto_allow_rc_ask(&perm_ask_access, &req, responder).await {
                             Ok(()) => return Ok(()),
                             Err(responder) => responder,
                         };
@@ -6602,7 +6602,7 @@ async fn run_connection(
                     // task_progress / task_complete tool group.
                     let tasks_enabled =
                         { state.read().await.owner_window_label == "work_task" };
-                    inject_recur_code_mcp(
+                    inject_rc_mcp(
                         &mut mcp_servers,
                         inj,
                         &conn_id,
@@ -7503,7 +7503,7 @@ async fn handle_grok_ask_user_question(
 /// question used to cost TWO dialogs: a raw "run mcp__rc-mcp__ask_user_question?"
 /// approval dumping the questions as JSON, and only after "Yes" the real
 /// interactive card. The first one carries no decision the second doesn't — see
-/// [`crate::acp::question::is_recur_code_ask_tool_name`] for why answering it is the
+/// [`crate::acp::question::is_rc_ask_tool_name`] for why answering it is the
 /// user's consent either way.
 ///
 /// The tool is identified by NAME, read from the two places a host puts it:
@@ -7518,14 +7518,14 @@ async fn handle_grok_ask_user_question(
 /// durable permission rule into the user's own agent settings — a decision that
 /// outlives this turn and this connection, so it stays theirs to make. With no
 /// such option (an agent that offers only "always"), `None` keeps today's card.
-fn recur_code_ask_auto_allow_option(req: &RequestPermissionRequest) -> Option<String> {
+fn rc_ask_auto_allow_option(req: &RequestPermissionRequest) -> Option<String> {
     let permission_title = crate::acp::air_contract::permission_record(req.meta.as_ref())
         .and_then(|p| p.get("title"))
         .and_then(serde_json::Value::as_str);
     let is_ask = [req.tool_call.fields.title.as_deref(), permission_title]
         .into_iter()
         .flatten()
-        .any(crate::acp::question::is_recur_code_ask_tool_name);
+        .any(crate::acp::question::is_rc_ask_tool_name);
     if !is_ask {
         return None;
     }
@@ -7547,7 +7547,7 @@ fn recur_code_ask_auto_allow_option(req: &RequestPermissionRequest) -> Option<St
 // request, not an error bubbled through `?` — boxing it would only add an
 // allocation.
 #[allow(clippy::result_large_err)]
-async fn try_auto_allow_recur_code_ask(
+async fn try_auto_allow_rc_ask(
     access: &Option<(
         Arc<dyn crate::acp::question::SessionQuestionAccess>,
         crate::acp::question::QuestionRuntimeConfig,
@@ -7555,7 +7555,7 @@ async fn try_auto_allow_recur_code_ask(
     req: &RequestPermissionRequest,
     responder: Responder<RequestPermissionResponse>,
 ) -> Result<(), Responder<RequestPermissionResponse>> {
-    let Some(option_id) = recur_code_ask_auto_allow_option(req) else {
+    let Some(option_id) = rc_ask_auto_allow_option(req) else {
         return Err(responder);
     };
     // Same kill switch as the ask tool itself (and as `try_bridge_pi_select_ask`):
@@ -7600,7 +7600,7 @@ async fn try_auto_allow_recur_code_ask(
 /// A bridged select still parks an abort handle on `perms`, so every permission
 /// drain reclaims it exactly as it reclaimed the approval card this replaces —
 /// see [`PermissionQueue::detached`] for why that matters for pi specifically.
-// Same `Err` hand-back as `try_auto_allow_recur_code_ask`; see its allow note.
+// Same `Err` hand-back as `try_auto_allow_rc_ask`; see its allow note.
 #[allow(clippy::result_large_err)]
 async fn try_bridge_pi_select_ask(
     access: &Option<(
@@ -9818,7 +9818,7 @@ async fn journal_turn_span(
         return;
     };
     let ack = crate::turn_timings::enqueue_turn_timing(
-        crate::paths::recur_code_turn_timings_root(),
+        crate::paths::rc_turn_timings_root(),
         crate::turn_timings::CURSOR_JOURNAL_AGENT.to_string(),
         session_id.to_string(),
         crate::turn_timings::TurnTiming {
@@ -20813,13 +20813,13 @@ mod tests {
     }
 
     #[test]
-    fn recur_code_ask_auto_allow_option_picks_allow_once_for_recur_codes_own_ask_tool() {
+    fn rc_ask_auto_allow_option_picks_allow_once_for_rcs_own_ask_tool() {
         let req = claude_mcp_permission_request(
             "mcp__rc-mcp__ask_user_question",
             claude_permission_options(),
         );
         assert_eq!(
-            recur_code_ask_auto_allow_option(&req).as_deref(),
+            rc_ask_auto_allow_option(&req).as_deref(),
             Some("allow-once")
         );
         // The title alone is enough: an agent that sends no request-level
@@ -20830,13 +20830,13 @@ mod tests {
         );
         bare.meta = None;
         assert_eq!(
-            recur_code_ask_auto_allow_option(&bare).as_deref(),
+            rc_ask_auto_allow_option(&bare).as_deref(),
             Some("allow-once")
         );
     }
 
     #[test]
-    fn recur_code_ask_auto_allow_option_leaves_every_other_approval_on_the_card() {
+    fn rc_ask_auto_allow_option_leaves_every_other_approval_on_the_card() {
         // Another server's ask tool: approving it is the user's call, not
         // RecurCode's, even though the tool half of the name matches.
         for foreign in [
@@ -20846,7 +20846,7 @@ mod tests {
         ] {
             let req = claude_mcp_permission_request(foreign, claude_permission_options());
             assert!(
-                recur_code_ask_auto_allow_option(&req).is_none(),
+                rc_ask_auto_allow_option(&req).is_none(),
                 "{foreign} must keep its approval card"
             );
         }
@@ -20867,7 +20867,7 @@ mod tests {
                 ),
             ],
         );
-        assert!(recur_code_ask_auto_allow_option(&always_only).is_none());
+        assert!(rc_ask_auto_allow_option(&always_only).is_none());
     }
 
     #[test]
@@ -21227,7 +21227,7 @@ mod tests {
     }
 
     #[test]
-    fn agents_recur_code_records_itself_absorb_a_forgotten_session() {
+    fn agents_rc_records_itself_absorb_a_forgotten_session() {
         // The reported case: a custom agent keeps sessions in memory, so every
         // restart makes session/load fail with "Session not found". RecurCode has
         // the turns in its own transcript, so it must recover silently instead
@@ -21837,7 +21837,7 @@ mod tests {
     /// named a token path that was never written. The same three-state
     /// distinction `child_home_dir` makes for `HOME`, for the same reason.
     #[test]
-    fn antigravity_settings_path_follows_a_gemini_home_recur_code_only_inherits() {
+    fn antigravity_settings_path_follows_a_gemini_home_rc_only_inherits() {
         // Platform-native, and HOME is pinned in the row rather than read from
         // the process: other tests relocate the real one through `temp_env`,
         // and a read here would race them. RecurCode's own `GEMINI_HOME` is
@@ -31130,17 +31130,17 @@ mod tests {
         }
     }
 
-    // ─── inject_recur_code_mcp: enabled=false short-circuit ──────────
+    // ─── inject_rc_mcp: enabled=false short-circuit ──────────
     //
     // Guards the "default off" product contract: when the broker config has
     // `enabled: false` (the new production default for fresh installs), the
     // delegate-MCP injection must not push a server entry and must not
     // register a per-launch token. The early return at the top of
-    // `inject_recur_code_mcp` is the single chokepoint that keeps a
+    // `inject_rc_mcp` is the single chokepoint that keeps a
     // rc-mcp stdio MCP out of every ACP session until the user
     // opts in via the settings panel.
     #[tokio::test]
-    async fn inject_recur_code_delegate_skipped_when_broker_disabled() {
+    async fn inject_rc_delegate_skipped_when_broker_disabled() {
         // No set_config call: broker carries its default config, which is
         // `enabled: false` after the product-default flip. This is the
         // exact state a fresh install reaches before the user touches the
@@ -31151,7 +31151,7 @@ mod tests {
         );
 
         let mut servers: Vec<McpServer> = Vec::new();
-        let result = inject_recur_code_mcp(
+        let result = inject_rc_mcp(
             &mut servers,
             &injection,
             "parent-conn",
@@ -31243,7 +31243,7 @@ mod tests {
         // process tree under that agent's own policy, and relays its output
         // back. Without this gate a sandboxed agent that cannot read `.env`
         // itself just asks a sibling to read it, and the switch's promise is
-        // false. This pins the exact boolean `inject_recur_code_mcp` computes.
+        // false. This pins the exact boolean `inject_rc_mcp` computes.
         let delegation_for = |broker_enabled: bool, host_tools: HostToolsPolicy| {
             broker_enabled && host_tools.hosts_channels()
         };
@@ -34557,7 +34557,7 @@ mod tests {
     async fn recorded_custom_turns() -> Vec<crate::models::message::MessageTurn> {
         use crate::parsers::AgentParser as _;
 
-        let root = crate::paths::recur_code_acp_transcripts_root();
+        let root = crate::paths::rc_acp_transcripts_root();
         let barrier = crate::acp_transcript::record_entry_in(
             &root,
             IDLE_PROBE_AGENT,
@@ -34639,7 +34639,7 @@ mod tests {
 
                 let turns = recorded_custom_turns().await;
                 let transcript = std::fs::read_to_string(
-                    crate::paths::recur_code_acp_transcripts_root()
+                    crate::paths::rc_acp_transcripts_root()
                         .join(IDLE_PROBE_AGENT)
                         .join("s1.jsonl"),
                 )
@@ -35076,7 +35076,7 @@ mod tests {
     /// chosen label and the user's own text apart, which the sentence Qoder
     /// streams (`"X, free text"`) can no longer tell.
     #[tokio::test]
-    async fn a_qoder_ask_completion_shows_the_reply_recur_code_sent() {
+    async fn a_qoder_ask_completion_shows_the_reply_rc_sent() {
         let state = qoder_session();
         let mut cb = CodeBuddyLiveState::default();
         let opening = qoder_ask_opening_frame(

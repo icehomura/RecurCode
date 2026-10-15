@@ -63,7 +63,7 @@ describe("isAgentLikeToolName", () => {
     expect(isAgentLikeToolName("mcp__rc-delegate__delegate_to_agent")).toBe(
       true
     )
-    expect(isAgentLikeToolName("mcp__recur_code__delegate_to_agent")).toBe(true)
+    expect(isAgentLikeToolName("mcp__rc__delegate_to_agent")).toBe(true)
     // Codex live ACP style (server/tool)
     expect(isAgentLikeToolName("rc-mcp/delegate_to_agent")).toBe(true)
     expect(isAgentLikeToolName("rc-delegate/delegate_to_agent")).toBe(true)
@@ -79,7 +79,7 @@ describe("isAgentLikeToolName", () => {
       // Claude Code style (current + legacy server names)
       expect(isAgentLikeToolName(`mcp__rc-mcp__${tool}`)).toBe(true)
       expect(isAgentLikeToolName(`mcp__rc-delegate__${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`mcp__recur_code__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__rc__${tool}`)).toBe(true)
       // Codex live ACP + dot/colon separated forms
       expect(isAgentLikeToolName(`rc-mcp/${tool}`)).toBe(true)
       expect(isAgentLikeToolName(`rc-delegate/${tool}`)).toBe(true)
@@ -111,7 +111,7 @@ describe("isAgentLikeToolName", () => {
     ]) {
       expect(isAgentLikeToolName(tool)).toBe(true)
       expect(isAgentLikeToolName(`mcp__rc-mcp__${tool}`)).toBe(true)
-      expect(isAgentLikeToolName(`mcp__recur_code__${tool}`)).toBe(true)
+      expect(isAgentLikeToolName(`mcp__rc__${tool}`)).toBe(true)
       expect(isAgentLikeToolName(`rc-mcp/${tool}`)).toBe(true)
       expect(isAgentLikeToolName(`rc-mcp.${tool}`)).toBe(true)
       expect(isAgentLikeToolName(`rc-mcp:${tool}`)).toBe(true)
@@ -156,7 +156,7 @@ describe("isAgentLikeToolName", () => {
     expect(isAgentLikeToolName("mcp__rc-mcp__check_user_feedback")).toBe(
       true
     )
-    expect(isAgentLikeToolName("mcp__recur_code__check_user_feedback")).toBe(true)
+    expect(isAgentLikeToolName("mcp__rc__check_user_feedback")).toBe(true)
     expect(isAgentLikeToolName("rc-mcp/check_user_feedback")).toBe(true)
     expect(isAgentLikeToolName("rc-mcp.check_user_feedback")).toBe(true)
     expect(isAgentLikeToolName("rc-mcp:check_user_feedback")).toBe(true)

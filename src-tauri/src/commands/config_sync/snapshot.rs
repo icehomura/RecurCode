@@ -362,7 +362,7 @@ fn unix_hostname() -> Option<String> {
 
 /// Where pre-apply rollback snapshots live.
 pub fn rollback_dir() -> PathBuf {
-    crate::paths::recur_code_home_dir().join("config-snapshots")
+    crate::paths::rc_home_dir().join("config-snapshots")
 }
 
 /// Write "what this machine looked like before the apply" next to the app's

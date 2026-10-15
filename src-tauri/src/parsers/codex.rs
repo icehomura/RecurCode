@@ -2359,7 +2359,7 @@ fn infer_tool_call_output_is_error(
 /// Synthetic rawInput key the live input shaper uses to carry the collab op
 /// through to the card (see frontend `collab-tool.ts` `COLLAB_OP_KEY`). Kept in
 /// sync here so history `wait_agent` capsules render with an op-aware title.
-const COLLAB_OP_KEY: &str = "__recur_codeCollabOp";
+const COLLAB_OP_KEY: &str = "__rcCollabOp";
 
 /// Whether a collab status string is an error (mirrors the frontend
 /// `isErrorCollabStatusKind`: only `errored` / `failed` / `notFound`).
@@ -2411,7 +2411,7 @@ const CODEX_ENCRYPTED_PLACEHOLDER: &str = "[encrypted]";
 /// Public because the LIVE path writes the same key
 /// (`acp/connection.rs::classify_codex_subagent_activity`) — streaming and
 /// reload must not disagree about what the card means.
-pub const CODEX_SUBAGENT_LAUNCH_KEY: &str = "__recur_codeCodexSubagentLaunch";
+pub const CODEX_SUBAGENT_LAUNCH_KEY: &str = "__rcCodexSubagentLaunch";
 
 /// Whether a `spawn_agent`'s arguments are codex 0.147's native team-of-agents
 /// shape: `task_name` and no `agent_type` (which that release removed).
@@ -2426,7 +2426,7 @@ fn is_native_team_spawn(args: Option<&serde_json::Value>) -> bool {
 /// Written by both the rollout parser and the live path
 /// (`acp/connection.rs`), so a reload cannot disagree with the stream about
 /// whether the child finished.
-pub const CODEX_SUBAGENT_STATE_KEY: &str = "__recur_codeCodexSubagentState";
+pub const CODEX_SUBAGENT_STATE_KEY: &str = "__rcCodexSubagentState";
 
 /// One `SubAgentActivity` record, normalized across the two on-disk shapes.
 ///
@@ -8654,7 +8654,7 @@ mod tests {
             .join(format!(
                 "rollout-2026-08-15T16-00-00-{conversation_id}.jsonl"
             ));
-        let visible = "Explain \u{001e}<recur_code_internal_agent_routes version=\"2\">user text</recur_code_internal_agent_routes>\u{001e}";
+        let visible = "Explain \u{001e}<rc_internal_agent_routes version=\"2\">user text</rc_internal_agent_routes>\u{001e}";
         let lines = [
             serde_json::json!({
                 "timestamp": "2026-08-15T08:00:00Z",
@@ -8687,7 +8687,7 @@ mod tests {
         assert!(summary
             .title
             .as_deref()
-            .is_some_and(|title| title.contains("recur_code_internal_agent_routes")));
+            .is_some_and(|title| title.contains("rc_internal_agent_routes")));
 
         let detail = parser.get_conversation(conversation_id).unwrap();
         assert!(matches!(
@@ -11830,7 +11830,7 @@ mod tests {
             .expect("wait capsule carrying A's result");
         assert!(a_cap.contains("agent_a"));
         // op-aware title source is present.
-        assert!(a_cap.contains("__recur_codeCollabOp"));
+        assert!(a_cap.contains("__rcCollabOp"));
 
         // The result text must NOT remain on the spawn execution capsules or any
         // tool result (it lives only in the wait capsules now).
@@ -13157,8 +13157,8 @@ mod tests {
         let script = concat!(
             "const wd=\"/tmp\";const taskA=\"A\";const taskB=\"B\";",
             "const [a,b]=await Promise.all([",
-            "tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskA}),",
-            "tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskB})",
+            "tools.mcp__rc_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskA}),",
+            "tools.mcp__rc_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:wd,task:taskB})",
             "]);text(JSON.stringify({a,b}));"
         );
         assert!(
@@ -13215,8 +13215,8 @@ mod tests {
                 .map(|(id, name, _)| (id.as_str(), name.as_str()))
                 .collect::<Vec<_>>(),
             vec![
-                ("exec-b", "mcp__recur_code_mcp__delegate_to_agent"),
-                ("exec-a", "mcp__recur_code_mcp__delegate_to_agent"),
+                ("exec-b", "mcp__rc_mcp__delegate_to_agent"),
+                ("exec-a", "mcp__rc_mcp__delegate_to_agent"),
             ],
             "semantic items replace the outer script with real MCP cards"
         );
@@ -13249,9 +13249,9 @@ mod tests {
         let sealed = format!("gAAAAAB{}", "qgWsi0g7nV3UTzqL".repeat(30));
         let native = native_team_0153_lines("FINAL_ANSWER", &sealed);
         let initial_script =
-            "const r = await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic initial\"});text(JSON.stringify(r));";
+            "const r = await tools.mcp__rc_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic initial\"});text(JSON.stringify(r));";
         let continuation_script =
-            "const r = await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic followup\",continue_from_task_id:\"task-semantic-initial\"});text(JSON.stringify(r));";
+            "const r = await tools.mcp__rc_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:\"/tmp/mcp-worker\",task:\"semantic followup\",continue_from_task_id:\"task-semantic-initial\"});text(JSON.stringify(r));";
         let initial_status = serde_json::json!({
             "task_id": "task-semantic-initial",
             "child_conversation_id": 901,
@@ -13392,14 +13392,14 @@ mod tests {
             vec![
                 (
                     "mcp-semantic-initial",
-                    "mcp__recur_code_mcp__delegate_to_agent",
+                    "mcp__rc_mcp__delegate_to_agent",
                     Some(
                         r#"{"agent_type":"codex","working_dir":"/tmp/mcp-worker","task":"semantic initial"}"#,
                     ),
                 ),
                 (
                     "mcp-semantic-continuation",
-                    "mcp__recur_code_mcp__delegate_to_agent",
+                    "mcp__rc_mcp__delegate_to_agent",
                     Some(
                         r#"{"agent_type":"codex","working_dir":"/tmp/mcp-worker","task":"semantic followup","continue_from_task_id":"task-semantic-initial"}"#,
                     ),
@@ -13456,7 +13456,7 @@ mod tests {
 
     #[test]
     fn a_deferred_scripts_late_mcp_item_cannot_bind_to_the_next_script() {
-        let script = "const r=await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",task:\"A\"});text(JSON.stringify(r));";
+        let script = "const r=await tools.mcp__rc_mcp__delegate_to_agent({agent_type:\"codex\",task:\"A\"});text(JSON.stringify(r));";
         let mut lines = code_mode_rollout(
             script,
             serde_json::json!("Script running with cell ID 34\nWall time 30.0 seconds\nOutput:\n"),
@@ -13506,7 +13506,7 @@ mod tests {
     fn a_failed_semantic_mcp_item_settles_its_card_as_failed() {
         let script = concat!(
             "const dir=\"/tmp/w\";",
-            "const res=await tools.mcp__recur_code_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:dir,task:t});",
+            "const res=await tools.mcp__rc_mcp__delegate_to_agent({agent_type:\"codex\",working_dir:dir,task:t});",
             "text(res.content[0].text);"
         );
         let mut lines = code_mode_rollout(
@@ -13675,7 +13675,7 @@ mod tests {
             let mut lines = code_mode_rollout(
                 concat!(
                     "const rs = await Promise.all([\n",
-                    "  tools.mcp__recur_code_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:30000}),\n",
+                    "  tools.mcp__rc_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:30000}),\n",
                     "  tools.write_stdin({session_id:480,chars:\"y\\n\"}),\n",
                     "]);\ntext(JSON.stringify(rs));"
                 ),
@@ -13733,7 +13733,7 @@ mod tests {
     #[test]
     fn a_thrown_script_keeps_its_own_card_over_a_matching_semantic_item() {
         let script = concat!(
-            "const r=await tools.mcp__recur_code_mcp__task_progress({message:m});",
+            "const r=await tools.mcp__rc_mcp__task_progress({message:m});",
             "text(r.content[0].text.toUpperCase());"
         );
         let mut lines = code_mode_rollout(
@@ -15031,7 +15031,7 @@ mod tests {
     /// terminal card further down the transcript.
     fn deferred_script_rollout(wait_output: serde_json::Value) -> Vec<String> {
         let mut lines = code_mode_rollout(
-            "const r = await tools.mcp__recur_code_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:60000});\ntext(JSON.stringify(r));\n",
+            "const r = await tools.mcp__rc_mcp__get_delegation_status({task_ids:[\"t1\"],wait_ms:60000});\ntext(JSON.stringify(r));\n",
             serde_json::json!("Script running with cell ID 34\nWall time 11.0 seconds\nOutput:\n"),
         );
         lines.push(rollout_line(
@@ -15060,7 +15060,7 @@ mod tests {
     fn a_deferred_script_completed_mcp_item_replaces_its_wrapper_card() {
         let script = concat!(
             "const task=\"t1\";",
-            "const r=await tools.mcp__recur_code_mcp__get_delegation_status({task_ids:[task],wait_ms:60000});",
+            "const r=await tools.mcp__rc_mcp__get_delegation_status({task_ids:[task],wait_ms:60000});",
             "text(JSON.stringify(r));"
         );
         let mut lines = code_mode_rollout(
@@ -15110,7 +15110,7 @@ mod tests {
             tool_uses(&detail),
             vec![ (
                 "mcp-deferred-status".into(),
-                "mcp__recur_code_mcp__get_delegation_status".into(),
+                "mcp__rc_mcp__get_delegation_status".into(),
                 Some(r#"{"task_ids":["t1"],"wait_ms":60000}"#.into()),
             ) ],
             "the completed semantic item replaces the parked script card"
@@ -15144,7 +15144,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec![(
                 "call_1".to_string(),
-                "mcp__recur_code_mcp__get_delegation_status".to_string()
+                "mcp__rc_mcp__get_delegation_status".to_string()
             )]
         );
         assert_eq!(
@@ -15252,7 +15252,7 @@ mod tests {
         // session map either: that cell is not a shell, and the long-running
         // call here is not even a command.
         let mut lines = code_mode_rollout(
-            "const r = await tools.mcp__recur_code_mcp__ask_user_question({questions: []});\ntext(JSON.stringify(r));\n",
+            "const r = await tools.mcp__rc_mcp__ask_user_question({questions: []});\ntext(JSON.stringify(r));\n",
             serde_json::json!([
                 {"type": "input_text", "text": "Script running with cell ID 15\nWall time 11.0 seconds\nOutput:\n"},
             ]),
@@ -15277,7 +15277,7 @@ mod tests {
             uses.iter()
                 .map(|(id, name, _)| (id.as_str(), name.as_str()))
                 .collect::<Vec<_>>(),
-            vec![("call_1", "mcp__recur_code_mcp__ask_user_question")]
+            vec![("call_1", "mcp__rc_mcp__ask_user_question")]
         );
 
         let _ = fs::remove_file(path);

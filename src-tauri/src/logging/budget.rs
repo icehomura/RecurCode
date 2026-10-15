@@ -328,7 +328,7 @@ pub trait NoticeSink: Send + 'static {
 /// Production sink: stderr (matching the other bootstrap diagnostics) plus a
 /// synthetic WARN record pushed straight into [`crate::logging::hub::LogHub`],
 /// so the Settings → Logs viewer shows *why* the file went quiet. The direct
-/// push bypasses the subscriber, so the `recur_code_lib::logging=off` backstop can't
+/// push bypasses the subscriber, so the `rc_lib::logging=off` backstop can't
 /// swallow it and no re-entrancy is possible.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct StderrAndHubSink;
@@ -345,7 +345,7 @@ impl NoticeSink for StderrAndHubSink {
                     .map(|d| d.as_millis() as u64)
                     .unwrap_or(0),
                 level: "WARN",
-                target: "recur_code_lib::logging".to_string(),
+                target: "rc_lib::logging".to_string(),
                 message,
                 fields: Default::default(),
                 spans: Vec::new(),

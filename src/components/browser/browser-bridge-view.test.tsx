@@ -49,7 +49,7 @@ const grant: BridgeGrant = {
   targetPort: 3000,
   bridgePort: 3081,
   bridgeHost: null,
-  entryPath: "/__recur_code_bridge/enter/cap-one",
+  entryPath: "/__rc_bridge/enter/cap-one",
   publicHost: null,
   path: "/docs?x=1",
 }
@@ -104,12 +104,12 @@ describe("BrowserBridgeView", () => {
     )
     const expectedSrc = bridgeEntryUrl(grant, window.location)
     expect(frame.getAttribute("src")).toBe(expectedSrc)
-    expect(expectedSrc).toContain(":3081/__recur_code_bridge/enter/cap-one?to=")
+    expect(expectedSrc).toContain(":3081/__rc_bridge/enter/cap-one?to=")
     expect(frame.getAttribute("sandbox")).toBe(BRIDGE_FRAME_SANDBOX)
     expect(frame.getAttribute("sandbox")).not.toContain("allow-top-navigation")
     expect(frame.getAttribute("referrerpolicy")).toBe("no-referrer")
     expect(api.probeBridge).toHaveBeenCalledWith(
-      expectedSrc.slice(0, expectedSrc.indexOf("/__recur_code_bridge"))
+      expectedSrc.slice(0, expectedSrc.indexOf("/__rc_bridge"))
     )
     // The address shown is the one the user opened, not the bridge's.
     expect(screen.getByTitle("http://localhost:3000/docs?x=1")).toBeTruthy()
@@ -203,7 +203,7 @@ describe("BrowserBridgeView", () => {
   it("reload mints a fresh grant and reloads the frame with it", async () => {
     api.bridgeOpen.mockResolvedValueOnce(grant).mockResolvedValueOnce({
       ...grant,
-      entryPath: "/__recur_code_bridge/enter/cap-two",
+      entryPath: "/__rc_bridge/enter/cap-two",
     })
     renderView(<BrowserBridgeView tab={tab()} />)
     await screen.findByTitle("Dev server preview")
@@ -350,7 +350,7 @@ describe("BrowserBridgeView", () => {
     api.bridgeOpen.mockImplementation(() =>
       Promise.resolve({
         ...grant,
-        entryPath: `/__recur_code_bridge/enter/cap-${api.bridgeOpen.mock.calls.length}`,
+        entryPath: `/__rc_bridge/enter/cap-${api.bridgeOpen.mock.calls.length}`,
       })
     )
     renderView(<BrowserBridgeView tab={tab()} />)
@@ -375,7 +375,7 @@ describe("BrowserBridgeView", () => {
     api.bridgeOpen.mockImplementation(() =>
       Promise.resolve({
         ...grant,
-        entryPath: `/__recur_code_bridge/enter/cap-${api.bridgeOpen.mock.calls.length}`,
+        entryPath: `/__rc_bridge/enter/cap-${api.bridgeOpen.mock.calls.length}`,
       })
     )
     render(
@@ -403,7 +403,7 @@ describe("BrowserBridgeView", () => {
   it("a reload releases the previous attempt's hold, not the new one's", async () => {
     api.bridgeOpen.mockResolvedValueOnce(grant).mockResolvedValueOnce({
       ...grant,
-      entryPath: "/__recur_code_bridge/enter/cap-two",
+      entryPath: "/__rc_bridge/enter/cap-two",
     })
     renderView(<BrowserBridgeView tab={tab()} />)
     await screen.findByTitle("Dev server preview")

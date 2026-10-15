@@ -3366,7 +3366,7 @@ mod tests {
     // What RecurCode itself sent back is exact: each question's own entry, chosen
     // labels and the user's own text kept apart.
     #[test]
-    fn the_reply_recur_code_sent_is_read_as_sent() {
+    fn the_reply_rc_sent_is_read_as_sent() {
         let questions = ask_questions(serde_json::json!([
             {"question": "Pick A or B?", "header": "Choice", "options": [{"label": "A"}, {"label": "B"}]},
             {"question": "Skipped?", "header": "Skip", "options": [{"label": "No"}]},

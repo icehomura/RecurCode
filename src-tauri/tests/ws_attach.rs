@@ -11,13 +11,13 @@ use std::time::Duration;
 
 use axum_test::TestServer;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
-use recur_code_lib::acp::types::{AcpEvent, EventEnvelope};
-use recur_code_lib::app_state::AppState;
-use recur_code_lib::db::test_helpers::fresh_in_memory_db;
-use recur_code_lib::models::agent::AgentType;
-use recur_code_lib::web::event_bridge::emit_with_state;
-use recur_code_lib::web::router::build_router;
-use recur_code_lib::web::shutdown::ShutdownSignal;
+use rc_lib::acp::types::{AcpEvent, EventEnvelope};
+use rc_lib::app_state::AppState;
+use rc_lib::db::test_helpers::fresh_in_memory_db;
+use rc_lib::models::agent::AgentType;
+use rc_lib::web::event_bridge::emit_with_state;
+use rc_lib::web::router::build_router;
+use rc_lib::web::shutdown::ShutdownSignal;
 use serde_json::{json, Value};
 
 const SEC_WEBSOCKET_PROTOCOL: &str = "sec-websocket-protocol";

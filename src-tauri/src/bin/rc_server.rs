@@ -2,9 +2,9 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
-use recur_code_lib::app_state::AppState;
-use recur_code_lib::web::event_bridge::{EventEmitter, WebEventBroadcaster};
-use recur_code_lib::web::{
+use rc_lib::app_state::AppState;
+use rc_lib::web::event_bridge::{EventEmitter, WebEventBroadcaster};
+use rc_lib::web::{
     addresses_for_bind, advertise_host, find_static_dir_standalone, resolve_persisted_server_token,
     WebServerState,
 };
@@ -13,7 +13,7 @@ fn main() -> ExitCode {
     // Capture our own executable path before anything can rename it (an
     // in-place upgrade swaps the binary mid-run; `current_exe()` would then
     // resolve to a `" (deleted)"` path on Linux). Cheap, single-shot.
-    recur_code_lib::update::runtime::prime_self_exe();
+    rc_lib::update::runtime::prime_self_exe();
 
     // Support --version flag
     let args: Vec<String> = std::env::args().collect();
@@ -28,8 +28,8 @@ fn main() -> ExitCode {
     if args.iter().any(|a| a == "--supervise") {
         // This mode never reaches init_server(); install a stderr-only
         // subscriber so the supervisor's diagnostics still reach Docker logs.
-        let _log_guard = recur_code_lib::logging::init::init_stderr_only();
-        recur_code_lib::supervise::run();
+        let _log_guard = rc_lib::logging::init::init_stderr_only();
+        rc_lib::supervise::run();
     }
 
     // When invoked as a git credential helper (by the script written via
@@ -41,16 +41,16 @@ fn main() -> ExitCode {
         // Subprocess mode, before init_server(): stderr-only subscriber so
         // helper diagnostics aren't dropped, while stdout stays the git
         // credential protocol channel.
-        let _log_guard = recur_code_lib::logging::init::init_stderr_only();
-        recur_code_lib::git_credential::run_credential_helper();
+        let _log_guard = rc_lib::logging::init::init_stderr_only();
+        rc_lib::git_credential::run_credential_helper();
         return ExitCode::SUCCESS;
     }
 
     // PATH initialisation MUST happen before the tokio runtime is created.
     // std::env::set_var is not thread-safe (unsafe in Rust edition 2024);
     // #[tokio::main] would spawn worker threads before we reach this point.
-    recur_code_lib::process::ensure_node_in_path();
-    recur_code_lib::process::ensure_user_npm_prefix_in_path();
+    rc_lib::process::ensure_node_in_path();
+    rc_lib::process::ensure_user_npm_prefix_in_path();
 
     // Resolve and pin `RC_DATA_DIR` before any threads exist.
     //
@@ -65,7 +65,7 @@ fn main() -> ExitCode {
     //    though we found the database.
     //
     // 2. Fill in the default if unset, so every downstream resolver —
-    //    `paths::recur_code_uploads_root`, `paths::recur_code_pets_root`,
+    //    `paths::rc_uploads_root`, `paths::rc_pets_root`,
     //    the credential subprocess — converges on the same root the
     //    server itself chose for the database. Without this, a default
     //    deployment (env var unset) puts the DB under
@@ -81,7 +81,7 @@ fn main() -> ExitCode {
     let resolved_data_dir = std::env::var("RC_DATA_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|_| default_data_dir());
-    let resolved_data_dir = recur_code_lib::git_credential::absolutize(&resolved_data_dir);
+    let resolved_data_dir = rc_lib::git_credential::absolutize(&resolved_data_dir);
     std::env::set_var("RC_DATA_DIR", &resolved_data_dir);
 
     // Install the logging subscriber now that RC_DATA_DIR is pinned (the logs
@@ -89,16 +89,16 @@ fn main() -> ExitCode {
     // below — captures even the RC_HOME warning and the FATAL upload-quota
     // abort. Hold the guard for the whole process so buffered file lines flush
     // on a graceful exit.
-    let _log_guard = recur_code_lib::logging::init::init_server();
+    let _log_guard = rc_lib::logging::init::init_server();
 
     // `RC_HOME` overrides `RC_DATA_DIR` for uploads/pets inside
-    // `paths::recur_code_*_root` (legacy `~/.recurcode/` layout). If both are set
+    // `paths::rc_*_root` (legacy `~/.recurcode/` layout). If both are set
     // and resolve to different roots, the database and uploads land on
     // different filesystems — a silent split. Warn loudly so the
     // operator notices before relying on a backup or volume mount that
     // only covers one of them.
     if let Some(home) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
-        let home_path = recur_code_lib::git_credential::absolutize(std::path::Path::new(&home));
+        let home_path = rc_lib::git_credential::absolutize(std::path::Path::new(&home));
         if home_path != resolved_data_dir {
             tracing::warn!(
                 "[paths][WARN] RC_HOME ({}) and RC_DATA_DIR ({}) point at different roots. \
@@ -114,8 +114,8 @@ fn main() -> ExitCode {
     // here means a misconfigured strict deployment never reaches the
     // tokio runtime, never binds a port, and never persists config —
     // the operator sees the FATAL line and a clean exit code 2.
-    recur_code_lib::web::handlers::files::log_upload_quota_config_at_startup();
-    if let Err(err) = recur_code_lib::web::handlers::files::validate_upload_quota_config() {
+    rc_lib::web::handlers::files::log_upload_quota_config_at_startup();
+    if let Err(err) = rc_lib::web::handlers::files::validate_upload_quota_config() {
         tracing::error!("[uploads][FATAL] {err}; aborting startup.");
         // Return (don't process::exit) so `_log_guard` drops on the way out and
         // flushes the non-blocking file appender before the process ends.
@@ -137,9 +137,9 @@ async fn async_main() -> ExitCode {
     // errors are silenced, no subprocesses spawned.
     std::thread::spawn(|| {
         let _ = std::panic::catch_unwind(|| {
-            recur_code_lib::acp::binary_cache::migrate_legacy_root();
-            recur_code_lib::sweep_acp_binary_trash();
-            recur_code_lib::sweep_acp_scratch_dirs();
+            rc_lib::acp::binary_cache::migrate_legacy_root();
+            rc_lib::sweep_acp_binary_trash();
+            rc_lib::sweep_acp_scratch_dirs();
         });
     });
 
@@ -163,7 +163,7 @@ async fn async_main() -> ExitCode {
     // this freshly-swapped version is still unproven (re-swapping would clobber
     // the only good `.bak` and make a trial-failure rollback restore the
     // unproven version).
-    if recur_code_lib::update::runtime::is_supervised() {
+    if rc_lib::update::runtime::is_supervised() {
         // Supervised trial: if this launch is the trial of a freshly-swapped
         // version (marker present), keep the marker until we have stayed up
         // past the trial window — at which point the upgrade is proven and the
@@ -171,11 +171,11 @@ async fn async_main() -> ExitCode {
         // only peeks at the marker to set probation; clearing is the worker's
         // job. If this version can't survive the window the supervisor rolls it
         // back first (which clears the marker), so this task never fires.
-        if recur_code_lib::update::install::upgrade_staged() {
-            let trial = recur_code_lib::update::runtime::upgrade_trial_secs();
+        if rc_lib::update::install::upgrade_staged() {
+            let trial = rc_lib::update::runtime::upgrade_trial_secs();
             tokio::spawn(async move {
                 tokio::time::sleep(std::time::Duration::from_secs(trial)).await;
-                let _ = recur_code_lib::update::install::take_upgrade_staged();
+                let _ = rc_lib::update::install::take_upgrade_staged();
             });
         }
     } else {
@@ -183,7 +183,7 @@ async fn async_main() -> ExitCode {
         // with no supervisor and thus no trial/rollback. Clear the marker on
         // startup so a re-exec'd upgrade doesn't leave it behind and block every
         // future update with "already staged".
-        let _ = recur_code_lib::update::install::take_upgrade_staged();
+        let _ = rc_lib::update::install::take_upgrade_staged();
     }
 
     tracing::info!("[SERVER] rc-server v{}", app_version);
@@ -191,14 +191,14 @@ async fn async_main() -> ExitCode {
     tracing::info!("[SERVER] Static directory: {}", static_dir.display());
 
     // Initialize database
-    let db = recur_code_lib::db::init_database(&data_dir, app_version)
+    let db = rc_lib::db::init_database(&data_dir, app_version)
         .await
         .expect("Failed to initialize database");
 
     // Logging phase 2: override the default level from the persisted
     // `logging.level` now that the DB is open. Phase 3 (wiring the emitter)
     // happens once AppState exists, below.
-    recur_code_lib::logging::init::apply_persisted_level(&db.conn).await;
+    rc_lib::logging::init::apply_persisted_level(&db.conn).await;
 
     // Resolve the access token *after* the DB is up so a generated token can be
     // persisted and reused across restarts (a self-update restart must not
@@ -224,7 +224,7 @@ async fn async_main() -> ExitCode {
     // Restore and apply saved system proxy settings before any network operation.
     // reqwest clients (including the LazyLock in check_app_update) cache the proxy
     // config at build time, so this must run before the first one is constructed.
-    recur_code_lib::init_proxy_from_db(&db.conn).await;
+    rc_lib::init_proxy_from_db(&db.conn).await;
 
     // Reclaim orphaned chat scratch dirs (pre-send drafts that never bound to a
     // conversation, plus dirs left behind by deleted chat conversations).
@@ -233,7 +233,7 @@ async fn async_main() -> ExitCode {
         let gc_conn = db.conn.clone();
         let gc_data_dir = data_dir.clone();
         tokio::spawn(async move {
-            match recur_code_lib::commands::conversations::gc_orphan_chat_dirs_core(
+            match rc_lib::commands::conversations::gc_orphan_chat_dirs_core(
                 &gc_conn,
                 &gc_data_dir,
             )
@@ -250,15 +250,15 @@ async fn async_main() -> ExitCode {
 
     // Create shared broadcaster + internal ACP event bus.
     let broadcaster = Arc::new(WebEventBroadcaster::new());
-    let event_bus_metrics = Arc::new(recur_code_lib::acp::EventBusMetrics::default());
-    let acp_event_bus = Arc::new(recur_code_lib::acp::InternalEventBus::new(
+    let event_bus_metrics = Arc::new(rc_lib::acp::EventBusMetrics::default());
+    let acp_event_bus = Arc::new(rc_lib::acp::InternalEventBus::new(
         event_bus_metrics.clone(),
     ));
     let emitter = EventEmitter::web_only(broadcaster.clone(), acp_event_bus.clone());
 
     // Build AppState
-    let pet_state_handle = recur_code_lib::pet_state_mapper::new_pet_state_handle();
-    let connection_manager = recur_code_lib::app_state::default_connection_manager();
+    let pet_state_handle = rc_lib::pet_state_mapper::new_pet_state_handle();
+    let connection_manager = rc_lib::app_state::default_connection_manager();
     let (
         delegation_broker,
         delegation_tokens,
@@ -269,7 +269,7 @@ async fn async_main() -> ExitCode {
         chat_authoring_config,
         browser_tools_config,
         computer_tools_config,
-    ) = recur_code_lib::app_state::build_delegation_stack(
+    ) = rc_lib::app_state::build_delegation_stack(
         &connection_manager,
         db.conn.clone(),
         data_dir.clone(),
@@ -277,15 +277,15 @@ async fn async_main() -> ExitCode {
     let state = Arc::new(AppState {
         db,
         connection_manager,
-        terminal_manager: recur_code_lib::app_state::default_terminal_manager(),
+        terminal_manager: rc_lib::app_state::default_terminal_manager(),
         event_broadcaster: broadcaster,
         acp_event_bus: acp_event_bus.clone(),
         emitter,
         data_dir,
         web_server_state: WebServerState::new(),
-        chat_channel_manager: recur_code_lib::app_state::default_chat_channel_manager(),
+        chat_channel_manager: rc_lib::app_state::default_chat_channel_manager(),
         workspace_transfer: Arc::new(
-            recur_code_lib::workspace_transfer::WorkspaceTransferManager::new_from_env(),
+            rc_lib::workspace_transfer::WorkspaceTransferManager::new_from_env(),
         ),
         pet_state: pet_state_handle.clone(),
         delegation_broker: delegation_broker.clone(),
@@ -298,8 +298,8 @@ async fn async_main() -> ExitCode {
         browser_tools_config: browser_tools_config.clone(),
         computer_tools_config: computer_tools_config.clone(),
         computer_service: std::sync::OnceLock::new(),
-        system_op_lock: recur_code_lib::app_state::default_system_op_lock(),
-        update_state: recur_code_lib::app_state::default_update_state(),
+        system_op_lock: rc_lib::app_state::default_system_op_lock(),
+        update_state: rc_lib::app_state::default_update_state(),
     });
     state
         .connection_manager
@@ -307,7 +307,7 @@ async fn async_main() -> ExitCode {
 
     // Logging phase 3: wire the emitter so the Logs viewer's live tail
     // (`logs://appended`) reaches WS clients.
-    if let Some(hub) = recur_code_lib::logging::hub::log_hub() {
+    if let Some(hub) = rc_lib::logging::hub::log_hub() {
         hub.set_emitter(state.emitter.clone());
     }
 
@@ -316,30 +316,30 @@ async fn async_main() -> ExitCode {
     // sees the operator's configured behavior. Cancellation is handled
     // out-of-band via MCP `notifications/cancelled` — no broker-side
     // timeout to apply here.
-    recur_code_lib::commands::delegation::apply_persisted_config(&state.db.conn, &delegation_broker)
+    rc_lib::commands::delegation::apply_persisted_config(&state.db.conn, &delegation_broker)
         .await;
     // Same for the live-feedback enable flag, so the first companion launch
     // sees the operator's configured behavior.
-    recur_code_lib::commands::feedback::apply_persisted_feedback_config(
+    rc_lib::commands::feedback::apply_persisted_feedback_config(
         &state.db.conn,
         &feedback_config,
     )
     .await;
     // Same for the ask-user-question enable flag.
-    recur_code_lib::commands::question::apply_persisted_question_config(
+    rc_lib::commands::question::apply_persisted_question_config(
         &state.db.conn,
         &question_config,
     )
     .await;
     // Same for the get-session-info enable flag.
-    recur_code_lib::commands::session_info::apply_persisted_session_info_config(
+    rc_lib::commands::session_info::apply_persisted_session_info_config(
         &state.db.conn,
         &session_info_config,
     )
     .await;
     // Same for the chat-authoring flags, so the first companion launch knows
     // whether to advertise `create_automation` / `create_work_task`.
-    recur_code_lib::commands::chat_authoring::apply_persisted_chat_authoring_config(
+    rc_lib::commands::chat_authoring::apply_persisted_chat_authoring_config(
         &state.db.conn,
         &chat_authoring_config,
     )
@@ -347,7 +347,7 @@ async fn async_main() -> ExitCode {
     // And the browser-tools switch, so the popover reports it truthfully.
     // Server mode never advertises the group (there are no native tabs here),
     // but the flag is one setting shared by both runtimes.
-    recur_code_lib::commands::browser_tools::apply_persisted_browser_tools_config(
+    rc_lib::commands::browser_tools::apply_persisted_browser_tools_config(
         &state.db.conn,
         &state.browser_tools_config,
     )
@@ -355,7 +355,7 @@ async fn async_main() -> ExitCode {
     // And the computer-use switches: the popover reports them, and — where
     // the person running this server lets it share the screen it runs on —
     // the computer service below starts from them.
-    recur_code_lib::commands::computer_tools::apply_persisted_computer_tools_config(
+    rc_lib::commands::computer_tools::apply_persisted_computer_tools_config(
         &state.db.conn,
         &state.computer_tools_config,
     )
@@ -363,14 +363,14 @@ async fn async_main() -> ExitCode {
     // The generative-UI skill's central copy, and the move from 0.35.0's
     // `json-render`: before the server takes a request, so the move can never
     // undo a change made on the settings page.
-    recur_code_lib::commands::generative_ui::install_generative_ui_skill(&state.db.conn).await;
+    rc_lib::commands::generative_ui::install_generative_ui_skill(&state.db.conn).await;
     // Computer use: only where whoever runs this server says so, by
     // RC_COMPUTER_USE — the server's web clients then share this
     // machine's windows with agents, and Stop them, from the panel. Nothing
     // else here can: a web client holds the token, not the machine.
     if computer_use_requested() {
-        let service = recur_code_lib::commands::computer::ComputerService::start(
-            recur_code_lib::commands::computer::ComputerHost::Server {
+        let service = rc_lib::commands::computer::ComputerService::start(
+            rc_lib::commands::computer::ComputerHost::Server {
                 broadcaster: state.event_broadcaster.clone(),
                 emitter: state.emitter.clone(),
             },
@@ -404,7 +404,7 @@ async fn async_main() -> ExitCode {
     // with the same default-shell preference the built-in terminal uses, and
     // seed the command-color opt-in that every launch env is built from.
     let terminal_shell_config = state.connection_manager.terminal_shell_config();
-    recur_code_lib::commands::system_settings::apply_persisted_terminal_settings(
+    rc_lib::commands::system_settings::apply_persisted_terminal_settings(
         &state.db.conn,
         &terminal_shell_config,
     )
@@ -414,26 +414,26 @@ async fn async_main() -> ExitCode {
     // through the broker. Path is PID-scoped, so the listener owns it for
     // the lifetime of the process.
     {
-        let listener = recur_code_lib::acp::delegation::listener::DelegationListener::new(
+        let listener = rc_lib::acp::delegation::listener::DelegationListener::new(
             delegation_broker,
             delegation_tokens,
-            Arc::new(recur_code_lib::acp::manager::ConnectionManagerParentLookup {
+            Arc::new(rc_lib::acp::manager::ConnectionManagerParentLookup {
                 manager: Arc::new(state.connection_manager.clone_ref()),
             }),
-            Arc::new(recur_code_lib::acp::manager::ConnectionManagerFeedbackLookup {
+            Arc::new(rc_lib::acp::manager::ConnectionManagerFeedbackLookup {
                 manager: Arc::new(state.connection_manager.clone_ref()),
             }),
-            Arc::new(recur_code_lib::acp::manager::ConnectionManagerQuestionLookup {
+            Arc::new(rc_lib::acp::manager::ConnectionManagerQuestionLookup {
                 manager: Arc::new(state.connection_manager.clone_ref()),
             }),
-            Arc::new(recur_code_lib::commands::session_info::DbSessionInfoLookup::new(
-                Arc::new(recur_code_lib::db::AppDatabase {
+            Arc::new(rc_lib::commands::session_info::DbSessionInfoLookup::new(
+                Arc::new(rc_lib::db::AppDatabase {
                     conn: state.db.conn.clone(),
                 }),
             )),
-            Arc::new(recur_code_lib::work_task::EngineWorkTaskTools),
-            Arc::new(recur_code_lib::commands::chat_authoring::DbChatAuthoring::new(
-                Arc::new(recur_code_lib::db::AppDatabase {
+            Arc::new(rc_lib::work_task::EngineWorkTaskTools),
+            Arc::new(rc_lib::commands::chat_authoring::DbChatAuthoring::new(
+                Arc::new(rc_lib::db::AppDatabase {
                     conn: state.db.conn.clone(),
                 }),
                 state.emitter.clone(),
@@ -442,26 +442,26 @@ async fn async_main() -> ExitCode {
             // No native webviews in this process: what a web user sees in a
             // "browser tab" is an iframe their own browser renders, which
             // nothing here can reach.
-            Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs),
+            Arc::new(rc_lib::acp::browser_tools::NoBrowserTabs),
             // The screen this server runs on, where it is let share it
             // (`RC_COMPUTER_USE`); none otherwise.
             match state.computer_service.get() {
-                Some(service) => Arc::new(recur_code_lib::commands::computer::McpComputerTools::new(
+                Some(service) => Arc::new(rc_lib::commands::computer::McpComputerTools::new(
                     service.clone(),
                 ))
-                    as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
-                None => Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop),
+                    as Arc<dyn rc_lib::acp::computer_tools::ComputerToolAccess>,
+                None => Arc::new(rc_lib::acp::computer_tools::NoComputerDesktop),
             },
         );
         // Bind through the service handle rather than a bare `listener.run`
         // spawn: it keeps the bind error and the accept-loop handle around, so
         // the workspace status indicator can report why the broker socket is
         // down and rebind it without restarting the server.
-        let service = recur_code_lib::acp::delegation::service::DelegationService::new(
+        let service = rc_lib::acp::delegation::service::DelegationService::new(
             listener,
             delegation_socket_path.clone(),
         );
-        recur_code_lib::acp::delegation::service::install(service.clone());
+        rc_lib::acp::delegation::service::install(service.clone());
         tokio::spawn(async move {
             if let Err(e) = service.start().await {
                 tracing::error!("[delegation] listener failed to start: {e}");
@@ -473,7 +473,7 @@ async fn async_main() -> ExitCode {
     // (`~/.recurcode/skills/`). Runs in the background; failures are logged
     // but non-fatal.
     tokio::spawn(async move {
-        let report = recur_code_lib::commands::experts::ensure_central_experts_installed().await;
+        let report = rc_lib::commands::experts::ensure_central_experts_installed().await;
         if !report.errors.is_empty() {
             tracing::error!(
                 "[Experts] install finished with {} error(s): {:?}",
@@ -493,7 +493,7 @@ async fn async_main() -> ExitCode {
     // Install bundled scientific-research skills into the same central store.
     // Runs in the background; failures are logged but non-fatal.
     tokio::spawn(async move {
-        let report = recur_code_lib::commands::science::ensure_central_science_installed().await;
+        let report = rc_lib::commands::science::ensure_central_science_installed().await;
         if !report.errors.is_empty() {
             tracing::error!(
                 "[Science] install finished with {} error(s): {:?}",
@@ -527,7 +527,7 @@ async fn async_main() -> ExitCode {
     // broker is supplied so TurnComplete on a delegation child resolves the
     // parent's pending `delegate_to_agent` tool_use_id and emits
     // `DelegationCompleted`.
-    tokio::spawn(recur_code_lib::lifecycle_subscriber_task(
+    tokio::spawn(rc_lib::lifecycle_subscriber_task(
         state.db.conn.clone(),
         state.connection_manager.clone_ref(),
         state.acp_event_bus.clone(),
@@ -539,7 +539,7 @@ async fn async_main() -> ExitCode {
     // bridge, just like the Tauri webview does in desktop mode. ACP events
     // come through the typed bus; folder/app side-channels stay on the
     // JSON broadcaster.
-    tokio::spawn(recur_code_lib::pet_state_mapper::pet_state_subscriber_task(
+    tokio::spawn(rc_lib::pet_state_mapper::pet_state_subscriber_task(
         state.acp_event_bus.clone(),
         state.event_broadcaster.clone(),
         state.emitter.clone(),
@@ -550,11 +550,11 @@ async fn async_main() -> ExitCode {
     // disconnect (e.g. browser tab closed, panic survivors) are reaped.
     // Override the 60-second default via `RC_ACP_IDLE_TIMEOUT_SECS`
     // (set to `0` to disable).
-    if let Some(idle_timeout) = recur_code_lib::idle_timeout_from_env() {
-        tokio::spawn(recur_code_lib::idle_sweep_task(
+    if let Some(idle_timeout) = rc_lib::idle_timeout_from_env() {
+        tokio::spawn(rc_lib::idle_sweep_task(
             state.connection_manager.clone_ref(),
             idle_timeout,
-            std::time::Duration::from_secs(recur_code_lib::SWEEP_INTERVAL_SECS),
+            std::time::Duration::from_secs(rc_lib::SWEEP_INTERVAL_SECS),
         ));
     }
 
@@ -562,20 +562,20 @@ async fn async_main() -> ExitCode {
     // gated on `idle_timeout_from_env` like the sweep above: setting
     // `RC_ACP_IDLE_TIMEOUT_SECS=0` disables idle disconnects, not disk
     // reclamation.
-    tokio::spawn(recur_code_lib::scratch_sweep_task());
+    tokio::spawn(rc_lib::scratch_sweep_task());
 
     // Office watch preview servers: reap dead children + ref0 stragglers.
-    if let Some(idle_timeout) = recur_code_lib::office_watch::idle_timeout_from_env() {
-        tokio::spawn(recur_code_lib::office_watch::office_watch_idle_sweep_task(
+    if let Some(idle_timeout) = rc_lib::office_watch::idle_timeout_from_env() {
+        tokio::spawn(rc_lib::office_watch::office_watch_idle_sweep_task(
             idle_timeout,
-            std::time::Duration::from_secs(recur_code_lib::office_watch::SWEEP_INTERVAL_SECS),
+            std::time::Duration::from_secs(rc_lib::office_watch::SWEEP_INTERVAL_SECS),
         ));
     }
 
     // Automation engine (mirrors lib.rs setup): manual + scheduled fires,
     // event-bus completion, reconcile, boot recovery. One per process.
-    if let Some(engine) = recur_code_lib::automation::build_engine(
-        recur_code_lib::db::AppDatabase {
+    if let Some(engine) = rc_lib::automation::build_engine(
+        rc_lib::db::AppDatabase {
             conn: state.db.conn.clone(),
         },
         state.connection_manager.clone_ref(),
@@ -583,13 +583,13 @@ async fn async_main() -> ExitCode {
         state.acp_event_bus.clone(),
         state.data_dir.clone(),
     ) {
-        tokio::spawn(recur_code_lib::automation::run_automation_engine(engine));
+        tokio::spawn(rc_lib::automation::run_automation_engine(engine));
     }
 
     // Work-task engine (mirrors lib.rs setup): manual pipeline, event-bus
     // settlement, merging git-truth recovery. One per process.
-    if let Some(engine) = recur_code_lib::work_task::build_task_engine(
-        recur_code_lib::db::AppDatabase {
+    if let Some(engine) = rc_lib::work_task::build_task_engine(
+        rc_lib::db::AppDatabase {
             conn: state.db.conn.clone(),
         },
         state.connection_manager.clone_ref(),
@@ -597,7 +597,7 @@ async fn async_main() -> ExitCode {
         state.acp_event_bus.clone(),
         state.data_dir.clone(),
     ) {
-        tokio::spawn(recur_code_lib::work_task::run_task_engine(engine));
+        tokio::spawn(rc_lib::work_task::run_task_engine(engine));
     }
 
     // Config-sync uploader (mirrors lib.rs setup): sleeps a minute, then
@@ -607,10 +607,10 @@ async fn async_main() -> ExitCode {
         let db_for_sync = state.db.conn.clone();
         let emitter = std::sync::Arc::new(state.emitter.clone());
         tokio::spawn(async move {
-            recur_code_lib::commands::config_sync::auto_sync::run_auto_sync_loop(
+            rc_lib::commands::config_sync::auto_sync::run_auto_sync_loop(
                 db_for_sync,
                 emitter,
-                recur_code_lib::commands::config_sync::APP_VERSION.to_string(),
+                rc_lib::commands::config_sync::APP_VERSION.to_string(),
             )
             .await;
         });
@@ -621,13 +621,13 @@ async fn async_main() -> ExitCode {
     // changed folders are broadcast, so a browser that already fetched its
     // folder list still picks them up.
     {
-        let db = recur_code_lib::db::AppDatabase {
+        let db = rc_lib::db::AppDatabase {
             conn: state.db.conn.clone(),
         };
         let emitter = state.emitter.clone();
         tokio::spawn(async move {
             let n =
-                recur_code_lib::commands::folders::backfill_worktree_folder_aliases(&emitter, &db).await;
+                rc_lib::commands::folders::backfill_worktree_folder_aliases(&emitter, &db).await;
             if n > 0 {
                 tracing::info!("[folders] labeled {n} worktree folder(s) by branch");
             }
@@ -638,11 +638,11 @@ async fn async_main() -> ExitCode {
     // serving the first request. The quota log/validate ran earlier in
     // `main` so strict-mode misconfigurations abort before we touch
     // disk; no second log line here.
-    recur_code_lib::web::handlers::files::purge_upload_staging().await;
+    rc_lib::web::handlers::files::purge_upload_staging().await;
 
     // Build router
     let shutdown_signal = state.web_server_state.shutdown_signal();
-    let router = recur_code_lib::web::router::build_router(
+    let router = rc_lib::web::router::build_router(
         state.clone(),
         token.clone(),
         static_dir,
@@ -659,7 +659,7 @@ async fn async_main() -> ExitCode {
         }
     };
 
-    if let Err(e) = recur_code_lib::web::socket_inherit::mark_listener_non_inheritable(&listener) {
+    if let Err(e) = rc_lib::web::socket_inherit::mark_listener_non_inheritable(&listener) {
         tracing::warn!(
             "[SERVER][WARN] failed to mark listener non-inheritable: {}",
             e
@@ -688,18 +688,18 @@ async fn async_main() -> ExitCode {
     // RC_BRIDGE_PORTS says otherwise — or nothing of its own at all when
     // RC_BRIDGE_HOST_PATTERN names the targets by hostname on this port.
     let bridge =
-        recur_code_lib::web::browser_bridge::BridgeConfig::from_env(&advertised_host, actual_port);
+        rc_lib::web::browser_bridge::BridgeConfig::from_env(&advertised_host, actual_port);
     match &bridge {
         Some(config) => tracing::info!(
             "[SERVER] Port bridge for dev servers: {}",
-            recur_code_lib::web::describe_bridge(config)
+            rc_lib::web::describe_bridge(config)
         ),
         None => tracing::info!(
             "[SERVER] Port bridge for dev servers: {}",
-            recur_code_lib::web::BRIDGE_OFF
+            rc_lib::web::BRIDGE_OFF
         ),
     }
-    recur_code_lib::web::browser_bridge::configure(bridge);
+    rc_lib::web::browser_bridge::configure(bridge);
 
     tracing::info!("[SERVER] Listening on:");
     for addr in &addresses {
@@ -713,7 +713,7 @@ async fn async_main() -> ExitCode {
     }
     // Graceful shutdown: release any live office watch preview servers
     // (kill_on_drop is the backstop, but this frees their ports promptly).
-    recur_code_lib::office_watch::stop_all_office_watches();
+    rc_lib::office_watch::stop_all_office_watches();
     ExitCode::SUCCESS
 }
 

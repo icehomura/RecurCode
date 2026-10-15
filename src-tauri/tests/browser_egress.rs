@@ -11,9 +11,9 @@ use std::time::Duration;
 
 use axum::routing::get;
 use axum::{middleware, Extension, Router};
-use recur_code_lib::browser::egress::{Egress, EgressStatus, TargetLoader, TunnelTarget};
-use recur_code_lib::web::browser_tunnel::frame::TUNNEL_PATH;
-use recur_code_lib::web::shutdown::ShutdownSignal;
+use rc_lib::browser::egress::{Egress, EgressStatus, TargetLoader, TunnelTarget};
+use rc_lib::web::browser_tunnel::frame::TUNNEL_PATH;
+use rc_lib::web::shutdown::ShutdownSignal;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -30,7 +30,7 @@ struct Server {
 async fn spawn_server() -> Server {
     let shutdown = Arc::new(ShutdownSignal::new());
     let app = Router::new()
-        .route(TUNNEL_PATH, get(recur_code_lib::web::browser_tunnel::ws_handler))
+        .route(TUNNEL_PATH, get(rc_lib::web::browser_tunnel::ws_handler))
         .route(
             "/forbidden",
             get(|| async { (axum::http::StatusCode::FORBIDDEN, "off") }),
@@ -42,7 +42,7 @@ async fn spawn_server() -> Server {
             get(|| async { axum::response::Html("<!doctype html><title>RecurCode</title>") }),
         )
         .layer(middleware::from_fn(|req, next| {
-            recur_code_lib::web::auth::require_token(req, next, TOKEN.to_string())
+            rc_lib::web::auth::require_token(req, next, TOKEN.to_string())
         }))
         .layer(Extension(shutdown.clone()));
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();

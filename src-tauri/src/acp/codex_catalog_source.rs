@@ -15,7 +15,7 @@
 //! snapshot ([`crate::acp::codex_model_catalog::bundled_snapshot_models`])
 //! guarantees a result offline.
 //!
-//! The cache lives under [`crate::paths::recur_code_home_dir`] (not the app data dir)
+//! The cache lives under [`crate::paths::rc_home_dir`] (not the app data dir)
 //! so both the async editor path and the **synchronous** config-write paths can
 //! reach it with zero `data_dir` threading.
 
@@ -30,7 +30,7 @@ const CACHE_TTL: Duration = Duration::from_secs(24 * 60 * 60);
 const CODEX_TIMEOUT: Duration = Duration::from_secs(15);
 
 fn cache_path() -> PathBuf {
-    crate::paths::recur_code_home_dir()
+    crate::paths::rc_home_dir()
         .join("cache")
         .join("codex")
         .join("bundled-catalog.json")

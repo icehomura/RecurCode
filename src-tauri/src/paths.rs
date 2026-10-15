@@ -5,7 +5,7 @@
 //! user-scoped persistent directory should call into this module instead of
 //! re-deriving `dirs::home_dir().join(".recurcode")` themselves.
 //!
-//! The `recur_code_*_root` data directories resolve `$RC_HOME`, then
+//! The `rc_*_root` data directories resolve `$RC_HOME`, then
 //! `$RC_DATA_DIR`, then `~/.recurcode`. Both binaries export `RC_DATA_DIR`
 //! before anything reads it — the desktop app from [`desktop_data_dir`] at the
 //! top of `run()`, `rc-server` in `main` — so the data directory is what
@@ -27,7 +27,7 @@ const BACKGROUNDS_DIR_NAME: &str = "backgrounds";
 ///
 /// Returns the relative `.recurcode` path when no home directory is available;
 /// callers must still handle creation failures gracefully.
-pub fn recur_code_home_dir() -> PathBuf {
+pub fn rc_home_dir() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom);
     }
@@ -42,7 +42,7 @@ pub fn recur_code_home_dir() -> PathBuf {
 /// 1. `$RC_HOME/pets` (explicit override, used in tests and custom installs)
 /// 2. `$RC_DATA_DIR/pets` (the data directory, see the module docs)
 /// 3. `~/.recurcode/pets` (neither set)
-pub fn recur_code_pets_root() -> PathBuf {
+pub fn rc_pets_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(PETS_DIR_NAME);
     }
@@ -58,8 +58,8 @@ pub fn recur_code_pets_root() -> PathBuf {
 /// on Windows, WebKitGTK data directories on Linux; macOS keeps profiles in
 /// WebKit's own store and never reads this).
 ///
-/// Resolution order matches `recur_code_pets_root()`.
-pub fn recur_code_browser_profiles_root() -> PathBuf {
+/// Resolution order matches `rc_pets_root()`.
+pub fn rc_browser_profiles_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(BROWSER_PROFILES_DIR_NAME);
     }
@@ -73,7 +73,7 @@ pub fn recur_code_browser_profiles_root() -> PathBuf {
 
 /// Root directory for attachments uploaded from the web client.
 ///
-/// Resolution order matches `recur_code_pets_root()`:
+/// Resolution order matches `rc_pets_root()`:
 /// 1. `$RC_HOME/uploads`
 /// 2. `$RC_DATA_DIR/uploads` (the data directory, see the module docs)
 /// 3. `~/.recurcode/uploads` (neither set)
@@ -95,7 +95,7 @@ pub fn recur_code_browser_profiles_root() -> PathBuf {
 /// RecurCode is designed for single-process deployments; horizontal
 /// scaling would require external coordination (file lock, Redis,
 /// reverse-proxy quota) that this codebase does not provide.
-pub fn recur_code_uploads_root() -> PathBuf {
+pub fn rc_uploads_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(UPLOADS_DIR_NAME);
     }
@@ -109,11 +109,11 @@ pub fn recur_code_uploads_root() -> PathBuf {
 
 /// Root directory for the user-selected workspace background image.
 ///
-/// Resolution mirrors [`recur_code_pets_root`] exactly:
+/// Resolution mirrors [`rc_pets_root`] exactly:
 /// 1. `$RC_HOME/backgrounds` (explicit override)
 /// 2. `$RC_DATA_DIR/backgrounds` (the data directory, see the module docs)
 /// 3. `~/.recurcode/backgrounds` (neither set)
-pub fn recur_code_backgrounds_root() -> PathBuf {
+pub fn rc_backgrounds_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(BACKGROUNDS_DIR_NAME);
     }
@@ -128,7 +128,7 @@ pub fn recur_code_backgrounds_root() -> PathBuf {
 /// Root directory for application diagnostic logs (rotating files written by
 /// the `tracing` file appender; see `crate::logging`).
 ///
-/// Resolution mirrors [`recur_code_uploads_root`] exactly so logs land on the same
+/// Resolution mirrors [`rc_uploads_root`] exactly so logs land on the same
 /// filesystem root as uploads/pets/the database:
 /// 1. `$RC_HOME/logs` (explicit override)
 /// 2. `$RC_DATA_DIR/logs` (the data directory, see the module docs)
@@ -139,7 +139,7 @@ pub fn recur_code_backgrounds_root() -> PathBuf {
 /// exists — which is exactly when the subscriber must be installed. Both
 /// binaries export the data directory before that point, so the logs sit
 /// beside the database however the process was started.
-pub fn recur_code_logs_root() -> PathBuf {
+pub fn rc_logs_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(LOGS_DIR_NAME);
     }
@@ -157,11 +157,11 @@ pub fn recur_code_logs_root() -> PathBuf {
 /// timestamps (Cursor). Written by the live connection, read back by the
 /// history parser.
 ///
-/// Resolution mirrors [`recur_code_uploads_root`]:
+/// Resolution mirrors [`rc_uploads_root`]:
 /// 1. `$RC_HOME/turn-timings`
 /// 2. `$RC_DATA_DIR/turn-timings` (the data directory, see the module docs)
 /// 3. `~/.recurcode/turn-timings` (neither set)
-pub fn recur_code_turn_timings_root() -> PathBuf {
+pub fn rc_turn_timings_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(TURN_TIMINGS_DIR_NAME);
     }
@@ -179,11 +179,11 @@ pub fn recur_code_turn_timings_root() -> PathBuf {
 /// transcript parser of their own. Written by the live connection, read back
 /// by `crate::parsers::acp_native`.
 ///
-/// Resolution mirrors [`recur_code_turn_timings_root`]:
+/// Resolution mirrors [`rc_turn_timings_root`]:
 /// 1. `$RC_HOME/acp-transcripts`
 /// 2. `$RC_DATA_DIR/acp-transcripts` (the data directory, see the module docs)
 /// 3. `~/.recurcode/acp-transcripts` (neither set)
-pub fn recur_code_acp_transcripts_root() -> PathBuf {
+pub fn rc_acp_transcripts_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(ACP_TRANSCRIPTS_DIR_NAME);
     }
@@ -234,7 +234,7 @@ pub fn desktop_data_dir(
 /// Always returns an absolute path (`absolutize` re-bases against the
 /// process CWD if needed). Callers should treat the result as
 /// authoritative and not re-read `RC_DATA_DIR` themselves; the
-/// startup code in `lib.rs` / `bin/recur_code_server.rs` writes the
+/// startup code in `lib.rs` / `bin/rc_server.rs` writes the
 /// resolved value back to the env so subprocess inheritance works,
 /// but the in-process source of truth is this function.
 ///

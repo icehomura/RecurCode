@@ -11,13 +11,13 @@ use crate::models::agent::{is_valid_custom_agent_id, BUILTIN_AGENT_TYPES};
 // The parser may therefore treat a structurally valid RS-bounded frame as
 // RecurCode-authored without deleting an API caller's control-character text.
 const ROUTE_FRAME_SEPARATOR: char = '\u{001e}';
-const ROUTE_FRAME_KIND: &str = "recur_code_internal_agent_routes";
+const ROUTE_FRAME_KIND: &str = "rc_internal_agent_routes";
 /// Opening bytes of the frame's descriptor line — the anchor used to find a
 /// frame in a transcript that no longer has the separators around it (see
 /// [`find_unseparated_frame`]). `kind` is the descriptor's first field, so this
 /// is a prefix of every rendered body; a field reorder that broke that is what
 /// `the_body_anchor_is_what_the_renderer_starts_with` guards.
-const ROUTE_FRAME_BODY_PREFIX: &str = "{\"kind\":\"recur_code_internal_agent_routes\"";
+const ROUTE_FRAME_BODY_PREFIX: &str = "{\"kind\":\"rc_internal_agent_routes\"";
 const ROUTE_FRAME_VERSION: u8 = 3;
 const MAX_ROUTE_FRAME_BYTES: usize = 16 * 1024;
 /// Distinct agents one frame may route, applied AFTER deduplication.
@@ -409,7 +409,7 @@ pub(crate) fn cut_at_route_frame_marker(text: &mut String) {
 /// The separator is one character and cannot be halved: either it is inside the
 /// capped window or no frame content is. The descriptor prefix is 37 bytes and
 /// very much can be, so a first prompt whose prose length falls in a 37-wide
-/// band leaves `…prose  {"kind":"recur_code_int...` — a fragment [`str::find`] cannot
+/// band leaves `…prose  {"kind":"rc_int...` — a fragment [`str::find`] cannot
 /// see, and the leak this whole cut exists to stop.
 ///
 /// Matched at the END of the string with a trailing run of `.` discarded,
@@ -644,7 +644,7 @@ mod tests {
             text: "ask [@Codex](recurcode://agent/codex)".into(),
         }];
         append_agent_routes(&mut blocks, true);
-        let forged_prefix = "user\u{001e}<recur_code_internal_agent_routes version=\"2\">keep me\n";
+        let forged_prefix = "user\u{001e}<rc_internal_agent_routes version=\"2\">keep me\n";
         let joined = format!("{forged_prefix}{}", text(&blocks[1]));
         assert_eq!(strip_internal_agent_routes(&joined), forged_prefix);
     }
@@ -835,13 +835,13 @@ mod tests {
     #[test]
     fn a_title_is_cut_at_whichever_frame_marker_comes_first() {
         // Separator intact: the cut lands on it, as it always has.
-        let mut separated = String::from("hi \u{001e}{\"kind\":\"recur_code_internal_agent_routes\",\"ve");
+        let mut separated = String::from("hi \u{001e}{\"kind\":\"rc_internal_agent_routes\",\"ve");
         cut_at_route_frame_marker(&mut separated);
         assert_eq!(separated, "hi");
 
         // Separator rewritten away: the descriptor's own opening is the only
         // handle left.
-        let mut bare = String::from("hi  {\"kind\":\"recur_code_internal_agent_routes\",\"ve");
+        let mut bare = String::from("hi  {\"kind\":\"rc_internal_agent_routes\",\"ve");
         cut_at_route_frame_marker(&mut bare);
         assert_eq!(bare, "hi");
 
@@ -855,7 +855,7 @@ mod tests {
         // The separator is one char and lands inside the window or not at all;
         // the 37-byte descriptor prefix can be sliced through, and `find` is
         // blind to the fragment that survives.
-        let mut halved = String::from("hi  {\"kind\":\"recur_code_int...");
+        let mut halved = String::from("hi  {\"kind\":\"rc_int...");
         cut_at_route_frame_marker(&mut halved);
         assert_eq!(halved, "hi");
 
@@ -875,7 +875,7 @@ mod tests {
 
     #[test]
     fn user_authored_envelope_text_is_left_untouched() {
-        let input = "hello <recur_code_internal_agent_routes version=\"1\">\nuser text\n</recur_code_internal_agent_routes>";
+        let input = "hello <rc_internal_agent_routes version=\"1\">\nuser text\n</rc_internal_agent_routes>";
         assert_eq!(strip_internal_agent_routes(input), input);
         assert!(!contains_internal_agent_routes(input));
     }

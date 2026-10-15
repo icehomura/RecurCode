@@ -12,7 +12,7 @@ default-run = "RecurCode"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "recur_code_lib"
+name = "rc_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
@@ -85,14 +85,14 @@ required-features = ["tauri-runtime"]
 # rc-server --no-default-features --features server-bin`.
 [[bin]]
 name = "rc-server"
-path = "src/bin/recur_code_server.rs"
+path = "src/bin/rc_server.rs"
 required-features = ["server-bin"]
 
 # The MCP companion each agent session runs. Built only with `mcp-bin` (and,
 # for the real thing, without the default features).
 [[bin]]
 name = "rc-mcp"
-path = "src/bin/recur_code_mcp.rs"
+path = "src/bin/rc_mcp.rs"
 required-features = ["mcp-bin"]
 
 # The computer-use executor: holds the OS permissions (macOS TCC) in place of
@@ -100,7 +100,7 @@ required-features = ["mcp-bin"]
 # by the desktop app and serves only it. Built only with `computer-helper`.
 [[bin]]
 name = "rc-computer-helper"
-path = "src/bin/recur_code_computer_helper.rs"
+path = "src/bin/rc_computer_helper.rs"
 required-features = ["computer-helper"]
 
 # Runs the `rc-server` binary, so only where that is built.

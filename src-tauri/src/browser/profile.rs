@@ -172,7 +172,7 @@ pub fn data_store_identifier(profile_id: &str) -> [u8; 16] {
 /// folder) and Linux (WebKitGTK data directory). Unused on macOS, where the
 /// data store identifier plays this role.
 pub fn directory(profile_id: &str) -> PathBuf {
-    crate::paths::recur_code_browser_profiles_root().join(profile_id)
+    crate::paths::rc_browser_profiles_root().join(profile_id)
 }
 
 /// Whether more than the default profile can exist here. macOS keeps the

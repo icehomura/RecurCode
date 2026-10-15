@@ -14,7 +14,7 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::Response;
 use axum::routing::get;
 use axum::Router;
-use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeError, BridgeGrant, HostPattern};
+use rc_lib::web::browser_bridge::{self, BridgeConfig, BridgeError, BridgeGrant, HostPattern};
 use futures_util::{SinkExt, StreamExt};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
@@ -87,7 +87,7 @@ async fn spawn_upstream() -> u16 {
 /// RecurCode's own listener, with the bridge's host routing in front of it
 /// exactly where `web::router::build_router` puts it: outermost, so a
 /// bridged request never reaches anything below.
-async fn spawn_recur_code() -> u16 {
+async fn spawn_rc() -> u16 {
     let app = Router::new()
         .route("/api/whoami", get(|| async { "RecurCode's own api" }))
         .fallback(|| async { "RecurCode's own page" })
@@ -123,9 +123,9 @@ fn cookie_for(grant: &BridgeGrant) -> String {
 
 /// The authority the browser would use: the grant's hostname on the port it
 /// already talks to, which is RecurCode's own.
-fn authority(grant: &BridgeGrant, recur_code_port: u16) -> String {
+fn authority(grant: &BridgeGrant, rc_port: u16) -> String {
     format!(
-        "{}:{recur_code_port}",
+        "{}:{rc_port}",
         grant.bridge_host.as_deref().expect("a hostname-addressed bridge")
     )
 }
@@ -164,10 +164,10 @@ async fn a_target_is_named_by_hostname_and_bound_to_nothing() {
 }
 
 #[tokio::test]
-async fn the_page_comes_through_recur_codes_own_listener() {
+async fn the_page_comes_through_rcs_own_listener() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-page", Some(WORKBENCH))
         .await
         .unwrap();
@@ -221,10 +221,10 @@ async fn the_page_comes_through_recur_codes_own_listener() {
 }
 
 #[tokio::test]
-async fn recur_code_and_the_dev_servers_never_answer_for_each_other() {
+async fn rc_and_the_dev_servers_never_answer_for_each_other() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-apart", Some(WORKBENCH))
         .await
         .unwrap();
@@ -269,7 +269,7 @@ async fn recur_code_and_the_dev_servers_never_answer_for_each_other() {
     let response = get("/", format!("127.0.0.1:{RecurCode}"), false).await.unwrap();
     assert_eq!(response.text().await.unwrap(), "RecurCode's own page");
     // The bridge's own prefix is never forwarded upstream.
-    let response = get("/__recur_code_bridge/anything", host, true).await.unwrap();
+    let response = get("/__rc_bridge/anything", host, true).await.unwrap();
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }
 
@@ -278,10 +278,10 @@ async fn recur_code_and_the_dev_servers_never_answer_for_each_other() {
 /// was never asked to take, a workbench on a numeric-leading hostname among
 /// them.
 #[tokio::test]
-async fn only_a_name_recur_code_handed_out_is_the_bridges() {
+async fn only_a_name_rc_handed_out_is_the_bridges() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-shape", Some(WORKBENCH))
         .await
         .unwrap();
@@ -326,7 +326,7 @@ async fn only_a_name_recur_code_handed_out_is_the_bridges() {
 async fn a_forwarding_header_decides_nothing_without_a_proxy_in_front() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-forged", Some(WORKBENCH))
         .await
         .unwrap();
@@ -355,7 +355,7 @@ async fn a_forwarding_header_decides_nothing_without_a_proxy_in_front() {
 async fn only_this_targets_own_page_may_ask() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-initiator", Some(WORKBENCH))
         .await
         .unwrap();
@@ -435,7 +435,7 @@ async fn only_this_targets_own_page_may_ask() {
 async fn websockets_are_bridged_through_the_shared_listener() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-ws", Some(WORKBENCH))
         .await
         .unwrap();

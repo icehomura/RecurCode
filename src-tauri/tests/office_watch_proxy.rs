@@ -12,10 +12,10 @@ use std::sync::{Arc, Mutex};
 use axum::extract::RawQuery;
 use axum::http::header;
 use axum_test::TestServer;
-use recur_code_lib::app_state::AppState;
-use recur_code_lib::db::test_helpers::fresh_in_memory_db;
-use recur_code_lib::web::router::build_router;
-use recur_code_lib::web::shutdown::ShutdownSignal;
+use rc_lib::app_state::AppState;
+use rc_lib::db::test_helpers::fresh_in_memory_db;
+use rc_lib::web::router::build_router;
+use rc_lib::web::shutdown::ShutdownSignal;
 
 const TEST_TOKEN: &str = "ow-proxy-test-token";
 const TEST_CAP: &str = "cap-deadbeefcafef00d";
@@ -97,11 +97,11 @@ async fn proxy_rejects_missing_cap() {
 async fn proxy_rejects_wrong_cap() {
     let (server, _data, _static) = build_proxy_server().await;
     let (port, _leaked, _q) = spawn_fake_upstream().await;
-    recur_code_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
+    rc_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
     let resp = server
         .get(&format!("/api/office-watch-proxy/{port}?cap=wrong"))
         .await;
-    recur_code_lib::office_watch::remove_known_port_for_test(port);
+    rc_lib::office_watch::remove_known_port_for_test(port);
     assert_eq!(resp.status_code(), 401);
 }
 
@@ -119,7 +119,7 @@ async fn proxy_rejects_unknown_port() {
 async fn proxy_forwards_with_valid_cap_without_leaking_cap() {
     let (server, _data, _static) = build_proxy_server().await;
     let (port, leaked, last_query) = spawn_fake_upstream().await;
-    recur_code_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
+    rc_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
 
     let resp = server
         .get(&format!(
@@ -127,7 +127,7 @@ async fn proxy_forwards_with_valid_cap_without_leaking_cap() {
         ))
         .await;
 
-    recur_code_lib::office_watch::remove_known_port_for_test(port);
+    rc_lib::office_watch::remove_known_port_for_test(port);
 
     assert_eq!(resp.status_code(), 200);
     assert_eq!(resp.text(), "upstream-body");
@@ -152,14 +152,14 @@ async fn sse_stream_is_never_compressed() {
     // response would be buffered by the encoder and stall live previews.
     let (server, _data, _static) = build_proxy_server().await;
     let (port, _leaked, _q) = spawn_fake_upstream().await;
-    recur_code_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
+    rc_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
 
     let resp = server
         .get(&format!("/api/office-watch-proxy/{port}/events?cap={TEST_CAP}"))
         .add_header("accept-encoding", "gzip, br")
         .await;
 
-    recur_code_lib::office_watch::remove_known_port_for_test(port);
+    rc_lib::office_watch::remove_known_port_for_test(port);
 
     assert_eq!(resp.status_code(), 200);
     assert!(
@@ -172,13 +172,13 @@ async fn sse_stream_is_never_compressed() {
 async fn proxy_injects_path_rewriting_shim_into_html() {
     let (server, _data, _static) = build_proxy_server().await;
     let (port, _leaked, _q) = spawn_fake_upstream().await;
-    recur_code_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
+    rc_lib::office_watch::insert_known_port_for_test(port, TEST_CAP);
 
     let resp = server
         .get(&format!("/api/office-watch-proxy/{port}/page?cap={TEST_CAP}"))
         .await;
 
-    recur_code_lib::office_watch::remove_known_port_for_test(port);
+    rc_lib::office_watch::remove_known_port_for_test(port);
 
     assert_eq!(resp.status_code(), 200);
     let body = resp.text();

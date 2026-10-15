@@ -39,7 +39,7 @@ export default function LoginPage() {
       })
 
       if (res.ok) {
-        localStorage.setItem("recur_code_token", token)
+        localStorage.setItem("rc_token", token)
         router.replace("/workspace")
       } else if (res.status === 401) {
         setError(t("invalidToken"))

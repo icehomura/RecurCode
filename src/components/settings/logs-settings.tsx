@@ -88,13 +88,13 @@ const OPEN_SCROLL_REPIN_FRAMES = 6
 const READ_LOG_MAX_BYTES = 16 * 1024 * 1024
 
 // Curated tracing targets offered as autocomplete suggestions for per-module
-// overrides (free text is still allowed). Module paths under `recur_code_lib`.
+// overrides (free text is still allowed). Module paths under `rc_lib`.
 const CURATED_TARGETS = [
-  "recur_code_lib::acp",
-  "recur_code_lib::acp::delegation",
-  "recur_code_lib::web",
-  "recur_code_lib::chat_channel",
-  "recur_code_lib::db",
+  "rc_lib::acp",
+  "rc_lib::acp::delegation",
+  "rc_lib::web",
+  "rc_lib::chat_channel",
+  "rc_lib::db",
 ]
 
 // A valid tracing target: `ident(::ident)*`. Rows failing this are flagged and
@@ -740,7 +740,7 @@ export function LogsSettings() {
                           handleTargetNameChange(i, e.target.value)
                         }
                         onBlur={queueSave}
-                        placeholder="recur_code_lib::acp"
+                        placeholder="rc_lib::acp"
                         list="rc-log-targets"
                         disabled={envLocked}
                         className={`h-8 flex-1 text-xs ${

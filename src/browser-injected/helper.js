@@ -22,16 +22,16 @@
 //      rejections, failed resource loads — as `console` messages, on the
 //      engines that report none of it to the host themselves.
 //
-// The host defines `__recur_codeSend(string)` before this script runs. Messages
+// The host defines `__rcSend(string)` before this script runs. Messages
 // are `{ kind, payload }` JSON strings; the host treats every field as
 // untrusted input.
 ;(function recurCodeBrowserHelper() {
   "use strict"
-  if (typeof globalThis.__recur_codeSend !== "function") return
-  if (globalThis.__recur_codeHelperInstalled) return
-  globalThis.__recur_codeHelperInstalled = true
+  if (typeof globalThis.__rcSend !== "function") return
+  if (globalThis.__rcHelperInstalled) return
+  globalThis.__rcHelperInstalled = true
 
-  var send = globalThis.__recur_codeSend
+  var send = globalThis.__rcSend
   var stringify = JSON.stringify
   var now = function () {
     return Date.now()
@@ -183,7 +183,7 @@
   // flag below is the one exception, set by the host's own test harness
   // through a world-scoped eval (page scripts cannot reach this global).
   function trusted(event) {
-    return !!event.isTrusted || globalThis.__recur_codeAcceptUntrusted === true
+    return !!event.isTrusted || globalThis.__rcAcceptUntrusted === true
   }
   function recordGesture(type, event, extra) {
     gestureSeq += 1
@@ -269,14 +269,14 @@
   // events reach a listener in this world like `popstate` does.
   //
   // Where the engine does report the console to the host (WebView2, over
-  // CDP), the host sets `__recur_codeEngineConsole` before this script runs and
+  // CDP), the host sets `__rcEngineConsole` before this script runs and
   // none of this is wired — or every line would arrive twice, once from the
   // engine and once from here.
   //
   // Everything below is page-controlled: the page can dispatch the event
   // itself, and a page in a logging loop could flood the channel, so lines
   // are budgeted per second and the overflow is counted rather than sent.
-  var engineConsole = globalThis.__recur_codeEngineConsole === true
+  var engineConsole = globalThis.__rcEngineConsole === true
   var parse = JSON.parse
   var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
   var CONSOLE_BUDGET_PER_SECOND = 200

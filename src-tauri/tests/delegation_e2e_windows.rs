@@ -11,19 +11,19 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use recur_code_lib::acp::delegation::broker::{
+use rc_lib::acp::delegation::broker::{
     ConversationDepthLookup, DelegationBroker, DelegationConfig,
 };
-use recur_code_lib::acp::delegation::listener::{
+use rc_lib::acp::delegation::listener::{
     DelegationListener, ParentSessionLookup, TokenEntry, TokenRegistry,
 };
-use recur_code_lib::acp::delegation::spawner::{mock::MockSpawner, ConnectionSpawner};
-use recur_code_lib::acp::delegation::transport::{
+use rc_lib::acp::delegation::spawner::{mock::MockSpawner, ConnectionSpawner};
+use rc_lib::acp::delegation::transport::{
     client_round_trip, client_status_round_trip, BrokerRequest, BrokerResponse, BrokerStatusRequest,
 };
-use recur_code_lib::acp::delegation::types::{DelegationError, DelegationOutcome, DelegationSuccess};
-use recur_code_lib::acp::question::{QuestionSpec, RegisteredQuestion, SessionQuestionAccess};
-use recur_code_lib::models::AgentType;
+use rc_lib::acp::delegation::types::{DelegationError, DelegationOutcome, DelegationSuccess};
+use rc_lib::acp::question::{QuestionSpec, RegisteredQuestion, SessionQuestionAccess};
+use rc_lib::models::AgentType;
 use serde_json::json;
 
 struct AlwaysRoot;
@@ -45,11 +45,11 @@ impl ParentSessionLookup for FixedParent {
 /// No-op feedback access — this e2e suite exercises delegation, not feedback.
 struct NoFeedback;
 #[async_trait]
-impl recur_code_lib::acp::feedback::SessionFeedbackAccess for NoFeedback {
+impl rc_lib::acp::feedback::SessionFeedbackAccess for NoFeedback {
     async fn read_pending_feedback(
         &self,
         _parent_connection_id: &str,
-    ) -> Vec<recur_code_lib::acp::feedback::PendingFeedback> {
+    ) -> Vec<rc_lib::acp::feedback::PendingFeedback> {
         Vec::new()
     }
     async fn commit_feedback_delivered(&self, _parent_connection_id: &str, _ids: Vec<String>) {}
@@ -73,34 +73,34 @@ impl SessionQuestionAccess for NoQuestions {
 /// No-op session-info access — this e2e suite never drives `get_session_info`.
 struct NoSessionInfo;
 #[async_trait]
-impl recur_code_lib::acp::session_info::SessionInfoAccess for NoSessionInfo {
+impl rc_lib::acp::session_info::SessionInfoAccess for NoSessionInfo {
     async fn resolve(
         &self,
         session_id: i32,
         _max_messages: u32,
-    ) -> recur_code_lib::acp::session_info::SessionInfo {
-        recur_code_lib::acp::session_info::SessionInfo::not_found(session_id)
+    ) -> rc_lib::acp::session_info::SessionInfo {
+        rc_lib::acp::session_info::SessionInfo::not_found(session_id)
     }
 }
 
 /// Task-tool stub: the e2e delegation tests never exercise the task arms.
 struct NoTaskTools;
 #[async_trait]
-impl recur_code_lib::acp::work_task_tools::WorkTaskToolAccess for NoTaskTools {
+impl rc_lib::acp::work_task_tools::WorkTaskToolAccess for NoTaskTools {
     async fn report_progress(
         &self,
         _parent: &str,
         _message: &str,
-    ) -> recur_code_lib::acp::work_task_tools::TaskReportAck {
-        recur_code_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
+    ) -> rc_lib::acp::work_task_tools::TaskReportAck {
+        rc_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
     }
     async fn complete(
         &self,
         _parent: &str,
         _verdict: &str,
         _summary: Option<&str>,
-    ) -> recur_code_lib::acp::work_task_tools::TaskReportAck {
-        recur_code_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
+    ) -> rc_lib::acp::work_task_tools::TaskReportAck {
+        rc_lib::acp::work_task_tools::TaskReportAck::rejected("no engine")
     }
 }
 
@@ -108,20 +108,20 @@ impl recur_code_lib::acp::work_task_tools::WorkTaskToolAccess for NoTaskTools {
 /// arms.
 struct NoAuthoring;
 #[async_trait]
-impl recur_code_lib::acp::chat_authoring::ChatAuthoringAccess for NoAuthoring {
+impl rc_lib::acp::chat_authoring::ChatAuthoringAccess for NoAuthoring {
     async fn create_automation(
         &self,
-        _ctx: recur_code_lib::acp::chat_authoring::AuthoringContext,
-        _spec: recur_code_lib::acp::chat_authoring::NewAutomationSpec,
-    ) -> recur_code_lib::acp::chat_authoring::AuthoringOutcome {
-        recur_code_lib::acp::chat_authoring::AuthoringOutcome::rejected("automation", "no authoring")
+        _ctx: rc_lib::acp::chat_authoring::AuthoringContext,
+        _spec: rc_lib::acp::chat_authoring::NewAutomationSpec,
+    ) -> rc_lib::acp::chat_authoring::AuthoringOutcome {
+        rc_lib::acp::chat_authoring::AuthoringOutcome::rejected("automation", "no authoring")
     }
     async fn create_work_task(
         &self,
-        _ctx: recur_code_lib::acp::chat_authoring::AuthoringContext,
-        _spec: recur_code_lib::acp::chat_authoring::NewWorkTaskSpec,
-    ) -> recur_code_lib::acp::chat_authoring::AuthoringOutcome {
-        recur_code_lib::acp::chat_authoring::AuthoringOutcome::rejected("work_task", "no authoring")
+        _ctx: rc_lib::acp::chat_authoring::AuthoringContext,
+        _spec: rc_lib::acp::chat_authoring::NewWorkTaskSpec,
+    ) -> rc_lib::acp::chat_authoring::AuthoringOutcome {
+        rc_lib::acp::chat_authoring::AuthoringOutcome::rejected("work_task", "no authoring")
     }
 }
 
@@ -210,15 +210,15 @@ async fn end_to_end_named_pipe_happy_path() {
         broker.clone(),
         tokens,
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn rc_lib::acp::feedback::SessionFeedbackAccess>,
         Arc::new(NoQuestions) as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn rc_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn rc_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn rc_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(rc_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn rc_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(rc_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn rc_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     let pipe = unique_pipe("happy");
@@ -317,15 +317,15 @@ async fn end_to_end_named_pipe_back_to_back_requests() {
         broker.clone(),
         tokens,
         Arc::new(FixedParent(1)) as Arc<dyn ParentSessionLookup>,
-        Arc::new(NoFeedback) as Arc<dyn recur_code_lib::acp::feedback::SessionFeedbackAccess>,
+        Arc::new(NoFeedback) as Arc<dyn rc_lib::acp::feedback::SessionFeedbackAccess>,
         Arc::new(NoQuestions) as Arc<dyn SessionQuestionAccess>,
-        Arc::new(NoSessionInfo) as Arc<dyn recur_code_lib::acp::session_info::SessionInfoAccess>,
-        Arc::new(NoTaskTools) as Arc<dyn recur_code_lib::acp::work_task_tools::WorkTaskToolAccess>,
-        Arc::new(NoAuthoring) as Arc<dyn recur_code_lib::acp::chat_authoring::ChatAuthoringAccess>,
-        Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs)
-            as Arc<dyn recur_code_lib::acp::browser_tools::BrowserToolAccess>,
-        Arc::new(recur_code_lib::acp::computer_tools::NoComputerDesktop)
-            as Arc<dyn recur_code_lib::acp::computer_tools::ComputerToolAccess>,
+        Arc::new(NoSessionInfo) as Arc<dyn rc_lib::acp::session_info::SessionInfoAccess>,
+        Arc::new(NoTaskTools) as Arc<dyn rc_lib::acp::work_task_tools::WorkTaskToolAccess>,
+        Arc::new(NoAuthoring) as Arc<dyn rc_lib::acp::chat_authoring::ChatAuthoringAccess>,
+        Arc::new(rc_lib::acp::browser_tools::NoBrowserTabs)
+            as Arc<dyn rc_lib::acp::browser_tools::BrowserToolAccess>,
+        Arc::new(rc_lib::acp::computer_tools::NoComputerDesktop)
+            as Arc<dyn rc_lib::acp::computer_tools::ComputerToolAccess>,
     );
 
     let pipe = unique_pipe("repeat");

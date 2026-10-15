@@ -57,11 +57,11 @@ use std::sync::OnceLock;
 ///
 /// Deliberately **not** the module path, even though `tracing` would default to
 /// it. The `TARGET_BACKSTOPS` table in [`crate::logging::init`] pins
-/// `recur_code_lib::logging` to `Off` so the logging stack cannot log about itself,
-/// and a record emitted from `recur_code_lib::logging::panic_hook` would inherit
+/// `rc_lib::logging` to `Off` so the logging stack cannot log about itself,
+/// and a record emitted from `rc_lib::logging::panic_hook` would inherit
 /// that and be filtered out before it reached any sink. It is also the string a
 /// user greps their log for, so it should name the event and not the plumbing.
-pub const PANIC_TARGET: &str = "recur_code_lib::panic";
+pub const PANIC_TARGET: &str = "rc_lib::panic";
 
 /// Ceiling on the payload text carried in the record.
 ///
@@ -394,14 +394,14 @@ fn append_line(
 mod tests {
     use super::*;
 
-    /// The record's target must escape the `recur_code_lib::logging=off` backstop
+    /// The record's target must escape the `rc_lib::logging=off` backstop
     /// that every constructed filter carries. Emitting from the module path
     /// would land inside it and silently drop the one line the hook exists to
     /// write, with no symptom other than the original silence.
     #[test]
     fn the_panic_target_escapes_the_logging_backstop() {
         assert!(
-            !PANIC_TARGET.starts_with("recur_code_lib::logging"),
+            !PANIC_TARGET.starts_with("rc_lib::logging"),
             "{PANIC_TARGET} would be filtered out by the logging backstop"
         );
         // And it is still a well-formed target, so the Settings UI and
@@ -417,7 +417,7 @@ mod tests {
             thread: "tokio-runtime-worker (ThreadId(7))".into(),
             location: "src/acp/idle_sweep.rs:42:9".into(),
             payload: "called `Option::unwrap()` on a `None` value".into(),
-            backtrace: "0: recur_code_lib::acp::idle_sweep::sweep".into(),
+            backtrace: "0: rc_lib::acp::idle_sweep::sweep".into(),
         }
     }
 

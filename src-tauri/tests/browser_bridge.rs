@@ -10,7 +10,7 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::Response;
 use axum::routing::{get, post};
 use axum::Router;
-use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeError, BridgeGrant};
+use rc_lib::web::browser_bridge::{self, BridgeConfig, BridgeError, BridgeGrant};
 use futures_util::{SinkExt, StreamExt};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 
@@ -443,7 +443,7 @@ async fn redirects_and_bodies_pass_through() {
 
     // A path outside the page's space on the bridge itself.
     let response = client()
-        .get(format!("{}/__recur_code_bridge/other", base(&grant)))
+        .get(format!("{}/__rc_bridge/other", base(&grant)))
         .header(header::COOKIE, cookie_for(&grant))
         .header("sec-fetch-site", "same-origin")
         .send()

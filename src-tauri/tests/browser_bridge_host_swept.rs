@@ -10,7 +10,7 @@ use axum::http::{header, StatusCode};
 use axum::response::Response;
 use axum::routing::get;
 use axum::Router;
-use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
+use rc_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostPattern};
 
 const WORKBENCH: &str = "RecurCode.test";
 /// RecurCode's own port here; no target can ever be opened on it, so a name
@@ -49,7 +49,7 @@ async fn spawn_upstream() -> u16 {
     port
 }
 
-async fn spawn_recur_code() -> u16 {
+async fn spawn_rc() -> u16 {
     let app = Router::new()
         .fallback(|| async { "RecurCode's own page" })
         .layer(axum::middleware::from_fn(browser_bridge::route_by_host));
@@ -82,10 +82,10 @@ fn cookie_for(grant: &BridgeGrant) -> String {
 /// left a service worker behind, and RecurCode's own pages served under that
 /// name would be served through it.
 #[tokio::test]
-async fn a_name_that_was_handed_out_never_becomes_recur_codes() {
+async fn a_name_that_was_handed_out_never_becomes_rcs() {
     configure_once();
     let upstream = spawn_upstream().await;
-    let RecurCode = spawn_recur_code().await;
+    let RecurCode = spawn_rc().await;
     let grant = browser_bridge::open(upstream, "tab-swept", Some(WORKBENCH))
         .await
         .unwrap();

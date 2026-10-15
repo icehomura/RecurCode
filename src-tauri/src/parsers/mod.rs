@@ -1972,7 +1972,7 @@ mod route_sanitizer_tests {
         // cap is 100 chars and the body alone runs past 500.
         let capped = super::title_from_user_text(&persisted);
         assert!(
-            capped.contains("recur_code_internal_agent_routes"),
+            capped.contains("rc_internal_agent_routes"),
             "fixture must straddle the frame, or the cut proves nothing"
         );
         let detail = sanitized(Fixture {
@@ -1998,7 +1998,7 @@ mod route_sanitizer_tests {
         let persisted = format!("{prose} {}", frame.replace('\u{001e}', " "));
 
         let capped = super::title_from_user_text(&persisted);
-        let marker = "{\"kind\":\"recur_code_internal_agent_routes\"";
+        let marker = "{\"kind\":\"rc_internal_agent_routes\"";
         assert!(
             capped.contains("{\"kind\":\"RecurCode") && !capped.contains(marker),
             "the cap must land INSIDE the marker, or this repeats the previous \
@@ -2083,7 +2083,7 @@ mod route_sanitizer_tests {
         // separator is scrubbed from every prompt at ingress, so prose a user
         // can actually type is the tag text WITHOUT it.
         let look_alike =
-            "see <recur_code_internal_agent_routes version=\"2\">note</recur_code_internal_agent_routes>";
+            "see <rc_internal_agent_routes version=\"2\">note</rc_internal_agent_routes>";
         // Each frame carries its own nonce, so capture ONE and compare to it.
         let echoed = routing_frame("codex");
         let detail = sanitized(Fixture {
@@ -2111,7 +2111,7 @@ mod route_sanitizer_tests {
     fn only_a_title_is_cut_at_a_dangling_separator() {
         // A parser caps a title but never a turn's text, so a lone separator is
         // evidence of a sliced frame in the first case and not in the second.
-        let dangling = "see \u{001e}<recur_code_internal_agent_routes version=\"2\">no";
+        let dangling = "see \u{001e}<rc_internal_agent_routes version=\"2\">no";
         let detail = sanitized(Fixture {
             summary: summary(Some(dangling), 1),
             turns: vec![turn(TurnRole::User, dangling)],

@@ -55,7 +55,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   MockWebSocket.instances = []
   vi.stubGlobal("WebSocket", MockWebSocket)
-  localStorage.setItem("recur_code_token", "tok")
+  localStorage.setItem("rc_token", "tok")
   fetchMock = vi.fn()
   vi.stubGlobal("fetch", fetchMock)
 })
@@ -108,7 +108,7 @@ describe("WebTransport connection state machine", () => {
 
     expect(t.getConnectionSnapshot()).toBe("reconnecting")
     // The token survives a transient drop (this is the whole point of the fix).
-    expect(localStorage.getItem("recur_code_token")).toBe("tok")
+    expect(localStorage.getItem("rc_token")).toBe("tok")
     // Probe is scheduled on backoff, not fired synchronously.
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -149,7 +149,7 @@ describe("WebTransport connection state machine", () => {
     expect(t.getConnectionSnapshot()).toBe("unauthorized")
     // markUnauthorized must NOT clear the token — only the user's "Go to
     // login" action does, so a spurious 401 can't silently wipe a session.
-    expect(localStorage.getItem("recur_code_token")).toBe("tok")
+    expect(localStorage.getItem("rc_token")).toBe("tok")
 
     const callsSoFar = fetchMock.mock.calls.length
     await vi.advanceTimersByTimeAsync(60_000)
@@ -274,7 +274,7 @@ describe("WebTransport connection state machine", () => {
     // The probe succeeds, but the token is gone by the time connectWs runs
     // (e.g. a logout in another tab landed mid-probe).
     fetchMock.mockImplementation(async () => {
-      localStorage.removeItem("recur_code_token")
+      localStorage.removeItem("rc_token")
       return ok200()
     })
 
@@ -292,6 +292,6 @@ describe("WebTransport connection state machine", () => {
 
     ws.drop() // closes before it ever opened or readied
     expect(t.getConnectionSnapshot()).toBe("reconnecting")
-    expect(localStorage.getItem("recur_code_token")).toBe("tok") // token preserved
+    expect(localStorage.getItem("rc_token")).toBe("tok") // token preserved
   })
 })

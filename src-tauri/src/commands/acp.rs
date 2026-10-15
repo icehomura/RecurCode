@@ -4007,7 +4007,7 @@ fn is_absolute_config_path(value: &str) -> bool {
 /// way codex resolves the key, so an absolute path to RecurCode's own file counts
 /// as rc-owned too. Unresolvable/foreign values answer `false`, which is the
 /// safe direction (leave the key alone).
-fn is_recur_code_owned_catalog_ref(value: &str, codex_home: &Path) -> bool {
+fn is_rc_owned_catalog_ref(value: &str, codex_home: &Path) -> bool {
     let value = value.trim();
     if value.is_empty() {
         return false;
@@ -4034,7 +4034,7 @@ fn remove_codex_catalog_key(
     let owned = doc
         .get("model_catalog_json")
         .and_then(|v| v.as_str())
-        .map(|v| is_recur_code_owned_catalog_ref(v, codex_home))
+        .map(|v| is_rc_owned_catalog_ref(v, codex_home))
         .unwrap_or(false);
     if !owned {
         return Ok(None);
@@ -4104,7 +4104,7 @@ fn resync_codex_generated_catalog_at(
         .as_ref()
         .and_then(|doc| doc.get("model_catalog_json"))
         .and_then(toml::Value::as_str)
-        .is_some_and(|value| is_recur_code_owned_catalog_ref(value, codex_home));
+        .is_some_and(|value| is_rc_owned_catalog_ref(value, codex_home));
     if !owned {
         return Ok(CodexCatalogResync::NotOwned);
     }
@@ -4975,7 +4975,7 @@ fn persist_opencode_auth_json(raw_auth: &str) -> Result<(), AcpError> {
 //   2. `credentials/kimi-code.json` — a synthetic gate token RecurCode seeds so the
 //      ACP session opens. It is purely local: because `default_model` points at
 //      the API-key provider, the managed/OAuth endpoint is never called and this
-//      token is never transmitted. It carries a `_recur_code_synthetic` marker so we
+//      token is never transmitted. It carries a `_rc_synthetic` marker so we
 //      only ever remove OUR token, never a real login the user performed.
 //
 // The rc-managed block is keyed by the fixed names `RecurCode` / `rc-managed`
@@ -4990,7 +4990,7 @@ const KIMI_MANAGED_MODEL_ALIAS: &str = "rc-managed";
 const KIMI_MODEL_API_KEY_ENV: &str = "KIMI_MODEL_API_KEY";
 const KIMI_MODEL_BASE_URL_ENV: &str = "KIMI_MODEL_BASE_URL";
 const KIMI_MODEL_NAME_ENV: &str = "KIMI_MODEL_NAME";
-/// Sentinel `access_token` value (and `_recur_code_synthetic` marker) identifying the
+/// Sentinel `access_token` value (and `_rc_synthetic` marker) identifying the
 /// gate token RecurCode seeds, so we never clobber a real OAuth login.
 const KIMI_SYNTHETIC_TOKEN_ACCESS: &str = "rc-local-gate";
 /// Fallback context window for the managed model. Kimi's config schema **requires**
@@ -5269,10 +5269,10 @@ fn read_kimi_token() -> Option<serde_json::Value> {
 
 /// Whether a token document is RecurCode's synthetic gate token (vs a real OAuth
 /// login the user performed via `kimi login`). Matches either the sentinel
-/// `access_token` or the explicit `_recur_code_synthetic` marker.
+/// `access_token` or the explicit `_rc_synthetic` marker.
 fn kimi_token_is_synthetic(token: &serde_json::Value) -> bool {
     token
-        .get("_recur_code_synthetic")
+        .get("_rc_synthetic")
         .and_then(serde_json::Value::as_bool)
         == Some(true)
         || token.get("access_token").and_then(serde_json::Value::as_str)
@@ -5317,7 +5317,7 @@ fn seed_kimi_synthetic_credential_at(path: &Path) -> Result<(), AcpError> {
         "expires_in": 9_999_999i64,
         "scope": "",
         "token_type": "Bearer",
-        "_recur_code_synthetic": true,
+        "_rc_synthetic": true,
     });
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|e| {
@@ -6191,7 +6191,7 @@ pub struct PiProjectTrustState {
 /// for this, and its entries carry no provenance — which is the whole problem.
 /// A flat `{ "<canonical dir>": true }` map in RecurCode's own home.
 fn pi_trust_ack_path() -> PathBuf {
-    crate::paths::recur_code_home_dir().join("pi-project-trust-ack.json")
+    crate::paths::rc_home_dir().join("pi-project-trust-ack.json")
 }
 
 fn pi_trust_is_acknowledged_at(ack_file: &Path, workspace: &str) -> bool {
@@ -14956,12 +14956,12 @@ base_url = \"https://example.test/v1\"
             .join(crate::acp::codex_model_catalog::CATALOG_REL)
             .to_string_lossy()
             .into_owned();
-        assert!(is_recur_code_owned_catalog_ref(&abs, home));
-        assert!(is_recur_code_owned_catalog_ref(
+        assert!(is_rc_owned_catalog_ref(&abs, home));
+        assert!(is_rc_owned_catalog_ref(
             crate::acp::codex_model_catalog::CATALOG_REL,
             home
         ));
-        assert!(!is_recur_code_owned_catalog_ref("manual.json", home));
+        assert!(!is_rc_owned_catalog_ref("manual.json", home));
     }
 
     fn catalog_slugs(home: &Path) -> Vec<String> {
@@ -14987,7 +14987,7 @@ base_url = \"https://example.test/v1\"
     /// stored intent, so the new official model shows up — in codex's own
     /// rank, behind the custom — without the user re-saving anything.
     #[test]
-    fn resync_rewrites_recur_codes_catalog_against_the_new_official_list() {
+    fn resync_rewrites_rcs_catalog_against_the_new_official_list() {
         let dir = tempfile::tempdir().expect("tempdir");
         let home = dir.path();
         let config = config_with_catalog_ref(crate::acp::codex_model_catalog::CATALOG_REL);
@@ -15036,7 +15036,7 @@ base_url = \"https://example.test/v1\"
     /// is gone (re-importing it against the NEW list would read every newly
     /// shipped official as one the user removed).
     #[test]
-    fn resync_leaves_catalogs_recur_code_cannot_regenerate_alone() {
+    fn resync_leaves_catalogs_rc_cannot_regenerate_alone() {
         let new = crate::acp::codex_model_catalog::bundled_snapshot_models();
         let intent = r#"{"customs":[{"slug":"gw/x","base":"gpt-5.6-sol"}]}"#;
         let catalog_path = |home: &Path| home.join(crate::acp::codex_model_catalog::CATALOG_REL);
@@ -15817,10 +15817,10 @@ base_url = \"https://example.test/v1\"
 
     /// Drive the launch gate with an isolated pi agent dir AND an isolated RecurCode
     /// home (the acknowledgement store lives there, via `RC_HOME`).
-    fn launch_block_for(agent_dir: &Path, recur_code_home: &Path, cwd: &Path) -> Option<String> {
+    fn launch_block_for(agent_dir: &Path, rc_home: &Path, cwd: &Path) -> Option<String> {
         temp_env::with_var(
             "RC_HOME",
-            Some(recur_code_home.to_string_lossy().to_string()),
+            Some(rc_home.to_string_lossy().to_string()),
             || pi_project_trust_launch_block(cwd, &pi_env_for(agent_dir)),
         )
     }
@@ -16922,11 +16922,11 @@ wire_api = "chat"
             "model_provider = \"other\"",
         );
 
-        let p_recur_code = codex_config_projection_from_toml(RecurCode);
+        let p_rc = codex_config_projection_from_toml(RecurCode);
         let p_other = codex_config_projection_from_toml(&other);
 
         assert_eq!(
-            p_recur_code.get("modelProvider").and_then(|v| v.as_str()),
+            p_rc.get("modelProvider").and_then(|v| v.as_str()),
             Some("RecurCode")
         );
         assert_eq!(
@@ -16934,19 +16934,19 @@ wire_api = "chat"
             Some("other")
         );
         // Same endpoint resolved for both providers...
-        assert_eq!(p_recur_code.get("apiBaseUrl"), p_other.get("apiBaseUrl"));
+        assert_eq!(p_rc.get("apiBaseUrl"), p_other.get("apiBaseUrl"));
         // ...yet the projections differ, so the launch-config fingerprint does too.
-        assert_ne!(p_recur_code, p_other);
+        assert_ne!(p_rc, p_other);
 
         // Deterministic for identical input.
-        assert_eq!(codex_config_projection_from_toml(RecurCode), p_recur_code);
+        assert_eq!(codex_config_projection_from_toml(RecurCode), p_rc);
 
         // `modelProvider` must NOT be an AgentRuntimeConfig key, or
         // build_runtime_env_from_setting would mirror it back into a runtime env
         // var (reintroducing the very MODEL_PROVIDER pin we removed).
         assert!(
             serde_json::from_value::<AgentRuntimeConfig>(serde_json::Value::Object(
-                p_recur_code.clone()
+                p_rc.clone()
             ))
             .is_ok()
         );
@@ -17694,7 +17694,7 @@ wire_api = "chat"
     }
 
     #[test]
-    fn codex_cascade_leaves_a_non_recur_code_provider_alone() {
+    fn codex_cascade_leaves_a_non_rc_provider_alone() {
         let dir = tempfile::tempdir().expect("tempdir");
         temp_env::with_var("CODEX_HOME", Some(dir.path()), || {
             let config_path = dir.path().join("config.toml");

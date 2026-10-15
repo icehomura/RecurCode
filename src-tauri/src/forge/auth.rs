@@ -429,7 +429,7 @@ pub(crate) fn forget_forge(host: &str) {
 
 /// A path no forge routes. Asking for it is how "this host serves the GitLab
 /// API" is told apart from "this host answers everything the same way".
-const NONEXISTENT_PATH: &str = "__recur_code_forge_probe";
+const NONEXISTENT_PATH: &str = "__rc_forge_probe";
 
 /// What one probe request came back as. Only the facts a verdict needs: the
 /// status, whether the answer claimed to be JSON, and the first few bytes of it

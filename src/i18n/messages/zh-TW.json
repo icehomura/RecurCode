@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "未啟用",
-      "linked_to_recur_code": "已啟用",
+      "linked_to_rc": "已啟用",
       "linked_elsewhere": "衝突 — 已有其他連結",
       "blocked_by_real_directory": "衝突 — 已有同名的自訂 skill 佔用",
       "broken": "連結損壞"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "未啟用",
-      "linked_to_recur_code": "已啟用",
+      "linked_to_rc": "已啟用",
       "linked_elsewhere": "衝突 — 已有其他連結",
       "blocked_by_real_directory": "衝突 — 已有同名的自訂 skill 佔用",
       "broken": "連結損壞"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "未啟用",
-      "linked_to_recur_code": "已啟用",
+      "linked_to_rc": "已啟用",
       "linked_elsewhere": "已阻止——存在其他連結",
       "blocked_by_real_directory": "已阻止——自訂技能佔用此名稱",
       "broken": "連結已損壞"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "未啟用",
-      "linked_to_recur_code": "已啟用",
+      "linked_to_rc": "已啟用",
       "linked_elsewhere": "衝突 — 已有其他連結",
       "blocked_by_real_directory": "衝突 — 已有同名的自訂 skill 佔用",
       "broken": "連結損壞"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "檔案較大，已下載最新的 {size}。完整檔案請在日誌目錄中查看。",
     "captureEnvLocked": "日誌等級由 RUST_LOG / RC_LOG 環境變數控制；請在該處修改以生效。",
     "targetsTitle": "依模組覆寫",
-    "targetsDescription": "為特定模組（如 recur_code_lib::acp）單獨設定級別，不影響全域級別。",
+    "targetsDescription": "為特定模組（如 rc_lib::acp）單獨設定級別，不影響全域級別。",
     "targetsAdd": "新增",
     "targetsRemove": "移除覆寫",
     "toggleDetails": "切換詳情"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "依名稱、ID 或描述搜尋自訂技能",
     "states": {
       "not_linked": "未啟用",
-      "linked_to_recur_code": "已啟用",
+      "linked_to_rc": "已啟用",
       "linked_elsewhere": "連結到其他位置",
       "blocked_by_real_directory": "被同名實體目錄佔用",
       "broken": "連結已失效"

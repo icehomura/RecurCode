@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "未有効",
-      "linked_to_recur_code": "有効",
+      "linked_to_rc": "有効",
       "linked_elsewhere": "ブロック — 別のリンクが存在",
       "blocked_by_real_directory": "ブロック — カスタムスキルがこの名前を占有",
       "broken": "壊れたリンク"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "未有効",
-      "linked_to_recur_code": "有効",
+      "linked_to_rc": "有効",
       "linked_elsewhere": "ブロック — 別のリンクが存在",
       "blocked_by_real_directory": "ブロック — カスタムスキルがこの名前を占有",
       "broken": "壊れたリンク"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "無効",
-      "linked_to_recur_code": "有効",
+      "linked_to_rc": "有効",
       "linked_elsewhere": "ブロック — 他のリンクが存在します",
       "blocked_by_real_directory": "ブロック — カスタムスキルがこの名前を使用しています",
       "broken": "リンク切れ"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "未有効",
-      "linked_to_recur_code": "有効",
+      "linked_to_rc": "有効",
       "linked_elsewhere": "ブロック — 別のリンクが存在",
       "blocked_by_real_directory": "ブロック — カスタムスキルがこの名前を占有",
       "broken": "壊れたリンク"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "ファイルが大きいため、最新の {size} をダウンロードしました。完全なファイルはログディレクトリにあります。",
     "captureEnvLocked": "ログレベルは RUST_LOG / RC_LOG 環境変数で制御されています。変更はそちらで行ってください。",
     "targetsTitle": "モジュール別オーバーライド",
-    "targetsDescription": "グローバルレベルを変えずに、特定モジュール（例: recur_code_lib::acp）のレベルを個別に設定します。",
+    "targetsDescription": "グローバルレベルを変えずに、特定モジュール（例: rc_lib::acp）のレベルを個別に設定します。",
     "targetsAdd": "追加",
     "targetsRemove": "オーバーライドを削除",
     "toggleDetails": "詳細を切り替え"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "名前・ID・説明でカスタムスキルを検索",
     "states": {
       "not_linked": "未有効",
-      "linked_to_recur_code": "有効",
+      "linked_to_rc": "有効",
       "linked_elsewhere": "別の場所にリンク",
       "blocked_by_real_directory": "実在フォルダにより占有",
       "broken": "リンク切れ"

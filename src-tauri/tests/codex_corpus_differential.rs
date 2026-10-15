@@ -25,9 +25,9 @@ use std::collections::BTreeMap;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
-use recur_code_lib::models::AgentType;
-use recur_code_lib::parsers::codex::CodexParser;
-use recur_code_lib::parsers::AgentParser;
+use rc_lib::models::AgentType;
+use rc_lib::parsers::codex::CodexParser;
+use rc_lib::parsers::AgentParser;
 
 fn rollouts_in(root: &Path) -> Vec<PathBuf> {
     let mut found = Vec::new();

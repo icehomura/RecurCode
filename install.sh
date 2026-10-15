@@ -25,7 +25,7 @@ fi
 # Names of binaries this installer manages. `rc-server` is the user-facing
 # entry point; `rc-mcp` is the stdio MCP companion that the server's ACP
 # layer spawns per session for delegation. Both must live in the same
-# directory — `locate_recur_code_mcp_binary()` in src-tauri/src/acp/connection.rs
+# directory — `locate_rc_mcp_binary()` in src-tauri/src/acp/connection.rs
 # resolves the companion as a sibling of the running server executable.
 MANAGED_BINS=(rc-server rc-mcp)
 
@@ -469,7 +469,7 @@ INSTALLED_VER=$("${INSTALL_DIR}/rc-server" --version 2>/dev/null || echo "${TARG
 echo "Version: ${INSTALLED_VER}"
 
 # Final smoke: rc-mcp must exist next to rc-server so the runtime's
-# `locate_recur_code_mcp_binary()` exe-sibling lookup hits. A failure here means
+# `locate_rc_mcp_binary()` exe-sibling lookup hits. A failure here means
 # the tarball was malformed or a previous `_install_one` was silently
 # blocked — surface it loudly rather than ship a half-broken install.
 if [ ! -x "${INSTALL_DIR}/rc-mcp" ]; then

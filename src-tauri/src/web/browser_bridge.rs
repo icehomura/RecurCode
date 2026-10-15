@@ -108,11 +108,11 @@ use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::protocol::CloseFrame as UpCloseFrame;
 use tokio_tungstenite::tungstenite::Message as UpMessage;
 
-/// Entry URL prefix on a bridge listener: `/__recur_code_bridge/enter/{cap}?to=/path`.
-pub const ENTER_PREFIX: &str = "/__recur_code_bridge/enter/";
+/// Entry URL prefix on a bridge listener: `/__rc_bridge/enter/{cap}?to=/path`.
+pub const ENTER_PREFIX: &str = "/__rc_bridge/enter/";
 /// Unauthenticated reachability probe the workbench calls before showing
 /// the frame, so an unmapped port is reported instead of a blank frame.
-pub const PING_PATH: &str = "/__recur_code_bridge/ping";
+pub const PING_PATH: &str = "/__rc_bridge/ping";
 const COOKIE_PREFIX: &str = "rc-bridge-";
 /// The workbench's own cookies (locale preferences) live on the same host
 /// and are not the dev server's business either.
@@ -150,13 +150,13 @@ impl BridgeConfig {
     /// Read `RC_BRIDGE_PORTS` / `RC_BRIDGE_HOST_PATTERN` /
     /// `RC_BRIDGE_PUBLIC_HOST`. `None` when the bridge is switched off
     /// (`RC_BRIDGE_PORTS=off`).
-    pub fn from_env(bind_host: &str, recur_code_port: u16) -> Option<Self> {
+    pub fn from_env(bind_host: &str, rc_port: u16) -> Option<Self> {
         let ports = std::env::var("RC_BRIDGE_PORTS").ok();
         let pattern = std::env::var("RC_BRIDGE_HOST_PATTERN").ok();
         let public_host = std::env::var("RC_BRIDGE_PUBLIC_HOST").ok();
         Self::from_values(
             bind_host,
-            recur_code_port,
+            rc_port,
             ports.as_deref(),
             pattern.as_deref(),
             public_host.as_deref(),
@@ -170,7 +170,7 @@ impl BridgeConfig {
     /// silently answer for hostnames, either.
     pub fn from_values(
         bind_host: &str,
-        recur_code_port: u16,
+        rc_port: u16,
         ports_raw: Option<&str>,
         host_pattern_raw: Option<&str>,
         public_host_raw: Option<&str>,
@@ -180,8 +180,8 @@ impl BridgeConfig {
             None => None,
         };
         let ports = match ports_raw {
-            Some(raw) => parse_ports(raw, recur_code_port)?,
-            None => default_ports(recur_code_port),
+            Some(raw) => parse_ports(raw, rc_port)?,
+            None => default_ports(rc_port),
         };
         let public_host = public_host_raw
             .map(|h| h.trim().to_string())
@@ -193,7 +193,7 @@ impl BridgeConfig {
             ports: if host_pattern.is_some() { Vec::new() } else { ports },
             public_host,
             host_pattern,
-            reserved: vec![recur_code_port],
+            reserved: vec![rc_port],
         })
     }
 }
@@ -317,9 +317,9 @@ fn is_hostname(host: &str) -> bool {
 }
 
 /// The ten ports after RecurCode's own, stopping at the end of the port space.
-pub fn default_ports(recur_code_port: u16) -> Vec<u16> {
+pub fn default_ports(rc_port: u16) -> Vec<u16> {
     (1..=DEFAULT_POOL_SIZE)
-        .filter_map(|offset| recur_code_port.checked_add(offset))
+        .filter_map(|offset| rc_port.checked_add(offset))
         .collect()
 }
 
@@ -327,7 +327,7 @@ pub fn default_ports(recur_code_port: u16) -> Vec<u16> {
 /// `off` / `none` / `disabled` / empty (no bridge; returns `None`). RecurCode's
 /// own port is never part of the pool. An unparseable value is `None` too:
 /// a typo must not silently bind ten ports the operator did not choose.
-pub fn parse_ports(raw: &str, recur_code_port: u16) -> Option<Vec<u16>> {
+pub fn parse_ports(raw: &str, rc_port: u16) -> Option<Vec<u16>> {
     let raw = raw.trim();
     if raw.is_empty() || matches!(raw.to_ascii_lowercase().as_str(), "off" | "none" | "disabled") {
         return None;
@@ -352,7 +352,7 @@ pub fn parse_ports(raw: &str, recur_code_port: u16) -> Option<Vec<u16>> {
             return None;
         }
         for port in range.0..=range.1 {
-            if port != recur_code_port && !ports.contains(&port) {
+            if port != rc_port && !ports.contains(&port) {
                 ports.push(port);
             }
         }
@@ -812,7 +812,7 @@ fn serve(socket: tokio::net::TcpListener, listener: Arc<Listener>) {
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
     let router = Router::new()
         .route(PING_PATH, get(ping))
-        .route("/__recur_code_bridge/enter/{cap}", get(enter))
+        .route("/__rc_bridge/enter/{cap}", get(enter))
         .fallback(any(forward))
         .with_state(listener.clone());
     let task = tokio::spawn(async move {
@@ -1069,7 +1069,7 @@ async fn forward(State(listener): State<Arc<Listener>>, request: Request) -> Res
 
 async fn forward_request(listener: Arc<Listener>, request: Request) -> Response {
     let (mut parts, body) = request.into_parts();
-    if parts.uri.path().starts_with("/__recur_code_bridge/") {
+    if parts.uri.path().starts_with("/__rc_bridge/") {
         return StatusCode::NOT_FOUND.into_response();
     }
     let cookie_name = listener.cookie_name();
@@ -1626,7 +1626,7 @@ mod tests {
     }
 
     #[test]
-    fn default_pool_is_the_ten_ports_above_recur_code() {
+    fn default_pool_is_the_ten_ports_above_rc() {
         assert_eq!(default_ports(3080), (3081..=3090).collect::<Vec<_>>());
         assert_eq!(default_ports(65533), vec![65534, 65535]);
     }
@@ -1752,12 +1752,12 @@ mod tests {
             target_port: 3000,
             bridge_port: Some(3081),
             bridge_host: None,
-            entry_path: "/__recur_code_bridge/enter/abc".into(),
+            entry_path: "/__rc_bridge/enter/abc".into(),
             public_host: None,
         })
         .unwrap();
         assert_eq!(json["bridgePort"], 3081);
-        assert_eq!(json["entryPath"], "/__recur_code_bridge/enter/abc");
+        assert_eq!(json["entryPath"], "/__rc_bridge/enter/abc");
         assert!(json["publicHost"].is_null());
         assert!(json["bridgeHost"].is_null());
 
@@ -1767,7 +1767,7 @@ mod tests {
             target_port: 3000,
             bridge_port: None,
             bridge_host: Some("3000.recurcode.example".into()),
-            entry_path: "/__recur_code_bridge/enter/abc".into(),
+            entry_path: "/__rc_bridge/enter/abc".into(),
             public_host: None,
         })
         .unwrap();

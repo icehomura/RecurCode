@@ -4499,7 +4499,7 @@
     },
     "states": {
       "not_linked": "활성화되지 않음",
-      "linked_to_recur_code": "활성화됨",
+      "linked_to_rc": "활성화됨",
       "linked_elsewhere": "차단됨 — 다른 링크가 존재함",
       "blocked_by_real_directory": "차단됨 — 사용자 정의 스킬이 이 이름을 점유 중",
       "broken": "손상된 링크"
@@ -4536,7 +4536,7 @@
     },
     "states": {
       "not_linked": "활성화되지 않음",
-      "linked_to_recur_code": "활성화됨",
+      "linked_to_rc": "활성화됨",
       "linked_elsewhere": "차단됨 — 다른 링크가 존재함",
       "blocked_by_real_directory": "차단됨 — 사용자 정의 스킬이 이 이름을 점유 중",
       "broken": "손상된 링크"
@@ -4586,7 +4586,7 @@
     },
     "states": {
       "not_linked": "비활성",
-      "linked_to_recur_code": "활성",
+      "linked_to_rc": "활성",
       "linked_elsewhere": "차단됨 — 다른 링크가 존재합니다",
       "blocked_by_real_directory": "차단됨 — 사용자 정의 스킬이 이 이름을 사용 중",
       "broken": "링크 끊김"
@@ -4645,7 +4645,7 @@
     },
     "states": {
       "not_linked": "활성화되지 않음",
-      "linked_to_recur_code": "활성화됨",
+      "linked_to_rc": "활성화됨",
       "linked_elsewhere": "차단됨 — 다른 링크가 존재함",
       "blocked_by_real_directory": "차단됨 — 사용자 정의 스킬이 이 이름을 점유 중",
       "broken": "손상된 링크"
@@ -5716,7 +5716,7 @@
     "downloadTruncated": "파일이 커서 최신 {size}만 다운로드했습니다. 전체 파일은 로그 디렉터리에 있습니다.",
     "captureEnvLocked": "로그 수준은 RUST_LOG / RC_LOG 환경 변수로 제어됩니다. 변경하려면 해당 변수를 수정하세요.",
     "targetsTitle": "모듈별 재정의",
-    "targetsDescription": "전역 레벨을 바꾸지 않고 특정 모듈(예: recur_code_lib::acp)의 레벨을 따로 설정합니다.",
+    "targetsDescription": "전역 레벨을 바꾸지 않고 특정 모듈(예: rc_lib::acp)의 레벨을 따로 설정합니다.",
     "targetsAdd": "추가",
     "targetsRemove": "재정의 제거",
     "toggleDetails": "세부 정보 전환"
@@ -6152,7 +6152,7 @@
     "searchPlaceholder": "이름, ID 또는 설명으로 사용자 지정 스킬 검색",
     "states": {
       "not_linked": "사용 안 함",
-      "linked_to_recur_code": "사용 중",
+      "linked_to_rc": "사용 중",
       "linked_elsewhere": "다른 위치에 연결됨",
       "blocked_by_real_directory": "실제 폴더가 차지함",
       "broken": "손상된 링크"

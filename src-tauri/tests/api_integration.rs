@@ -23,10 +23,10 @@
 use std::sync::Arc;
 
 use axum_test::TestServer;
-use recur_code_lib::app_state::AppState;
-use recur_code_lib::db::test_helpers::fresh_in_memory_db;
-use recur_code_lib::web::router::build_router;
-use recur_code_lib::web::shutdown::ShutdownSignal;
+use rc_lib::app_state::AppState;
+use rc_lib::db::test_helpers::fresh_in_memory_db;
+use rc_lib::web::router::build_router;
+use rc_lib::web::shutdown::ShutdownSignal;
 use serde_json::{json, Value};
 
 const TEST_TOKEN: &str = "integration-test-token";
@@ -278,7 +278,7 @@ async fn json_api_is_gzip_compressed_when_client_accepts() {
     // row and parses the *real* home directory instead, so it answers `[]`
     // — 2 bytes, under the threshold — on a clean CI runner while returning
     // a fat body on a developer machine.
-    recur_code_lib::db::service::folder_service::add_folder(
+    rc_lib::db::service::folder_service::add_folder(
         &state.db.conn,
         "/tmp/rc-compression-test-folder-with-a-reasonably-long-path",
     )
@@ -362,17 +362,17 @@ async fn static_js_is_compressed_but_binary_download_is_not() {
 #[tokio::test]
 async fn get_folder_conversation_accepts_turn_window_params() {
     let (server, state, _data, _static) = build_test_server_with_state().await;
-    let folder_id = recur_code_lib::db::service::folder_service::add_folder(
+    let folder_id = rc_lib::db::service::folder_service::add_folder(
         &state.db.conn,
         "/tmp/rc-window-param-test",
     )
     .await
     .expect("seed folder")
     .id;
-    let conv_id = recur_code_lib::commands::conversations::create_conversation_core(
+    let conv_id = rc_lib::commands::conversations::create_conversation_core(
         &state.db.conn,
         folder_id,
-        recur_code_lib::models::AgentType::ClaudeCode,
+        rc_lib::models::AgentType::ClaudeCode,
         None,
     )
     .await
@@ -454,10 +454,10 @@ async fn get_folder_conversation_accepts_turn_window_params() {
 /// exists to show, so a 500 here would blind exactly the situation it reports.
 /// `AppState::new_for_test` installs no service handle, which is that runtime.
 #[tokio::test]
-async fn recur_code_mcp_service_status_reports_a_socketless_runtime_as_stopped() {
+async fn rc_mcp_service_status_reports_a_socketless_runtime_as_stopped() {
     let (server, _data, _static) = build_test_server().await;
     let resp = server
-        .post("/api/get_recur_code_mcp_service_status")
+        .post("/api/get_rc_mcp_service_status")
         .add_header("authorization", format!("Bearer {TEST_TOKEN}"))
         .json(&json!({}))
         .await;
@@ -479,10 +479,10 @@ async fn recur_code_mcp_service_status_reports_a_socketless_runtime_as_stopped()
 /// Starting without a handle must fail loudly rather than report success the
 /// UI would then paint as a running service.
 #[tokio::test]
-async fn starting_recur_code_mcp_service_without_a_handle_is_rejected() {
+async fn starting_rc_mcp_service_without_a_handle_is_rejected() {
     let (server, _data, _static) = build_test_server().await;
     let resp = server
-        .post("/api/start_recur_code_mcp_service")
+        .post("/api/start_rc_mcp_service")
         .add_header("authorization", format!("Bearer {TEST_TOKEN}"))
         .json(&json!({}))
         .await;
@@ -490,10 +490,10 @@ async fn starting_recur_code_mcp_service_without_a_handle_is_rejected() {
 }
 
 #[tokio::test]
-async fn recur_code_mcp_service_status_requires_a_token() {
+async fn rc_mcp_service_status_requires_a_token() {
     let (server, _data, _static) = build_test_server().await;
     let resp = server
-        .post("/api/get_recur_code_mcp_service_status")
+        .post("/api/get_rc_mcp_service_status")
         .json(&json!({}))
         .await;
     assert_eq!(resp.status_code(), 401);
@@ -603,8 +603,8 @@ async fn a_server_that_shares_its_screen_answers_its_web_clients() {
     let static_dir = tempfile::tempdir().expect("static dir");
     let db = fresh_in_memory_db().await;
     let state = Arc::new(AppState::new_for_test(db, data_dir.path().to_path_buf()));
-    let service = recur_code_lib::commands::computer::ComputerService::start(
-        recur_code_lib::commands::computer::ComputerHost::Server {
+    let service = rc_lib::commands::computer::ComputerService::start(
+        rc_lib::commands::computer::ComputerHost::Server {
             broadcaster: state.event_broadcaster.clone(),
             emitter: state.emitter.clone(),
         },

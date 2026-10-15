@@ -16,7 +16,7 @@
 use std::io::Write;
 use std::process::{Command, Stdio};
 
-use recur_code_lib::db::service::app_metadata_service;
+use rc_lib::db::service::app_metadata_service;
 
 const GITHUB_ACCOUNTS_KEY: &str = "github_accounts";
 
@@ -53,7 +53,7 @@ async fn helper_subprocess_emits_username_and_password_for_seeded_host() {
     // so the helper subprocess can open the file read-only without WAL
     // contention.
     {
-        let db = recur_code_lib::db::init_database(&data_dir, "test")
+        let db = rc_lib::db::init_database(&data_dir, "test")
             .await
             .expect("init db");
 
@@ -140,7 +140,7 @@ async fn helper_subprocess_outputs_nothing_for_unconfigured_host() {
 
     // Init an empty DB — no accounts seeded.
     {
-        let _db = recur_code_lib::db::init_database(&data_dir, "test")
+        let _db = rc_lib::db::init_database(&data_dir, "test")
             .await
             .expect("init db");
     }

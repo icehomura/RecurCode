@@ -53,7 +53,7 @@ pub const MAX_IMPORT_BYTES: usize = 8 * 1024 * 1024;
 pub struct ConfigExportFile {
     /// Presence of this field is what distinguishes an export envelope from a
     /// bare `config.json`.
-    pub recur_code_config_export: u32,
+    pub rc_config_export: u32,
     pub manifest: ConfigManifest,
     pub config: ConfigSnapshot,
 }
@@ -91,7 +91,7 @@ pub async fn build_export_core(
     let bytes = serialize_snapshot(&snapshot)?;
     let manifest = build_manifest(&bytes, app_version, snapshot.counts(), ENCRYPTION_NONE);
     Ok(ConfigExportFile {
-        recur_code_config_export: EXPORT_FORMAT_VERSION,
+        rc_config_export: EXPORT_FORMAT_VERSION,
         manifest,
         config: snapshot,
     })
@@ -199,7 +199,7 @@ fn synthesize_export(snapshot_bytes: &[u8]) -> Result<ConfigExportFile, AppComma
     let canonical = serialize_snapshot(&snapshot)?;
     let manifest = build_manifest(&canonical, "unknown", snapshot.counts(), ENCRYPTION_NONE);
     Ok(ConfigExportFile {
-        recur_code_config_export: EXPORT_FORMAT_VERSION,
+        rc_config_export: EXPORT_FORMAT_VERSION,
         manifest,
         config: snapshot,
     })

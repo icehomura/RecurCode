@@ -4,7 +4,7 @@
 //! **isolated world** named `RecurCode`:
 //! `Page.addScriptToEvaluateOnNewDocument {worldName}` injects the helper into
 //! that world for every document of every frame, and
-//! `Runtime.addBinding {executionContextName}` puts `__recur_codeSend` there — a
+//! `Runtime.addBinding {executionContextName}` puts `__rcSend` there — a
 //! separate JavaScript global over the same DOM, invisible to page scripts and
 //! immune to their prototype tampering, exactly like macOS's `WKContentWorld`.
 //! Unlike macOS the world needs no prefix script: the binding *is* the send
@@ -87,7 +87,7 @@ pub use super::{NavigationEvent, NavigationSink, PageCloseSink};
 pub const WORLD_NAME: &str = "RecurCode";
 /// The function `Runtime.addBinding` exposes in that world; the helper's send
 /// primitive (`src/browser-injected/helper.js` looks for exactly this name).
-pub const BINDING_NAME: &str = "__recur_codeSend";
+pub const BINDING_NAME: &str = "__rcSend";
 
 /// Whether a subframe may navigate to this address — the same decision the
 /// main frame's navigation handler makes, asked for a frame WebView2 would
@@ -156,7 +156,7 @@ struct SurfaceState {
     recovering: Cell<bool>,
     recheck: Cell<bool>,
     /// `Runtime.addBinding` has been registered, so a world built from here on
-    /// will have `__recur_codeSend` in it. Until then there is nothing to build one
+    /// will have `__rcSend` in it. Until then there is nothing to build one
     /// WITH: the helper would find no send primitive and give up, and the empty
     /// world it left behind is one nothing would ever build again.
     binding_ready: Cell<bool>,
@@ -688,7 +688,7 @@ fn on_event(key: usize, event: &str, session: &str, raw: &str) {
 /// over — so that one document would have no channel for its whole life, and
 /// a popup is exactly where the address bar and the gesture ring are needed.
 /// `Page.createIsolatedWorld` makes the same named world for a frame that
-/// exists; the binding is registered by world NAME, so `__recur_codeSend` is in it
+/// exists; the binding is registered by world NAME, so `__rcSend` is in it
 /// and the helper finds what it expects.
 fn recover_world(webview: &ICoreWebView2, key: usize) {
     let Some(surface) = state(key) else {

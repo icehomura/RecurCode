@@ -21,7 +21,7 @@
 //!
 //! ## File layout
 //!
-//! `<paths::recur_code_turn_timings_root()>/<agent>/<session-id>.jsonl`, one JSON
+//! `<paths::rc_turn_timings_root()>/<agent>/<session-id>.jsonl`, one JSON
 //! object per line:
 //!
 //! ```jsonc
@@ -284,7 +284,7 @@ pub fn append_turn_timing_in(
 /// Strict `<` keeps legitimately tied starts; the in-process append lock
 /// (see [`append_turn_timing_in`]) makes disorder rare to begin with.
 pub fn read_turn_timings(agent: &str, session_id: &str) -> Vec<TurnTiming> {
-    read_turn_timings_in(&crate::paths::recur_code_turn_timings_root(), agent, session_id)
+    read_turn_timings_in(&crate::paths::rc_turn_timings_root(), agent, session_id)
 }
 
 /// Root-injectable core of [`read_turn_timings`].

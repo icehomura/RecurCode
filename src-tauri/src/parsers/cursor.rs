@@ -103,7 +103,7 @@ impl CursorParser {
         Self {
             chats_dir: config_dir.join("chats"),
             acp_sessions_dir: config_dir.join("acp-sessions"),
-            turn_timings_root: crate::paths::recur_code_turn_timings_root(),
+            turn_timings_root: crate::paths::rc_turn_timings_root(),
         }
     }
 

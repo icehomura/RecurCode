@@ -638,7 +638,7 @@ mod tests {
     }
 
     #[test]
-    fn recur_code_stamps_on_the_opening_frame_survive_later_updates() {
+    fn rc_stamps_on_the_opening_frame_survive_later_updates() {
         let mut ledger = ToolCallMetaLedger::default();
         ledger.open(AgentType::Codex, "search-1", None);
         ledger.remember_stamps(

@@ -68,7 +68,7 @@ impl AcpNativeParser {
     pub fn new(agent_type: AgentType) -> Self {
         Self {
             agent_type,
-            root: crate::paths::recur_code_acp_transcripts_root(),
+            root: crate::paths::rc_acp_transcripts_root(),
         }
     }
 

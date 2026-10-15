@@ -109,7 +109,7 @@ function releaseFocusRefresh(): void {
  * enabled — i.e. symlinked into the given agent's skill directory — for the
  * passed agent. Mirrors the settings page's "enabled" definition: a
  * `(skillId, agentType)` pair counts as enabled only when its install status is
- * `linked_to_recur_code`.
+ * `linked_to_rc`.
  *
  * `ready` is false until the first snapshot resolves successfully, so callers
  * can avoid marking everything as "not enabled" during the initial async load
@@ -196,7 +196,7 @@ export function useEnabledSkillIds(agentType: AgentType | null): {
     for (const status of snapshot) {
       if (
         status.agentType === agentType &&
-        status.state === "linked_to_recur_code"
+        status.state === "linked_to_rc"
       ) {
         set.add(status.expertId)
       }

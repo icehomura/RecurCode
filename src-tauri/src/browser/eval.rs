@@ -209,7 +209,7 @@ fn clip(text: &str, limit: usize) -> (String, bool) {
 ///
 /// All of it — renderer included — sits inside one function, so an evaluation
 /// leaves no names behind on the page's globals. A page that could see
-/// `__recur_codeEvalRender` lying around would know RecurCode had run something, which
+/// `__rcEvalRender` lying around would know RecurCode had run something, which
 /// is the page's business least of all.
 ///
 /// The snippet can break out of the function it is wrapped in — there is no
@@ -219,7 +219,7 @@ fn clip(text: &str, limit: usize) -> (String, bool) {
 /// deliberate property of the design and not a gap in it; see the module
 /// comment.
 pub fn eval_call(code: &str) -> String {
-    format!("(function(){{\n{RENDER_JS}\ntry {{\nvar __recur_codeEvalValue = (function () {{\n{code}\n}})();\nreturn __recur_codeEvalRender(__recur_codeEvalValue);\n}} catch (e) {{\nreturn __recur_codeEvalError(e);\n}}\n}})()")
+    format!("(function(){{\n{RENDER_JS}\ntry {{\nvar __rcEvalValue = (function () {{\n{code}\n}})();\nreturn __rcEvalRender(__rcEvalValue);\n}} catch (e) {{\nreturn __rcEvalError(e);\n}}\n}})()")
 }
 
 /// The renderer, as source text opening every call.
@@ -263,7 +263,7 @@ mod tests {
         assert!(js.contains("return 1 // done\n"));
         let after = js.split("return 1 // done").nth(1).unwrap();
         assert!(after.starts_with('\n'), "code is followed by a newline");
-        assert!(after.contains("__recur_codeEvalRender"));
+        assert!(after.contains("__rcEvalRender"));
     }
 
     /// The answer type has no address in it, and cannot grow one by accident:
@@ -347,8 +347,8 @@ mod tests {
         // real browser; this pins the shape it measures.
         assert!(js.starts_with("(function(){\n"));
         assert!(js.ends_with("})()"));
-        assert!(js.contains("var __recur_codeEvalClip"));
-        assert!(js.contains("__recur_codeEvalError"));
+        assert!(js.contains("var __rcEvalClip"));
+        assert!(js.contains("__rcEvalError"));
         assert!(js.contains("return document.title"));
     }
 }

@@ -27,7 +27,7 @@ const grant: BridgeGrant = {
   targetPort: 3000,
   bridgePort: 3081,
   bridgeHost: null,
-  entryPath: "/__recur_code_bridge/enter/cap123",
+  entryPath: "/__rc_bridge/enter/cap123",
   publicHost: null,
   path: "/docs?x=1",
 }
@@ -172,7 +172,7 @@ describe("bridge URLs", () => {
     const page = { protocol: "http:", hostname: "192.168.1.5", port: "3080" }
     expect(bridgeOrigin(grant, page)).toBe("http://192.168.1.5:3081")
     expect(bridgeEntryUrl(grant, page)).toBe(
-      "http://192.168.1.5:3081/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "http://192.168.1.5:3081/__rc_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
   })
 
@@ -203,7 +203,7 @@ describe("bridge URLs", () => {
     const page = { protocol: "https:", hostname: "RecurCode.example", port: "" }
     expect(bridgeOrigin(hostGrant, page)).toBe("https://3000.recurcode.example")
     expect(bridgeEntryUrl(hostGrant, page)).toBe(
-      "https://3000.recurcode.example/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "https://3000.recurcode.example/__rc_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
     expect(bridgeOrigin(hostGrant, { ...page, port: "8443" })).toBe(
       "https://3000.recurcode.example:8443"
@@ -221,13 +221,13 @@ describe("bridge URLs", () => {
   it("send an empty path to the root and keep the address's fragment", () => {
     const page = { protocol: "http:", hostname: "h", port: "3080" }
     expect(bridgeEntryUrl({ ...grant, path: "" }, page)).toBe(
-      "http://h:3081/__recur_code_bridge/enter/cap123?to=%2F"
+      "http://h:3081/__rc_bridge/enter/cap123?to=%2F"
     )
     expect(bridgeEntryUrl(grant, page, "#install")).toBe(
-      "http://h:3081/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1%23install"
+      "http://h:3081/__rc_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1%23install"
     )
     expect(bridgeEntryUrl(grant, page, "")).toBe(
-      "http://h:3081/__recur_code_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "http://h:3081/__rc_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
     expect(fragmentOf("http://localhost:3000/docs#install")).toBe("#install")
     expect(fragmentOf("http://localhost:3000/docs")).toBe("")
@@ -241,7 +241,7 @@ describe("probeBridge", () => {
     vi.stubGlobal("fetch", fetchMock)
     expect(await probeBridge("http://h:3081")).toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://h:3081/__recur_code_bridge/ping",
+      "http://h:3081/__rc_bridge/ping",
       expect.objectContaining({
         mode: "cors",
         credentials: "omit",

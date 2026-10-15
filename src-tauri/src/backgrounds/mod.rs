@@ -1,7 +1,7 @@
 //! Filesystem-backed workspace background-image repository.
 //!
 //! A single user-selected image is stored at
-//! `paths::recur_code_backgrounds_root()/background.img`. The repository is
+//! `paths::rc_backgrounds_root()/background.img`. The repository is
 //! **decoupled from Tauri** so the same routines back the desktop and
 //! standalone-server runtimes, mirroring `crate::pets` — simplified to one
 //! image with no id/manifest, and with relaxed validation: any dimensions are
@@ -22,7 +22,7 @@ use image::{ImageFormat, ImageReader};
 
 use crate::app_error::AppCommandError;
 use crate::models::background::BackgroundAsset;
-use crate::paths::recur_code_backgrounds_root;
+use crate::paths::rc_backgrounds_root;
 
 pub mod marketplace;
 
@@ -50,7 +50,7 @@ const STALE_TMP_AGE: Duration = Duration::from_secs(600);
 static TMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 fn background_path() -> PathBuf {
-    recur_code_backgrounds_root().join(BACKGROUND_FILENAME)
+    rc_backgrounds_root().join(BACKGROUND_FILENAME)
 }
 
 /// Verify the payload is a real, bounded image before it touches disk. Accepts
@@ -122,7 +122,7 @@ pub fn validate_background(bytes: &[u8]) -> Result<(), AppCommandError> {
 }
 
 fn ensure_backgrounds_root() -> Result<PathBuf, AppCommandError> {
-    let root = recur_code_backgrounds_root();
+    let root = rc_backgrounds_root();
     if !root.exists() {
         fs::create_dir_all(&root).map_err(AppCommandError::io)?;
     }

@@ -52,10 +52,10 @@
 // instruction.
 ;(function recurCodeBrowserPicker() {
   "use strict"
-  if (typeof globalThis.__recur_codeSend !== "function") return
-  if (globalThis.__recur_codePicker) return
+  if (typeof globalThis.__rcSend !== "function") return
+  if (globalThis.__rcPicker) return
 
-  var send = globalThis.__recur_codeSend
+  var send = globalThis.__rcSend
   var stringify = JSON.stringify
   // Caps. The channel drops any message over 64 KiB, and what a page can put
   // in these fields is unbounded, so each is cut here — the host cuts them
@@ -955,7 +955,7 @@
   // escape hatch as `helper.js`: the flag lives in this world, which page
   // scripts cannot reach, and only the host's own harness sets it.
   function trusted(event) {
-    return !!event.isTrusted || globalThis.__recur_codeAcceptUntrusted === true
+    return !!event.isTrusted || globalThis.__rcAcceptUntrusted === true
   }
 
   /**
@@ -1289,7 +1289,7 @@
     }
   }
 
-  globalThis.__recur_codePicker = {
+  globalThis.__rcPicker = {
     // Arm the picker for one element. A second call replaces the first: the
     // host only ever waits for the pick it asked for last, and an id it does
     // not recognise is dropped there.

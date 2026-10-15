@@ -125,8 +125,8 @@ export function ScienceBody({
       switch (state) {
         case "not_linked":
           return t("states.not_linked")
-        case "linked_to_recur_code":
-          return t("states.linked_to_recur_code")
+        case "linked_to_rc":
+          return t("states.linked_to_rc")
         case "linked_elsewhere":
           return t("states.linked_elsewhere")
         case "blocked_by_real_directory":

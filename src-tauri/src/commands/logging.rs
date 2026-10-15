@@ -150,7 +150,7 @@ pub(crate) fn filter_recent(
 fn logs_dir() -> std::path::PathBuf {
     crate::logging::panic_hook::log_file_dir()
         .map(std::path::Path::to_path_buf)
-        .unwrap_or_else(crate::paths::recur_code_logs_root)
+        .unwrap_or_else(crate::paths::rc_logs_root)
 }
 
 /// List `.log` files in the logs dir, newest first. Empty if the dir is absent.
@@ -376,7 +376,7 @@ mod tests {
                 ("RC_DATA_DIR", Some(tmp.path().to_str().unwrap())),
             ],
             || {
-                let logs = crate::paths::recur_code_logs_root();
+                let logs = crate::paths::rc_logs_root();
                 std::fs::create_dir_all(&logs).unwrap();
                 std::fs::write(logs.join("RecurCode.2026-01-01.log"), b"0123456789").unwrap();
                 assert_eq!(
@@ -401,7 +401,7 @@ mod tests {
                 ("RC_DATA_DIR", Some(tmp.path().to_str().unwrap())),
             ],
             || {
-                let logs = crate::paths::recur_code_logs_root();
+                let logs = crate::paths::rc_logs_root();
                 std::fs::create_dir_all(&logs).unwrap();
                 std::fs::write(logs.join("a.log"), b"a").unwrap();
                 std::fs::write(logs.join("b.txt"), b"b").unwrap();
@@ -416,7 +416,7 @@ mod tests {
     /// directory is where `paths` resolves it: under the data directory, or
     /// under `RC_HOME` when that is set, as uploads and pets are.
     #[test]
-    fn logs_dir_follows_the_data_directory_and_recur_code_home() {
+    fn logs_dir_follows_the_data_directory_and_rc_home() {
         let data = tempfile::tempdir().unwrap();
         let home = tempfile::tempdir().unwrap();
         temp_env::with_vars(
@@ -448,7 +448,7 @@ mod tests {
                 ("RC_DATA_DIR", Some(tmp.path().to_str().unwrap())),
             ],
             || {
-                let logs = crate::paths::recur_code_logs_root();
+                let logs = crate::paths::rc_logs_root();
                 std::fs::create_dir_all(&logs).unwrap();
                 let mut open = std::fs::OpenOptions::new()
                     .create(true)

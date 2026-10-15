@@ -686,7 +686,7 @@ pub fn pi_select_option_id(outcome: &QuestionOutcome, ask: &PiSelectAsk) -> Opti
 /// are folded and case is ignored, so only the two identifying words matter.
 ///
 /// BOTH halves have to be present — the server name RecurCode itself injects
-/// (`rc-mcp`, see `acp::connection::inject_recur_code_mcp`) AND the tool name.
+/// (`rc-mcp`, see `acp::connection::inject_rc_mcp`) AND the tool name.
 /// The frontend can afford a bare `*ask_user_question` suffix rule because a
 /// wrong match there only picks a nicer card; this one unlocks an AUTO-APPROVAL
 /// of a blocked `session/request_permission`, and a third-party MCP server's
@@ -696,12 +696,12 @@ pub fn pi_select_option_id(outcome: &QuestionOutcome, ask: &PiSelectAsk) -> Opti
 /// tool's entire effect is to put the interactive question card on screen and
 /// block until the user answers it. The consent IS the next dialog, so gating it
 /// behind a generic "run this tool?" card asks the user to approve being asked.
-pub fn is_recur_code_ask_tool_name(name: &str) -> bool {
+pub fn is_rc_ask_tool_name(name: &str) -> bool {
     let normalized = name
         .trim()
         .to_ascii_lowercase()
         .replace(['-', ' ', '.', '/', ':'], "_");
-    normalized.ends_with("ask_user_question") && normalized.contains("recur_code_mcp")
+    normalized.ends_with("ask_user_question") && normalized.contains("rc_mcp")
 }
 
 /// Serialize a resolved [`QuestionOutcome`] into grok's `AskUserQuestionExtResponse`
@@ -3395,7 +3395,7 @@ mod tests {
     }
 
     #[test]
-    fn is_recur_code_ask_tool_name_accepts_every_host_spelling_of_recur_codes_own_tool() {
+    fn is_rc_ask_tool_name_accepts_every_host_spelling_of_rcs_own_tool() {
         for spelling in [
             // claude-agent-acp: an MCP tool's permission card title IS the
             // raw tool name.
@@ -3407,14 +3407,14 @@ mod tests {
             "  MCP__RecurCode-MCP__Ask_User_Question  ",
         ] {
             assert!(
-                is_recur_code_ask_tool_name(spelling),
+                is_rc_ask_tool_name(spelling),
                 "{spelling} is RecurCode's own ask tool"
             );
         }
     }
 
     #[test]
-    fn is_recur_code_ask_tool_name_rejects_tools_that_are_not_recur_codes_ask() {
+    fn is_rc_ask_tool_name_rejects_tools_that_are_not_rcs_ask() {
         for other in [
             // A third-party MCP server's similarly named tool: approving it is
             // the user's decision, so the bare suffix must NOT be enough.
@@ -3432,7 +3432,7 @@ mod tests {
             "",
         ] {
             assert!(
-                !is_recur_code_ask_tool_name(other),
+                !is_rc_ask_tool_name(other),
                 "{other} must keep its approval card"
             );
         }

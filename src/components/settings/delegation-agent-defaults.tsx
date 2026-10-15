@@ -52,7 +52,7 @@ import { toErrorMessage } from "@/lib/app-error"
 // `null`) so the agent's own default takes effect at runtime. Must not
 // collide with any real option id any agent could emit — the RecurCode
 // prefix makes a collision implausible.
-const DEFAULT_SENTINEL = "__recur_code_default__"
+const DEFAULT_SENTINEL = "__rc_default__"
 
 // Tab-switch debounce. Without this, rapid clicks across the agent
 // buttons would each kick off a real probe (which on the backend now

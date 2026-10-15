@@ -220,7 +220,7 @@ fn run_options_decl() -> &'static Regex {
     })
 }
 
-fn legacy_recur_code_policy() -> &'static Regex {
+fn legacy_rc_policy() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| Regex::new(LEGACY_RC_POLICY).expect("legacy policy is a valid regex"))
 }
@@ -372,7 +372,7 @@ fn no_enclosing_scope_closes(between: &str) -> bool {
 /// does, and requires the three locals the old policy reads to agree — a
 /// half-rewritten splice is not something to rewrite the rest of.
 fn repair_range(content: &str) -> Option<std::ops::Range<usize>> {
-    let mut matches = legacy_recur_code_policy().captures_iter(content);
+    let mut matches = legacy_rc_policy().captures_iter(content);
     let first = matches.next()?;
     if matches.next().is_some() {
         return None;
@@ -502,7 +502,7 @@ pub fn maybe_apply(platform_dir: &Path, version: &str) -> CompatPatchStatus {
         // "already fixed" would both log a lie and let the memo settle on it.
         // Report the mismatch instead, so it stays inside the attempt budget
         // and the log names something a maintainer can act on.
-        let status = if legacy_recur_code_policy().is_match(&content) {
+        let status = if legacy_rc_policy().is_match(&content) {
             tracing::error!(
                 "Cursor ACP retry compatibility patch: bundle carries RecurCode's earlier \
                  wrong-local splice but no repair could be planned \

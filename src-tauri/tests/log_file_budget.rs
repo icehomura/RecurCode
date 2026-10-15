@@ -38,7 +38,7 @@ const SEEDED: u64 = CEILING / 4 * 3;
 fn file_log_stops_growing_at_the_daily_ceiling() {
     let home = tempfile::tempdir().expect("tempdir");
     // Both are read inside `init_desktop()` below: RC_HOME relocates
-    // `recur_code_logs_root()`, RC_LOG_MAX_BYTES sets the ceiling. Set them before
+    // `rc_logs_root()`, RC_LOG_MAX_BYTES sets the ceiling. Set them before
     // the install rather than via `temp_env`, because the guard returned by the
     // install must outlive the closure.
     std::env::set_var("RC_HOME", home.path());
@@ -48,7 +48,7 @@ fn file_log_stops_growing_at_the_daily_ceiling() {
     std::env::remove_var("RUST_LOG");
     std::env::remove_var("RC_LOG");
 
-    let logs_dir = recur_code_lib::paths::recur_code_logs_root();
+    let logs_dir = rc_lib::paths::rc_logs_root();
     assert!(
         logs_dir.starts_with(home.path()),
         "the test must not write to the developer's real log dir: {}",
@@ -66,7 +66,7 @@ fn file_log_stops_growing_at_the_daily_ceiling() {
     std::fs::write(&today_file, vec![b'-'; SEEDED as usize]).expect("seed today's file");
 
     // Real subscriber: EnvFilter + stderr + buffer + the budgeted rolling file.
-    let guard = recur_code_lib::logging::init::init_desktop();
+    let guard = rc_lib::logging::init::init_desktop();
 
     // ~1.2 KB of JSON per line × 300 lines ≈ 360 KB offered against a 32 KB
     // ceiling — the same shape as the reported storm, just compressed. Few, fat

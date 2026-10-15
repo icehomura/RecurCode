@@ -1107,7 +1107,7 @@ mod delegation_relay_tests {
         assert!(is_delegation_title(
             "mcp__rc-mcp__delegate_to_agent"
         ));
-        assert!(is_delegation_title("Run mcp__recur_code__delegate_to_agent"));
+        assert!(is_delegation_title("Run mcp__rc__delegate_to_agent"));
         assert!(!is_delegation_title("agent"));
         assert!(!is_delegation_title("write"));
     }

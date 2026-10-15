@@ -3542,7 +3542,7 @@ mod tests {
     }
 
     #[test]
-    fn recur_code_sent_prompt_is_foreground_and_not_surfaced() {
+    fn rc_sent_prompt_is_foreground_and_not_surfaced() {
         let dir = tempfile::tempdir().unwrap();
         let path = temp_session(&dir);
         write_lines(&path, &[]);

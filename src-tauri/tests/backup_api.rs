@@ -9,10 +9,10 @@ use std::sync::Arc;
 
 use axum_test::multipart::{MultipartForm, Part};
 use axum_test::TestServer;
-use recur_code_lib::app_state::AppState;
-use recur_code_lib::db::test_helpers::fresh_disk_db;
-use recur_code_lib::web::router::build_router;
-use recur_code_lib::web::shutdown::ShutdownSignal;
+use rc_lib::app_state::AppState;
+use rc_lib::db::test_helpers::fresh_disk_db;
+use rc_lib::web::router::build_router;
+use rc_lib::web::shutdown::ShutdownSignal;
 use serde_json::{json, Value};
 
 const TEST_TOKEN: &str = "backup-test-token";
@@ -27,7 +27,7 @@ async fn build_server() -> (TestServer, tempfile::TempDir, tempfile::TempDir) {
 
     let db = fresh_disk_db(data_dir.path()).await;
     // Seed a row so the snapshot has observable content.
-    recur_code_lib::db::service::folder_service::add_folder(&db.conn, "/tmp/proj")
+    rc_lib::db::service::folder_service::add_folder(&db.conn, "/tmp/proj")
         .await
         .expect("seed folder");
 

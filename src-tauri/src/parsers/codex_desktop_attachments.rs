@@ -465,7 +465,7 @@ mod tests {
     }
 
     #[test]
-    fn rewrite_renders_each_file_as_the_link_recur_code_renders_attachments_as() {
+    fn rewrite_renders_each_file_as_the_link_rc_renders_attachments_as() {
         assert_eq!(
             rewrite(
                 "\n# Files mentioned by the user:\n\n## report.pdf: /workspace/a #1.pdf\n\n## diagram.png: /workspace/diagram.png\nImage attachment: true\n\n## My request:\nCompare them\n"

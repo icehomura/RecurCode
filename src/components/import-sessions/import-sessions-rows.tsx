@@ -124,7 +124,7 @@ export const FolderHeaderRow = memo(function FolderHeaderRow({
           <AgentIcon key={agent} agentType={agent} className="h-3.5 w-3.5" />
         ))}
       </span>
-      {!folder.exists_in_recur_code && (
+      {!folder.exists_in_rc && (
         <Badge variant="secondary" className="shrink-0 text-3xs">
           {t("folderNew")}
         </Badge>

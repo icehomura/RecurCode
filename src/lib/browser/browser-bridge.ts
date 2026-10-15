@@ -184,7 +184,7 @@ export async function probeBridge(
   const controller = new AbortController()
   const timer = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const response = await fetch(`${origin}/__recur_code_bridge/ping`, {
+    const response = await fetch(`${origin}/__rc_bridge/ping`, {
       mode: "cors",
       credentials: "omit",
       cache: "no-store",

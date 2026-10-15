@@ -308,7 +308,7 @@ pub struct ScanFolder {
     pub name: String,
     /// A live (non-deleted) folder row exists for this path. `false` with a
     /// `folder_id` means the row is soft-deleted and import will reopen it.
-    pub exists_in_recur_code: bool,
+    pub exists_in_rc: bool,
     pub folder_id: Option<i32>,
     pub agent_types: Vec<AgentType>,
     pub sessions: Vec<ScanSession>,

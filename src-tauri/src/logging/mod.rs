@@ -2,7 +2,7 @@
 //!
 //! One subscriber feeds three sinks: **stderr** (preserves the pre-tracing
 //! `eprintln!` behavior for terminal users), a **daily-rotating JSON-lines
-//! file** under [`crate::paths::recur_code_logs_root`], and an **in-memory ring
+//! file** under [`crate::paths::rc_logs_root`], and an **in-memory ring
 //! buffer** ([`hub`]) that the Settings → Logs viewer reads and live-tails.
 //!
 //! - [`init`] wires the subscriber into each of the three binaries and owns
@@ -84,7 +84,7 @@ impl LogLevel {
     }
 }
 
-/// A per-target level override, e.g. `recur_code_lib::acp` at `Debug` while the
+/// A per-target level override, e.g. `rc_lib::acp` at `Debug` while the
 /// global level stays `Info`. `target` is a `tracing` target (a Rust module
 /// path); it maps directly to an `EnvFilter` directive `target=level`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
