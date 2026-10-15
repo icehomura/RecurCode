@@ -154,7 +154,7 @@ pub enum NotGrantable {
     /// RecurCode's windows could read the grant dialog and the stop button, and
     /// the only thing keeping a person in charge of what an agent may see is
     /// that those are out of its reach.
-    RecurCode,
+    Rc,
     /// The application is on the person's never-share list — one of the
     /// defaults they kept (credential managers, the system settings), or one
     /// they added.
@@ -171,7 +171,7 @@ impl NotGrantable {
     /// a read of one is refused.
     pub fn note(self) -> &'static str {
         match self {
-            NotGrantable::RecurCode => {
+            NotGrantable::Rc => {
                 "RecurCode's own window: it can never be shared with an agent. For web pages use \
                  the browser_* tools."
             }
@@ -600,7 +600,7 @@ pub fn grantable(
     blocklist: &Blocklist,
 ) -> Result<(), NotGrantable> {
     if me.owns(app) {
-        return Err(NotGrantable::RecurCode);
+        return Err(NotGrantable::Rc);
     }
     if blocklist.matches(app) {
         return Err(NotGrantable::Blocklisted);
@@ -820,19 +820,19 @@ mod tests {
                 None,
                 Some(r"C:\Users\me\RecurCode\src-tauri\target\debug\RecurCode.exe"),
             ),
-            app(400, None, Some(r"C:\Program Files\RecurCode\RC.EXE")),
+            app(400, None, Some(r"C:\Program Files\RecurCode\RecurCode.EXE")),
             app(400, None, Some("/usr/bin/RecurCode")),
         ] {
             assert_eq!(
                 grantable(&RecurCode, &me, &list),
-                Err(NotGrantable::RecurCode),
+                Err(NotGrantable::Rc),
                 "{RecurCode:?}"
             );
         }
         assert_eq!(
-            grantable(&app(300, None, Some("/applications/RC.app")), &me, &list),
+            grantable(&app(300, None, Some("/applications/RecurCode.app")), &me, &list),
             if cfg!(any(windows, target_os = "macos")) {
-                Err(NotGrantable::RecurCode)
+                Err(NotGrantable::Rc)
             } else {
                 Ok(())
             }

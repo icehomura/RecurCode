@@ -1877,7 +1877,7 @@ impl ComputerService {
         let blocklist = blocklist_of(&config);
         let command = found.launch_path.as_deref().unwrap_or_default();
         let blocked = if self.me.owns(&found.app) || self.me.owns_command(command) {
-            Some(NotGrantable::RecurCode)
+            Some(NotGrantable::Rc)
         } else if blocklist.matches(&found.app) || blocklist.matches_command(command) {
             Some(NotGrantable::Blocklisted)
         } else {

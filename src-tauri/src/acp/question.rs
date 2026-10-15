@@ -3404,7 +3404,7 @@ mod tests {
             "rc-mcp: ask_user_question",
             "mcp.rc-mcp.ask_user_question",
             // Hosts that title-case or pad it.
-            "  MCP__RecurCode-MCP__Ask_User_Question  ",
+            "  MCP__Rc-MCP__Ask_User_Question  ",
         ] {
             assert!(
                 is_rc_ask_tool_name(spelling),
