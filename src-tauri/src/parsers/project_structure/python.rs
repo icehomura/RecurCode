@@ -11,6 +11,12 @@ pub fn extract_symbols(content: &str) -> Vec<ExtractedSymbol> {
     for (line_idx, line) in content.lines().enumerate() {
         let line_num = (line_idx + 1) as u32;
         let trimmed = line.trim();
+        // Blank lines carry no indentation and must not end the current class
+        // scope (PEP8 separates methods with them); only a real, dedented line
+        // closes the class.
+        if trimmed.is_empty() {
+            continue;
+        }
         let indent = line.len() - line.trim_start().len();
 
         // Track class context by indentation

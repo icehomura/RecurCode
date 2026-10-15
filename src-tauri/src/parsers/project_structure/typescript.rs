@@ -116,20 +116,31 @@ pub fn extract_symbols(content: &str, language: &str) -> Vec<ExtractedSymbol> {
         // const / let / var (top-level exports)
         if let Some(caps) = re_const().captures(trimmed) {
             let name = caps[1].to_string();
-            if trimmed.contains("export") || name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
-                let mut meta = HashMap::new();
-                if trimmed.contains("export") {
-                    meta.insert("exported".into(), "true".into());
+            // `const x = function () {}` is a function, not a constant; the
+            // original pattern used a lookahead (unsupported by the `regex`
+            // crate) to exclude it, so guard in code instead.
+            if !trimmed.contains("function") {
+                if trimmed.contains("export")
+                    || name
+                        .chars()
+                        .next()
+                        .map(|c| c.is_uppercase())
+                        .unwrap_or(false)
+                {
+                    let mut meta = HashMap::new();
+                    if trimmed.contains("export") {
+                        meta.insert("exported".into(), "true".into());
+                    }
+                    symbols.push(ExtractedSymbol {
+                        name,
+                        kind: "struct".into(), // Constants map to struct kind in our model
+                        summary: None,
+                        line: Some(line_num),
+                        language: language.into(),
+                        parent_name: None,
+                        metadata: Some(meta),
+                    });
                 }
-                symbols.push(ExtractedSymbol {
-                    name,
-                    kind: "struct".into(), // Constants map to struct kind in our model
-                    summary: None,
-                    line: Some(line_num),
-                    language: language.into(),
-                    parent_name: None,
-                    metadata: Some(meta),
-                });
             }
             continue;
         }
@@ -162,8 +173,8 @@ fn extract_fn_sig(line: &str) -> String {
     }
 }
 
-use std::sync::OnceLock;
 use regex::Regex;
+use std::sync::OnceLock;
 
 fn re_class() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
@@ -187,7 +198,7 @@ fn re_fn() -> &'static Regex {
 
 fn re_const() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?:export\s+)?(?:const|let|var)\s+(\w+)\s*[=:](?!.*function)").unwrap())
+    RE.get_or_init(|| Regex::new(r"(?:export\s+)?(?:const|let|var)\s+(\w+)\s*[=:]").unwrap())
 }
 
 fn re_type_alias() -> &'static Regex {
@@ -223,10 +234,20 @@ type ID = string | number;
 export const MAX_SIZE = 100;
 "#;
         let symbols = extract_symbols(code, "typescript");
-        assert!(symbols.iter().any(|s| s.name == "Props" && s.kind == "interface"));
-        assert!(symbols.iter().any(|s| s.name == "Button" && s.kind == "class"));
-        assert!(symbols.iter().any(|s| s.name == "createApp" && s.kind == "function"));
-        assert!(symbols.iter().any(|s| s.name == "ID" && s.kind == "interface"));
-        assert!(symbols.iter().any(|s| s.name == "MAX_SIZE" && s.kind == "struct"));
+        assert!(symbols
+            .iter()
+            .any(|s| s.name == "Props" && s.kind == "interface"));
+        assert!(symbols
+            .iter()
+            .any(|s| s.name == "Button" && s.kind == "class"));
+        assert!(symbols
+            .iter()
+            .any(|s| s.name == "createApp" && s.kind == "function"));
+        assert!(symbols
+            .iter()
+            .any(|s| s.name == "ID" && s.kind == "interface"));
+        assert!(symbols
+            .iter()
+            .any(|s| s.name == "MAX_SIZE" && s.kind == "struct"));
     }
 }

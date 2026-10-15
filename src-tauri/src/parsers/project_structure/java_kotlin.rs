@@ -46,7 +46,11 @@ pub fn extract_symbols(content: &str, language: &str) -> Vec<ExtractedSymbol> {
                 metadata: Some(meta),
             });
             current_class = Some(name);
-            brace_depth = 0;
+            // Count this line's own braces so a method that opens and closes on
+            // one line (`void f() {}`) does not falsely return depth to 0 and end
+            // the class scope.
+            brace_depth = trimmed.matches('{').count() as i32
+                - trimmed.matches('}').count() as i32;
             continue;
         }
 
@@ -63,7 +67,8 @@ pub fn extract_symbols(content: &str, language: &str) -> Vec<ExtractedSymbol> {
                 metadata: None,
             });
             current_class = Some(name);
-            brace_depth = 0;
+            brace_depth = trimmed.matches('{').count() as i32
+                - trimmed.matches('}').count() as i32;
             continue;
         }
 
