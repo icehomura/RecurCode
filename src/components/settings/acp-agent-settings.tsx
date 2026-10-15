@@ -168,7 +168,7 @@ import {
 import { DeepSeekModelListEditor } from "./deepseek-model-list-editor"
 import { KimiCodeConfigPanel } from "./kimi-code-config-panel"
 import { PiConfigPanel } from "./pi-config-panel"
-import { RaConfigPanel } from "./recur-config-panel"
+import { RaConfigPanel } from "./ra-config-panel"
 import { QoderConfigPanel } from "./qoder-config-panel"
 
 interface AgentCheckState {
