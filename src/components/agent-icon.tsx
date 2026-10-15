@@ -461,6 +461,48 @@ const CursorMonoIcon = memo(function CursorMonoIcon({
   )
 })
 
+const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
+  // RecurAgent (Recur Code) — a recursion call-tree: a trunk that self-splits
+  // into two, each splitting again. Drawn in currentColor as stroked lines so it
+  // renders frameless like the other mono marks; strokes carry the theme color.
+  return (
+    <svg
+      fill="none"
+      height={size}
+      style={baseSvgStyle}
+      viewBox="0 0 16 16"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <title>Recur Agent</title>
+      <g
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* trunk */}
+        <path d="M8 14.5V11" />
+        {/* first split */}
+        <path d="M8 11 5.4 8.2" />
+        <path d="M8 11 10.6 8.2" />
+        {/* second split (self-similar) */}
+        <path d="M5.4 8.2 3.6 5.8" />
+        <path d="M5.4 8.2 7.2 5.8" />
+        <path d="M10.6 8.2 8.8 5.8" />
+        <path d="M10.6 8.2 12.4 5.8" />
+      </g>
+      {/* leaf nodes */}
+      <g fill="currentColor">
+        <circle cx="3.6" cy="5.3" r="1.05" />
+        <circle cx="7.2" cy="5.3" r="1.05" />
+        <circle cx="8.8" cy="5.3" r="1.05" />
+        <circle cx="12.4" cy="5.3" r="1.05" />
+      </g>
+    </svg>
+  )
+})
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyIcon = React.ComponentType<any>
 
@@ -483,6 +525,7 @@ const MONO_ICONS: Partial<Record<AgentType, AnyIcon>> = {
   cursor: CursorMonoIcon,
   qoder: QoderMonoIcon,
   antigravity: AntigravityMonoIcon,
+  ra: RaMonoIcon,
 }
 
 // Per-agent color override for mono marks, layered on top of the default
