@@ -311,10 +311,10 @@ impl Default for ManagedBrowserSection {
     }
 }
 
-/// `RECUR_CODE_POLICY_FILE` when set (tests, unusual deployments), else the
+/// `RC_POLICY_FILE` when set (tests, unusual deployments), else the
 /// machine-wide location for the platform. The file is optional.
 pub fn managed_policy_path() -> PathBuf {
-    if let Some(explicit) = std::env::var_os("RECUR_CODE_POLICY_FILE") {
+    if let Some(explicit) = std::env::var_os("RC_POLICY_FILE") {
         return PathBuf::from(explicit);
     }
     if cfg!(target_os = "macos") {

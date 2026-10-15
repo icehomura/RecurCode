@@ -62,7 +62,7 @@ const MAX_CONCURRENT_WATCHES: usize = 32;
 const SSE_LEASE_GRACE: Duration = Duration::from_secs(90);
 
 /// Default idle threshold for the sweep (5 minutes). Override via
-/// `RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS`; `0` disables the sweep.
+/// `RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS`; `0` disables the sweep.
 pub const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 300;
 /// Sweep cadence — once per minute, like the ACP idle sweep.
 pub const SWEEP_INTERVAL_SECS: u64 = 60;
@@ -149,7 +149,7 @@ impl From<WatchError> for AppCommandError {
 /// `cap` is a high-entropy secret minted when the watch first spawns and
 /// returned (stable) for the life of that watch. The server-mode reverse proxy
 /// authenticates every request against it instead of the global server token,
-/// so (a) the master `RECUR_CODE_TOKEN` never enters the preview iframe, and (b) a
+/// so (a) the master `RC_TOKEN` never enters the preview iframe, and (b) a
 /// leaked `cap` only grants access to that one open document's watch — minting
 /// it requires the Bearer-authed `start_office_watch` API, so only an
 /// already-authenticated user can obtain one. Desktop ignores `cap` (it loads
@@ -837,10 +837,10 @@ pub fn stop_office_watches_under_root(root_path: &str) -> usize {
 
 // ─── Idle / dead-child sweep ─────────────────────────────────────────────
 
-/// Read the idle timeout from `RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS`. `0`
+/// Read the idle timeout from `RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS`. `0`
 /// disables the sweep; unparseable falls back to the default.
 pub fn idle_timeout_from_env() -> Option<Duration> {
-    let secs = match std::env::var("RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS") {
+    let secs = match std::env::var("RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS") {
         Ok(raw) => raw.parse::<u64>().unwrap_or(DEFAULT_IDLE_TIMEOUT_SECS),
         Err(_) => DEFAULT_IDLE_TIMEOUT_SECS,
     };
@@ -1562,16 +1562,16 @@ mod tests {
 
     #[test]
     fn idle_timeout_env_parsing() {
-        std::env::set_var("RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS", "0");
+        std::env::set_var("RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS", "0");
         assert!(idle_timeout_from_env().is_none());
-        std::env::set_var("RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS", "nope");
+        std::env::set_var("RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS", "nope");
         assert_eq!(
             idle_timeout_from_env().unwrap().as_secs(),
             DEFAULT_IDLE_TIMEOUT_SECS
         );
-        std::env::set_var("RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS", "120");
+        std::env::set_var("RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS", "120");
         assert_eq!(idle_timeout_from_env().unwrap().as_secs(), 120);
-        std::env::remove_var("RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS");
+        std::env::remove_var("RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS");
         assert_eq!(
             idle_timeout_from_env().unwrap().as_secs(),
             DEFAULT_IDLE_TIMEOUT_SECS

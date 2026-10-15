@@ -9,10 +9,10 @@ fn main() {
 }
 
 /// A fingerprint of the sources `recur-code-computer-helper` is built from,
-/// compiled into it and into RecurCode alike (`RECUR_CODE_COMPUTER_SOURCE`). A
+/// compiled into it and into RecurCode alike (`RC_COMPUTER_SOURCE`). A
 /// development RecurCode refuses a helper whose fingerprint is not its own:
 /// `pnpm tauri dev` builds the helper once, as it starts (not at all under
-/// `RECUR_CODE_SKIP_SIDECAR=1`), and only RecurCode after that, so a helper left over
+/// `RC_SKIP_SIDECAR=1`), and only RecurCode after that, so a helper left over
 /// from before an edit would go on answering with the old code (see
 /// `computer::local`). Changes elsewhere in the crate that the helper also
 /// compiles in are not seen; they seldom touch it.
@@ -53,7 +53,7 @@ fn fingerprint_helper_sources() {
         feed(&std::fs::read(file).unwrap_or_default());
         feed(&[0]);
     }
-    println!("cargo:rustc-env=RECUR_CODE_COMPUTER_SOURCE={hash:016x}");
+    println!("cargo:rustc-env=RC_COMPUTER_SOURCE={hash:016x}");
 }
 
 /// Tauri's bundler validates that every `bundle.externalBin` path resolves

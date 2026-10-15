@@ -139,7 +139,7 @@ async fn resolve_web_service_token(
 /// upgrade restarts the process, and if the token rotated, the already
 /// authenticated frontend would start getting 401s and could no longer tell a
 /// successful upgrade from an auto-rollback. Resolution mirrors the desktop web
-/// service — a non-empty `RECUR_CODE_TOKEN` override wins; otherwise reuse the value
+/// service — a non-empty `RC_TOKEN` override wins; otherwise reuse the value
 /// persisted in `AppMetadata`; otherwise generate one and persist it. An empty
 /// or whitespace override is treated as unset (never accepted as a real token).
 /// `*generated` is set when a fresh token was created, so the caller can show
@@ -169,7 +169,7 @@ pub async fn resolve_persisted_server_token(
     if let Err(e) = app_metadata_service::upsert_value(conn, WEB_SERVICE_TOKEN_KEY, &token).await {
         tracing::warn!(
             "[SERVER][WARN] could not persist the generated access token ({e}); it will rotate on \
-             restart and self-update success detection may be unreliable — set RECUR_CODE_TOKEN to pin it"
+             restart and self-update success detection may be unreliable — set RC_TOKEN to pin it"
         );
     }
     token
@@ -372,7 +372,7 @@ pub fn find_static_dir_standalone(explicit: Option<&str>) -> PathBuf {
         let p = PathBuf::from(dir);
         if p.join("index.html").exists() {
             tracing::info!(
-                "[WEB] Serving static files from RECUR_CODE_STATIC_DIR: {}",
+                "[WEB] Serving static files from RC_STATIC_DIR: {}",
                 p.display()
             );
             return p;
@@ -633,9 +633,9 @@ pub(crate) async fn do_start_web_server_with_state(
 
 /// Bridge listeners follow the web service: the address its socket is
 /// actually bound to (so a `localhost` that resolves to two families lands
-/// on the same one), the ports after its own unless `RECUR_CODE_BRIDGE_PORTS`
+/// on the same one), the ports after its own unless `RC_BRIDGE_PORTS`
 /// says otherwise — or no port of its own at all when
-/// `RECUR_CODE_BRIDGE_HOST_PATTERN` names the targets by hostname.
+/// `RC_BRIDGE_HOST_PATTERN` names the targets by hostname.
 fn configure_browser_bridge(bind_host: &str, port: u16) {
     let config = browser_bridge::BridgeConfig::from_env(bind_host, port);
     match &config {
@@ -651,17 +651,17 @@ fn configure_browser_bridge(bind_host: &str, port: u16) {
 /// What the startup log says when no bridge is configured. Both switches can
 /// be the reason: either turns it off, and an unreadable value in either does
 /// too rather than fall back to a default the operator did not write.
-pub const BRIDGE_OFF: &str = "off (RECUR_CODE_BRIDGE_PORTS / RECUR_CODE_BRIDGE_HOST_PATTERN)";
+pub const BRIDGE_OFF: &str = "off (RC_BRIDGE_PORTS / RC_BRIDGE_HOST_PATTERN)";
 
 /// How the bridge puts a dev server in front of the browser, for the log.
 pub fn describe_bridge(config: &browser_bridge::BridgeConfig) -> String {
     match &config.host_pattern {
         Some(pattern) => format!(
-            "hostnames {} on this port (RECUR_CODE_BRIDGE_HOST_PATTERN)",
+            "hostnames {} on this port (RC_BRIDGE_HOST_PATTERN)",
             pattern.to_text()
         ),
         None => format!(
-            "ports {} (RECUR_CODE_BRIDGE_PORTS)",
+            "ports {} (RC_BRIDGE_PORTS)",
             describe_ports(&config.ports)
         ),
     }
@@ -832,7 +832,7 @@ pub(crate) async fn do_start_web_server_tauri(
             .clone(),
         emitter: crate::web::event_bridge::EventEmitter::Tauri(app.clone()),
         // Resolve through the effective data dir so a custom
-        // `RECUR_CODE_DATA_DIR` reaches the credential helper and any HTTP
+        // `RC_DATA_DIR` reaches the credential helper and any HTTP
         // handler that reads `state.data_dir`.
         data_dir: crate::paths::resolve_effective_data_dir(
             &app.path().app_data_dir().unwrap_or_default(),

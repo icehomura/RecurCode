@@ -5714,7 +5714,7 @@
     "filesEmpty": "Ainda não há arquivos de registro.",
     "download": "Baixar",
     "downloadTruncated": "O arquivo é grande; foram baixados os {size} mais recentes. O arquivo completo está no diretório de logs.",
-    "captureEnvLocked": "O nível de registro é controlado pela variável de ambiente RUST_LOG / RECUR_CODE_LOG; altere-a lá para ter efeito.",
+    "captureEnvLocked": "O nível de registro é controlado pela variável de ambiente RUST_LOG / RC_LOG; altere-a lá para ter efeito.",
     "targetsTitle": "Substituições por módulo",
     "targetsDescription": "Defina um nível diferente para módulos específicos (ex.: recur_code_lib::acp) sem alterar o nível global.",
     "targetsAdd": "Adicionar",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "O host remoto não consegue alcançar este endereço",
       "errorRemoteUnreachableHint": "Visto de {host}, o nome não é resolvido ou não há rota até ele.",
       "errorRemoteNotAllowed": "O servidor remoto não libera este endereço para o navegador",
-      "errorRemoteNotAllowedHint": "O recur-code-server em {host} só permite que o túnel do navegador alcance endereços privados (RECUR_CODE_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "O recur-code-server em {host} só permite que o túnel do navegador alcance endereços privados (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "O host remoto demorou demais para conectar",
       "errorRemoteTimeoutHint": "{host} não recebeu resposta deste endereço a tempo. O servidor pode estar ocupado ou atrás de um firewall.",
       "errorTunnelDown": "A conexão com o host remoto caiu",
@@ -6889,8 +6889,8 @@
       "copyAddress": "Copiar endereço",
       "copied": "Endereço copiado",
       "unreachableTitle": "A porta da ponte não está acessível",
-      "unreachableHint": "O servidor do RecurCode colocou esta página em {origin}, mas seu navegador não consegue alcançá-la. Publique essa porta (veja RECUR_CODE_BRIDGE_PORTS) ou defina RECUR_CODE_BRIDGE_PUBLIC_HOST; se o RecurCode é servido por HTTPS, as portas da ponte também precisam de HTTPS.",
-      "unreachableHostHint": "O servidor do RecurCode colocou esta página em {origin}, mas o seu navegador não consegue acessá-la. Esse nome de host precisa resolver para o servidor do RecurCode e atravessar o proxy que estiver à frente: um registro DNS curinga e um vhost curinga (veja RECUR_CODE_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "O servidor do RecurCode colocou esta página em {origin}, mas seu navegador não consegue alcançá-la. Publique essa porta (veja RC_BRIDGE_PORTS) ou defina RC_BRIDGE_PUBLIC_HOST; se o RecurCode é servido por HTTPS, as portas da ponte também precisam de HTTPS.",
+      "unreachableHostHint": "O servidor do RecurCode colocou esta página em {origin}, mas o seu navegador não consegue acessá-la. Esse nome de host precisa resolver para o servidor do RecurCode e atravessar o proxy que estiver à frente: um registro DNS curinga e um vhost curinga (veja RC_BRIDGE_HOST_PATTERN).",
       "errorTitle": "Esta página não pode ser exibida aqui"
     },
     "remote": {
@@ -7098,7 +7098,7 @@
       "error": {
         "unavailable": "Abrir os endereços do host remoto no navegador integrado requer o macOS 14 ou posterior.",
         "unsupported": "O recur-code-server remoto é antigo demais para transportar o tráfego do navegador. Atualize-o para abrir os endereços dele aqui.",
-        "disabled": "O recur-code-server remoto está com o túnel do navegador desativado (RECUR_CODE_BROWSER_TUNNEL).",
+        "disabled": "O recur-code-server remoto está com o túnel do navegador desativado (RC_BROWSER_TUNNEL).",
         "unreachable": "Não foi possível alcançar o túnel do navegador do recur-code-server remoto ({reason}).",
         "bypassed": "O mecanismo do navegador deste computador envia alguns endereços por fora do túnel, então as páginas do host remoto não abrem para não serem carregadas deste computador.",
         "probeFailed": "O navegador integrado não conseguiu confirmar que alcança o host remoto pelo túnel. Tente novamente em instantes."

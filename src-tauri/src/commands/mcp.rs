@@ -2464,7 +2464,7 @@ fn deepseek_mcp_json_path() -> PathBuf {
 /// Write the DeepSeek MCP store with owner-only permissions.
 ///
 /// Every other agent's store is created by the agent itself, with whatever
-/// mode that agent chose; this one is created by RECUR_CODE, so its mode is RecurCode's
+/// mode that agent chose; this one is created by RC, so its mode is RecurCode's
 /// responsibility — and a stdio entry's `env` map routinely carries the token
 /// the server authenticates with. Under the usual `022` umask a plain
 /// `fs::write` would leave a fresh file `0644`, readable by every local user.

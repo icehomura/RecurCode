@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { RECUR_CODE_MCP_WORKBENCH_TOOLS } from "@/lib/recur-code-mcp-tool"
+import { RC_MCP_WORKBENCH_TOOLS } from "@/lib/recur-code-mcp-tool"
 import {
   classifyToolKind,
   isAgentLikeToolName,
@@ -89,11 +89,11 @@ describe("isAgentLikeToolName", () => {
   })
 
   // The classifier keeps its own copy of the workbench list; when
-  // `resume_delegation` was added to `RECUR_CODE_MCP_WORKBENCH_TOOLS` the copy was
+  // `resume_delegation` was added to `RC_MCP_WORKBENCH_TOOLS` the copy was
   // not updated, so the resume card spent its life wrapped in a spurious
   // "工具 ×1" group shell. Pin the relationship so it can't drift again.
   it("covers every tool that owns a RecurCodeMcpToolCard", () => {
-    for (const tool of RECUR_CODE_MCP_WORKBENCH_TOOLS) {
+    for (const tool of RC_MCP_WORKBENCH_TOOLS) {
       expect(isAgentLikeToolName(tool)).toBe(true)
     }
   })

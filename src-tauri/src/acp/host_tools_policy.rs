@@ -35,7 +35,7 @@ use crate::acp::file_system_runtime::env_value;
 /// Per-agent `env_json` / process-env key selecting which side hosts the
 /// `fs/*` and `terminal/*` channels. `default` | `agent`; anything else warns
 /// and falls back to `default`.
-pub(crate) const HOST_TOOLS_ENV: &str = "RECUR_CODE_ACP_HOST_TOOLS";
+pub(crate) const HOST_TOOLS_ENV: &str = "RC_ACP_HOST_TOOLS";
 
 /// The value that hands the channels back to the agent. Kept as a constant
 /// because the settings UI writes this exact string into `env_json`.
@@ -159,7 +159,7 @@ mod tests {
                 HostToolsPolicy::from_env(&runtime("  agent  ")),
                 HostToolsPolicy::Agent
             );
-            // But it is not case-folded, matching RECUR_CODE_ACP_FS_POLICY. The UI
+            // But it is not case-folded, matching RC_ACP_FS_POLICY. The UI
             // writes the exact constant, so only a hand-edit can hit this, and
             // it warns rather than guessing.
             assert_eq!(

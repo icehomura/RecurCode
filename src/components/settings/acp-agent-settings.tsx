@@ -396,12 +396,12 @@ function summarizeChecks(checks: UiCheckItem[]): CheckStatus | "unchecked" {
  * Per-agent `env_json` knob deciding WHICH SIDE of the ACP connection reads
  * files and runs commands (`HostToolsPolicy`, Rust side). RecurCode advertises
  * `fs.readTextFile` / `terminal` by default, and an agent that sees them stops
- * using its own backends and delegates — so the work happens in RECUR_CODE's
+ * using its own backends and delegates — so the work happens in RC's
  * process, outside any OS sandbox the agent applies to itself. Set to
  * {@link HOST_TOOLS_AGENT} and RecurCode advertises neither, so the agent does its
  * own I/O and its own sandbox covers it again (#436). Absent ⇒ RecurCode hosts.
  */
-const HOST_TOOLS_ENV = "RECUR_CODE_ACP_HOST_TOOLS"
+const HOST_TOOLS_ENV = "RC_ACP_HOST_TOOLS"
 const HOST_TOOLS_AGENT = "agent"
 const HOST_TOOLS_DEFAULT = "default"
 
@@ -529,7 +529,7 @@ function patchEnvText(
  * which fails OPEN on an unrecognized value rather than silently withholding.
  *
  * Reads the per-agent layer ONLY. When the key is absent and an operator has
- * exported `RECUR_CODE_ACP_HOST_TOOLS=agent` in RecurCode's own environment, the switch
+ * exported `RC_ACP_HOST_TOOLS=agent` in RecurCode's own environment, the switch
  * renders off while the next connection actually withholds the channels — the
  * display understates how restricted the agent is. Showing that inherited state
  * would need the backend to report its resolved process-env value; until then
@@ -546,7 +546,7 @@ export function hostToolsAgentModeEnabled(envText: string): boolean {
  *
  * Deleting would be tidier but wrong: the backend resolves this knob as
  * `env_json` first, then RecurCode's own process env. An operator who exported
- * `RECUR_CODE_ACP_HOST_TOOLS=agent` process-wide makes "absent" mean `agent`, so a
+ * `RC_ACP_HOST_TOOLS=agent` process-wide makes "absent" mean `agent`, so a
  * toggle that cleared the key on OFF could not turn the mode off at all — the
  * switch would read false while the next connection still withheld the
  * channels. Writing the value the user actually chose makes the per-agent

@@ -17,8 +17,8 @@ static TRASH_COUNTER: AtomicU64 = AtomicU64::new(0);
 /// Root for recur-code-managed agent binaries.
 ///
 /// Resolution order mirrors `paths.rs`:
-/// 1. `$RECUR_CODE_HOME/acp-binaries`
-/// 2. `$RECUR_CODE_DATA_DIR/acp-binaries` (server mode)
+/// 1. `$RC_HOME/acp-binaries`
+/// 2. `$RC_DATA_DIR/acp-binaries` (server mode)
 /// 3. `<data-local>/app.recurcode/acp-binaries`
 ///
 /// **Not** `dirs::cache_dir()`, which is where this used to live. On Windows
@@ -30,10 +30,10 @@ static TRASH_COUNTER: AtomicU64 = AtomicU64::new(0);
 /// agent runtime that cannot be regenerated without a network round trip —
 /// losing it presents to the user as "the agent I installed is gone".
 pub(crate) fn cache_dir() -> Result<PathBuf, AcpError> {
-    if let Some(custom) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
+    if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return Ok(PathBuf::from(custom).join("acp-binaries"));
     }
-    if let Some(data) = std::env::var_os("RECUR_CODE_DATA_DIR").filter(|s| !s.is_empty()) {
+    if let Some(data) = std::env::var_os("RC_DATA_DIR").filter(|s| !s.is_empty()) {
         return Ok(PathBuf::from(data).join("acp-binaries"));
     }
     let base = dirs::data_local_dir()
@@ -434,7 +434,7 @@ fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
             // `SeCreateSymbolicLinkPrivilege`, so this can legitimately fail —
             // and an error is the right answer: the caller keeps the source
             // whenever a copy does not land. (Barely reachable: on Windows the
-            // two roots are the same path unless `RECUR_CODE_HOME`/`RECUR_CODE_DATA_DIR`
+            // two roots are the same path unless `RC_HOME`/`RC_DATA_DIR`
             // moves one of them, so there is normally nothing to migrate.)
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Unsupported,

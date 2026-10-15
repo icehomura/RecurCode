@@ -68,7 +68,7 @@ async fn helper_subprocess_emits_username_and_password_for_seeded_host() {
 
     // Write token to the file-based store the way set_token does, but
     // bypass the global env var so we don't race with the parent test
-    // process. The helper subprocess gets `RECUR_CODE_DATA_DIR` via its
+    // process. The helper subprocess gets `RC_DATA_DIR` via its
     // environment below, which `keyring_store` then resolves.
     let tokens_path = data_dir.join("tokens.json");
     let mut tokens = std::collections::HashMap::new();
@@ -85,10 +85,10 @@ async fn helper_subprocess_emits_username_and_password_for_seeded_host() {
         .arg("--data-dir")
         .arg(&data_dir)
         // Keep the env minimal so the subprocess uses --data-dir, not
-        // whatever RECUR_CODE_DATA_DIR happens to be set to in the test runner.
+        // whatever RC_DATA_DIR happens to be set to in the test runner.
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .env("RECUR_CODE_DATA_DIR", &data_dir)
+        .env("RC_DATA_DIR", &data_dir)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -152,7 +152,7 @@ async fn helper_subprocess_outputs_nothing_for_unconfigured_host() {
         .arg(&data_dir)
         .env_clear()
         .env("PATH", std::env::var("PATH").unwrap_or_default())
-        .env("RECUR_CODE_DATA_DIR", &data_dir)
+        .env("RC_DATA_DIR", &data_dir)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

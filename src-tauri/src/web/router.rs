@@ -2144,7 +2144,7 @@ pub fn build_router(
         // addressed to a bridge hostname is a dev server's, not RecurCode's, and
         // is answered by the bridge exactly as a listener of its own would —
         // no CORS, no compression, no body limit, no static fallback. Only
-        // when `RECUR_CODE_BRIDGE_HOST_PATTERN` is set; every other request goes
+        // when `RC_BRIDGE_HOST_PATTERN` is set; every other request goes
         // straight through. See `web::browser_bridge`.
         .layer(middleware::from_fn(
             crate::web::browser_bridge::route_by_host,

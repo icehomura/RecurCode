@@ -945,7 +945,7 @@ mod tests {
         });
 
         assert!(telegram_message_chat_matches(&message, "@recurcodetopics"));
-        assert!(telegram_message_chat_matches(&message, "RECUR_CODETOPICS"));
+        assert!(telegram_message_chat_matches(&message, "RCTOPICS"));
         assert!(!telegram_message_chat_matches(&message, "other"));
     }
 

@@ -437,7 +437,7 @@ struct Admitted {
 
 /// The computer-use service: one per process — the desktop app's, managed as
 /// Tauri state, or recur-code-server's where it is let share the screen it runs
-/// on (`RECUR_CODE_COMPUTER_USE`).
+/// on (`RC_COMPUTER_USE`).
 pub struct ComputerService {
     /// Where what changes is told (see `computer::events`).
     events: ComputerEvents,

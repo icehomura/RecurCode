@@ -636,7 +636,7 @@ const GOOGLE_SIGN_IN_HOSTS: [&str; 2] = ["accounts.google.com", "accounts.youtub
 /// Environment variable naming further hosts (comma-separated) that get the
 /// sign-in identity: another provider with the same refusal, or a server of
 /// one's own to check the switch against. Read once per process.
-pub const SIGN_IN_HOSTS_ENV: &str = "RECUR_CODE_BROWSER_SIGN_IN_HOSTS";
+pub const SIGN_IN_HOSTS_ENV: &str = "RC_BROWSER_SIGN_IN_HOSTS";
 
 fn extra_sign_in_hosts() -> &'static [String] {
     static EXTRA: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
@@ -655,7 +655,7 @@ fn host_matches(host: &str, known: &str) -> bool {
 }
 
 /// Whether `host` (or a parent domain of it) is one of the sign-in hosts:
-/// Google's, plus whatever `RECUR_CODE_BROWSER_SIGN_IN_HOSTS` names.
+/// Google's, plus whatever `RC_BROWSER_SIGN_IN_HOSTS` names.
 pub fn is_google_sign_in_host(host: &str) -> bool {
     is_sign_in_host_among(host, extra_sign_in_hosts())
 }

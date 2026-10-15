@@ -1,6 +1,6 @@
 /**
  * Coverage for the out-of-turn content notice — the pill that offers to
- * re-read the transcript after an agent ran a turn RECUR_CODE never started.
+ * re-read the transcript after an agent ran a turn RC never started.
  *
  * The flag is armed from the wire (per streamed token, so idempotence is a
  * performance contract as much as a correctness one) and disarmed by the read

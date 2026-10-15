@@ -52,14 +52,14 @@ fn main() -> ExitCode {
     recur_code_lib::process::ensure_node_in_path();
     recur_code_lib::process::ensure_user_npm_prefix_in_path();
 
-    // Resolve and pin `RECUR_CODE_DATA_DIR` before any threads exist.
+    // Resolve and pin `RC_DATA_DIR` before any threads exist.
     //
     // Two things matter here, both single-shot:
     //
     // 1. Absolutize: child processes (notably the credential helper
     //    subprocess invoked by git from inside the user's repo) inherit
     //    the env var and use it via `keyring_store::tokens_file_path` to
-    //    find `tokens.json`. A relative `RECUR_CODE_DATA_DIR=data` would
+    //    find `tokens.json`. A relative `RC_DATA_DIR=data` would
     //    otherwise resolve against git's CWD, not the server's startup
     //    CWD, and the helper would silently miss the token file even
     //    though we found the database.
@@ -78,31 +78,31 @@ fn main() -> ExitCode {
     // `std::env::set_var` is not thread-safe (unsafe in Rust edition
     // 2024); doing this before the tokio runtime is built guarantees we
     // are still single-threaded.
-    let resolved_data_dir = std::env::var("RECUR_CODE_DATA_DIR")
+    let resolved_data_dir = std::env::var("RC_DATA_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|_| default_data_dir());
     let resolved_data_dir = recur_code_lib::git_credential::absolutize(&resolved_data_dir);
-    std::env::set_var("RECUR_CODE_DATA_DIR", &resolved_data_dir);
+    std::env::set_var("RC_DATA_DIR", &resolved_data_dir);
 
-    // Install the logging subscriber now that RECUR_CODE_DATA_DIR is pinned (the logs
+    // Install the logging subscriber now that RC_DATA_DIR is pinned (the logs
     // dir resolves from it). Doing it here — before the first server diagnostic
-    // below — captures even the RECUR_CODE_HOME warning and the FATAL upload-quota
+    // below — captures even the RC_HOME warning and the FATAL upload-quota
     // abort. Hold the guard for the whole process so buffered file lines flush
     // on a graceful exit.
     let _log_guard = recur_code_lib::logging::init::init_server();
 
-    // `RECUR_CODE_HOME` overrides `RECUR_CODE_DATA_DIR` for uploads/pets inside
+    // `RC_HOME` overrides `RC_DATA_DIR` for uploads/pets inside
     // `paths::recur_code_*_root` (legacy `~/.recurcode/` layout). If both are set
     // and resolve to different roots, the database and uploads land on
     // different filesystems — a silent split. Warn loudly so the
     // operator notices before relying on a backup or volume mount that
     // only covers one of them.
-    if let Some(home) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
+    if let Some(home) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         let home_path = recur_code_lib::git_credential::absolutize(std::path::Path::new(&home));
         if home_path != resolved_data_dir {
             tracing::warn!(
-                "[paths][WARN] RECUR_CODE_HOME ({}) and RECUR_CODE_DATA_DIR ({}) point at different roots. \
-                 Uploads/pets follow RECUR_CODE_HOME; the database follows RECUR_CODE_DATA_DIR. \
+                "[paths][WARN] RC_HOME ({}) and RC_DATA_DIR ({}) point at different roots. \
+                 Uploads/pets follow RC_HOME; the database follows RC_DATA_DIR. \
                  Unset one or align them to avoid split state.",
                 home_path.display(),
                 resolved_data_dir.display()
@@ -143,17 +143,17 @@ async fn async_main() -> ExitCode {
         });
     });
 
-    let port: u16 = std::env::var("RECUR_CODE_PORT")
+    let port: u16 = std::env::var("RC_PORT")
         .ok()
         .and_then(|v| v.parse().ok())
         .unwrap_or(3080);
-    let host = std::env::var("RECUR_CODE_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
-    // RECUR_CODE_DATA_DIR was already resolved and absolutized in `main()` so
+    let host = std::env::var("RC_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    // RC_DATA_DIR was already resolved and absolutized in `main()` so
     // all path resolvers across the process see the same root. Read it
     // back rather than re-deriving the default.
     let data_dir =
-        PathBuf::from(std::env::var("RECUR_CODE_DATA_DIR").expect("RECUR_CODE_DATA_DIR set by main()"));
-    let static_dir_env = std::env::var("RECUR_CODE_STATIC_DIR").ok();
+        PathBuf::from(std::env::var("RC_DATA_DIR").expect("RC_DATA_DIR set by main()"));
+    let static_dir_env = std::env::var("RC_STATIC_DIR").ok();
 
     let static_dir = find_static_dir_standalone(static_dir_env.as_deref());
     let app_version = env!("CARGO_PKG_VERSION");
@@ -202,11 +202,11 @@ async fn async_main() -> ExitCode {
 
     // Resolve the access token *after* the DB is up so a generated token can be
     // persisted and reused across restarts (a self-update restart must not
-    // rotate it). An empty/whitespace RECUR_CODE_TOKEN is treated as unset.
+    // rotate it). An empty/whitespace RC_TOKEN is treated as unset.
     let mut token_generated = false;
     let token = resolve_persisted_server_token(
         &db.conn,
-        std::env::var("RECUR_CODE_TOKEN").ok(),
+        std::env::var("RC_TOKEN").ok(),
         &mut token_generated,
     )
     .await;
@@ -216,9 +216,9 @@ async fn async_main() -> ExitCode {
         // in-app log viewer. `eprintln!` bypasses the tracing sinks (file +
         // ring buffer); only the local terminal / Docker stderr sees it.
         eprintln!(
-            "[SERVER] No RECUR_CODE_TOKEN set; generated an access token (persisted): {token}"
+            "[SERVER] No RC_TOKEN set; generated an access token (persisted): {token}"
         );
-        eprintln!("[SERVER] Pin your own by setting the RECUR_CODE_TOKEN environment variable.");
+        eprintln!("[SERVER] Pin your own by setting the RC_TOKEN environment variable.");
     }
 
     // Restore and apply saved system proxy settings before any network operation.
@@ -365,7 +365,7 @@ async fn async_main() -> ExitCode {
     // undo a change made on the settings page.
     recur_code_lib::commands::generative_ui::install_generative_ui_skill(&state.db.conn).await;
     // Computer use: only where whoever runs this server says so, by
-    // RECUR_CODE_COMPUTER_USE — the server's web clients then share this
+    // RC_COMPUTER_USE — the server's web clients then share this
     // machine's windows with agents, and Stop them, from the panel. Nothing
     // else here can: a web client holds the token, not the machine.
     if computer_use_requested() {
@@ -378,12 +378,12 @@ async fn async_main() -> ExitCode {
         );
         let _ = state.computer_service.set(service);
         eprintln!(
-            "[SERVER] Computer use is offered (RECUR_CODE_COMPUTER_USE): this server's web clients \
+            "[SERVER] Computer use is offered (RC_COMPUTER_USE): this server's web clients \
              may share this machine's windows with agents."
         );
         if !has_desktop_session() {
             tracing::warn!(
-                "[SERVER] RECUR_CODE_COMPUTER_USE is set, but this process does not look like it \
+                "[SERVER] RC_COMPUTER_USE is set, but this process does not look like it \
                  runs in a desktop session; computer use will report what stops it"
             );
         }
@@ -444,7 +444,7 @@ async fn async_main() -> ExitCode {
             // nothing here can reach.
             Arc::new(recur_code_lib::acp::browser_tools::NoBrowserTabs),
             // The screen this server runs on, where it is let share it
-            // (`RECUR_CODE_COMPUTER_USE`); none otherwise.
+            // (`RC_COMPUTER_USE`); none otherwise.
             match state.computer_service.get() {
                 Some(service) => Arc::new(recur_code_lib::commands::computer::McpComputerTools::new(
                     service.clone(),
@@ -548,7 +548,7 @@ async fn async_main() -> ExitCode {
 
     // Spawn the idle sweep so connections abandoned without an explicit
     // disconnect (e.g. browser tab closed, panic survivors) are reaped.
-    // Override the 60-second default via `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS`
+    // Override the 60-second default via `RC_ACP_IDLE_TIMEOUT_SECS`
     // (set to `0` to disable).
     if let Some(idle_timeout) = recur_code_lib::idle_timeout_from_env() {
         tokio::spawn(recur_code_lib::idle_sweep_task(
@@ -560,7 +560,7 @@ async fn async_main() -> ExitCode {
 
     // Reclaim scratch directories lost track of mid-session. Deliberately NOT
     // gated on `idle_timeout_from_env` like the sweep above: setting
-    // `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS=0` disables idle disconnects, not disk
+    // `RC_ACP_IDLE_TIMEOUT_SECS=0` disables idle disconnects, not disk
     // reclamation.
     tokio::spawn(recur_code_lib::scratch_sweep_task());
 
@@ -668,7 +668,7 @@ async fn async_main() -> ExitCode {
 
     let local_addr = listener.local_addr().ok();
     let actual_port = local_addr.map(|a| a.port()).unwrap_or(port);
-    // `RECUR_CODE_HOST` may be `localhost` or a bracketed IPv6 (`[::1]`); advertise
+    // `RC_HOST` may be `localhost` or a bracketed IPv6 (`[::1]`); advertise
     // the concrete IP the socket bound to, not the raw config string.
     let advertised_host = advertise_host(local_addr, &host);
 
@@ -685,8 +685,8 @@ async fn async_main() -> ExitCode {
     eprintln!("[SERVER] Token: {}", token);
     // Port bridge for dev servers on this host (web-mode built-in browser):
     // bound where our own socket is, on the ports after ours unless
-    // RECUR_CODE_BRIDGE_PORTS says otherwise — or nothing of its own at all when
-    // RECUR_CODE_BRIDGE_HOST_PATTERN names the targets by hostname on this port.
+    // RC_BRIDGE_PORTS says otherwise — or nothing of its own at all when
+    // RC_BRIDGE_HOST_PATTERN names the targets by hostname on this port.
     let bridge =
         recur_code_lib::web::browser_bridge::BridgeConfig::from_env(&advertised_host, actual_port);
     match &bridge {
@@ -718,9 +718,9 @@ async fn async_main() -> ExitCode {
 }
 
 /// Whether whoever runs this server lets it share the screen it runs on with
-/// agents: `RECUR_CODE_COMPUTER_USE` set to 1, true, yes or on.
+/// agents: `RC_COMPUTER_USE` set to 1, true, yes or on.
 fn computer_use_requested() -> bool {
-    computer_use_requested_by(std::env::var("RECUR_CODE_COMPUTER_USE").ok().as_deref())
+    computer_use_requested_by(std::env::var("RC_COMPUTER_USE").ok().as_deref())
 }
 
 /// [`computer_use_requested`], for the variable's value.

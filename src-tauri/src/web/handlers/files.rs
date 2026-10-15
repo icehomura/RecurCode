@@ -240,17 +240,17 @@ pub const UPLOAD_MAX_BYTES: u64 = 20 * 1024 * 1024;
 /// is effectively a hard ceiling: concurrent admits cannot accumulate
 /// past `cap` because each one decrements the in-flight headroom seen
 /// by the next.
-const UPLOAD_TOTAL_BYTES_ENV: &str = "RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES";
+const UPLOAD_TOTAL_BYTES_ENV: &str = "RC_UPLOAD_MAX_TOTAL_BYTES";
 
 /// Opt-in fail-closed mode for the quota config. When truthy and
-/// `RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES` parses as `Invalid`, startup aborts
+/// `RC_UPLOAD_MAX_TOTAL_BYTES` parses as `Invalid`, startup aborts
 /// with a `FATAL` line instead of falling through to fail-open. Default
 /// (unset / "0" / "false") preserves the prior fail-open posture so a
 /// typo doesn't take down a production process unless the operator
 /// explicitly asks for that behavior.
-const UPLOAD_STRICT_ENV: &str = "RECUR_CODE_UPLOAD_QUOTA_STRICT";
+const UPLOAD_STRICT_ENV: &str = "RC_UPLOAD_QUOTA_STRICT";
 
-/// Outcome of parsing `RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES`. Carries enough
+/// Outcome of parsing `RC_UPLOAD_MAX_TOTAL_BYTES`. Carries enough
 /// context that the startup banner can distinguish "operator turned it
 /// off" from "operator typo silently disabled the cap".
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -393,7 +393,7 @@ pub fn log_upload_quota_config_at_startup() {
     }
 }
 
-/// Strict-mode validation: returns `Err` when `RECUR_CODE_UPLOAD_QUOTA_STRICT`
+/// Strict-mode validation: returns `Err` when `RC_UPLOAD_QUOTA_STRICT`
 /// is truthy and the quota value is `Invalid`. Every other combination
 /// (unset, disabled, enabled, or invalid-but-strict-off) returns `Ok`.
 ///
@@ -760,7 +760,7 @@ pub async fn purge_upload_staging() {
 /// therefore always ≥ the bytes actually written — the streaming loop
 /// independently caps the file at `UPLOAD_MAX_BYTES` — so the quota stays a
 /// hard ceiling while a small upload only reserves its own size. This matters
-/// for operators with `RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES` below `UPLOAD_MAX_BYTES`:
+/// for operators with `RC_UPLOAD_MAX_TOTAL_BYTES` below `UPLOAD_MAX_BYTES`:
 /// a blanket worst-case reservation would reject every upload outright.
 ///
 /// A missing/unparseable header (chunked transfer) falls back to the
@@ -1173,7 +1173,7 @@ mod tests {
     // ─── parse_upload_quota_config ────────────────────────────────────
     //
     // Tests the pure parser, NOT the env reader — mutating
-    // `RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES` from a test would race the harness's
+    // `RC_UPLOAD_MAX_TOTAL_BYTES` from a test would race the harness's
     // parallel runner.
 
     #[test]
@@ -1224,8 +1224,8 @@ mod tests {
             raw_value: "10GB".to_string(),
         };
         let msg = err.to_string();
-        assert!(msg.contains("RECUR_CODE_UPLOAD_MAX_TOTAL_BYTES"));
-        assert!(msg.contains("RECUR_CODE_UPLOAD_QUOTA_STRICT"));
+        assert!(msg.contains("RC_UPLOAD_MAX_TOTAL_BYTES"));
+        assert!(msg.contains("RC_UPLOAD_QUOTA_STRICT"));
         assert!(msg.contains("10GB"));
     }
 

@@ -459,7 +459,7 @@ mod tests {
     use super::*;
     use crate::models::pet::SPRITE_SHEET_HEIGHT;
 
-    // Filesystem-touching tests rely on `RECUR_CODE_HOME`, which is shared global
+    // Filesystem-touching tests rely on `RC_HOME`, which is shared global
     // state. Cargo runs tests in parallel, so we'd need cross-binary
     // serialization (e.g. `serial_test`) to make them reliable. Instead, we
     // exercise the validation surface directly here — the disk path is

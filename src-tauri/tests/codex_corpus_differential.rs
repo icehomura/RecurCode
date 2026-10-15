@@ -10,8 +10,8 @@
 //! corpus path, so it never runs in CI. To use it:
 //!
 //! ```sh
-//! RECUR_CODE_CODEX_CORPUS_DIR=~/.codex/sessions \
-//! RECUR_CODE_CODEX_CORPUS_OUT=/tmp/codex-digest-branch.txt \
+//! RC_CODEX_CORPUS_DIR=~/.codex/sessions \
+//! RC_CODEX_CORPUS_OUT=/tmp/codex-digest-branch.txt \
 //!   cargo test --features test-utils --test codex_corpus_differential -- --ignored --nocapture
 //! # then repeat on the base revision and `diff` the two digests
 //! ```
@@ -55,12 +55,12 @@ fn rollouts_in(root: &Path) -> Vec<PathBuf> {
 #[test]
 #[ignore = "requires a local Codex rollout corpus; see module docs"]
 fn codex_corpus_digest() {
-    let Ok(root) = std::env::var("RECUR_CODE_CODEX_CORPUS_DIR") else {
-        eprintln!("RECUR_CODE_CODEX_CORPUS_DIR unset — skipping");
+    let Ok(root) = std::env::var("RC_CODEX_CORPUS_DIR") else {
+        eprintln!("RC_CODEX_CORPUS_DIR unset — skipping");
         return;
     };
     let root = PathBuf::from(shellexpand_home(&root));
-    let out = std::env::var("RECUR_CODE_CODEX_CORPUS_OUT")
+    let out = std::env::var("RC_CODEX_CORPUS_OUT")
         .unwrap_or_else(|_| "/tmp/codex-corpus-digest.txt".to_string());
 
     let files = rollouts_in(&root);

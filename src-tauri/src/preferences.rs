@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 const PREFERENCES_FILE_NAME: &str = "preferences.json";
-const RECUR_CODE_DIR_NAME: &str = ".recurcode";
+const RC_DIR_NAME: &str = ".recurcode";
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
@@ -21,7 +21,7 @@ pub struct AppPreferences {
 }
 
 pub fn preferences_file_path() -> Option<PathBuf> {
-    dirs::home_dir().map(|h| h.join(RECUR_CODE_DIR_NAME).join(PREFERENCES_FILE_NAME))
+    dirs::home_dir().map(|h| h.join(RC_DIR_NAME).join(PREFERENCES_FILE_NAME))
 }
 
 /// Read preferences synchronously. Missing / unreadable / malformed file

@@ -371,7 +371,7 @@ mod tauri_app {
     /// take effect: the next launch would read `false`, do nothing, and still
     /// hand WebKitGTK/WebView2 the inherited flags.
     #[cfg(any(target_os = "windows", target_os = "linux"))]
-    const RENDERING_OVERRIDE_OWNED_ENV: &str = "RECUR_CODE_WEBVIEW_RENDERING_OVERRIDE";
+    const RENDERING_OVERRIDE_OWNED_ENV: &str = "RC_WEBVIEW_RENDERING_OVERRIDE";
 
     /// Opt-out users can disable webview hardware acceleration to work around
     /// GPU driver bugs that produce a black-screen or glitching webview. The
@@ -533,12 +533,12 @@ mod tauri_app {
         // returns.
         let context = tauri::generate_context!();
         if let Some(data_dir) = paths::desktop_data_dir(
-            std::env::var_os("RECUR_CODE_DATA_DIR").as_deref(),
+            std::env::var_os("RC_DATA_DIR").as_deref(),
             dirs::data_dir().as_deref(),
             &context.config().identifier,
         ) {
             // SAFETY: single-threaded as argued above.
-            unsafe { std::env::set_var("RECUR_CODE_DATA_DIR", &data_dir) };
+            unsafe { std::env::set_var("RC_DATA_DIR", &data_dir) };
         }
 
         // Install the logging subscriber next so it captures everything from
@@ -701,10 +701,10 @@ mod tauri_app {
                 // source of truth; every desktop call site that
                 // historically read `app.path().app_data_dir()` and
                 // passed it to a credential helper has been migrated
-                // to the same helper so a pre-set `RECUR_CODE_DATA_DIR` is
+                // to the same helper so a pre-set `RC_DATA_DIR` is
                 // honored end-to-end.
                 //
-                // `run()` exported the effective root as `RECUR_CODE_DATA_DIR`
+                // `run()` exported the effective root as `RC_DATA_DIR`
                 // before the logging init (see `paths::desktop_data_dir`),
                 // so this resolves to it; nothing writes the variable after
                 // that. The derivation `run()` falls back to is Tauri's own
@@ -730,21 +730,21 @@ mod tauri_app {
                     );
                 }
 
-                // `RECUR_CODE_HOME` overrides `RECUR_CODE_DATA_DIR` inside
+                // `RC_HOME` overrides `RC_DATA_DIR` inside
                 // `paths::recur_code_uploads_root` / `recur_code_pets_root` for
                 // backwards-compatibility with the legacy `~/.recurcode/`
                 // layout. If both are set and point at different roots,
-                // uploads/pets land on `RECUR_CODE_HOME` while the database
-                // lands on `RECUR_CODE_DATA_DIR` — a silent split. The
+                // uploads/pets land on `RC_HOME` while the database
+                // lands on `RC_DATA_DIR` — a silent split. The
                 // backup story here is "loud warning, no automatic
                 // override": the operator likely meant one of them, but
                 // we don't know which.
-                if let Some(home) = std::env::var_os("RECUR_CODE_HOME").filter(|s| !s.is_empty()) {
+                if let Some(home) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
                     let home_path = git_credential::absolutize(std::path::Path::new(&home));
                     if home_path != effective_data_dir {
                         tracing::warn!(
-                            "[paths][WARN] RECUR_CODE_HOME ({}) and RECUR_CODE_DATA_DIR ({}) point at different roots. \
-                             Uploads/pets follow RECUR_CODE_HOME; the database follows RECUR_CODE_DATA_DIR. \
+                            "[paths][WARN] RC_HOME ({}) and RC_DATA_DIR ({}) point at different roots. \
+                             Uploads/pets follow RC_HOME; the database follows RC_DATA_DIR. \
                              Unset one or align them to avoid split state.",
                             home_path.display(),
                             effective_data_dir.display()
@@ -809,7 +809,7 @@ mod tauri_app {
 
                 // Reclaim scratch directories this process loses track of
                 // mid-session. Its own timer on purpose: the ACP idle sweep is
-                // not spawned at all when `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS=0`, and
+                // not spawned at all when `RC_ACP_IDLE_TIMEOUT_SECS=0`, and
                 // turning off idle disconnects must not also turn off disk
                 // reclamation on a machine leaking gigabytes per launch.
                 tauri::async_runtime::spawn(crate::scratch_sweep_task());
@@ -1271,7 +1271,7 @@ mod tauri_app {
                 // Spawn the idle sweep so connections abandoned without an
                 // explicit disconnect (e.g. window/tab closed without
                 // teardown, panic survivors) are reaped. Override the
-                // 60-second default via `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS`
+                // 60-second default via `RC_ACP_IDLE_TIMEOUT_SECS`
                 // (set to `0` to disable).
                 if let Some(idle_timeout) = crate::acp::idle_timeout_from_env() {
                     let cm = app.state::<ConnectionManager>().clone_ref();
@@ -1284,7 +1284,7 @@ mod tauri_app {
 
                 // Office watch preview servers: reap dead children + ref0
                 // stragglers (live previews are never swept). Override via
-                // `RECUR_CODE_OFFICE_WATCH_IDLE_TIMEOUT_SECS` (`0` disables).
+                // `RC_OFFICE_WATCH_IDLE_TIMEOUT_SECS` (`0` disables).
                 if let Some(idle_timeout) = crate::office_watch::idle_timeout_from_env() {
                     tauri::async_runtime::spawn(crate::office_watch::office_watch_idle_sweep_task(
                         idle_timeout,

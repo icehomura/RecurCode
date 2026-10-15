@@ -541,7 +541,7 @@ async fn deepseek_model_catalog_requires_a_token() {
 // Computer use
 //
 // Served only by a recur-code-server its operator let share the screen it runs on
-// (`RECUR_CODE_COMPUTER_USE`): everywhere else every call is refused, and
+// (`RC_COMPUTER_USE`): everywhere else every call is refused, and
 // `computer_available` says so up front. Nothing here reaches a helper — no
 // screen is read in a test.
 // ────────────────────────────────────────────────────────────────────────────
@@ -579,7 +579,7 @@ async fn computer_use_is_refused_where_it_is_not_served() {
         assert!(
             body["message"]
                 .as_str()
-                .is_some_and(|m| m.contains("RECUR_CODE_COMPUTER_USE")),
+                .is_some_and(|m| m.contains("RC_COMPUTER_USE")),
             "{route}: {body}"
         );
     }

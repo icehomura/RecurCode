@@ -1,5 +1,5 @@
 //! Integration tests for a port bridge addressed by hostname
-//! (`RECUR_CODE_BRIDGE_HOST_PATTERN`): one real listener standing in for RecurCode's
+//! (`RC_BRIDGE_HOST_PATTERN`): one real listener standing in for RecurCode's
 //! own, `route_by_host` in front of it as the router installs it, and a real
 //! upstream standing in for a dev server.
 //!

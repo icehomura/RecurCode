@@ -322,9 +322,9 @@ jobs:
             exit 1
           fi
           anchor="anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = \"${APPLE_TEAM_ID}\""
-          echo "RECUR_CODE_COMPUTER_PEER_REQUIREMENT=identifier \"app.recurcode\" and ${anchor}" >> "$GITHUB_ENV"
-          echo "RECUR_CODE_COMPUTER_HELPER_REQUIREMENT=identifier \"app.recurcode.computer-helper\" and ${anchor}" >> "$GITHUB_ENV"
-          echo "RECUR_CODE_COMPUTER_TEAM_ID=${APPLE_TEAM_ID}" >> "$GITHUB_ENV"
+          echo "RC_COMPUTER_PEER_REQUIREMENT=identifier \"app.recurcode\" and ${anchor}" >> "$GITHUB_ENV"
+          echo "RC_COMPUTER_HELPER_REQUIREMENT=identifier \"app.recurcode.computer-helper\" and ${anchor}" >> "$GITHUB_ENV"
+          echo "RC_COMPUTER_TEAM_ID=${APPLE_TEAM_ID}" >> "$GITHUB_ENV"
 
       # Build the sidecars — the `recur-code-mcp` companion and the
       # `recur-code-computer-helper` computer-use executor — for the matrix target
@@ -479,7 +479,7 @@ jobs:
           helper_app="src-tauri/binaries/recur-code-computer-helper.app"
           codesign --force --options runtime --timestamp \
             --sign "$APPLE_SIGNING_IDENTITY" "$helper_app"
-          codesign --verify --strict -R="${RECUR_CODE_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
+          codesign --verify --strict -R="${RC_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
           codesign -dv "$helper_app" 2>&1 | grep -E '^(Identifier|TeamIdentifier)='
 
       - name: Build and upload to draft release (Linux arm64)
@@ -489,7 +489,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          RECUR_CODE_SKIP_SIDECAR: "1"
+          RC_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -521,7 +521,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          RECUR_CODE_SKIP_SIDECAR: "1"
+          RC_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -546,7 +546,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          RECUR_CODE_SKIP_SIDECAR: "1"
+          RC_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -568,7 +568,7 @@ jobs:
           # The matrix-target sidecar is already staged and verified above.
           # Skip the duplicate beforeBuildCommand sidecar pass so cross builds
           # do not fall back to the runner host triple.
-          RECUR_CODE_SKIP_SIDECAR: "1"
+          RC_SKIP_SIDECAR: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -655,8 +655,8 @@ jobs:
               exit 1
             fi
           done
-          codesign --verify --strict -R="${RECUR_CODE_COMPUTER_PEER_REQUIREMENT}" "$app/Contents/MacOS/RecurCode"
-          codesign --verify --strict -R="${RECUR_CODE_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
+          codesign --verify --strict -R="${RC_COMPUTER_PEER_REQUIREMENT}" "$app/Contents/MacOS/RecurCode"
+          codesign --verify --strict -R="${RC_COMPUTER_HELPER_REQUIREMENT}" "$helper_app"
           deny='^_(CGEventPost|CGEventPostToPid|CGEventPostToPSN|CGEventTapCreate|CGEventTapCreateForPid|CGEventTapCreateForPSN|CGWindowListCreateImage|CGWindowListCreateImageFromArray|CGDisplayCreateImage|CGDisplayCreateImageForRect|CGDisplayStreamCreate|CGDisplayStreamCreateWithDispatchQueue|CGRequestScreenCaptureAccess|CGRequestPostEventAccess|AXIsProcessTrustedWithOptions|AXUIElement[A-Za-z]*|AXObserver[A-Za-z]*)$|^_OBJC_CLASS_\$_SC(ShareableContent|Stream|ScreenshotManager|ContentFilter|ContentSharingPicker)$'
           for bin in RecurCode recur-code-mcp; do
             hits="$(nm -u "$app/Contents/MacOS/$bin" | grep -E "$deny" || true)"
@@ -810,7 +810,7 @@ jobs:
         # the cross-compile env (Linux arm64) without dragging in tauri
         # runtime deps. Each binary target needs its own feature (Cargo.toml).
         # `recur-code-computer-helper` serves computer use, which the server
-        # offers only when started with RECUR_CODE_COMPUTER_USE=1 in a desktop
+        # offers only when started with RC_COMPUTER_USE=1 in a desktop
         # session; it ships beside the server, where the server looks for it.
         run: |
           cargo build --release --bin recur-code-server --no-default-features --features server-bin --target ${{ matrix.target }}

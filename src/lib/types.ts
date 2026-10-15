@@ -3499,7 +3499,7 @@ export interface AcpAgentInfo {
   installed_version: string | null
   env: Record<string, string>
   /**
-   * The RESOLVED `RECUR_CODE_ACP_HOST_TOOLS` verdict: whether the next launch hands
+   * The RESOLVED `RC_ACP_HOST_TOOLS` verdict: whether the next launch hands
    * the `fs/*` + `terminal/*` channels — and, with them, recur-code-mcp's delegation
    * tools — back to the agent. Resolved by the same Rust function the launch
    * uses, so it covers BOTH the per-agent `env` above and RecurCode's own process
@@ -4084,7 +4084,7 @@ export interface LogSettings {
 }
 
 /** What the Logs settings UI reads: the persisted level + per-target overrides,
- * plus whether an env var (RECUR_CODE_LOG/RUST_LOG) currently locks the controls
+ * plus whether an env var (RC_LOG/RUST_LOG) currently locks the controls
  * (env owns the live level). */
 export interface LogSettingsView {
   level: LogLevel

@@ -161,7 +161,7 @@ pub async fn backup_upload(
 
     // Optional hard size cap (default unlimited, matching the attachment-upload
     // convention). Operators on shared deployments can bound it via env.
-    let max_bytes = std::env::var("RECUR_CODE_BACKUP_UPLOAD_MAX_BYTES")
+    let max_bytes = std::env::var("RC_BACKUP_UPLOAD_MAX_BYTES")
         .ok()
         .and_then(|v| v.trim().parse::<u64>().ok())
         .filter(|v| *v > 0);

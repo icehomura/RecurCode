@@ -2351,7 +2351,7 @@ const CHAT_SCRATCH_STALE: std::time::Duration = std::time::Duration::from_secs(1
 /// Layout-invariant key for a chat scratch dir: its trailing `(<date>, <uuid>)`
 /// path components. The GC matches live dirs by this tail rather than the full
 /// path string, so a different *spelling* of the same data_dir (e.g. a symlinked
-/// vs canonical `RECUR_CODE_DATA_DIR` naming the same storage) still matches — a live
+/// vs canonical `RC_DATA_DIR` naming the same storage) still matches — a live
 /// dir must never be misclassified as an orphan and deleted. `<uuid>` is a v4
 /// UUID (globally unique), so the tail is collision-free in practice. Returns
 /// `None` if the path lacks a leaf or parent component.
@@ -2397,7 +2397,7 @@ pub(crate) async fn gc_orphan_chat_dirs_core_with_threshold(
     // Dirs bound to a live chat conversation, keyed by their layout-invariant
     // `(<date>, <uuid>)` tail (see `chat_dir_key`) rather than the full path
     // string. This survives a data_dir spelled differently across runs (e.g. a
-    // symlinked vs canonical `RECUR_CODE_DATA_DIR` pointing at the same storage),
+    // symlinked vs canonical `RC_DATA_DIR` pointing at the same storage),
     // which a full-string compare would miss — misclassifying the live dir as an
     // orphan and deleting it. We deliberately do NOT canonicalize (it fails on
     // missing paths and could itself alias two distinct dirs); keying by the tail

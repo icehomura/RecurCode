@@ -1066,7 +1066,7 @@ mod tests {
         let db = crate::db::test_helpers::fresh_in_memory_db().await;
         let db_conn = db.conn.clone();
         let dir = tmp.path().to_string_lossy().to_string();
-        temp_env::async_with_vars([("RECUR_CODE_DATA_DIR", Some(dir.as_str()))], async move {
+        temp_env::async_with_vars([("RC_DATA_DIR", Some(dir.as_str()))], async move {
             let db = db_conn;
             resolution_happy_path(&db).await;
         })

@@ -5,7 +5,7 @@
 //! reach any address from here adds no power they did not have. So the
 //! default is `all` — a dev page on this host pulls fonts, CDN scripts and
 //! OAuth pages from the internet, and a remote tab must behave as it would
-//! here. `RECUR_CODE_BROWSER_TUNNEL=private` narrows it to this host and the
+//! here. `RC_BROWSER_TUNNEL=private` narrows it to this host and the
 //! networks it sits on, for deployments that want the tunnel to be only
 //! that; `off` turns the endpoint off.
 //!
@@ -23,7 +23,7 @@ use super::frame::CloseCode;
 /// Longest a connection attempt may take, per address.
 pub const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub const ENV_VAR: &str = "RECUR_CODE_BROWSER_TUNNEL";
+pub const ENV_VAR: &str = "RC_BROWSER_TUNNEL";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TunnelPolicy {

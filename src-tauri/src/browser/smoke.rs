@@ -3,7 +3,7 @@
 //!
 //! The desktop app cannot be driven from outside without macOS Accessibility
 //! rights, which the automation environment does not have, so P0 verification
-//! drives the app from the inside instead: when `RECUR_CODE_BROWSER_SMOKE_DIR` is
+//! drives the app from the inside instead: when `RC_BROWSER_SMOKE_DIR` is
 //! set, a task polls `<dir>/cmd.json` for `{ "id": n, "op": "...", ... }`,
 //! executes the operation through the same `_core` functions the commands
 //! use, and writes `<dir>/result-<n>.json`. Screenshots are taken from the
@@ -21,7 +21,7 @@ use crate::browser::types::{Bounds, SurfaceChoice};
 use crate::commands::browser as browser_commands;
 
 pub fn spawn_if_enabled(app: AppHandle) {
-    let Ok(dir) = std::env::var("RECUR_CODE_BROWSER_SMOKE_DIR") else {
+    let Ok(dir) = std::env::var("RC_BROWSER_SMOKE_DIR") else {
         return;
     };
     let dir = PathBuf::from(dir);
@@ -797,7 +797,7 @@ async fn execute(app: &AppHandle, cmd: &Value) -> Result<Value, String> {
         // the only thing skipped is which process asked for the token.
         //
         // Dev-only twice over: the `browser-smoke` feature is never in a release
-        // build, and the puppet does nothing without `RECUR_CODE_BROWSER_SMOKE_DIR`.
+        // build, and the puppet does nothing without `RC_BROWSER_SMOKE_DIR`.
         "mcp_companion_handle" => {
             let tokens = app
                 .try_state::<std::sync::Arc<crate::acp::delegation::listener::TokenRegistry>>()

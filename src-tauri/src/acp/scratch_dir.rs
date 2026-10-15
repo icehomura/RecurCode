@@ -56,11 +56,11 @@ const SCRATCH_NAMESPACE: &str = "recur-code-acp";
 /// Opt out of isolation entirely and let the child inherit the ambient
 /// `TMP`/`TEMP`/`TMPDIR` the way it did before this module existed. Escape
 /// hatch for an agent that turns out to depend on a shared temp directory.
-const ISOLATION_ENV: &str = "RECUR_CODE_ACP_TMP_ISOLATION";
+const ISOLATION_ENV: &str = "RC_ACP_TMP_ISOLATION";
 
 /// Override for the scratch root. Set it to place the (potentially very large)
 /// extraction churn on a different volume.
-const ROOT_ENV: &str = "RECUR_CODE_ACP_TMP_ROOT";
+const ROOT_ENV: &str = "RC_ACP_TMP_ROOT";
 
 /// Bytes of `sockaddr_un::sun_path` — the kernel's hard cap on the path of an
 /// AF_UNIX socket, and the reason this module cannot nest its scratch
@@ -120,7 +120,7 @@ const REMOVE_RETRY_BASE: Duration = Duration::from_millis(2_000);
 
 /// How often the in-session sweep reclaims directories this process owns but
 /// has lost track of. Independent of the ACP idle sweep on purpose: that task
-/// is not spawned at all when `RECUR_CODE_ACP_IDLE_TIMEOUT_SECS=0`, and disabling
+/// is not spawned at all when `RC_ACP_IDLE_TIMEOUT_SECS=0`, and disabling
 /// idle disconnects must not also disable disk reclamation.
 pub const SWEEP_INTERVAL: Duration = Duration::from_secs(300);
 
@@ -136,7 +136,7 @@ fn registry() -> &'static Mutex<HashSet<String>> {
 }
 
 /// Whether launches get an isolated temp directory. On unless explicitly
-/// disabled with `RECUR_CODE_ACP_TMP_ISOLATION=0`.
+/// disabled with `RC_ACP_TMP_ISOLATION=0`.
 pub fn isolation_enabled() -> bool {
     !matches!(
         std::env::var(ISOLATION_ENV).as_deref(),
@@ -511,7 +511,7 @@ fn verify_root_is_ours(root: &Path) -> std::io::Result<()> {
     // predates the `0700` above, when `create_dir_all` took the umask default.
     // Tighten it rather than refuse: refusing would turn every upgrade into a
     // silent loss of isolation. Best-effort because a filesystem the user
-    // pointed `RECUR_CODE_ACP_TMP_ROOT` at may not carry Unix modes at all, and
+    // pointed `RC_ACP_TMP_ROOT` at may not carry Unix modes at all, and
     // ownership is the check that actually bounds who can get in.
     if meta.mode() & 0o077 != 0 {
         let _ = std::fs::set_permissions(root, std::fs::Permissions::from_mode(0o700));
@@ -723,7 +723,7 @@ pub fn probe_pid(pid: u32) -> PidState {
 
 /// `<owning RecurCode pid>-<8 hex>`.
 ///
-/// The pid is RECUR_CODE'S, not the agent's: the directory is created before the
+/// The pid is RC'S, not the agent's: the directory is created before the
 /// spawn, so the agent has no pid yet. It is what lets a startup sweep tell
 /// "some other RecurCode owns this" from "its owner is gone".
 fn new_dir_name(pid: u32) -> String {

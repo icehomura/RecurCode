@@ -1540,7 +1540,7 @@ pub struct AcpAgentInfo {
     pub sort_order: i32,
     pub installed_version: Option<String>,
     pub env: BTreeMap<String, String>,
-    /// The RESOLVED `RECUR_CODE_ACP_HOST_TOOLS` verdict for this agent — whether the
+    /// The RESOLVED `RC_ACP_HOST_TOOLS` verdict for this agent — whether the
     /// next launch hands the `fs/*` + `terminal/*` channels (and, with them,
     /// recur-code-mcp's delegation tools) back to the agent.
     ///

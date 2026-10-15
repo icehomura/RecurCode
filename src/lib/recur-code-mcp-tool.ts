@@ -41,7 +41,7 @@ import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
  * collapse every host spelling (`mcp__recur-code-mcp__task_progress`,
  * `recur-code-mcp/task_progress`, …) onto exactly these.
  */
-export const RECUR_CODE_MCP_WORKBENCH_TOOLS = [
+export const RC_MCP_WORKBENCH_TOOLS = [
   "get_session_info",
   "task_progress",
   "task_complete",
@@ -50,9 +50,9 @@ export const RECUR_CODE_MCP_WORKBENCH_TOOLS = [
   "resume_delegation",
 ] as const
 
-export type RecurCodeMcpWorkbenchTool = (typeof RECUR_CODE_MCP_WORKBENCH_TOOLS)[number]
+export type RecurCodeMcpWorkbenchTool = (typeof RC_MCP_WORKBENCH_TOOLS)[number]
 
-const TOOL_SET: ReadonlySet<string> = new Set(RECUR_CODE_MCP_WORKBENCH_TOOLS)
+const TOOL_SET: ReadonlySet<string> = new Set(RC_MCP_WORKBENCH_TOOLS)
 
 /** Whether `name` is one of the workbench companions, in canonical form. */
 export function isRecurCodeMcpWorkbenchTool(

@@ -26,13 +26,13 @@ use super::protocol::RawApp;
 /// RecurCode's own bundle identifier (`tauri.conf.json`), matched on any process
 /// so a second RecurCode — a development build next to the installed one — is as
 /// out of reach as this one.
-pub const RECUR_CODE_BUNDLE_ID: &str = "app.recurcode";
+pub const RC_BUNDLE_ID: &str = "app.recurcode";
 
 /// The file names RecurCode's executable goes by, matched on any process's path
 /// for the same reason, where an application has no bundle identifier to
 /// know it by: on Windows, a development build next to the installed one is
 /// otherwise just another executable.
-pub const RECUR_CODE_EXECUTABLES: &[&str] = &["RecurCode.exe", "RecurCode"];
+pub const RC_EXECUTABLES: &[&str] = &["RecurCode.exe", "RecurCode"];
 
 /// A grant in force on one window.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -527,7 +527,7 @@ impl SelfIdentity {
         if app
             .bundle_id
             .as_deref()
-            .is_some_and(|b| b.eq_ignore_ascii_case(RECUR_CODE_BUNDLE_ID))
+            .is_some_and(|b| b.eq_ignore_ascii_case(RC_BUNDLE_ID))
         {
             return true;
         }
@@ -540,7 +540,7 @@ impl SelfIdentity {
             .rsplit(['/', '\\'])
             .find(|part| !part.is_empty())
             .is_some_and(|file| {
-                RECUR_CODE_EXECUTABLES
+                RC_EXECUTABLES
                     .iter()
                     .any(|name| file.eq_ignore_ascii_case(name))
             })
@@ -806,7 +806,7 @@ mod tests {
         for RecurCode in [
             app(100, None, None),
             app(200, Some("app.recurcode"), None),
-            app(200, Some("APP.RECUR_CODE"), None),
+            app(200, Some("APP.RC"), None),
             app(300, None, Some("/Applications/RecurCode.app")),
             app(
                 300,
@@ -820,7 +820,7 @@ mod tests {
                 None,
                 Some(r"C:\Users\me\RecurCode\src-tauri\target\debug\RecurCode.exe"),
             ),
-            app(400, None, Some(r"C:\Program Files\RecurCode\RECUR_CODE.EXE")),
+            app(400, None, Some(r"C:\Program Files\RecurCode\RC.EXE")),
             app(400, None, Some("/usr/bin/RecurCode")),
         ] {
             assert_eq!(
@@ -830,7 +830,7 @@ mod tests {
             );
         }
         assert_eq!(
-            grantable(&app(300, None, Some("/applications/RECUR_CODE.app")), &me, &list),
+            grantable(&app(300, None, Some("/applications/RC.app")), &me, &list),
             if cfg!(any(windows, target_os = "macos")) {
                 Err(NotGrantable::RecurCode)
             } else {

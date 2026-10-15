@@ -222,7 +222,7 @@ describe("BrowserBridgeView", () => {
     renderView(<BrowserBridgeView tab={tab()} />)
     await screen.findByText("The bridge port can't be reached")
     expect(screen.getByRole("status")).toHaveTextContent(":3081")
-    expect(screen.getByRole("status")).toHaveTextContent("RECUR_CODE_BRIDGE_PORTS")
+    expect(screen.getByRole("status")).toHaveTextContent("RC_BRIDGE_PORTS")
     expect(screen.queryByTitle("Dev server preview")).toBeNull()
     // A top-level tab may still get there (a VPN, a different route), so
     // the new-tab action stays.
@@ -249,8 +249,8 @@ describe("BrowserBridgeView", () => {
     await screen.findByText("The bridge port can't be reached")
     const notice = screen.getByRole("status")
     expect(notice).toHaveTextContent("3000.recurcode.example")
-    expect(notice).toHaveTextContent("RECUR_CODE_BRIDGE_HOST_PATTERN")
-    expect(notice).not.toHaveTextContent("RECUR_CODE_BRIDGE_PORTS")
+    expect(notice).toHaveTextContent("RC_BRIDGE_HOST_PATTERN")
+    expect(notice).not.toHaveTextContent("RC_BRIDGE_PORTS")
   })
 
   it("shows the server's refusal", async () => {

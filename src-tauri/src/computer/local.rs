@@ -16,11 +16,11 @@
 //! wrapper started in the helper's place could keep a copy of the socket. The
 //! helper then speaks first; on macOS RecurCode asks the kernel who is on the
 //! other end of its socket and checks that process against the helper's
-//! designated requirement (`RECUR_CODE_COMPUTER_HELPER_REQUIREMENT`), and every
+//! designated requirement (`RC_COMPUTER_HELPER_REQUIREMENT`), and every
 //! later frame against the process it verified. A development RecurCode checks
 //! instead that the helper was built from its own sources (the fingerprint
 //! `build.rs` compiles into both): `pnpm tauri dev` rebuilds only RecurCode after
-//! an edit — and not the helper at all under `RECUR_CODE_SKIP_SIDECAR=1` — and a
+//! an edit — and not the helper at all under `RC_SKIP_SIDECAR=1` — and a
 //! helper left over would answer with the old code.
 //!
 //! **Life.** One helper per RecurCode, started on first use, restarted on the next
@@ -52,11 +52,11 @@ use super::protocol::{
 use super::types::{ActDelivery, VerifyRequest};
 
 /// The helper's designated requirement, compiled into release builds.
-pub const HELPER_REQUIREMENT: Option<&str> = option_env!("RECUR_CODE_COMPUTER_HELPER_REQUIREMENT");
+pub const HELPER_REQUIREMENT: Option<&str> = option_env!("RC_COMPUTER_HELPER_REQUIREMENT");
 
 /// This build's Team ID, compiled into release builds with the requirement:
 /// the helper is launched only as a Developer ID build of this team.
-pub const HELPER_TEAM_ID: Option<&str> = option_env!("RECUR_CODE_COMPUTER_TEAM_ID");
+pub const HELPER_TEAM_ID: Option<&str> = option_env!("RC_COMPUTER_TEAM_ID");
 
 /// The helper's signing identifier (its designated requirement names it too):
 /// on macOS, the bundle identifier of the helper app.
@@ -75,7 +75,7 @@ pub const HELPER_APP: &str = "recur-code-computer-helper.app";
 // without the launch requirement would let a wrapper run first.
 const _: () = assert!(
     HELPER_REQUIREMENT.is_some() == HELPER_TEAM_ID.is_some(),
-    "RECUR_CODE_COMPUTER_HELPER_REQUIREMENT and RECUR_CODE_COMPUTER_TEAM_ID are set together"
+    "RC_COMPUTER_HELPER_REQUIREMENT and RC_COMPUTER_TEAM_ID are set together"
 );
 
 /// How long one request may take to go out. A helper that stops reading is
@@ -136,12 +136,12 @@ pub fn helper_file_name() -> &'static str {
 /// otherwise — the install directory, or `target/<profile>/` in development
 /// (the build copies it there). Deliberately no `PATH` lookup: a helper found
 /// somewhere else is not the one that shipped. A debug build also honours
-/// `RECUR_CODE_COMPUTER_HELPER_BIN`, for running a freshly built helper; a release
+/// `RC_COMPUTER_HELPER_BIN`, for running a freshly built helper; a release
 /// build ignores it, since the variable can be set for RecurCode by anything that
 /// can set a launch environment.
 pub fn locate_helper_binary() -> Option<PathBuf> {
     if cfg!(debug_assertions) {
-        if let Some(raw) = std::env::var_os("RECUR_CODE_COMPUTER_HELPER_BIN") {
+        if let Some(raw) = std::env::var_os("RC_COMPUTER_HELPER_BIN") {
             let path = PathBuf::from(raw);
             if path.is_file() {
                 return Some(path);
@@ -1053,14 +1053,14 @@ async fn launch(path: &std::path::Path) -> Result<Arc<Connection>, BackendError>
 /// Why a development RecurCode will not use a helper built from other sources
 /// than its own — which is what `pnpm tauri dev` leaves running after an edit:
 /// it builds the helper once, as it starts (never, under
-/// `RECUR_CODE_SKIP_SIDECAR=1`), and only RecurCode after that, and a stale helper
+/// `RC_SKIP_SIDECAR=1`), and only RecurCode after that, and a stale helper
 /// answers with code that is no longer there. The words name the step that
 /// rebuilds it. A release RecurCode ships with its own helper and does not ask.
 fn stale_development_helper(source: Option<&str>) -> Option<&'static str> {
     (cfg!(debug_assertions) && source != Some(SOURCE_FINGERPRINT)).then_some(
         "this development build's helper was built from other sources — run \
          `pnpm tauri:prepare-sidecars` (which `pnpm tauri dev` skips under \
-         RECUR_CODE_SKIP_SIDECAR=1), then restart `pnpm tauri dev`",
+         RC_SKIP_SIDECAR=1), then restart `pnpm tauri dev`",
     )
 }
 
@@ -1314,16 +1314,16 @@ mod tests {
     /// one blocks in dyld on a "removable volume" consent prompt):
     ///
     /// ```text
-    /// RECUR_CODE_TEST_HELPER=/tmp/recur-code-computer-helper \
-    /// RECUR_CODE_TEST_DRIVER=/tmp/cua-driver \
+    /// RC_TEST_HELPER=/tmp/recur-code-computer-helper \
+    /// RC_TEST_DRIVER=/tmp/cua-driver \
     ///   cargo test --features test-utils --lib computer::local -- --ignored
     /// ```
     #[cfg(target_os = "macos")]
     #[tokio::test]
     #[ignore = "needs a built helper and the pinned cua-driver on an internal volume"]
     async fn recur_code_drives_a_real_helper_and_driver() {
-        let helper = std::env::var("RECUR_CODE_TEST_HELPER").expect("RECUR_CODE_TEST_HELPER");
-        let driver_file = std::env::var("RECUR_CODE_TEST_DRIVER").expect("RECUR_CODE_TEST_DRIVER");
+        let helper = std::env::var("RC_TEST_HELPER").expect("RC_TEST_HELPER");
+        let driver_file = std::env::var("RC_TEST_DRIVER").expect("RC_TEST_DRIVER");
         let home = tempfile::tempdir().unwrap();
         // Pre-seed the binary cache so `ensure_driver` finds it without a
         // download.
@@ -1350,10 +1350,10 @@ mod tests {
         temp_env::async_with_vars(
             [
                 (
-                    "RECUR_CODE_HOME",
+                    "RC_HOME",
                     Some(home.path().to_string_lossy().to_string()),
                 ),
-                ("RECUR_CODE_COMPUTER_HELPER_BIN", Some(helper.clone())),
+                ("RC_COMPUTER_HELPER_BIN", Some(helper.clone())),
             ],
             async {
                 let report = backend.permissions().await.expect("the helper answers");
@@ -1464,7 +1464,7 @@ mod tests {
         assert_eq!(backend.stopped.load(Ordering::Acquire), 1);
     }
 
-    /// A debug build takes the helper from `RECUR_CODE_COMPUTER_HELPER_BIN` when
+    /// A debug build takes the helper from `RC_COMPUTER_HELPER_BIN` when
     /// it names a file, and otherwise looks only beside the executable.
     #[test]
     fn the_helper_is_looked_for_beside_recur_code() {
@@ -1472,11 +1472,11 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let fake = dir.path().join(helper_file_name());
         std::fs::write(&fake, b"").unwrap();
-        temp_env::with_var("RECUR_CODE_COMPUTER_HELPER_BIN", Some(&fake), || {
+        temp_env::with_var("RC_COMPUTER_HELPER_BIN", Some(&fake), || {
             assert_eq!(locate_helper_binary().as_deref(), Some(fake.as_path()));
         });
         temp_env::with_var(
-            "RECUR_CODE_COMPUTER_HELPER_BIN",
+            "RC_COMPUTER_HELPER_BIN",
             Some(dir.path().join("absent")),
             || {
                 let found = locate_helper_binary();

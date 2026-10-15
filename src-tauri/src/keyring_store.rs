@@ -48,11 +48,11 @@ pub fn delete_token(account_id: &str) -> Result<(), String> {
 
 #[cfg(not(feature = "tauri-runtime"))]
 fn tokens_file_path() -> std::path::PathBuf {
-    tokens_file_path_for(std::env::var("RECUR_CODE_DATA_DIR").ok().as_deref())
+    tokens_file_path_for(std::env::var("RC_DATA_DIR").ok().as_deref())
 }
 
 /// Resolve the on-disk `tokens.json` path given an explicit
-/// `RECUR_CODE_DATA_DIR` value (or `None` to fall back to the platform
+/// `RC_DATA_DIR` value (or `None` to fall back to the platform
 /// default). Always returns an absolute path so subprocess credential
 /// helpers — which inherit our env but run in git's CWD, not ours —
 /// don't end up looking for `tokens.json` in the user's repo. Factored
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_tokens_file_path_absolutizes_relative_env() {
-        // Regression: a relative `RECUR_CODE_DATA_DIR=data` previously made
+        // Regression: a relative `RC_DATA_DIR=data` previously made
         // `tokens.json` resolve against the helper subprocess's CWD (i.e.
         // git's repo dir), even after we'd absolutized the path used for
         // the database. The token store must always land on an absolute

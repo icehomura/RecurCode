@@ -157,7 +157,7 @@ const ACTION_LOCAL_DECL: &str = r#"(\w+)=new \w+\.ConversationAction\(\{action:\
 /// RecurCode's own earlier splice, which named the local from a table instead of
 /// from the bundle. Matched so the wrong-local installs it left behind can be
 /// repaired in place; see [`repair_range`].
-const LEGACY_RECUR_CODE_POLICY: &str = concat!(
+const LEGACY_RC_POLICY: &str = concat!(
     r#"enableAgentRetries:"shellCommandAction"!==(\w+)\.action\.case"#,
     r#"&&"backgroundTaskCompletionAction"!==(\w+)\.action\.case"#,
     r#"&&"goalContinuationAction"!==(\w+)\.action\.case,"#,
@@ -222,7 +222,7 @@ fn run_options_decl() -> &'static Regex {
 
 fn legacy_recur_code_policy() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(LEGACY_RECUR_CODE_POLICY).expect("legacy policy is a valid regex"))
+    RE.get_or_init(|| Regex::new(LEGACY_RC_POLICY).expect("legacy policy is a valid regex"))
 }
 
 /// The inlined equivalent of upstream's `w5(<action>.case)`, whose body in

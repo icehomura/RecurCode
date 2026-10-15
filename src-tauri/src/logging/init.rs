@@ -10,7 +10,7 @@
 //!    hub::LogHub`], and returns a [`LogGuard`] the caller holds for the
 //!    process lifetime so buffered file lines flush on a graceful exit.
 //! 2. **Phase 2** — [`apply_persisted_level`], once the DB is open: overrides
-//!    the default level from the `logging.level` KV value (unless `RECUR_CODE_LOG` /
+//!    the default level from the `logging.level` KV value (unless `RC_LOG` /
 //!    `RUST_LOG` is set, which wins).
 //! 3. **Phase 3** — `LogHub::set_emitter`, once `AppState` exists: starts
 //!    `logs://appended` delivery to the viewer.
@@ -43,7 +43,7 @@ pub struct LogGuard {
 
 /// Standing per-target ceilings applied to EVERY constructed filter — the
 /// default/configured level, a persisted level, AND an explicit `RUST_LOG` /
-/// `RECUR_CODE_LOG` override. Each entry is the MOST VERBOSE level that target may
+/// `RC_LOG` override. Each entry is the MOST VERBOSE level that target may
 /// ever reach; see [`clamped_backstops`] for why that is a ceiling rather than a
 /// pin.
 ///
@@ -75,7 +75,7 @@ pub struct LogGuard {
 ///   [`crate::logging::budget`] bounds whatever is left.
 ///
 ///   Protocol-level debugging stays reachable: a MORE SPECIFIC target beats a
-///   crate-level ceiling, so setting `RECUR_CODE_LOG` to
+///   crate-level ceiling, so setting `RC_LOG` to
 ///   `info,agent_client_protocol::jsonrpc::transport_actor=trace` still dumps
 ///   the wire.
 /// - `tungstenite` → `Debug` — `handshake/client.rs` TRACEs the serialized
@@ -104,7 +104,7 @@ pub struct LogGuard {
 ///   for a firehose and wrong for a credential, so the dump gets its own entry.
 ///   Backstops are appended last and win at equal specificity (see
 ///   [`build_env_filter`]), so a plain `tungstenite::handshake::client=trace`
-///   from the Settings UI or `RECUR_CODE_LOG` loses to this entry at any module
+///   from the Settings UI or `RC_LOG` loses to this entry at any module
 ///   depth. Asking for LESS is still honored: the clamp never raises
 ///   verbosity, so `off` still means off.
 ///
@@ -136,7 +136,7 @@ const TARGET_BACKSTOPS: &[(&str, LogLevel)] = &[
 ///
 /// [`TARGET_BACKSTOPS`] is a table of *levels*, and a level is negotiable:
 /// `EnvFilter` ranks a field-qualified directive above a plain target one, so
-/// `RECUR_CODE_LOG='tungstenite::handshake::client[{message}]=trace'` outranks the
+/// `RC_LOG='tungstenite::handshake::client[{message}]=trace'` outranks the
 /// entry there — and that `trace!` is a formatted event, so it has a `message`
 /// field to match on. The entry in the table still earns its place (it keeps
 /// the crate ceiling coherent and it is what the directive tests read), but it
@@ -283,7 +283,7 @@ fn env_level_for_target(expr: &str, target: &str) -> LogLevel {
             // `target=level`. An OMITTED level is TRACE (`directive.rs:203`); an
             // INVALID one makes the whole directive unparseable, and
             // `parse_lossy` drops those — so must we, or we'd emit a ceiling for
-            // a directive `EnvFilter` never accepted. `RECUR_CODE_LOG=off,agent_client_protocol=bogus`
+            // a directive `EnvFilter` never accepted. `RC_LOG=off,agent_client_protocol=bogus`
             // is the case that matters: EnvFilter keeps only `off`, so appending
             // `agent_client_protocol=warn` there would turn agent_client_protocol back on.
             //
@@ -418,12 +418,12 @@ const LOG_FILE_SUFFIX: &str = "log";
 
 /// Retention for rotated daily files. A disk-bound necessity (daily files would
 /// otherwise accumulate forever), not a functional cap; generous default,
-/// overridable via `RECUR_CODE_LOG_MAX_FILES`.
+/// overridable via `RC_LOG_MAX_FILES`.
 ///
 /// Note this bounds the number of **files**, not their size — a single day's
 /// file is bounded separately by [`crate::logging::budget`].
 fn file_retention() -> usize {
-    std::env::var("RECUR_CODE_LOG_MAX_FILES")
+    std::env::var("RC_LOG_MAX_FILES")
         .ok()
         .and_then(|v| v.parse::<usize>().ok())
         .filter(|&n| n > 0)
@@ -431,12 +431,12 @@ fn file_retention() -> usize {
 }
 
 /// The env-override directive, or `None`: the first non-empty (trimmed) value of
-/// `RECUR_CODE_LOG` then `RUST_LOG`. Single source of truth for env-level precedence,
+/// `RC_LOG` then `RUST_LOG`. Single source of truth for env-level precedence,
 /// so the startup filter and the env-lock checks can't diverge — e.g. an empty
-/// `RECUR_CODE_LOG` must not mask a valid `RUST_LOG` (a `var().or_else(var)` would
+/// `RC_LOG` must not mask a valid `RUST_LOG` (a `var().or_else(var)` would
 /// treat the empty `Ok("")` as present and skip `RUST_LOG`).
 fn env_level_override() -> Option<String> {
-    ["RECUR_CODE_LOG", "RUST_LOG"].iter().find_map(|key| {
+    ["RC_LOG", "RUST_LOG"].iter().find_map(|key| {
         std::env::var(key)
             .ok()
             .map(|v| v.trim().to_string())
@@ -444,7 +444,7 @@ fn env_level_override() -> Option<String> {
     })
 }
 
-/// Whether an explicit `RECUR_CODE_LOG` / `RUST_LOG` is set (and non-empty). When
+/// Whether an explicit `RC_LOG` / `RUST_LOG` is set (and non-empty). When
 /// true the env var owns the live level: startup skips the persisted level and
 /// the Settings UI locks the control (so it can't silently diverge).
 pub fn env_level_is_set() -> bool {
@@ -629,7 +629,7 @@ pub fn init_mcp() -> LogGuard {
 }
 
 /// Phase 2: override the default level from the persisted `logging.level` KV
-/// value, unless an explicit `RECUR_CODE_LOG` / `RUST_LOG` is set (env wins). No-op
+/// value, unless an explicit `RC_LOG` / `RUST_LOG` is set (env wins). No-op
 /// when no hub is installed (mcp) or the value is absent/unparseable.
 pub async fn apply_persisted_level(conn: &sea_orm::DatabaseConnection) {
     if env_level_is_set() {
@@ -768,7 +768,7 @@ mod tests {
                 .parse_lossy(&env)
                 .to_string()
                 .contains("tungstenite=debug"),
-            "RECUR_CODE_LOG=trace re-opened the handshake dump: {env}"
+            "RC_LOG=trace re-opened the handshake dump: {env}"
         );
     }
 
@@ -789,7 +789,7 @@ mod tests {
                 .to_string();
             assert!(
                 !rendered.contains("tungstenite::handshake::client=trace"),
-                "RECUR_CODE_LOG={asked} reopened the dump: {rendered}"
+                "RC_LOG={asked} reopened the dump: {rendered}"
             );
         }
 
@@ -1004,7 +1004,7 @@ mod tests {
 
     #[test]
     fn env_override_appends_backstops_so_debug_cannot_reopen_them() {
-        // The explicit RUST_LOG/RECUR_CODE_LOG path bypasses build_env_filter, so it
+        // The explicit RUST_LOG/RC_LOG path bypasses build_env_filter, so it
         // must apply the same backstops itself — otherwise `RUST_LOG=debug`
         // re-opens the kill_tree per-PID firehose and the agent_client_protocol wire dump.
         assert_eq!(
@@ -1316,15 +1316,15 @@ mod tests {
     fn env_level_override_precedence() {
         // Both unset → no override.
         temp_env::with_vars(
-            [("RECUR_CODE_LOG", None::<&str>), ("RUST_LOG", None::<&str>)],
+            [("RC_LOG", None::<&str>), ("RUST_LOG", None::<&str>)],
             || {
                 assert_eq!(env_level_override(), None);
                 assert!(!env_level_is_set());
             },
         );
-        // Empty RECUR_CODE_LOG must NOT mask a valid RUST_LOG (the bug Codex caught).
+        // Empty RC_LOG must NOT mask a valid RUST_LOG (the bug Codex caught).
         temp_env::with_vars(
-            [("RECUR_CODE_LOG", Some("")), ("RUST_LOG", Some("debug"))],
+            [("RC_LOG", Some("")), ("RUST_LOG", Some("debug"))],
             || {
                 assert_eq!(env_level_override().as_deref(), Some("debug"));
                 assert!(env_level_is_set());
@@ -1332,15 +1332,15 @@ mod tests {
         );
         // Both empty / whitespace-only → no override.
         temp_env::with_vars(
-            [("RECUR_CODE_LOG", Some("  ")), ("RUST_LOG", Some(""))],
+            [("RC_LOG", Some("  ")), ("RUST_LOG", Some(""))],
             || {
                 assert_eq!(env_level_override(), None);
                 assert!(!env_level_is_set());
             },
         );
-        // RECUR_CODE_LOG wins when both are non-empty.
+        // RC_LOG wins when both are non-empty.
         temp_env::with_vars(
-            [("RECUR_CODE_LOG", Some("trace")), ("RUST_LOG", Some("debug"))],
+            [("RC_LOG", Some("trace")), ("RUST_LOG", Some("debug"))],
             || {
                 assert_eq!(env_level_override().as_deref(), Some("trace"));
             },

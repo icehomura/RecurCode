@@ -226,8 +226,8 @@ fn merge_agent_env_with_color(
     // per-agent `env_json` `TMP` in place would send a 1.17 GB extraction
     // wherever that points while RecurCode cheerfully deleted an empty scratch
     // directory and reported the leak fixed. Users who want the churn on
-    // another volume set `RECUR_CODE_ACP_TMP_ROOT`; users who want the old
-    // pass-through wholesale set `RECUR_CODE_ACP_TMP_ISOLATION=0`.
+    // another volume set `RC_ACP_TMP_ROOT`; users who want the old
+    // pass-through wholesale set `RC_ACP_TMP_ISOLATION=0`.
     if let Some(dir) = scratch {
         crate::acp::scratch_dir::apply_to_env(&mut merged, dir);
     }
@@ -1926,11 +1926,11 @@ async fn build_agent(
             };
             apply_codex_env_policy(agent_type, &mut merged_env, codex_initial_mode.as_deref());
             // codex-acp 1.0.0 honors APP_SERVER_LOGS as a directory for its
-            // adapter-side logs. Surface it only under RECUR_CODE_ACP_DEBUG so
+            // adapter-side logs. Surface it only under RC_ACP_DEBUG so
             // default runs are unchanged; a directory-creation failure silently
             // skips injection (diagnostics must never block a connect).
             let want_codex_logs = agent_type == AgentType::Codex
-                && std::env::var("RECUR_CODE_ACP_DEBUG")
+                && std::env::var("RC_ACP_DEBUG")
                     .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
                     .unwrap_or(false);
             if want_codex_logs {
@@ -2007,7 +2007,7 @@ async fn build_agent(
                 .map(|a| {
                     // `false`: this branch never logged stdin/stdout, and the
                     // shared callback must not quietly widen that. Only the
-                    // Binary branch opts into the RECUR_CODE_ACP_DEBUG stdio dump.
+                    // Binary branch opts into the RC_ACP_DEBUG stdio dump.
                     a.with_debug(agent_debug_callback(agent_name, tail, false))
                 })
                 .map_err(|e| AcpError::SpawnFailed(e.to_string()))
@@ -2200,13 +2200,13 @@ async fn build_agent(
             //   contents, and permission-response payloads — all of
             //   which may contain API keys pasted by users or file
             //   contents the agent is editing. They are gated behind
-            //   the `RECUR_CODE_ACP_DEBUG=1` env var so production builds
+            //   the `RC_ACP_DEBUG=1` env var so production builds
             //   don't persist user content into OS-level log files
             //   (Console.app on macOS, journald on Linux).
             // - Max line length is kept short so what does get logged
             //   captures the JSON-RPC envelope (method, id) rather
             //   than large payload bodies.
-            let stdio_debug_enabled = std::env::var("RECUR_CODE_ACP_DEBUG")
+            let stdio_debug_enabled = std::env::var("RC_ACP_DEBUG")
                 .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
                 .unwrap_or(false);
             let agent_name = meta.name.to_string();
@@ -5456,7 +5456,7 @@ pub struct DelegationInjection {
 /// Locate the `recur-code-mcp` companion binary across the supported deployment
 /// shapes:
 ///
-/// 1. `RECUR_CODE_MCP_BIN` env override — explicit absolute path. Lets dev shells,
+/// 1. `RC_MCP_BIN` env override — explicit absolute path. Lets dev shells,
 ///    custom installs, and integration tests point at a freshly compiled
 ///    binary without touching the install layout.
 /// 2. Sibling of the running executable — the production layout for every
@@ -5481,7 +5481,7 @@ pub fn locate_recur_code_mcp_binary() -> Option<PathBuf> {
         "recur-code-mcp"
     };
 
-    if let Some(raw) = std::env::var_os("RECUR_CODE_MCP_BIN") {
+    if let Some(raw) = std::env::var_os("RC_MCP_BIN") {
         let candidate = PathBuf::from(raw);
         if is_executable_file(&candidate) {
             return Some(candidate);
@@ -5722,7 +5722,7 @@ where
         browser_eval: cfg!(feature = "tauri-runtime") && injection.browser.is_eval_enabled().await,
         // Only where this process serves computer use: the desktop app, and
         // recur-code-server where the person who runs it has let it share the
-        // screen it runs on (`RECUR_CODE_COMPUTER_USE`). Elsewhere there are no
+        // screen it runs on (`RC_COMPUTER_USE`). Elsewhere there are no
         // windows to offer.
         computer: injection.computer.is_served() && injection.computer.is_enabled().await,
         computer_launch: injection.computer.is_served()
@@ -5737,10 +5737,10 @@ where
     let features_arg = companion_features_arg(flags)?;
     let Some(binary_path) = locate_binary() else {
         tracing::warn!(
-            "[delegation][WARN] recur-code-mcp companion binary not found (checked RECUR_CODE_MCP_BIN, \
+            "[delegation][WARN] recur-code-mcp companion binary not found (checked RC_MCP_BIN, \
              exe sibling, and PATH); skipping delegate_to_agent / check_user_feedback / \
              ask_user_question / get_session_info tool injection for connection \
-             {parent_connection_id}. Reinstall RecurCode or set RECUR_CODE_MCP_BIN to fix."
+             {parent_connection_id}. Reinstall RecurCode or set RC_MCP_BIN to fix."
         );
         return None;
     };
@@ -6444,7 +6444,7 @@ async fn run_connection(
                         "[ACP][{agent_name_for_log}] Initialize TIMED OUT after {:?} \
                          — the agent never answered the handshake. Check the \
                          [stderr] lines above for agent-side errors. For a full \
-                         JSON-RPC trace, re-launch with RECUR_CODE_ACP_DEBUG=1.",
+                         JSON-RPC trace, re-launch with RC_ACP_DEBUG=1.",
                         init_started.elapsed()
                     );
                     return Err(agent_client_protocol::util::internal_error(INIT_TIMEOUT_SENTINEL));
@@ -34485,9 +34485,9 @@ mod tests {
     async fn a_turn_a_custom_agent_runs_on_its_own_stays_in_its_history() {
         let home = tempfile::tempdir().expect("tempdir");
         let home_str = home.path().to_string_lossy().into_owned();
-        // The recorder resolves its root from the process-global `RECUR_CODE_HOME`;
+        // The recorder resolves its root from the process-global `RC_HOME`;
         // temp_env serializes this against every other test that pins it.
-        let turns = temp_env::async_with_vars([("RECUR_CODE_HOME", Some(home_str.as_str()))], async {
+        let turns = temp_env::async_with_vars([("RC_HOME", Some(home_str.as_str()))], async {
             let mut lp = CustomLoop::start(vec![
                 vec![
                     custom_update(serde_json::json!({
@@ -34591,7 +34591,7 @@ mod tests {
         let home = tempfile::tempdir().expect("tempdir");
         let home_str = home.path().to_string_lossy().into_owned();
         let (turns, transcript) =
-            temp_env::async_with_vars([("RECUR_CODE_HOME", Some(home_str.as_str()))], async {
+            temp_env::async_with_vars([("RC_HOME", Some(home_str.as_str()))], async {
                 let mut lp = CustomLoop::start(vec![vec![
                     custom_update(serde_json::json!({
                         "sessionUpdate": "tool_call",

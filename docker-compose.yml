@@ -8,18 +8,18 @@ services:
       # Port bridge for dev servers started by agents inside the container:
       # the workbench shows `http://localhost:3000` from the container through
       # one of these ports (one per dev server). Publish the same range you set
-      # in RECUR_CODE_BRIDGE_PORTS (default: the ten ports after RECUR_CODE_PORT).
-      # Drop this line if you set RECUR_CODE_BRIDGE_HOST_PATTERN below.
+      # in RC_BRIDGE_PORTS (default: the ten ports after RC_PORT).
+      # Drop this line if you set RC_BRIDGE_HOST_PATTERN below.
       - "3081-3090:3081-3090"
     volumes:
       - recur-code-data:/data
       # Mount your project directories (optional):
       # - /path/to/projects:/projects
     environment:
-      - RECUR_CODE_TOKEN=${RECUR_CODE_TOKEN:-}
-      - RECUR_CODE_PORT=3080
-      - RECUR_CODE_HOST=0.0.0.0
-      # - RECUR_CODE_BRIDGE_PORTS=3081-3090   # or `off` to disable the port bridge
+      - RC_TOKEN=${RC_TOKEN:-}
+      - RC_PORT=3080
+      - RC_HOST=0.0.0.0
+      # - RC_BRIDGE_PORTS=3081-3090   # or `off` to disable the port bridge
       # Name the dev servers by hostname instead of giving each one a port:
       # `3000.recurcode.example.com` reaches the container's port 3000 over the
       # published 3080, so nothing above has to be published and no range has
@@ -28,7 +28,7 @@ services:
       # `Host` through (Caddy: `*.recurcode.example.com { reverse_proxy recur-code:3080 }`).
       # `auto` puts the port one label in front of whatever host the workbench
       # itself was opened at.
-      # - RECUR_CODE_BRIDGE_HOST_PATTERN=auto
+      # - RC_BRIDGE_HOST_PATTERN=auto
     # In-place upgrades (Settings → Software Update) rewrite the binaries and
     # web assets inside this container's writable layer, not the image. The
     # recur-code-data volume persists, but an upgrade lives only in the running

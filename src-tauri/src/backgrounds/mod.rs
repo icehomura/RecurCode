@@ -46,7 +46,7 @@ const STALE_TMP_AGE: Duration = Duration::from_secs(600);
 
 /// Disambiguates staging files between concurrent writers. Paired with the pid
 /// it also separates two processes (desktop app + standalone server) pointed at
-/// one `RECUR_CODE_DATA_DIR`.
+/// one `RC_DATA_DIR`.
 static TMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 fn background_path() -> PathBuf {
@@ -148,7 +148,7 @@ pub(crate) fn write_background_atomic(bytes: &[u8]) -> Result<(), AppCommandErro
 /// either way, and neither writer can truncate the other's bytes.
 ///
 /// Takes `root` explicitly so tests can exercise it against a temp dir instead
-/// of the process-global `RECUR_CODE_HOME`.
+/// of the process-global `RC_HOME`.
 fn write_background_atomic_in(root: &Path, bytes: &[u8]) -> Result<(), AppCommandError> {
     sweep_stale_staging_files(root);
     let final_path = root.join(BACKGROUND_FILENAME);
@@ -269,7 +269,7 @@ mod tests {
     use super::*;
 
     // The env-resolved paths (`background_path`, `ensure_backgrounds_root`)
-    // depend on the global `RECUR_CODE_HOME`/`RECUR_CODE_DATA_DIR` (shared, races under
+    // depend on the global `RC_HOME`/`RC_DATA_DIR` (shared, races under
     // parallel tests), so — like `pets::tests` — those are covered by manual
     // smoke tests. `write_background_atomic_in` takes its root explicitly, so
     // the staging/rename behaviour is testable against a temp dir.

@@ -56,7 +56,7 @@
 //! ## Addressing a target by hostname instead of by port
 //!
 //! One origin per target port does not have to mean one *port* per target.
-//! `RECUR_CODE_BRIDGE_HOST_PATTERN` names the targets by hostname instead —
+//! `RC_BRIDGE_HOST_PATTERN` names the targets by hostname instead —
 //! `3000.recurcode.example.com` for port 3000 — and then the bridge binds nothing
 //! of its own: those requests arrive on RecurCode's own listener, are recognised
 //! by their `Host` before anything else looks at them, and are answered here
@@ -117,7 +117,7 @@ const COOKIE_PREFIX: &str = "recur-code-bridge-";
 /// The workbench's own cookies (locale preferences) live on the same host
 /// and are not the dev server's business either.
 const WORKBENCH_COOKIE_PREFIX: &str = "RecurCode.";
-/// Ports above RecurCode's own that the bridge takes when `RECUR_CODE_BRIDGE_PORTS`
+/// Ports above RecurCode's own that the bridge takes when `RC_BRIDGE_PORTS`
 /// is not set.
 pub const DEFAULT_POOL_SIZE: u16 = 10;
 /// A listener nobody holds closes after this long without a request.
@@ -147,13 +147,13 @@ pub struct BridgeConfig {
 }
 
 impl BridgeConfig {
-    /// Read `RECUR_CODE_BRIDGE_PORTS` / `RECUR_CODE_BRIDGE_HOST_PATTERN` /
-    /// `RECUR_CODE_BRIDGE_PUBLIC_HOST`. `None` when the bridge is switched off
-    /// (`RECUR_CODE_BRIDGE_PORTS=off`).
+    /// Read `RC_BRIDGE_PORTS` / `RC_BRIDGE_HOST_PATTERN` /
+    /// `RC_BRIDGE_PUBLIC_HOST`. `None` when the bridge is switched off
+    /// (`RC_BRIDGE_PORTS=off`).
     pub fn from_env(bind_host: &str, recur_code_port: u16) -> Option<Self> {
-        let ports = std::env::var("RECUR_CODE_BRIDGE_PORTS").ok();
-        let pattern = std::env::var("RECUR_CODE_BRIDGE_HOST_PATTERN").ok();
-        let public_host = std::env::var("RECUR_CODE_BRIDGE_PUBLIC_HOST").ok();
+        let ports = std::env::var("RC_BRIDGE_PORTS").ok();
+        let pattern = std::env::var("RC_BRIDGE_HOST_PATTERN").ok();
+        let public_host = std::env::var("RC_BRIDGE_PUBLIC_HOST").ok();
         Self::from_values(
             bind_host,
             recur_code_port,
@@ -165,7 +165,7 @@ impl BridgeConfig {
 
     /// The same, from values already read, so the rules can be tested without
     /// touching the process environment. `None` switches the bridge off: the
-    /// operator asked for that (`RECUR_CODE_BRIDGE_PORTS=off`), or wrote something
+    /// operator asked for that (`RC_BRIDGE_PORTS=off`), or wrote something
     /// unreadable — a typo must not silently bind ten ports, and must not
     /// silently answer for hostnames, either.
     pub fn from_values(
@@ -419,7 +419,7 @@ struct Listener {
     /// shape is not a promise that RecurCode ever handed the name out.
     hosts: Mutex<HashSet<String>>,
     /// Believe `X-Forwarded-Host` / `X-Forwarded-Proto`: only when the
-    /// operator declared a proxy in front (`RECUR_CODE_BRIDGE_PUBLIC_HOST`); a
+    /// operator declared a proxy in front (`RC_BRIDGE_PUBLIC_HOST`); a
     /// page can ask its browser to send those headers, `Host` it cannot.
     trust_forwarded: bool,
     caps: Mutex<Vec<String>>,
@@ -686,7 +686,7 @@ pub async fn open(
 /// The same, for a bridge addressed by hostname: nothing to bind, so the
 /// entry is only the capability holder the sweeper ages out. The hostname is
 /// worked out here — the workbench's own is what `auto` builds on, and a
-/// reverse proxy that replaced it is declared by `RECUR_CODE_BRIDGE_PUBLIC_HOST`.
+/// reverse proxy that replaced it is declared by `RC_BRIDGE_PUBLIC_HOST`.
 fn open_by_host(
     config: &BridgeConfig,
     pattern: &HostPattern,
@@ -835,7 +835,7 @@ fn serve(socket: tokio::net::TcpListener, listener: Arc<Listener>) {
 /// no CORS layer, no compression, no body limit, no static fallback — and
 /// RecurCode's own pages and API are never reached under that hostname.
 ///
-/// Off unless `RECUR_CODE_BRIDGE_HOST_PATTERN` is set, and then a hostname the
+/// Off unless `RC_BRIDGE_HOST_PATTERN` is set, and then a hostname the
 /// pattern does not describe passes straight through to RecurCode.
 pub async fn route_by_host(request: Request, next: Next) -> Response {
     // Names this process handed out are still refused after the bridge is

@@ -49,8 +49,8 @@ pub struct ManagedSection {
     pub kind: SectionKind,
     pub policy: SectionPolicy,
     /// Live location. `data_dir` is the only runtime input; everything else
-    /// resolves through `paths::*` (which honor `RECUR_CODE_HOME` /
-    /// `RECUR_CODE_DATA_DIR`).
+    /// resolves through `paths::*` (which honor `RC_HOME` /
+    /// `RC_DATA_DIR`).
     pub live_path: fn(data_dir: &Path) -> PathBuf,
 }
 
@@ -105,7 +105,7 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
         // what a replace can drop is a hand-made skill the backup predates —
         // the same semantics as `uploads`, and it survives in the safety
         // snapshot. Note `central_experts_dir()` resolves against the real home
-        // and does NOT honor `RECUR_CODE_HOME`/`RECUR_CODE_DATA_DIR`; changing that would
+        // and does NOT honor `RC_HOME`/`RC_DATA_DIR`; changing that would
         // relocate every existing user's skill library, so it stays as-is and
         // this entry is simply environment-independent.
         id: "skills",

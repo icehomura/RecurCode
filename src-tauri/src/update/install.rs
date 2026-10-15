@@ -103,14 +103,14 @@ fn resolve_targets() -> Result<Targets, AppCommandError> {
     let helper_bin = bindir.join(crate::computer::local::helper_file_name());
 
     // Resolve the `web/` *update target* deterministically — this is distinct
-    // from "where to serve static files from right now". When RECUR_CODE_STATIC_DIR
+    // from "where to serve static files from right now". When RC_STATIC_DIR
     // is set (the Docker image sets it to /app/web), the bundle lives there by
     // definition, so target it even if it is momentarily absent (e.g. a prior
     // web swap was interrupted mid-rename). Routing this through the serving
     // fallback would silently retarget a *different* directory when index.html
     // is missing, so a retry could update the wrong path and never repair the
     // real one.
-    let web_dir = match std::env::var("RECUR_CODE_STATIC_DIR")
+    let web_dir = match std::env::var("RC_STATIC_DIR")
         .ok()
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())

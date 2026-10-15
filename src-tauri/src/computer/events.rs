@@ -8,7 +8,7 @@
 //! a window is the desktop window's own action, and so is watching it.
 //!
 //! recur-code-server has no window of its own. Where the person who runs it has
-//! let it share the screen it runs on (`RECUR_CODE_COMPUTER_USE`), its web
+//! let it share the screen it runs on (`RC_COMPUTER_USE`), its web
 //! clients — each holding the server's token — are the only panel there is,
 //! and they are told.
 

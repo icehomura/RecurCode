@@ -6246,7 +6246,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
   // ── Backend keepalive + liveness reconciliation timer ──
   // Frontend is the only side that knows which conversation tabs the
   // user has open. Without this, the backend's idle sweep
-  // (RECUR_CODE_ACP_IDLE_TIMEOUT_SECS, default 180s) would reap connections
+  // (RC_ACP_IDLE_TIMEOUT_SECS, default 180s) would reap connections
   // backing visible tabs whenever the user was just reading without
   // sending — forcing them to re-spawn the agent on next message.
   // Touching only bumps last_activity_at; it does not emit any event.

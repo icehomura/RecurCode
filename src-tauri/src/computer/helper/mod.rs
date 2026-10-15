@@ -11,7 +11,7 @@
 //! designated requirement compiled into this binary — and exits, having done
 //! nothing, if it is not.
 //!
-//! The requirement is compiled in (`RECUR_CODE_COMPUTER_PEER_REQUIREMENT`, set by
+//! The requirement is compiled in (`RC_COMPUTER_PEER_REQUIREMENT`, set by
 //! the release build) rather than read from anywhere at run time: the app
 //! bundle both binaries ship in is owned by the user and writable by any of
 //! their processes. A build without it is a development build. Development
@@ -68,7 +68,7 @@ pub const EXIT_UNANCHORED: i32 = 3;
 
 /// RecurCode's designated requirement, compiled into release builds. See the
 /// module note.
-pub const PEER_REQUIREMENT: Option<&str> = option_env!("RECUR_CODE_COMPUTER_PEER_REQUIREMENT");
+pub const PEER_REQUIREMENT: Option<&str> = option_env!("RC_COMPUTER_PEER_REQUIREMENT");
 
 /// The helper's whole life: check the peer, serve it, exit when it goes away.
 ///

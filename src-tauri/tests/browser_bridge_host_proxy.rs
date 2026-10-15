@@ -1,5 +1,5 @@
 //! A hostname-addressed port bridge behind a declared reverse proxy
-//! (`RECUR_CODE_BRIDGE_PUBLIC_HOST` set), where `X-Forwarded-Host` is believed.
+//! (`RC_BRIDGE_PUBLIC_HOST` set), where `X-Forwarded-Host` is believed.
 //!
 //! Its own test binary: the bridge's configuration is one process-wide
 //! thing, and `browser_bridge_host.rs` runs the same bridge with no proxy

@@ -92,7 +92,7 @@ pub mod tcc;
 
 // RecurCode's side of the helper and the events it raises: the desktop app's,
 // and recur-code-server's where the person who runs it lets it share the screen
-// it runs on (`RECUR_CODE_COMPUTER_USE`).
+// it runs on (`RC_COMPUTER_USE`).
 pub mod driver_admin;
 pub mod events;
 #[cfg(target_os = "macos")]

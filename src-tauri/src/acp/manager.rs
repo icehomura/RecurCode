@@ -318,12 +318,12 @@ fn steered_turn_changed(
     !now_in_flight || now_turns_completed != admitted_turns_completed
 }
 
-/// Read the spawn-handshake timeout from `RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS`,
+/// Read the spawn-handshake timeout from `RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS`,
 /// falling back to `SPAWN_HANDSHAKE_TIMEOUT_SECS`. Returns the configured
 /// `Duration`. Tests can construct the manager with a custom value via
 /// `with_spawn_handshake_timeout` instead of mutating env.
 fn spawn_handshake_timeout_from_env() -> Duration {
-    let secs = std::env::var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS")
+    let secs = std::env::var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS")
         .ok()
         .and_then(|v| v.parse::<u64>().ok())
         .unwrap_or(SPAWN_HANDSHAKE_TIMEOUT_SECS);
@@ -772,7 +772,7 @@ impl ConnectionManager {
         // SessionStarted has applied (so external_id is populated for the
         // next waiter), aborted (connection died), or the timeout fires.
         // Logged on every wait so production can audit real-world handshake
-        // latencies and tune `RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS`.
+        // latencies and tune `RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS`.
         if dedup_lock.is_some() {
             let timeout = self.spawn_handshake_timeout;
             let (outcome, elapsed) = wait_for_session_started(session_started_rx, timeout).await;
@@ -1712,7 +1712,7 @@ impl ConnectionManager {
     ///   out.
     ///
     /// Liveness deliberately does NOT gate it. `ConnectionStatus::Prompting`
-    /// (and `turn_in_flight` with it) tracks turns RECUR_CODE started, and a goal
+    /// (and `turn_in_flight` with it) tracks turns RC started, and a goal
     /// loop's continuations are started by codex itself — detached turns no host
     /// request owns — so gating on them would skip the interrupt in exactly the
     /// case that motivated this. Any post-hoc read is unsound anyway: by the
@@ -7371,15 +7371,15 @@ mod tests {
     fn spawn_handshake_timeout_from_env_uses_default_when_unset() {
         // Snapshot env, mutate, restore. Single test owns this var to avoid
         // cross-test contention.
-        let prev = std::env::var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS").ok();
-        std::env::remove_var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS");
+        let prev = std::env::var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS").ok();
+        std::env::remove_var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS");
         let default = spawn_handshake_timeout_from_env();
         assert_eq!(default, Duration::from_secs(SPAWN_HANDSHAKE_TIMEOUT_SECS));
 
-        std::env::set_var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS", "5");
+        std::env::set_var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS", "5");
         assert_eq!(spawn_handshake_timeout_from_env(), Duration::from_secs(5));
 
-        std::env::set_var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS", "garbage");
+        std::env::set_var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS", "garbage");
         assert_eq!(
             spawn_handshake_timeout_from_env(),
             Duration::from_secs(SPAWN_HANDSHAKE_TIMEOUT_SECS),
@@ -7388,8 +7388,8 @@ mod tests {
 
         // Restore.
         match prev {
-            Some(v) => std::env::set_var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS", v),
-            None => std::env::remove_var("RECUR_CODE_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS"),
+            Some(v) => std::env::set_var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS", v),
+            None => std::env::remove_var("RC_ACP_SPAWN_HANDSHAKE_TIMEOUT_SECS"),
         }
     }
 

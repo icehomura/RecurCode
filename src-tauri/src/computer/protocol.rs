@@ -48,7 +48,7 @@ pub const PROTOCOL_VERSION: u32 = 14;
 /// A fingerprint of the sources the helper is built from, the same in RecurCode
 /// and the helper when both are built from one tree (see `build.rs`). The
 /// helper says it in [`HelperReady::source`]; a development RecurCode checks it.
-pub const SOURCE_FINGERPRINT: &str = env!("RECUR_CODE_COMPUTER_SOURCE");
+pub const SOURCE_FINGERPRINT: &str = env!("RC_COMPUTER_SOURCE");
 
 /// RecurCode → helper.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -20,7 +20,7 @@
 //! wrong it would measure 0, and the file would end up at seed + ceiling.
 //!
 //! One `#[test]` per file on purpose: installing a subscriber is a process-global
-//! one-shot, and the env vars this sets (`RECUR_CODE_HOME`, `RECUR_CODE_LOG_MAX_BYTES`) are
+//! one-shot, and the env vars this sets (`RC_HOME`, `RC_LOG_MAX_BYTES`) are
 //! read during that install.
 
 use std::io::Write;
@@ -37,16 +37,16 @@ const SEEDED: u64 = CEILING / 4 * 3;
 #[test]
 fn file_log_stops_growing_at_the_daily_ceiling() {
     let home = tempfile::tempdir().expect("tempdir");
-    // Both are read inside `init_desktop()` below: RECUR_CODE_HOME relocates
-    // `recur_code_logs_root()`, RECUR_CODE_LOG_MAX_BYTES sets the ceiling. Set them before
+    // Both are read inside `init_desktop()` below: RC_HOME relocates
+    // `recur_code_logs_root()`, RC_LOG_MAX_BYTES sets the ceiling. Set them before
     // the install rather than via `temp_env`, because the guard returned by the
     // install must outlive the closure.
-    std::env::set_var("RECUR_CODE_HOME", home.path());
-    std::env::set_var("RECUR_CODE_LOG_MAX_BYTES", CEILING.to_string());
-    // A stray RUST_LOG/RECUR_CODE_LOG in the developer's shell would otherwise pick
+    std::env::set_var("RC_HOME", home.path());
+    std::env::set_var("RC_LOG_MAX_BYTES", CEILING.to_string());
+    // A stray RUST_LOG/RC_LOG in the developer's shell would otherwise pick
     // the level (and could filter our test events out entirely).
     std::env::remove_var("RUST_LOG");
-    std::env::remove_var("RECUR_CODE_LOG");
+    std::env::remove_var("RC_LOG");
 
     let logs_dir = recur_code_lib::paths::recur_code_logs_root();
     assert!(

@@ -7,7 +7,7 @@
 //!
 //! - **Supervised** (our `--supervise` parent, PID 1 in Docker): the worker
 //!   exits with [`runtime::EXIT_RESTART`] and the supervisor relaunches it
-//!   after `RECUR_CODE_RESTART_DELAY_MS`.
+//!   after `RC_RESTART_DELAY_MS`.
 //! - **Standalone** (no supervisor): the worker re-execs itself.
 
 pub mod install;

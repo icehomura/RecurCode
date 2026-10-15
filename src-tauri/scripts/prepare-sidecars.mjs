@@ -19,7 +19,7 @@
 //      would hold RecurCode's — every agent's shell's — and none of its own.
 //
 // `recur-code-computer-helper` takes its trust anchors from the environment at
-// compile time (`RECUR_CODE_COMPUTER_PEER_REQUIREMENT`): the release workflow sets
+// compile time (`RC_COMPUTER_PEER_REQUIREMENT`): the release workflow sets
 // it for the macOS builds, and a local build without it is a development
 // helper that says so. Nothing here sets or defaults it.
 //
@@ -28,7 +28,7 @@
 //     the matrix triple rather than rebuilding for the host.
 //   - Local `pnpm tauri dev` / `pnpm tauri build` invoke it without args and
 //     get a host-triple build, so the externalBin lookup still finds a file.
-//   - Skippable: set `RECUR_CODE_SKIP_SIDECAR=1` when iterating on the frontend
+//   - Skippable: set `RC_SKIP_SIDECAR=1` when iterating on the frontend
 //     and you don't care about delegation or computer use: a development
 //     RecurCode refuses a computer helper built from other sources than its own,
 //     so after a change under `src-tauri/src/computer/` run this script once
@@ -130,8 +130,8 @@ function stageHelperApp(built) {
 }
 
 function main() {
-  if (process.env.RECUR_CODE_SKIP_SIDECAR === "1") {
-    log("RECUR_CODE_SKIP_SIDECAR=1 — skipping sidecar preparation")
+  if (process.env.RC_SKIP_SIDECAR === "1") {
+    log("RC_SKIP_SIDECAR=1 — skipping sidecar preparation")
     log(
       "computer use refuses a helper older than src-tauri/src/computer/; " +
         "run `pnpm tauri:prepare-sidecars` after changing it"

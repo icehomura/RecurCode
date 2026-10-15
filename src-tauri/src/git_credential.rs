@@ -70,7 +70,7 @@ pub fn absolutize(p: &Path) -> PathBuf {
 /// with stale scripts on disk.
 ///
 /// Paths are absolutized and shell-quoted before being substituted into the
-/// script body so a quirky data dir (`RECUR_CODE_DATA_DIR=$HOME/x`, paths with
+/// script body so a quirky data dir (`RC_DATA_DIR=$HOME/x`, paths with
 /// spaces, single quotes, or `"`) cannot break — or escape — the script.
 pub fn create_credential_helper_script(
     app_data_dir: &Path,
@@ -124,17 +124,17 @@ if not "%~1"=="get" exit /b 0
 pub fn run_credential_helper() {
     // Parse the optional `--data-dir <path>` arg. Helper scripts written by
     // recent RecurCode versions embed this so server deployments and custom
-    // RECUR_CODE_DATA_DIR setups land on the right database.
+    // RC_DATA_DIR setups land on the right database.
     let explicit_data_dir = parse_data_dir_arg(std::env::args());
 
-    // Pin RECUR_CODE_DATA_DIR for downstream lookups (notably the file-based
+    // Pin RC_DATA_DIR for downstream lookups (notably the file-based
     // `keyring_store::tokens_file_path` in server mode). The DB path comes
     // from `--data-dir`, but the token file path comes from the env var,
     // and they must match — otherwise the helper finds the account row but
     // returns no token. set_var is safe here because run_credential_helper
     // is invoked from main() before any tokio runtime is built.
     if let Some(dir) = &explicit_data_dir {
-        std::env::set_var("RECUR_CODE_DATA_DIR", dir);
+        std::env::set_var("RC_DATA_DIR", dir);
     }
 
     // git's credential protocol expects this helper to be silent on a
@@ -303,8 +303,8 @@ pub fn ensure_askpass_script(app_data_dir: &Path) -> std::io::Result<PathBuf> {
         if !script_path.exists() {
             let content = r#"#!/bin/sh
 case "$1" in
-*[Uu]sername*) echo "$RECUR_CODE_GIT_USERNAME" ;;
-*[Pp]assword*) echo "$RECUR_CODE_GIT_PASSWORD" ;;
+*[Uu]sername*) echo "$RC_GIT_USERNAME" ;;
+*[Pp]assword*) echo "$RC_GIT_PASSWORD" ;;
 esac
 "#;
             std::fs::write(&script_path, content)?;
@@ -322,12 +322,12 @@ esac
             let content = r#"@echo off
 echo %1 | findstr /i "username" >nul
 if %errorlevel% equ 0 (
-    echo %RECUR_CODE_GIT_USERNAME%
+    echo %RC_GIT_USERNAME%
     exit /b
 )
 echo %1 | findstr /i "password" >nul
 if %errorlevel% equ 0 (
-    echo %RECUR_CODE_GIT_PASSWORD%
+    echo %RC_GIT_PASSWORD%
     exit /b
 )
 "#;
@@ -352,8 +352,8 @@ pub fn inject_credentials(
         .env("GIT_CONFIG_KEY_0", "credential.helper")
         .env("GIT_CONFIG_VALUE_0", "")
         .env("GIT_ASKPASS", askpass_path)
-        .env("RECUR_CODE_GIT_USERNAME", username)
-        .env("RECUR_CODE_GIT_PASSWORD", token)
+        .env("RC_GIT_USERNAME", username)
+        .env("RC_GIT_PASSWORD", token)
         .env("GIT_TERMINAL_PROMPT", "0");
 }
 
@@ -833,7 +833,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn test_helper_script_absolutizes_relative_data_dir() {
-        // Regression: a relative `RECUR_CODE_DATA_DIR=data` previously produced
+        // Regression: a relative `RC_DATA_DIR=data` previously produced
         // a script that git couldn't find when invoked from the user's
         // repo working dir. The script must always reference an absolute
         // path so it resolves identically regardless of git's CWD.
@@ -964,7 +964,7 @@ mod tests {
         let token = "ghp_test_token_value";
         let account_id = "acct-1";
 
-        // Override RECUR_CODE_DATA_DIR for the duration of this test — server-mode
+        // Override RC_DATA_DIR for the duration of this test — server-mode
         // `keyring_store` resolves `tokens.json` from this var.
         //
         // Through `temp_env`, NOT a bare `set_var` + manual restore. `STATE_LOCK`
@@ -982,7 +982,7 @@ mod tests {
         //
         // Order is always STATE_LOCK then SERIAL_TEST: nothing holding
         // SERIAL_TEST can reach STATE_LOCK, so the pair can't invert.
-        temp_env::with_vars([("RECUR_CODE_DATA_DIR", Some(&data_dir))], || {
+        temp_env::with_vars([("RC_DATA_DIR", Some(&data_dir))], || {
             let rt = tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
@@ -1019,7 +1019,7 @@ mod tests {
                 // `lookup_credential` doesn't race against an open WAL writer.
                 drop(db);
 
-                // Seed the file token store. Uses RECUR_CODE_DATA_DIR via
+                // Seed the file token store. Uses RC_DATA_DIR via
                 // `tokens_file_path`, which is exactly what we're validating.
                 crate::keyring_store::set_token(account_id, token).expect("set token");
 

@@ -27,7 +27,7 @@
 //! the Bearer-authed `start_office_watch` API. That gates the request **and**
 //! gates the `{port}` against the SSRF whitelist (only ports *we* bound to a
 //! watch), so the proxy can never be aimed at an arbitrary internal service. The
-//! global `RECUR_CODE_TOKEN` never enters the iframe; a leaked `cap` only exposes the
+//! global `RC_TOKEN` never enters the iframe; a leaked `cap` only exposes the
 //! one open document's watch.
 //!
 //! ## CORS

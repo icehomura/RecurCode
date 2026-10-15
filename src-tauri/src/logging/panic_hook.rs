@@ -405,7 +405,7 @@ mod tests {
             "{PANIC_TARGET} would be filtered out by the logging backstop"
         );
         // And it is still a well-formed target, so the Settings UI and
-        // RECUR_CODE_LOG can name it.
+        // RC_LOG can name it.
         assert!(PANIC_TARGET
             .split("::")
             .all(|seg| !seg.is_empty()

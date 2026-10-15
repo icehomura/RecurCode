@@ -5714,7 +5714,7 @@
     "filesEmpty": "Noch keine Protokolldateien.",
     "download": "Herunterladen",
     "downloadTruncated": "Die Datei ist groß; die neuesten {size} wurden heruntergeladen. Die vollständige Datei befindet sich im Log-Verzeichnis.",
-    "captureEnvLocked": "Die Protokollebene wird durch die Umgebungsvariable RUST_LOG / RECUR_CODE_LOG gesteuert; ändere sie dort, damit es wirksam wird.",
+    "captureEnvLocked": "Die Protokollebene wird durch die Umgebungsvariable RUST_LOG / RC_LOG gesteuert; ändere sie dort, damit es wirksam wird.",
     "targetsTitle": "Modulspezifische Überschreibungen",
     "targetsDescription": "Lege für bestimmte Module (z. B. recur_code_lib::acp) eine andere Stufe fest, ohne die globale Stufe zu ändern.",
     "targetsAdd": "Hinzufügen",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "Der entfernte Host erreicht diese Adresse nicht",
       "errorRemoteUnreachableHint": "Von {host} aus lässt sich der Name nicht auflösen oder es gibt keinen Weg dorthin.",
       "errorRemoteNotAllowed": "Der entfernte Server gibt diese Adresse für den Browser nicht frei",
-      "errorRemoteNotAllowedHint": "Der recur-code-server auf {host} lässt seinen Browser-Tunnel nur private Adressen erreichen (RECUR_CODE_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "Der recur-code-server auf {host} lässt seinen Browser-Tunnel nur private Adressen erreichen (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "Der entfernte Host hat zu lange für die Verbindung gebraucht",
       "errorRemoteTimeoutHint": "{host} hat von dieser Adresse nicht rechtzeitig eine Antwort bekommen. Der Server dort ist vielleicht ausgelastet oder hinter einer Firewall.",
       "errorTunnelDown": "Die Verbindung zum entfernten Host ist unterbrochen",
@@ -6889,8 +6889,8 @@
       "copyAddress": "Adresse kopieren",
       "copied": "Adresse kopiert",
       "unreachableTitle": "Der Bridge-Port ist nicht erreichbar",
-      "unreachableHint": "Der recur-code-Server stellt diese Seite unter {origin} bereit, aber dein Browser erreicht sie nicht. Gib diesen Port frei (siehe RECUR_CODE_BRIDGE_PORTS) oder setze RECUR_CODE_BRIDGE_PUBLIC_HOST; wird RecurCode über HTTPS ausgeliefert, brauchen auch die Bridge-Ports HTTPS.",
-      "unreachableHostHint": "Der recur-code-Server hat diese Seite unter {origin} bereitgestellt, aber dein Browser erreicht sie nicht. Dieser Hostname muss auf den recur-code-Server auflösen und den davorliegenden Proxy passieren – ein Wildcard-DNS-Eintrag und ein Wildcard-vhost (siehe RECUR_CODE_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "Der recur-code-Server stellt diese Seite unter {origin} bereit, aber dein Browser erreicht sie nicht. Gib diesen Port frei (siehe RC_BRIDGE_PORTS) oder setze RC_BRIDGE_PUBLIC_HOST; wird RecurCode über HTTPS ausgeliefert, brauchen auch die Bridge-Ports HTTPS.",
+      "unreachableHostHint": "Der recur-code-Server hat diese Seite unter {origin} bereitgestellt, aber dein Browser erreicht sie nicht. Dieser Hostname muss auf den recur-code-Server auflösen und den davorliegenden Proxy passieren – ein Wildcard-DNS-Eintrag und ein Wildcard-vhost (siehe RC_BRIDGE_HOST_PATTERN).",
       "errorTitle": "Diese Seite kann hier nicht angezeigt werden"
     },
     "remote": {
@@ -7098,7 +7098,7 @@
       "error": {
         "unavailable": "Um Adressen des entfernten Hosts im integrierten Browser zu öffnen, ist macOS 14 oder neuer nötig.",
         "unsupported": "Der entfernte recur-code-server ist zu alt, um Browser-Verkehr weiterzuleiten. Aktualisiere ihn, um seine Adressen hier zu öffnen.",
-        "disabled": "Beim entfernten recur-code-server ist der Browser-Tunnel ausgeschaltet (RECUR_CODE_BROWSER_TUNNEL).",
+        "disabled": "Beim entfernten recur-code-server ist der Browser-Tunnel ausgeschaltet (RC_BROWSER_TUNNEL).",
         "unreachable": "Der Browser-Tunnel des entfernten recur-code-servers war nicht erreichbar ({reason}).",
         "bypassed": "Die Browser-Engine dieses Computers schickt manche Adressen am Tunnel vorbei, daher bleiben die Seiten des entfernten Hosts geschlossen, statt von diesem Computer geladen zu werden.",
         "probeFailed": "Der integrierte Browser konnte nicht bestätigen, dass er den entfernten Host über den Tunnel erreicht. Versuche es gleich noch einmal."

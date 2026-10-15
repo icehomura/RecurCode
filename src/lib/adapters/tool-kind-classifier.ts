@@ -54,13 +54,13 @@ const CHECK_USER_FEEDBACK_SUFFIX_RE = /[^a-z0-9]check_user_feedback$/
  * produces post-`inferLiveToolName`, the suffix form is the raw
  * `mcp__<server>__<tool>` name the history parsers keep.
  *
- * MUST stay in sync with `RECUR_CODE_MCP_WORKBENCH_TOOLS` in `@/lib/recur-code-mcp-tool`
+ * MUST stay in sync with `RC_MCP_WORKBENCH_TOOLS` in `@/lib/recur-code-mcp-tool`
  * — a tool listed there but missing here still gets its dedicated card, but
  * folds into a generic "工具 ×N" tool-group shell instead of standing alone.
  * That is exactly what happened to `resume_delegation` when it was added.
  * `tool-kind-classifier.test.ts` asserts the two can't drift again.
  */
-const RECUR_CODE_MCP_WORKBENCH_NAMES: ReadonlySet<string> = new Set([
+const RC_MCP_WORKBENCH_NAMES: ReadonlySet<string> = new Set([
   "get_session_info",
   "task_progress",
   "task_complete",
@@ -68,7 +68,7 @@ const RECUR_CODE_MCP_WORKBENCH_NAMES: ReadonlySet<string> = new Set([
   "create_work_task",
   "resume_delegation",
 ])
-const RECUR_CODE_MCP_WORKBENCH_SUFFIX_RE =
+const RC_MCP_WORKBENCH_SUFFIX_RE =
   /[^a-z0-9](?:get_session_info|task_progress|task_complete|create_automation|create_work_task|resume_delegation)$/
 
 export function isAgentLikeToolName(toolName: string): boolean {
@@ -114,8 +114,8 @@ export function isAgentLikeToolName(toolName: string): boolean {
   if (UPDATE_GOAL_SUFFIX_RE.test(name)) return true
   if (ASK_USER_QUESTION_SUFFIX_RE.test(name)) return true
   if (CHECK_USER_FEEDBACK_SUFFIX_RE.test(name)) return true
-  if (RECUR_CODE_MCP_WORKBENCH_NAMES.has(name)) return true
-  if (RECUR_CODE_MCP_WORKBENCH_SUFFIX_RE.test(name)) return true
+  if (RC_MCP_WORKBENCH_NAMES.has(name)) return true
+  if (RC_MCP_WORKBENCH_SUFFIX_RE.test(name)) return true
   return false
 }
 

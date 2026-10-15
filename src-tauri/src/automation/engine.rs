@@ -106,7 +106,7 @@ struct ResolvedCwd {
 /// engine on the DB (`engine()` stays unset otherwise, and manual run/cancel
 /// return a clean "engine not running" error). `None` happens when another live
 /// RecurCode process already holds the lock (e.g. a desktop app and a server pointed
-/// at the same `RECUR_CODE_DATA_DIR`), or — rarely — when the lock can't be
+/// at the same `RC_DATA_DIR`), or — rarely — when the lock can't be
 /// established at all (a real IO error on the lock file, e.g. a filesystem
 /// without lock support): we never start a lockless engine, since its other
 /// guards (`automation_locks`, `root_locks`) are process-local, not cross-process.

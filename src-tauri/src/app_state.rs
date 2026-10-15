@@ -82,7 +82,7 @@ pub struct AppState {
     /// reason as `browser_tools_config`: one setting, one popover.
     pub computer_tools_config: crate::acp::computer_tools::ComputerToolsRuntimeConfig,
     /// recur-code-server's computer service, where the person who runs it has let
-    /// it share the screen it runs on (`RECUR_CODE_COMPUTER_USE`) — set once,
+    /// it share the screen it runs on (`RC_COMPUTER_USE`) — set once,
     /// after the persisted settings are applied. Never set in the desktop
     /// app's web service: its screen is shared from the desktop window.
     pub computer_service: std::sync::OnceLock<Arc<crate::commands::computer::ComputerService>>,

@@ -929,7 +929,7 @@ async fn diag_terminal_probe(cmd: &str, app_path: &[String]) -> TerminalProbe {
     };
     // `cmd` is a static registry command name — no shell metacharacters.
     let script =
-        format!("printf 'RECUR_CODE_PATH=%s\\n' \"$PATH\"; command -v {cmd} 2>/dev/null || true");
+        format!("printf 'RC_PATH=%s\\n' \"$PATH\"; command -v {cmd} 2>/dev/null || true");
     let mut c = crate::process::tokio_command(&shell);
     c.arg("-lic").arg(&script).kill_on_drop(true);
     let out = match tokio::time::timeout(DIAG_PROBE_TIMEOUT, c.output()).await {
@@ -943,7 +943,7 @@ async fn diag_terminal_probe(cmd: &str, app_path: &[String]) -> TerminalProbe {
     let stdout = String::from_utf8_lossy(&out.stdout);
     let mut term_path: Option<String> = None;
     for line in stdout.lines() {
-        if let Some(p) = line.strip_prefix("RECUR_CODE_PATH=") {
+        if let Some(p) = line.strip_prefix("RC_PATH=") {
             term_path = Some(p.to_string());
         } else if line.starts_with('/') && probe.cmd_resolved.is_none() {
             probe.cmd_resolved = Some(line.trim().to_string());
@@ -11267,7 +11267,7 @@ pub async fn acp_connect(
     app_handle: tauri::AppHandle,
     window: tauri::WebviewWindow,
 ) -> Result<String, AcpError> {
-    // Resolve through the effective data dir so a custom `RECUR_CODE_DATA_DIR`
+    // Resolve through the effective data dir so a custom `RC_DATA_DIR`
     // reaches the credential helper script the agent's git subprocess
     // will execute. `acp_connect` may be called before the app data dir
     // exists on disk (first launch); fall back to a sentinel that the
@@ -15816,10 +15816,10 @@ base_url = \"https://example.test/v1\"
     }
 
     /// Drive the launch gate with an isolated pi agent dir AND an isolated RecurCode
-    /// home (the acknowledgement store lives there, via `RECUR_CODE_HOME`).
+    /// home (the acknowledgement store lives there, via `RC_HOME`).
     fn launch_block_for(agent_dir: &Path, recur_code_home: &Path, cwd: &Path) -> Option<String> {
         temp_env::with_var(
-            "RECUR_CODE_HOME",
+            "RC_HOME",
             Some(recur_code_home.to_string_lossy().to_string()),
             || pi_project_trust_launch_block(cwd, &pi_env_for(agent_dir)),
         )
@@ -16406,7 +16406,7 @@ base_url = \"https://example.test/v1\"
 
         let env = BTreeMap::from([("PI_CODING_AGENT_DIR".to_string(), ".pi-agent".to_string())]);
         let blocked = temp_env::with_var(
-            "RECUR_CODE_HOME",
+            "RC_HOME",
             Some(tmp.path().join("recur-code-home").to_string_lossy().to_string()),
             || pi_project_trust_launch_block(&ws, &env),
         );

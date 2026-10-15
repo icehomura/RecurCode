@@ -44,7 +44,7 @@ pub async fn browser_bridge_open(
 ) -> Result<Json<BridgeOpenResult>, AppCommandError> {
     let (port, path) = bridgeable_target(&params.url)?;
     // The hostname this very request was addressed to is the workbench's own,
-    // which is what a bridge hostname is built on (`RECUR_CODE_BRIDGE_HOST_PATTERN`
+    // which is what a bridge hostname is built on (`RC_BRIDGE_HOST_PATTERN`
     // = `auto`); a bridge addressed by port ignores it.
     let workbench_host = browser_bridge::workbench_hostname(&headers);
     let grant = browser_bridge::open(port, &params.tab_id, workbench_host.as_deref())

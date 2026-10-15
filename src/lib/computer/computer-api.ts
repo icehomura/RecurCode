@@ -4,7 +4,7 @@
 // setting in one database), and everything about the screen itself — status,
 // permissions, the window list, sharing — which exists where computer use is
 // served: the desktop app, for the machine it runs on, and a recur-code-server its
-// operator has let share the screen it runs on (`RECUR_CODE_COMPUTER_USE`), for
+// operator has let share the screen it runs on (`RC_COMPUTER_USE`), for
 // its web clients. Whether this window has it is `computerAvailable`.
 
 import { useEffect, useSyncExternalStore } from "react"

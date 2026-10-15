@@ -8,7 +8,7 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // The per-agent "Adapter version" control kept its choice as a reserved
-        // `RECUR_CODE_ADAPTER_CHANNEL` key in `env_json`. The control is gone, and a
+        // `RC_ADAPTER_CHANNEL` key in `env_json`. The control is gone, and a
         // leftover key would keep showing in the agent's env editor and keep
         // being exported into every launch of that agent, so strip it. A map
         // left empty is stored as NULL, the way `serialize_env_map` stores an
@@ -17,10 +17,10 @@ impl MigrationTrait for Migration {
         let conn = manager.get_connection();
         let sql = "UPDATE agent_setting \
             SET env_json = CASE \
-                WHEN json_remove(env_json, '$.RECUR_CODE_ADAPTER_CHANNEL') = '{}' THEN NULL \
-                ELSE json_remove(env_json, '$.RECUR_CODE_ADAPTER_CHANNEL') END \
+                WHEN json_remove(env_json, '$.RC_ADAPTER_CHANNEL') = '{}' THEN NULL \
+                ELSE json_remove(env_json, '$.RC_ADAPTER_CHANNEL') END \
             WHERE CASE WHEN json_valid(env_json) \
-                THEN json_type(env_json, '$.RECUR_CODE_ADAPTER_CHANNEL') IS NOT NULL \
+                THEN json_type(env_json, '$.RC_ADAPTER_CHANNEL') IS NOT NULL \
                 ELSE 0 END";
         conn.execute(Statement::from_string(DbBackend::Sqlite, sql.to_string()))
             .await?;
@@ -54,15 +54,15 @@ mod tests {
 
         let rows: [(i64, Option<&str>, Option<&str>); 8] = [
             // The key alone: the map ends up empty, stored as NULL.
-            (1, Some(r#"{"RECUR_CODE_ADAPTER_CHANNEL":"latest"}"#), None),
+            (1, Some(r#"{"RC_ADAPTER_CHANNEL":"latest"}"#), None),
             // The key next to real env: only the key goes.
             (
                 2,
-                Some(r#"{"XAI_API_KEY":"abc","RECUR_CODE_ADAPTER_CHANNEL":"latest"}"#),
+                Some(r#"{"XAI_API_KEY":"abc","RC_ADAPTER_CHANNEL":"latest"}"#),
                 Some(r#"{"XAI_API_KEY":"abc"}"#),
             ),
             // An empty value still counts as the key being present.
-            (3, Some(r#"{"RECUR_CODE_ADAPTER_CHANNEL":""}"#), None),
+            (3, Some(r#"{"RC_ADAPTER_CHANNEL":""}"#), None),
             // No key: untouched, formatting included.
             (
                 4,
@@ -73,8 +73,8 @@ mod tests {
             (6, Some("not json"), Some("not json")),
             (
                 7,
-                Some(r#"["RECUR_CODE_ADAPTER_CHANNEL"]"#),
-                Some(r#"["RECUR_CODE_ADAPTER_CHANNEL"]"#),
+                Some(r#"["RC_ADAPTER_CHANNEL"]"#),
+                Some(r#"["RC_ADAPTER_CHANNEL"]"#),
             ),
             (8, Some(""), Some("")),
         ];

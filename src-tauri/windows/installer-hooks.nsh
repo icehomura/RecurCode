@@ -27,10 +27,10 @@
 ; returns non-zero when no processes match, which is fine — we ignore the
 ; result.
 
-!macro RECUR_CODE_STOP_SIDECARS
+!macro RC_STOP_SIDECARS
   DetailPrint "Stopping recur-code-mcp and recur-code-computer-helper processes running from $INSTDIR..."
-  System::Call 'kernel32::SetEnvironmentVariable(t "RECUR_CODE_INSTDIR", t "$INSTDIR")'
-  nsExec::Exec `"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$$ErrorActionPreference = 'Stop'; $$dir = $$env:RECUR_CODE_INSTDIR.TrimEnd('\') + '\'; Get-CimInstance Win32_Process | Where-Object { ($$_.Name -eq 'recur-code-mcp.exe' -or $$_.Name -eq 'recur-code-computer-helper.exe') -and $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$dir, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { & taskkill.exe /F /T /PID $$_.ProcessId | Out-Null }; exit 0"`
+  System::Call 'kernel32::SetEnvironmentVariable(t "RC_INSTDIR", t "$INSTDIR")'
+  nsExec::Exec `"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$$ErrorActionPreference = 'Stop'; $$dir = $$env:RC_INSTDIR.TrimEnd('\') + '\'; Get-CimInstance Win32_Process | Where-Object { ($$_.Name -eq 'recur-code-mcp.exe' -or $$_.Name -eq 'recur-code-computer-helper.exe') -and $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$dir, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { & taskkill.exe /F /T /PID $$_.ProcessId | Out-Null }; exit 0"`
   Pop $0
   ${If} $0 != "0"
     nsExec::Exec 'taskkill /F /T /IM recur-code-mcp.exe'
@@ -44,11 +44,11 @@
 !macroend
 
 !macro NSIS_HOOK_PREINSTALL
-  !insertmacro RECUR_CODE_STOP_SIDECARS
+  !insertmacro RC_STOP_SIDECARS
 !macroend
 
 !macro NSIS_HOOK_PREUNINSTALL
-  !insertmacro RECUR_CODE_STOP_SIDECARS
+  !insertmacro RC_STOP_SIDECARS
 !macroend
 
 ; Deliberately NOT cleaning up the "launch at login" HKCU Run values here.

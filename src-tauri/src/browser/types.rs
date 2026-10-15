@@ -74,7 +74,7 @@ pub enum BrowserErrorKind {
     /// route to it, or no such name there).
     RemoteUnreachable,
     /// A remote tab's page: the remote server's policy keeps its tunnel off
-    /// that address (`RECUR_CODE_BROWSER_TUNNEL=private`).
+    /// that address (`RC_BROWSER_TUNNEL=private`).
     RemoteNotAllowed,
     /// A remote tab's page: the remote host did not get through in time.
     RemoteTimeout,

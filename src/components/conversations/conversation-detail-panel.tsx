@@ -995,7 +995,7 @@ const ConversationTabView = memo(function ConversationTabView({
     )
   )
 
-  // An agent can run a turn RECUR_CODE never started: CodeBuddy drains a finished
+  // An agent can run a turn RC never started: CodeBuddy drains a finished
   // background task by prompting itself, and streams a whole turn for it.
   // `applyStreamingAction`'s out-of-turn guard drops that content because the
   // `background_activity` overlay is supposed to own it — but that overlay only

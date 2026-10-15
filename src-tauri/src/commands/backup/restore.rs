@@ -870,7 +870,7 @@ fn snapshot_dir_name(pending: &PendingRestore) -> String {
 }
 
 /// Rename `src` → `dst`, falling back to recursive copy + remove across
-/// filesystem boundaries (RECUR_CODE_HOME / RECUR_CODE_DATA_DIR may differ).
+/// filesystem boundaries (RC_HOME / RC_DATA_DIR may differ).
 fn move_path(src: &Path, dst: &Path) -> std::io::Result<()> {
     if let Some(parent) = dst.parent() {
         std::fs::create_dir_all(parent)?;

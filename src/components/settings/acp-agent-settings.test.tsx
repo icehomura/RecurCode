@@ -2054,7 +2054,7 @@ describe("codex WebSocket feature key survives unrelated toggles", () => {
 })
 
 describe("host-tools toggle — hand the fs/terminal channels back to the agent", () => {
-  const KEY = "RECUR_CODE_ACP_HOST_TOOLS"
+  const KEY = "RC_ACP_HOST_TOOLS"
 
   it("is off for an agent that has never touched the knob", () => {
     expect(hostToolsAgentModeEnabled("")).toBe(false)
@@ -2067,7 +2067,7 @@ describe("host-tools toggle — hand the fs/terminal channels back to the agent"
     expect(hostToolsAgentModeEnabled(on)).toBe(true)
 
     // Off writes an EXPLICIT `default` rather than deleting the key. Deleting
-    // would let a process-wide `RECUR_CODE_ACP_HOST_TOOLS=agent` keep winning, so
+    // would let a process-wide `RC_ACP_HOST_TOOLS=agent` keep winning, so
     // the switch could not turn the mode off at all — it would read false
     // while the next connection still withheld the channels.
     const off = setHostToolsAgentMode(on, false)

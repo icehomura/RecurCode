@@ -54,7 +54,7 @@ pub enum RecurCodeMcpServiceState {
     Stopped,
     /// The socket is fine but the `recur-code-mcp` binary isn't on disk, so nothing
     /// gets injected into an agent's MCP config. Needs a reinstall or
-    /// `RECUR_CODE_MCP_BIN`; there is nothing to start.
+    /// `RC_MCP_BIN`; there is nothing to start.
     Unavailable,
     /// Everything is in place, but every tool group is switched off, so no
     /// companion is injected. Fixed in settings, not here.

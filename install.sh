@@ -9,16 +9,16 @@
 set -euo pipefail
 
 REPO="spacering-net/codeg"
-INSTALL_DIR="${RECUR_CODE_INSTALL_DIR:-/usr/local/bin}"
-WEB_DIR="${RECUR_CODE_WEB_DIR:-/usr/local/share/RecurCode/web}"
+INSTALL_DIR="${RC_INSTALL_DIR:-/usr/local/bin}"
+WEB_DIR="${RC_WEB_DIR:-/usr/local/share/RecurCode/web}"
 VERSION=""
 # Stale recur-code-server / recur-code-mcp binaries elsewhere in PATH are removed by
 # default so the user's `recur-code-server` command always runs the freshly
 # installed binary AND the runtime locates the matching companion via the
-# exe-sibling lookup. Set RECUR_CODE_NO_CLEANUP=1 (or pass --no-cleanup) to
+# exe-sibling lookup. Set RC_NO_CLEANUP=1 (or pass --no-cleanup) to
 # disable.
 CLEANUP_CONFLICTS=1
-if [ "${RECUR_CODE_NO_CLEANUP:-0}" = "1" ]; then
+if [ "${RC_NO_CLEANUP:-0}" = "1" ]; then
   CLEANUP_CONFLICTS=0
 fi
 
@@ -46,8 +46,8 @@ while [[ $# -gt 0 ]]; do
       echo "                (default: remove them so the new install is what runs)"
       echo ""
       echo "Environment:"
-      echo "  RECUR_CODE_INSTALL_DIR  Same as --dir"
-      echo "  RECUR_CODE_NO_CLEANUP   Set to 1 to behave like --no-cleanup"
+      echo "  RC_INSTALL_DIR  Same as --dir"
+      echo "  RC_NO_CLEANUP   Set to 1 to behave like --no-cleanup"
       exit 0
       ;;
     *) echo "Unknown option: $1"; exit 1 ;;
@@ -375,7 +375,7 @@ done
 # instead of crashing mid-install under `set -e`.
 if ! resolve_priv "$INSTALL_DIR"; then
   echo "Error: need elevated privileges to install to ${INSTALL_DIR}, but 'sudo' is not installed."
-  echo "       Re-run as root, install sudo, or set RECUR_CODE_INSTALL_DIR/RECUR_CODE_WEB_DIR to writable"
+  echo "       Re-run as root, install sudo, or set RC_INSTALL_DIR/RC_WEB_DIR to writable"
   echo "       paths (e.g. \$HOME/.local/bin and \$HOME/.local/share/RecurCode/web)."
   exit 1
 fi
@@ -395,7 +395,7 @@ for _name in "${MANAGED_BINS[@]}"; do
   _install_one "$_name"
 done
 # recur-code-computer-helper: computer use, which recur-code-server offers only when
-# started with RECUR_CODE_COMPUTER_USE=1 in a desktop session. Installed when the
+# started with RC_COMPUTER_USE=1 in a desktop session. Installed when the
 # release ships it (older ones do not). It exits with the recur-code-server that
 # started it, but may still be on its way out — and `cp` onto a running
 # executable fails (text file busy) — so a copy is renamed over it instead:
@@ -420,7 +420,7 @@ if [ -d "$WEB_SRC" ]; then
   echo "Installing web assets to ${WEB_DIR}..."
   if ! resolve_priv "$WEB_DIR"; then
     echo "Error: need elevated privileges to write ${WEB_DIR}, but 'sudo' is not installed."
-    echo "       Re-run as root, install sudo, or set RECUR_CODE_WEB_DIR to a writable path."
+    echo "       Re-run as root, install sudo, or set RC_WEB_DIR to a writable path."
     exit 1
   fi
   priv_run mkdir -p "$WEB_DIR"
@@ -456,8 +456,8 @@ fi
 if [ -n "$RESTARTED_PIDS" ]; then
   echo ""
   echo "Note: recur-code-server was stopped for the upgrade."
-  echo "Please restart it manually to ensure your environment variables (RECUR_CODE_PORT, RECUR_CODE_TOKEN, etc.) are preserved:"
-  echo "  RECUR_CODE_STATIC_DIR=${WEB_DIR} recur-code-server"
+  echo "Please restart it manually to ensure your environment variables (RC_PORT, RC_TOKEN, etc.) are preserved:"
+  echo "  RC_STATIC_DIR=${WEB_DIR} recur-code-server"
 fi
 
 # ── Done ──
@@ -507,11 +507,11 @@ fi
 
 echo ""
 echo "Quick start:"
-echo "  RECUR_CODE_STATIC_DIR=${WEB_DIR} recur-code-server"
+echo "  RC_STATIC_DIR=${WEB_DIR} recur-code-server"
 echo ""
 echo "Or with custom settings:"
-echo "  RECUR_CODE_PORT=3080 RECUR_CODE_TOKEN=your-secret RECUR_CODE_STATIC_DIR=${WEB_DIR} recur-code-server"
+echo "  RC_PORT=3080 RC_TOKEN=your-secret RC_STATIC_DIR=${WEB_DIR} recur-code-server"
 echo ""
-echo "The auth token is printed to stderr on startup if not set via RECUR_CODE_TOKEN."
+echo "The auth token is printed to stderr on startup if not set via RC_TOKEN."
 
 exit "$EXIT_STATUS"

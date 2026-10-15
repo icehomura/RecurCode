@@ -53,7 +53,7 @@ pub const DEFAULT_MAX_BYTES_PER_DAY: u64 = 512 * 1024 * 1024;
 /// Env var overriding [`DEFAULT_MAX_BYTES_PER_DAY`]. `0` removes the ceiling
 /// (for a deliberate long protocol-trace capture); a malformed value falls back
 /// to the default rather than silently removing the bound.
-pub const MAX_BYTES_ENV: &str = "RECUR_CODE_LOG_MAX_BYTES";
+pub const MAX_BYTES_ENV: &str = "RC_LOG_MAX_BYTES";
 
 /// Seconds in a day. Unix time has no leap seconds, so every UTC day is exactly
 /// this long and the day number is plain integer division.

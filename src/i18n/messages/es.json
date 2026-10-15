@@ -5714,7 +5714,7 @@
     "filesEmpty": "Aún no hay archivos de registro.",
     "download": "Descargar",
     "downloadTruncated": "El archivo es grande; se descargaron los {size} más recientes. El archivo completo está en el directorio de registros.",
-    "captureEnvLocked": "El nivel de registro está controlado por la variable de entorno RUST_LOG / RECUR_CODE_LOG; cámbialo ahí para que surta efecto.",
+    "captureEnvLocked": "El nivel de registro está controlado por la variable de entorno RUST_LOG / RC_LOG; cámbialo ahí para que surta efecto.",
     "targetsTitle": "Anulaciones por módulo",
     "targetsDescription": "Establece un nivel distinto para módulos específicos (p. ej. recur_code_lib::acp) sin cambiar el nivel global.",
     "targetsAdd": "Añadir",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "El host remoto no puede llegar a esta dirección",
       "errorRemoteUnreachableHint": "Desde {host}, el nombre no se resuelve o no hay ruta hasta él.",
       "errorRemoteNotAllowed": "El servidor remoto no abre esta dirección para el navegador",
-      "errorRemoteNotAllowedHint": "El recur-code-server de {host} solo deja que su túnel del navegador llegue a direcciones privadas (RECUR_CODE_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "El recur-code-server de {host} solo deja que su túnel del navegador llegue a direcciones privadas (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "El host remoto tardó demasiado en conectar",
       "errorRemoteTimeoutHint": "{host} no obtuvo respuesta de esta dirección a tiempo. Puede que el servidor esté ocupado o detrás de un cortafuegos.",
       "errorTunnelDown": "La conexión con el host remoto está caída",
@@ -6889,8 +6889,8 @@
       "copyAddress": "Copiar dirección",
       "copied": "Dirección copiada",
       "unreachableTitle": "No se puede acceder al puerto puente",
-      "unreachableHint": "El servidor de RecurCode puso esta página en {origin}, pero tu navegador no puede acceder a él. Publica ese puerto (consulta RECUR_CODE_BRIDGE_PORTS) o define RECUR_CODE_BRIDGE_PUBLIC_HOST; si RecurCode se sirve por HTTPS, los puertos puente también necesitan HTTPS.",
-      "unreachableHostHint": "El servidor de RecurCode puso esta página en {origin}, pero tu navegador no puede acceder a ella. Ese nombre de host tiene que resolverse al servidor de RecurCode y atravesar el proxy que haya delante: un registro DNS comodín y un vhost comodín (consulta RECUR_CODE_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "El servidor de RecurCode puso esta página en {origin}, pero tu navegador no puede acceder a él. Publica ese puerto (consulta RC_BRIDGE_PORTS) o define RC_BRIDGE_PUBLIC_HOST; si RecurCode se sirve por HTTPS, los puertos puente también necesitan HTTPS.",
+      "unreachableHostHint": "El servidor de RecurCode puso esta página en {origin}, pero tu navegador no puede acceder a ella. Ese nombre de host tiene que resolverse al servidor de RecurCode y atravesar el proxy que haya delante: un registro DNS comodín y un vhost comodín (consulta RC_BRIDGE_HOST_PATTERN).",
       "errorTitle": "Esta página no se puede mostrar aquí"
     },
     "remote": {
@@ -7098,7 +7098,7 @@
       "error": {
         "unavailable": "Para abrir las direcciones del host remoto en el navegador integrado se necesita macOS 14 o posterior.",
         "unsupported": "El recur-code-server remoto es demasiado antiguo para transportar el tráfico del navegador. Actualízalo para abrir sus direcciones aquí.",
-        "disabled": "El recur-code-server remoto tiene desactivado su túnel del navegador (RECUR_CODE_BROWSER_TUNNEL).",
+        "disabled": "El recur-code-server remoto tiene desactivado su túnel del navegador (RC_BROWSER_TUNNEL).",
         "unreachable": "No se pudo conectar con el túnel del navegador del recur-code-server remoto ({reason}).",
         "bypassed": "El motor del navegador de este equipo envía algunas direcciones por fuera del túnel, así que las páginas del host remoto no se abren para no cargarlas desde este equipo.",
         "probeFailed": "El navegador integrado no pudo confirmar que llega al host remoto a través del túnel. Vuelve a intentarlo en un momento."

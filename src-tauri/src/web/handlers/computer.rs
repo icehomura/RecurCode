@@ -2,7 +2,7 @@
 //! Tauri commands in `commands::computer`.
 //!
 //! Only recur-code-server answers them, and only where the person who runs it has
-//! let it share the screen it runs on (`RECUR_CODE_COMPUTER_USE`): its web
+//! let it share the screen it runs on (`RC_COMPUTER_USE`): its web
 //! clients — each holding the server's token, as every route here requires —
 //! are then the only panel there is, from which windows are shared and Stop
 //! is pressed. Anywhere else (a server not let share its screen, the desktop
@@ -37,7 +37,7 @@ fn served(state: &AppState) -> Result<&Arc<ComputerService>, AppCommandError> {
     state.computer_service.get().ok_or_else(|| {
         AppCommandError::configuration_invalid(
             "computer use is not available here: recur-code-server offers it only when started with \
-             RECUR_CODE_COMPUTER_USE=1 in a desktop session, and the desktop app only in its own \
+             RC_COMPUTER_USE=1 in a desktop session, and the desktop app only in its own \
              window",
         )
     })

@@ -44,20 +44,20 @@ COPY --from=backend /app/src-tauri/target/release/recur-code-server /usr/local/b
 COPY --from=backend /app/src-tauri/target/release/recur-code-mcp /usr/local/bin/recur-code-mcp
 COPY --from=frontend /app/out /app/web
 
-ENV RECUR_CODE_STATIC_DIR=/app/web
-ENV RECUR_CODE_DATA_DIR=/data
-ENV RECUR_CODE_PORT=3080
-ENV RECUR_CODE_HOST=0.0.0.0
+ENV RC_STATIC_DIR=/app/web
+ENV RC_DATA_DIR=/data
+ENV RC_PORT=3080
+ENV RC_HOST=0.0.0.0
 ENV SHELL=/bin/bash
 # In-place self-update markers: tells the running server it is a container
 # (for the post-upgrade "also pull the image" hint) and how long the
 # supervisor waits before relaunching the worker after an upgrade.
-ENV RECUR_CODE_RUNTIME=docker
-ENV RECUR_CODE_RESTART_DELAY_MS=2000
+ENV RC_RUNTIME=docker
+ENV RC_RESTART_DELAY_MS=2000
 
 EXPOSE 3080
-# Port bridge for dev servers (RECUR_CODE_BRIDGE_PORTS; default RECUR_CODE_PORT+1..+10).
-# Not needed when RECUR_CODE_BRIDGE_HOST_PATTERN names the dev servers by hostname
+# Port bridge for dev servers (RC_BRIDGE_PORTS; default RC_PORT+1..+10).
+# Not needed when RC_BRIDGE_HOST_PATTERN names the dev servers by hostname
 # instead: those answer on 3080, and no range has to be guessed in advance.
 EXPOSE 3081-3090
 VOLUME /data

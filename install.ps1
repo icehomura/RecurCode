@@ -54,9 +54,9 @@ $ManagedBins = @("recur-code-server", "recur-code-mcp")
 # Stale recur-code-server / recur-code-mcp binaries elsewhere in PATH are removed by
 # default so the user's `recur-code-server` command always runs the freshly
 # installed binary AND the runtime locates the matching companion via the
-# exe-sibling lookup. Pass -NoCleanup (or set RECUR_CODE_NO_CLEANUP=1) to disable.
+# exe-sibling lookup. Pass -NoCleanup (or set RC_NO_CLEANUP=1) to disable.
 $Cleanup = -not $NoCleanup
-if ($env:RECUR_CODE_NO_CLEANUP -eq "1") {
+if ($env:RC_NO_CLEANUP -eq "1") {
     $Cleanup = $false
 }
 
@@ -350,7 +350,7 @@ foreach ($name in $ManagedBins) {
     Copy-Item $src -Destination $dst -Force
 }
 # recur-code-computer-helper.exe: computer use, which recur-code-server offers only when
-# started with RECUR_CODE_COMPUTER_USE=1 in a desktop session. Installed when the
+# started with RC_COMPUTER_USE=1 in a desktop session. Installed when the
 # release ships it (older ones do not).
 $HelperSrc = Join-Path $TmpDir $Artifact "recur-code-computer-helper.exe"
 if (Test-Path $HelperSrc) {
@@ -441,7 +441,7 @@ if ($MoveFrom) {
     Write-Host ""
     Write-Host "recur-code-server moved from $MoveFrom to ${InstallDir}: the RecurCode desktop app is installed"
     Write-Host "in $MoveFrom, and the two would keep replacing each other's files."
-    Write-Host "If a service, scheduled task or shortcut starts $OldBin, or RECUR_CODE_STATIC_DIR"
+    Write-Host "If a service, scheduled task or shortcut starts $OldBin, or RC_STATIC_DIR"
     Write-Host "points to $MoveFrom\web, point it at $InstallDir instead."
 }
 
@@ -450,8 +450,8 @@ if ($MoveFrom) {
 if ($WasRunning) {
     Write-Host ""
     Write-Host "Note: recur-code-server was stopped for the upgrade."
-    Write-Host "Please restart it manually to ensure your environment variables (RECUR_CODE_PORT, RECUR_CODE_TOKEN, etc.) are preserved:"
-    Write-Host "  `$env:RECUR_CODE_STATIC_DIR=`"$WebDir`"; recur-code-server"
+    Write-Host "Please restart it manually to ensure your environment variables (RC_PORT, RC_TOKEN, etc.) are preserved:"
+    Write-Host "  `$env:RC_STATIC_DIR=`"$WebDir`"; recur-code-server"
 }
 
 # ── Done ──
@@ -503,9 +503,9 @@ if (-not $ActiveBinAfter) {
 
 Write-Host ""
 Write-Host "Quick start:"
-Write-Host "  `$env:RECUR_CODE_STATIC_DIR=`"$WebDir`"; recur-code-server"
+Write-Host "  `$env:RC_STATIC_DIR=`"$WebDir`"; recur-code-server"
 Write-Host ""
 Write-Host "Or with custom settings:"
-Write-Host "  `$env:RECUR_CODE_PORT=`"3080`"; `$env:RECUR_CODE_TOKEN=`"your-secret`"; `$env:RECUR_CODE_STATIC_DIR=`"$WebDir`"; recur-code-server"
+Write-Host "  `$env:RC_PORT=`"3080`"; `$env:RC_TOKEN=`"your-secret`"; `$env:RC_STATIC_DIR=`"$WebDir`"; recur-code-server"
 
 exit $ExitStatus

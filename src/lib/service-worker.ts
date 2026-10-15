@@ -38,7 +38,7 @@ export const CACHEABLE_PREFIXES = [
  * old release's caches. Without it the caches would never turn over.
  */
 export function serviceWorkerUrl(
-  version: string | undefined = process.env.RECUR_CODE_APP_VERSION
+  version: string | undefined = process.env.RC_APP_VERSION
 ): string {
   return version
     ? `${SERVICE_WORKER_PATH}?v=${encodeURIComponent(version)}`

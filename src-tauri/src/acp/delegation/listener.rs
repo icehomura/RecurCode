@@ -871,7 +871,7 @@ impl DelegationListener {
     /// session ids actually referenced in the prompt — any non-deleted session
     /// resolves. This is sound in RecurCode's single-tenant trust model: there is no
     /// per-user isolation anywhere (desktop is one local user; server mode shares
-    /// one `RECUR_CODE_TOKEN` + one data dir across an operator's devices), the user can
+    /// one `RC_TOKEN` + one data dir across an operator's devices), the user can
     /// already open every session in the UI, and the agent already has full
     /// filesystem access to every agent's raw session files via its own tools — so
     /// reading session metadata by id is strictly less capability than the agent

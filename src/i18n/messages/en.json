@@ -5797,7 +5797,7 @@
     "filesEmpty": "No log files yet.",
     "download": "Download",
     "downloadTruncated": "File is large; downloaded the latest {size}. The full file is in the logs directory.",
-    "captureEnvLocked": "Log level is controlled by the RUST_LOG / RECUR_CODE_LOG environment variable; change it there to take effect.",
+    "captureEnvLocked": "Log level is controlled by the RUST_LOG / RC_LOG environment variable; change it there to take effect.",
     "targetsTitle": "Per-module overrides",
     "targetsDescription": "Set a different level for specific modules (e.g. recur_code_lib::acp) without changing the global level.",
     "targetsAdd": "Add",
@@ -6949,7 +6949,7 @@
       "errorRemoteUnreachable": "The remote host can't reach this address",
       "errorRemoteUnreachableHint": "Seen from {host}, the name doesn't resolve or there is no route to it.",
       "errorRemoteNotAllowed": "The remote server doesn't open this address for the browser",
-      "errorRemoteNotAllowedHint": "The recur-code-server on {host} only lets its browser tunnel reach private addresses (RECUR_CODE_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "The recur-code-server on {host} only lets its browser tunnel reach private addresses (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "The remote host took too long to connect",
       "errorRemoteTimeoutHint": "{host} got no answer from this address in time. The server there may be busy or behind a firewall.",
       "errorTunnelDown": "The connection to the remote host is down",
@@ -6972,8 +6972,8 @@
       "copyAddress": "Copy address",
       "copied": "Address copied",
       "unreachableTitle": "The bridge port can't be reached",
-      "unreachableHint": "RecurCode's server put this page on {origin}, but your browser can't reach it. Publish that port (see RECUR_CODE_BRIDGE_PORTS) or set RECUR_CODE_BRIDGE_PUBLIC_HOST; if RecurCode is served over HTTPS, the bridge ports need HTTPS too.",
-      "unreachableHostHint": "RecurCode's server put this page on {origin}, but your browser can't reach it. That hostname has to resolve to the RecurCode server and reach it through whatever proxy is in front — a wildcard DNS record and a wildcard vhost (see RECUR_CODE_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "RecurCode's server put this page on {origin}, but your browser can't reach it. Publish that port (see RC_BRIDGE_PORTS) or set RC_BRIDGE_PUBLIC_HOST; if RecurCode is served over HTTPS, the bridge ports need HTTPS too.",
+      "unreachableHostHint": "RecurCode's server put this page on {origin}, but your browser can't reach it. That hostname has to resolve to the RecurCode server and reach it through whatever proxy is in front — a wildcard DNS record and a wildcard vhost (see RC_BRIDGE_HOST_PATTERN).",
       "errorTitle": "This page can't be shown here"
     },
     "remote": {
@@ -7181,7 +7181,7 @@
       "error": {
         "unavailable": "Opening the remote host's addresses in the built-in browser needs macOS 14 or later.",
         "unsupported": "The remote recur-code-server is too old to carry browser traffic. Update it to open its addresses here.",
-        "disabled": "The remote recur-code-server has its browser tunnel switched off (RECUR_CODE_BROWSER_TUNNEL).",
+        "disabled": "The remote recur-code-server has its browser tunnel switched off (RC_BROWSER_TUNNEL).",
         "unreachable": "Couldn't reach the remote recur-code-server's browser tunnel ({reason}).",
         "bypassed": "This computer's browser engine sends some addresses around the tunnel, so the remote host's pages stay closed rather than load from this computer.",
         "probeFailed": "The built-in browser couldn't confirm that it reaches the remote host through the tunnel. Try again in a moment."

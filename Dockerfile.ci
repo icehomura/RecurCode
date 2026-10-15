@@ -29,16 +29,16 @@ COPY dist/${TARGETARCH}/recur-code-server /usr/local/bin/recur-code-server
 COPY dist/${TARGETARCH}/recur-code-mcp /usr/local/bin/recur-code-mcp
 COPY dist/web /app/web
 
-ENV RECUR_CODE_STATIC_DIR=/app/web
-ENV RECUR_CODE_DATA_DIR=/data
-ENV RECUR_CODE_PORT=3080
-ENV RECUR_CODE_HOST=0.0.0.0
+ENV RC_STATIC_DIR=/app/web
+ENV RC_DATA_DIR=/data
+ENV RC_PORT=3080
+ENV RC_HOST=0.0.0.0
 ENV SHELL=/bin/bash
 # In-place self-update markers: tells the running server it is a container
 # (for the post-upgrade "also pull the image" hint) and how long the
 # supervisor waits before relaunching the worker after an upgrade.
-ENV RECUR_CODE_RUNTIME=docker
-ENV RECUR_CODE_RESTART_DELAY_MS=2000
+ENV RC_RUNTIME=docker
+ENV RC_RESTART_DELAY_MS=2000
 
 EXPOSE 3080
 VOLUME /data

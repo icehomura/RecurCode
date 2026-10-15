@@ -29,8 +29,8 @@ fn linux_browser_regressions() {
     .unwrap();
     temp_env::with_vars(
         [
-            ("RECUR_CODE_HOME", None),
-            ("RECUR_CODE_DATA_DIR", Some(root.to_str().unwrap())),
+            ("RC_HOME", None),
+            ("RC_DATA_DIR", Some(root.to_str().unwrap())),
             ("XDG_CONFIG_HOME", Some(config.to_str().unwrap())),
             ("GTK_IM_MODULE", Some("simple")),
         ],
