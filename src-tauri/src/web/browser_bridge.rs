@@ -1799,7 +1799,7 @@ mod tests {
             HostPattern::parse("P{port}-RecurCode.example.com"),
             Some(HostPattern::Template {
                 prefix: "p".into(),
-                suffix: "-RecurCode.example.com".into()
+                suffix: "-recurcode.example.com".into()
             })
         );
         for raw in [
@@ -1831,11 +1831,11 @@ mod tests {
         let auto = HostPattern::Subdomain;
         let template = HostPattern::parse("p{port}-RecurCode.example.com").unwrap();
 
-        assert_eq!(auto.render(3000, "RecurCode.example.com").as_deref(), Some("3000.rc.example.com"));
+        assert_eq!(auto.render(3000, "RecurCode.example.com").as_deref(), Some("3000.recurcode.example.com"));
         assert_eq!(auto.render(3000, "LOCALHOST").as_deref(), Some("3000.localhost"));
-        assert_eq!(auto.target_of("3000.rc.example.com"), Some(3000));
+        assert_eq!(auto.target_of("3000.recurcode.example.com"), Some(3000));
         assert_eq!(auto.target_of("3000.LOCALHOST"), Some(3000));
-        assert_eq!(template.render(5173, "ignored").as_deref(), Some("p5173-RecurCode.example.com"));
+        assert_eq!(template.render(5173, "ignored").as_deref(), Some("p5173-recurcode.example.com"));
         assert_eq!(template.target_of("p5173-RecurCode.example.com"), Some(5173));
 
         // `auto` has nothing to build on: an address is not a name, and a
@@ -1869,7 +1869,7 @@ mod tests {
     #[test]
     fn a_hostname_is_read_out_of_the_authority() {
         assert_eq!(hostname_of("3000.rc.example:8080").as_deref(), Some("3000.rc.example"));
-        assert_eq!(hostname_of(" 3000.RecurCode.Example ").as_deref(), Some("3000.rc.example"));
+        assert_eq!(hostname_of(" 3000.RecurCode.Example ").as_deref(), Some("3000.recurcode.example"));
         // Addresses are not names — `3000.` in front of one names nothing.
         assert_eq!(hostname_of("[::1]:3080"), None);
         assert_eq!(hostname_of("127.0.0.1:3080"), None);
@@ -1918,19 +1918,19 @@ mod tests {
             addressed_hostnames(&request(pairs, "/x"), true)
         };
 
-        assert_eq!(direct(&[("host", "3000.RecurCode.Test:8080")]), ["3000.rc.test"]);
+        assert_eq!(direct(&[("host", "3000.RecurCode.Test:8080")]), ["3000.recurcode.test"]);
         // A forwarding header a page added to its own request does not
         // replace the `Host` it cannot drop — both are read, so naming the
         // workbench in one cannot carry the request off the bridge.
         assert_eq!(
             proxied(&[("host", "3000.rc.test"), ("x-forwarded-host", "RecurCode.test")]),
-            ["3000.rc.test", "RecurCode.test"]
+            ["3000.rc.test", "recurcode.test"]
         );
         // A proxy that appends rather than replaces, and one that sends the
         // header twice: every value counts.
         assert_eq!(
             proxied(&[("host", "RecurCode:3080"), ("x-forwarded-host", "evil.test, 3000.rc.test")]),
-            ["RecurCode", "evil.test", "3000.rc.test"]
+            ["recurcode", "evil.test", "3000.rc.test"]
         );
         // Without a declared proxy in front, forwarding headers are nobody's
         // word for anything.
