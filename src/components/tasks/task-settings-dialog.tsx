@@ -211,7 +211,7 @@ function TaskSettingsBody({
   // its own settings row. Seeded from what actually exists in the DB, so the
   // dialog shows the true source instead of guessing.
   const [source, setSource] = useState<"global" | "custom">("custom")
-  const [agentType, setAgentType] = useState<AgentType>("claude_code")
+  const [agentType, setAgentType] = useState<AgentType>("ra")
   const [modeId, setModeId] = useState<string | null>(null)
   const [configValues, setConfigValues] = useState<Record<string, string>>({})
   const [autoProcess, setAutoProcess] = useState(false)
@@ -255,7 +255,7 @@ function TaskSettingsBody({
         setLoaded(s)
         setSource(isGlobal || own != null ? "custom" : "global")
         setAgentType(
-          s.default_agent_type ?? folder?.default_agent_type ?? "claude_code"
+          s.default_agent_type ?? folder?.default_agent_type ?? "ra"
         )
         setModeId(s.mode_id ?? null)
         setConfigValues(s.config_values ?? {})

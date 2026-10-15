@@ -321,7 +321,7 @@ export function AutomationsPage() {
     const seed = tpl
       ? templateToDraft(tpl, {
           name: t(tpl.titleKey),
-          agentType: "claude_code",
+          agentType: "ra",
           folderId: folders[0]?.id ?? null,
         })
       : null

@@ -136,7 +136,7 @@ function TaskEditorBody({
   // the draft keeps inheriting (agent_type null) — nothing is frozen.
   const [agentDirty, setAgentDirty] = useState(task?.config?.agent_type != null)
   const [agentType, setAgentType] = useState<AgentType>(
-    task?.config?.agent_type ?? "claude_code"
+    task?.config?.agent_type ?? "ra"
   )
   // What an agent-less task launches with in this folder, resolved the way the
   // engine does it: the effective task settings' agent, else the folder's
@@ -209,7 +209,7 @@ function TaskEditorBody({
         setInherited({ folderId, agent })
         // Nothing to inherit: a placeholder, which a save keeps rather than
         // inherits (see `pinsShownAgent`).
-        setAgentType(agent ?? "claude_code")
+        setAgentType(agent ?? "ra")
         setModeId(s.mode_id ?? null)
         setConfigValues(s.config_values ?? {})
       })

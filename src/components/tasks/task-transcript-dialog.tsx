@@ -125,11 +125,11 @@ function TaskAgentResolver({ task }: { task: WorkTask }) {
     getFolderConversation(conversationId)
       .then((detail) => {
         if (cancelled) return
-        setResolved(detail.summary.agent_type ?? folderDefault ?? "claude_code")
+        setResolved(detail.summary.agent_type ?? folderDefault ?? "ra")
       })
       .catch(() => {
         // Transcript unreadable (agent gone, file pruned) — best-effort.
-        if (!cancelled) setResolved(folderDefault ?? "claude_code")
+        if (!cancelled) setResolved(folderDefault ?? "ra")
       })
     return () => {
       cancelled = true

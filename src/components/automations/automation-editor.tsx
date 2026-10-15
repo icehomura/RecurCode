@@ -83,7 +83,7 @@ export function AutomationEditor({
     automation?.config?.action ?? "launch_session"
   )
   const [agentType, setAgentType] = useState<AgentType>(
-    automation?.agent_type ?? "claude_code"
+    automation?.agent_type ?? "ra"
   )
   // Mirrors the composer's plain text for live validation; the authoritative
   // value is read from the editor ref at submit (so a prefilled edit validates

@@ -146,7 +146,7 @@ export function followUpComposerTarget(args: {
       conversationAgentType ??
       task.config?.agent_type ??
       projectFolder?.default_agent_type ??
-      "claude_code",
+      "ra",
     folderPath: worktreeFolder?.path ?? projectFolder?.path ?? null,
   }
 }
