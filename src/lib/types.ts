@@ -1121,6 +1121,9 @@ export function compareAgentType(a: AgentType, b: AgentType): number {
 }
 
 export const ALL_AGENT_TYPES: BuiltinAgentType[] = [
+  // Recur Agent pinned first here too, so filter/dropdown lists built from this
+  // array (import-sessions, conversation-manage, delegation cards) lead with it.
+  "ra",
   "claude_code",
   "codex",
   "open_code",
@@ -1136,7 +1139,6 @@ export const ALL_AGENT_TYPES: BuiltinAgentType[] = [
   "deepseek",
   "qoder",
   "antigravity",
-  "ra",
 ]
 
 export const MODEL_PROVIDER_AGENT_TYPES: BuiltinAgentType[] = [
