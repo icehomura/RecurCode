@@ -1632,7 +1632,7 @@
       "configLoadFailed": "Impossible de lire les paramètres de Pi : {message}",
       "runtimeTooOld": "Ce Pi est trop ancien : RecurCode nécessite Pi {min} ou une version ultérieure pour ouvrir une session. Mettez-le d'abord à jour."
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "Configuration de Recur Agent",
       "configDescription": "Recur Agent s'authentifie via la clé API de votre fournisseur de modèle. La clé est écrite dans ~/.ra/agent/auth.json et le choix du modèle dans settings.json.",
       "providerLabel": "Fournisseur",
@@ -1703,7 +1703,7 @@
       "modelSectionTitle": "Modèle et fournisseur",
       "saveModel": "Enregistrer la config du modèle",
       "apiKeyEnvLabel": "Variable d'env de la clé API",
-      "apiKeyEnvHint": "Nom de la variable d'env dont RecurAgent lit la clé (ex. ANTHROPIC_API_KEY).",
+      "apiKeyEnvHint": "Nom de la variable d'env dont Ra lit la clé (ex. ANTHROPIC_API_KEY).",
       "apiTypeLabel": "Protocole d'API",
       "contextWindowLabel": "Fenêtre de contexte (tokens)",
       "maxIterationsLabel": "Itérations max par tour",
@@ -1712,15 +1712,15 @@
       "profileNone": "Profil par défaut (coding)",
       "profileHint": "Choisir un profil écrit le pointeur de profil par défaut pour les nouvelles sessions.",
       "mcpServersTitle": "Serveurs MCP",
-      "mcpServersHint": "Serveurs MCP propres à RecurAgent, édités en JSON. La couche ACP ne les relaie pas par session.",
+      "mcpServersHint": "Serveurs MCP propres à Ra, édités en JSON. La couche ACP ne les relaie pas par session.",
       "mcpAdd": "Ajouter un serveur",
       "mcpRemove": "Retirer",
       "mcpInvalidJson": "JSON invalide — non enregistré",
       "configPathLabel": "Fichier de configuration",
       "configMissing": "Aucun fichier de config — l'enregistrement le créera.",
       "saved": "Enregistré",
-      "loadFailed": "Échec du chargement de la config RecurAgent",
-      "updateFailed": "Échec de l'enregistrement de la config RecurAgent"
+      "loadFailed": "Échec du chargement de la config Ra",
+      "updateFailed": "Échec de l'enregistrement de la config Ra"
     },
     "addCustomAgent": "Ajouter un agent personnalisé",
     "addCustomAgentHint": "Enregistrez n'importe quel agent compatible ACP. Choisissez-en un dans le registre ACP public ou collez ses informations de registre.",

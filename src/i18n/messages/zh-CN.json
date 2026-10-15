@@ -1632,7 +1632,7 @@
       "configLoadFailed": "无法读取 Pi 的设置：{message}",
       "runtimeTooOld": "此 Pi 版本过旧：RecurCode 需要 Pi {min} 或更新版本才能打开会话。请先更新 Pi。"
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "Recur Agent 配置",
       "configDescription": "Recur Agent 通过模型提供方的 API Key 鉴权。Key 写入 ~/.ra/agent/auth.json，模型选择写入 settings.json。",
       "providerLabel": "提供方",
@@ -1701,7 +1701,7 @@
       "wireValuesHint": "留空表示原样发送档位名。接入点需要别的写法时才填——Google 系需要 LOW / HIGH。",
       "defaultLevelUnlisted": "该档位不在上面的可选列表里——pi 会把它压下来。",
       "apiKeyEnvLabel": "API Key 环境变量名",
-      "apiKeyEnvHint": "RecurAgent 读取密钥所用的环境变量名（如 ANTHROPIC_API_KEY）。",
+      "apiKeyEnvHint": "Ra 读取密钥所用的环境变量名（如 ANTHROPIC_API_KEY）。",
       "apiTypeLabel": "API 协议",
       "contextWindowLabel": "上下文窗口（token）",
       "maxIterationsLabel": "每轮最大迭代次数",
@@ -1710,7 +1710,7 @@
       "profileNone": "内置默认（coding）",
       "profileHint": "选择 profile 会写入 default-profile 指针，供新会话使用。",
       "mcpServersTitle": "MCP 服务器",
-      "mcpServersHint": "RecurAgent 自身的 MCP 服务器，以 JSON 编辑；ACP 层不会按会话转发。",
+      "mcpServersHint": "Ra 自身的 MCP 服务器，以 JSON 编辑；ACP 层不会按会话转发。",
       "mcpAdd": "添加服务器",
       "mcpRemove": "移除",
       "mcpEdit": "编辑 JSON",
@@ -1718,8 +1718,8 @@
       "configPathLabel": "配置文件",
       "configMissing": "尚无配置文件，保存后将创建。",
       "saved": "已保存",
-      "loadFailed": "加载 RecurAgent 配置失败",
-      "updateFailed": "保存 RecurAgent 配置失败",
+      "loadFailed": "加载 Ra 配置失败",
+      "updateFailed": "保存 Ra 配置失败",
       "modelSectionTitle": "模型与提供商",
       "saveModel": "保存模型配置"
     },

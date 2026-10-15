@@ -1632,7 +1632,7 @@
       "configLoadFailed": "Die Pi-Einstellungen konnten nicht gelesen werden: {message}",
       "runtimeTooOld": "Dieses Pi ist zu alt: RecurCode benötigt Pi {min} oder neuer, um eine Sitzung zu öffnen. Aktualisiere es zuerst."
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "Recur Agent-Konfiguration",
       "configDescription": "Recur Agent authentifiziert sich über den API-Schlüssel deines Modellanbieters. Der Schlüssel wird in ~/.ra/agent/auth.json und die Modellauswahl in settings.json geschrieben.",
       "providerLabel": "Anbieter",
@@ -1703,7 +1703,7 @@
       "modelSectionTitle": "Modell & Anbieter",
       "saveModel": "Modellkonfiguration speichern",
       "apiKeyEnvLabel": "API-Key-Umgebungsvariable",
-      "apiKeyEnvHint": "Name der Umgebungsvariable, aus der RecurAgent den Schlüssel liest (z. B. ANTHROPIC_API_KEY).",
+      "apiKeyEnvHint": "Name der Umgebungsvariable, aus der Ra den Schlüssel liest (z. B. ANTHROPIC_API_KEY).",
       "apiTypeLabel": "API-Protokoll",
       "contextWindowLabel": "Kontextfenster (Tokens)",
       "maxIterationsLabel": "Max. Iterationen pro Durchlauf",
@@ -1712,15 +1712,15 @@
       "profileNone": "Standardprofil (coding)",
       "profileHint": "Die Profilwahl setzt den Standard-Profil-Zeiger für neue Sitzungen.",
       "mcpServersTitle": "MCP-Server",
-      "mcpServersHint": "RecurAgents eigene MCP-Server, als JSON bearbeitet. Die ACP-Schicht leitet sie nicht pro Sitzung weiter.",
+      "mcpServersHint": "Ras eigene MCP-Server, als JSON bearbeitet. Die ACP-Schicht leitet sie nicht pro Sitzung weiter.",
       "mcpAdd": "Server hinzufügen",
       "mcpRemove": "Entfernen",
       "mcpInvalidJson": "Ungültiges JSON — nicht gespeichert",
       "configPathLabel": "Konfigurationsdatei",
       "configMissing": "Noch keine Konfigurationsdatei — Speichern erstellt sie.",
       "saved": "Gespeichert",
-      "loadFailed": "RecurAgent-Konfiguration konnte nicht geladen werden",
-      "updateFailed": "RecurAgent-Konfiguration konnte nicht gespeichert werden"
+      "loadFailed": "Ra-Konfiguration konnte nicht geladen werden",
+      "updateFailed": "Ra-Konfiguration konnte nicht gespeichert werden"
     },
     "addCustomAgent": "Eigenen Agenten hinzufügen",
     "addCustomAgentHint": "Registriere jeden ACP-kompatiblen Agenten. Wähle einen aus der öffentlichen ACP-Registry oder füge seine Registry-Informationen ein.",

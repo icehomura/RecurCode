@@ -26,7 +26,7 @@ const ALL_PARSER_AGENTS: [AgentType; 16] = [
     AgentType::DeepSeek,
     AgentType::Qoder,
     AgentType::Antigravity,
-    AgentType::RecurAgent,
+    AgentType::Ra,
 ];
 
 fn build_parser(agent_type: AgentType) -> Box<dyn AgentParser> {

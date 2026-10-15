@@ -1632,7 +1632,7 @@
       "configLoadFailed": "無法讀取 Pi 的設定：{message}",
       "runtimeTooOld": "此 Pi 版本過舊：RecurCode 需要 Pi {min} 或更新版本才能開啟工作階段。請先更新 Pi。"
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "Recur Agent 設定",
       "configDescription": "Recur Agent 透過模型提供方的 API Key 驗證。Key 寫入 ~/.ra/agent/auth.json，模型選擇寫入 settings.json。",
       "providerLabel": "提供方",
@@ -1703,7 +1703,7 @@
       "modelSectionTitle": "模型與供應商",
       "saveModel": "儲存模型設定",
       "apiKeyEnvLabel": "API 金鑰環境變數",
-      "apiKeyEnvHint": "RecurAgent 讀取金鑰所用的環境變數名稱（例如 ANTHROPIC_API_KEY）。",
+      "apiKeyEnvHint": "Ra 讀取金鑰所用的環境變數名稱（例如 ANTHROPIC_API_KEY）。",
       "apiTypeLabel": "API 通訊協定",
       "contextWindowLabel": "上下文視窗（token）",
       "maxIterationsLabel": "每輪最大迭代次數",
@@ -1712,15 +1712,15 @@
       "profileNone": "內建預設（coding）",
       "profileHint": "選擇 profile 會寫入新對話的 default-profile 指標。",
       "mcpServersTitle": "MCP 伺服器",
-      "mcpServersHint": "RecurAgent 自身的 MCP 伺服器，以 JSON 編輯；ACP 層不會逐工作階段轉送。",
+      "mcpServersHint": "Ra 自身的 MCP 伺服器，以 JSON 編輯；ACP 層不會逐工作階段轉送。",
       "mcpAdd": "新增伺服器",
       "mcpRemove": "移除",
       "mcpInvalidJson": "JSON 無效，未儲存",
       "configPathLabel": "設定檔",
       "configMissing": "尚無設定檔 — 儲存後會建立。",
       "saved": "已儲存",
-      "loadFailed": "載入 RecurAgent 設定失敗",
-      "updateFailed": "儲存 RecurAgent 設定失敗"
+      "loadFailed": "載入 Ra 設定失敗",
+      "updateFailed": "儲存 Ra 設定失敗"
     },
     "addCustomAgent": "新增自訂智慧體",
     "addCustomAgentHint": "接入任何相容 ACP 的智慧體。可從公開 ACP 註冊表中選擇，或直接貼上其註冊表資訊。",

@@ -694,8 +694,8 @@ fn agent_root_slots(agent_type: AgentType) -> &'static [RootSlot] {
                 default_rel: &[".pi", "agent", "sessions"],
             },
         ],
-        AgentType::RecurAgent => &[
-            // RecurAgent's data root (`RA_HOME` else `~/.ra`). Widening the root
+        AgentType::Ra => &[
+            // Ra's data root (`RA_HOME` else `~/.ra`). Widening the root
             // itself covers every session tree under it: `sessions/`,
             // `users/*/sessions/`, and `profiles/*/data/...`.
             RootSlot {

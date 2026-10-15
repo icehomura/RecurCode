@@ -1632,7 +1632,7 @@
       "configLoadFailed": "تعذّرت قراءة إعدادات Pi: {message}",
       "runtimeTooOld": "إصدار Pi هذا قديم جدًا: يحتاج RecurCode إلى Pi {min} أو أحدث لفتح جلسة. حدّثه أولًا."
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "إعدادات Recur Agent",
       "configDescription": "يصادق Recur Agent عبر مفتاح API لمزوّد النموذج. يُكتب المفتاح في ~/.ra/agent/auth.json واختيار النموذج في settings.json.",
       "providerLabel": "المزوّد",
@@ -1703,7 +1703,7 @@
       "modelSectionTitle": "النموذج والمزوّد",
       "saveModel": "حفظ إعدادات النموذج",
       "apiKeyEnvLabel": "متغير بيئة مفتاح API",
-      "apiKeyEnvHint": "اسم متغير البيئة الذي يقرأ منه RecurAgent المفتاح (مثل ANTHROPIC_API_KEY).",
+      "apiKeyEnvHint": "اسم متغير البيئة الذي يقرأ منه Ra المفتاح (مثل ANTHROPIC_API_KEY).",
       "apiTypeLabel": "بروتوكول API",
       "contextWindowLabel": "نافذة السياق (الرموز)",
       "maxIterationsLabel": "أقصى تكرارات لكل دورة",
@@ -1712,15 +1712,15 @@
       "profileNone": "الافتراضي (coding)",
       "profileHint": "يحدد اختيار الملف الشخصي مؤشر الملف الافتراضي للجلسات الجديدة.",
       "mcpServersTitle": "خوادم MCP",
-      "mcpServersHint": "خوادم MCP الخاصة بـ RecurAgent، تُعدَّل كـ JSON. طبقة ACP لا تمررها لكل جلسة.",
+      "mcpServersHint": "خوادم MCP الخاصة بـ Ra، تُعدَّل كـ JSON. طبقة ACP لا تمررها لكل جلسة.",
       "mcpAdd": "إضافة خادم",
       "mcpRemove": "إزالة",
       "mcpInvalidJson": "JSON غير صالح — لم يُحفظ",
       "configPathLabel": "ملف الإعدادات",
       "configMissing": "لا يوجد ملف إعدادات بعد — الحفظ ينشئه.",
       "saved": "تم الحفظ",
-      "loadFailed": "تعذّر تحميل إعدادات RecurAgent",
-      "updateFailed": "تعذّر حفظ إعدادات RecurAgent"
+      "loadFailed": "تعذّر تحميل إعدادات Ra",
+      "updateFailed": "تعذّر حفظ إعدادات Ra"
     },
     "addCustomAgent": "إضافة وكيل مخصص",
     "addCustomAgentHint": "سجّل أي وكيل متوافق مع ACP. اختر واحدًا من سجل ACP العام، أو الصق معلومات السجل الخاصة به.",

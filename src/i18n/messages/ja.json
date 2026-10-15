@@ -1632,7 +1632,7 @@
       "configLoadFailed": "Pi の設定を読み込めませんでした：{message}",
       "runtimeTooOld": "この Pi は古すぎます。RecurCode でセッションを開くには Pi {min} 以降が必要です。先に Pi を更新してください。"
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "Recur Agent 設定",
       "configDescription": "Recur Agent はモデルプロバイダーの API キーで認証します。キーは ~/.ra/agent/auth.json に、モデル選択は settings.json に書き込まれます。",
       "providerLabel": "プロバイダー",
@@ -1703,7 +1703,7 @@
       "modelSectionTitle": "モデルとプロバイダー",
       "saveModel": "モデル設定を保存",
       "apiKeyEnvLabel": "APIキーの環境変数名",
-      "apiKeyEnvHint": "RecurAgentがキーを読み取る環境変数名（例: ANTHROPIC_API_KEY）。",
+      "apiKeyEnvHint": "Raがキーを読み取る環境変数名（例: ANTHROPIC_API_KEY）。",
       "apiTypeLabel": "APIプロトコル",
       "contextWindowLabel": "コンテキストウィンドウ（トークン）",
       "maxIterationsLabel": "1ターンあたりの最大イテレーション",
@@ -1712,15 +1712,15 @@
       "profileNone": "デフォルト（coding）",
       "profileHint": "プロファイルを選択すると、新規セッション用のデフォルトプロファイルポインタが書き込まれます。",
       "mcpServersTitle": "MCPサーバー",
-      "mcpServersHint": "RecurAgent自身のMCPサーバー（JSONで編集）。ACP層はセッション単位で転送しません。",
+      "mcpServersHint": "Ra自身のMCPサーバー（JSONで編集）。ACP層はセッション単位で転送しません。",
       "mcpAdd": "サーバーを追加",
       "mcpRemove": "削除",
       "mcpInvalidJson": "無効なJSON — 保存されませんでした",
       "configPathLabel": "設定ファイル",
       "configMissing": "設定ファイルはまだありません — 保存すると作成されます。",
       "saved": "保存しました",
-      "loadFailed": "RecurAgent設定の読み込みに失敗しました",
-      "updateFailed": "RecurAgent設定の保存に失敗しました"
+      "loadFailed": "Ra設定の読み込みに失敗しました",
+      "updateFailed": "Ra設定の保存に失敗しました"
     },
     "addCustomAgent": "カスタムエージェントを追加",
     "addCustomAgentHint": "ACP 対応のエージェントを追加できます。公開 ACP レジストリから選ぶか、レジストリ情報を貼り付けてください。",

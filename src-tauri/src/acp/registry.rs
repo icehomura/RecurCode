@@ -231,9 +231,9 @@ pub fn current_platform() -> &'static str {
 /// [`all_acp_agents`] for the live set.
 pub fn builtin_acp_agents() -> Vec<AgentType> {
     vec![
-        // RecurAgent first: it is RecurCode's default / pinned-top agent. Its
+        // Ra first: it is RecurCode's default / pinned-top agent. Its
         // headless `ra-headless acp` binary speaks ACP directly (no adapter).
-        AgentType::RecurAgent,
+        AgentType::Ra,
         AgentType::ClaudeCode,
         AgentType::Codex,
         AgentType::Gemini,
@@ -277,8 +277,8 @@ pub fn registry_id_for(agent_type: AgentType) -> &'static str {
         AgentType::DeepSeek => "deepseek-acp",
         AgentType::Qoder => "qoder-cli",
         AgentType::Antigravity => "antigravity-acp",
-        // No adapter process: RecurAgent is launched directly as `ra-headless acp`.
-        AgentType::RecurAgent => "recur-agent",
+        // No adapter process: Ra is launched directly as `ra-headless acp`.
+        AgentType::Ra => "ra",
         // A custom agent's registry id IS its identity.
         AgentType::Custom(id) => id,
     }
@@ -301,9 +301,9 @@ pub fn from_registry_id(id: &str) -> Option<AgentType> {
         "deepseek-acp" => Some(AgentType::DeepSeek),
         "qoder-cli" => Some(AgentType::Qoder),
         "antigravity-acp" => Some(AgentType::Antigravity),
-        // RecurAgent has no adapter process, so its registry id is a plain
+        // Ra has no adapter process, so its registry id is a plain
         // identity string rather than a wrapped-vendor-CLI id.
-        "recur-agent" => Some(AgentType::RecurAgent),
+        "ra" => Some(AgentType::Ra),
         // Only ids the user has actually registered resolve. An unregistered
         // id must stay `None` so the ACP-registry picker still offers it as
         // "addable" rather than treating it as already supported.
@@ -4297,9 +4297,9 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 }),
             },
         },
-        AgentType::RecurAgent => AcpAgentMeta {
+        AgentType::Ra => AcpAgentMeta {
             agent_type,
-            // RecurAgent's ACP server IGNORES `session/new`'s `mcpServers`: its
+            // Ra's ACP server IGNORES `session/new`'s `mcpServers`: its
             // ACP entry point never builds an MCP client, so neither the built-in
             // rc-mcp companion nor a user's own servers ever reach its model
             // (probed: a server handed to `session/new` is never spawned).
@@ -4307,11 +4307,11 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // whose `delegate_to_agent` / live-feedback tools the agent can never
             // call — and from steering a prompt at tools that do not exist. Same
             // posture as OpenClaw, and stricter than pi's `agent_delivers_wire_mcp`
-            // gate, because RecurAgent does not even consume the field.
+            // gate, because Ra does not even consume the field.
             supports_mcp: false,
             name: "Recur Agent",
             description: "Rust-native headless coding agent speaking ACP directly (ra acp)",
-            // RecurAgent ships one binary (`ra`) in two build variants: the full
+            // Ra ships one binary (`ra`) in two build variants: the full
             // bundle links the TUI, the `ra-headless` bundle is kernel + tools with
             // no TUI/llama. RecurCode installs the headless bundle, but the
             // executable inside it is still named `ra`, so the spawn cmd is `ra`.
@@ -4320,7 +4320,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 cmd: "ra",
                 args: &["acp"],
                 env: &[],
-                // RecurAgent publishes one headless archive per target at the
+                // Ra publishes one headless archive per target at the
                 // release tag. The names follow this crate's platform keys
                 // (`darwin-aarch64`, `linux-x86_64`, ...) and the arch spelling
                 // used there (`x86_64`/`aarch64`, not `amd64`/`arm64`).
@@ -4332,7 +4332,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 // "unsupported archive format" rather than install.
                 //
                 // The Windows ARM64 entry has no published archive today
-                // (RecurAgent's matrix builds x86_64-pc-windows-msvc only). It
+                // (Ra's matrix builds x86_64-pc-windows-msvc only). It
                 // stays listed because the `Binary` arm resolves
                 // `current_platform()` against this table before it probes
                 // cache/PATH; dropping it would break that match on such a host.
@@ -4342,32 +4342,32 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
                 platforms: &[
                     PlatformBinary {
                         platform: "darwin-aarch64",
-                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-bundle-aarch64-apple-darwin.tar.gz",
+                        url: "https://github.com/icehomura/Ra/releases/download/v0.6.1/ra-headless-bundle-aarch64-apple-darwin.tar.gz",
                         sha256: None,
                     },
                     PlatformBinary {
                         platform: "darwin-x86_64",
-                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-bundle-x86_64-apple-darwin.tar.gz",
+                        url: "https://github.com/icehomura/Ra/releases/download/v0.6.1/ra-headless-bundle-x86_64-apple-darwin.tar.gz",
                         sha256: None,
                     },
                     PlatformBinary {
                         platform: "linux-aarch64",
-                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-bundle-aarch64-unknown-linux-gnu.tar.gz",
+                        url: "https://github.com/icehomura/Ra/releases/download/v0.6.1/ra-headless-bundle-aarch64-unknown-linux-gnu.tar.gz",
                         sha256: None,
                     },
                     PlatformBinary {
                         platform: "linux-x86_64",
-                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-bundle-x86_64-unknown-linux-gnu.tar.gz",
+                        url: "https://github.com/icehomura/Ra/releases/download/v0.6.1/ra-headless-bundle-x86_64-unknown-linux-gnu.tar.gz",
                         sha256: None,
                     },
                     PlatformBinary {
                         platform: "windows-aarch64",
-                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-bundle-aarch64-pc-windows-msvc.zip",
+                        url: "https://github.com/icehomura/Ra/releases/download/v0.6.1/ra-headless-bundle-aarch64-pc-windows-msvc.zip",
                         sha256: None,
                     },
                     PlatformBinary {
                         platform: "windows-x86_64",
-                        url: "https://github.com/icehomura/RecurAgent/releases/download/v0.6.1/ra-headless-bundle-x86_64-pc-windows-msvc.zip",
+                        url: "https://github.com/icehomura/Ra/releases/download/v0.6.1/ra-headless-bundle-x86_64-pc-windows-msvc.zip",
                         sha256: None,
                     },
                 ],

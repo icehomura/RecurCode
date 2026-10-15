@@ -2128,16 +2128,16 @@ async fn build_agent(
                 .await;
                 cmd_args.extend(listen.iter().map(|a| (*a).to_string()));
             }
-            // RecurAgent owns its model/MCP/skills config natively (`config.json`
-            // + `profiles/`). Pin its data+config home to RecurCode's RecurAgent
+            // Ra owns its model/MCP/skills config natively (`config.json`
+            // + `profiles/`). Pin its data+config home to RecurCode's Ra
             // root so the settings panel and the spawned agent read/write the SAME
             // files. Only an explicit `--data-dir` (not the `RA_HOME` env, which
             // leaves `config_home` at the brand dir) makes `config_home` track the
             // data dir, guaranteeing one source of truth.
-            if agent_type == AgentType::RecurAgent {
+            if agent_type == AgentType::Ra {
                 cmd_args.extend([
                     "--data-dir".to_string(),
-                    crate::commands::recur_config::recur_config_root()
+                    crate::commands::ra_config::ra_data_root()
                         .display()
                         .to_string(),
                 ]);
@@ -5183,7 +5183,7 @@ fn build_resume_session_request(
 /// `models` is `None` when the reply carries none. Other agents can send one too
 /// (codex-acp reports its model state there), but only grok's is ever read:
 /// every caller checks the agent before parsing it.
-// RecurAgent-specific hardening (port of `fix(acp): survive a non-conforming
+// Ra-specific hardening (port of `fix(acp): survive a non-conforming
 // modes value`). Some agents put a bare array of modes where the schema expects
 // a `SessionModeState` object; because `SessionModeState` has no catch-all, the
 // WHOLE session response fails to deserialize and the agent never connects.
@@ -8374,7 +8374,7 @@ async fn handle_permission_request(
     // Read-only requests are answered here, without ever becoming a card: a
     // `read` / `search` / `think` tool call mutates nothing, and an agent that
     // asks about every one of them turns a single turn into a stack of cards the
-    // user clicks through without ever declining. RecurAgent is the extreme case
+    // user clicks through without ever declining. Ra is the extreme case
     // — its ACP server asks for read, ls, grep and find alike, and its own
     // `--yolo` has no effect under ACP at all. Mutating kinds (edit, delete,
     // move, execute, fetch) and the `other` bucket still get a card, as does any

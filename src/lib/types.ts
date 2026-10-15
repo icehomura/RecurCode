@@ -15,7 +15,7 @@ export type BuiltinAgentType =
   | "deepseek"
   | "qoder"
   | "antigravity"
-  | "recur_agent"
+  | "ra"
 
 /**
  * Which agent backs a conversation.
@@ -1086,7 +1086,7 @@ export const STATUS_COLORS: Record<ConversationStatus, string> = {
 
 export const AGENT_DISPLAY_ORDER: BuiltinAgentType[] = [
   // RecurCode's pinned-top default agent (headless `ra-headless acp`).
-  "recur_agent",
+  "ra",
   "codex",
   "claude_code",
   "open_code",
@@ -1136,7 +1136,7 @@ export const ALL_AGENT_TYPES: BuiltinAgentType[] = [
   "deepseek",
   "qoder",
   "antigravity",
-  "recur_agent",
+  "ra",
 ]
 
 export const MODEL_PROVIDER_AGENT_TYPES: BuiltinAgentType[] = [
@@ -1448,7 +1448,7 @@ export const AGENT_LABELS: Record<BuiltinAgentType, string> = {
   deepseek: "DeepSeek Harness",
   qoder: "Qoder",
   antigravity: "Google Antigravity",
-  recur_agent: "Recur Agent",
+  ra: "Recur Agent",
 }
 
 export const AGENT_COLORS: Record<BuiltinAgentType, string> = {
@@ -1467,7 +1467,7 @@ export const AGENT_COLORS: Record<BuiltinAgentType, string> = {
   deepseek: "bg-[#4D6BFE]",
   qoder: "bg-[#6C4CF1]",
   antigravity: "bg-[#1A73E8]",
-  recur_agent: "bg-[#2563EB]",
+  ra: "bg-[#2563EB]",
 }
 
 // ACP connection status (matches Rust ConnectionStatus)

@@ -5882,15 +5882,15 @@ pub(crate) async fn acp_fetch_kimi_models_core(
 /// Resolve pi's coding-agent dir from RecurCode's own environment:
 /// `PI_CODING_AGENT_DIR` through pi's tilde rule, else `~/.pi/agent`. The same
 /// resolver the history parser uses, so the two cannot drift.
-/// RecurAgent's data root (`RA_HOME` else `~/.ra`) — the exact directory
+/// Ra's data root (`RA_HOME` else `~/.ra`) — the exact directory
 /// RecurCode passes as `--data-dir` when launching `ra acp`, so `config.json`,
 /// `profiles/`, skills and the session store (`sessions/`, `users/*/sessions/`)
-/// all live under it. Delegated to [`crate::commands::recur_config::recur_config_root`]
+/// all live under it. Delegated to [`crate::commands::ra_config::ra_data_root`]
 /// so the settings panel and the history parser can never drift onto different
-/// roots. RecurAgent owns its layout natively — unlike pi there is no
+/// roots. Ra owns its layout natively — unlike pi there is no
 /// `~/.ra/agent` sub-dir.
-pub(crate) fn recur_agent_dir() -> PathBuf {
-    crate::commands::recur_config::recur_config_root()
+pub(crate) fn ra_data_dir() -> PathBuf {
+    crate::commands::ra_config::ra_data_root()
 }
 
 pub(crate) fn pi_agent_dir() -> PathBuf {
@@ -9053,13 +9053,13 @@ pub(crate) fn skill_storage_spec(agent_type: AgentType) -> Option<SkillStorageSp
             ],
             project_rel_dirs: vec![".pi/skills", ".agents/skills"],
         }),
-        // RecurAgent owns its skills natively under its data root
+        // Ra owns its skills natively under its data root
         // (`<RA_HOME|~/.ra>/skills`, per-profile `…/data/skills`) — not pi's
         // `~/.ra/agent/skills`. The shared `.agents/skills` store still applies.
-        AgentType::RecurAgent => Some(SkillStorageSpec {
+        AgentType::Ra => Some(SkillStorageSpec {
             kind: SkillStorageKind::SkillDirectoryOrMarkdownFile,
             global_dirs: vec![
-                crate::commands::recur_config::recur_config_root().join("skills"),
+                crate::commands::ra_config::ra_data_root().join("skills"),
                 home_dir_or_default().join(".agents").join("skills"),
             ],
             project_rel_dirs: vec![".ra/skills", ".agents/skills"],
@@ -10871,10 +10871,10 @@ fn cascade_update_agent_config(
             // Pi settings panel (`acp_update_pi_config`); it does not participate
             // in the model-provider credential cascade.
         }
-        AgentType::RecurAgent => {
-            // RecurAgent authenticates via its own `~/.ra/config.json` (plus
-            // `~/.ra/profiles/<id>.json`), managed by the dedicated RecurAgent
-            // settings panel (`acp_update_recur_config`); unlike pi it has no
+        AgentType::Ra => {
+            // Ra authenticates via its own `~/.ra/config.json` (plus
+            // `~/.ra/profiles/<id>.json`), managed by the dedicated Ra
+            // settings panel (`acp_update_ra_config`); unlike pi it has no
             // `settings.json`/`auth.json` pair, and like pi it does not
             // participate in the model-provider credential cascade.
         }
@@ -12830,22 +12830,22 @@ pub async fn acp_load_pi_config(db: State<'_, AppDatabase>) -> Result<PiConfigPr
     load_pi_config_for_db(&db).await
 }
 
-/// Read RecurAgent's native config (`~/.ra/config.json` + profiles) for the
+/// Read Ra's native config (`~/.ra/config.json` + profiles) for the
 /// settings panel. Desktop command; the web handler calls the same module fn.
 #[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-pub fn acp_load_recur_config() -> crate::commands::recur_config::RecurConfigProjection {
-    crate::commands::recur_config::load_recur_config()
+pub fn acp_load_ra_config() -> crate::commands::ra_config::RaConfigProjection {
+    crate::commands::ra_config::load_ra_config()
 }
 
-/// Apply a structured patch to RecurAgent's native config. Pure file IO, so it
+/// Apply a structured patch to Ra's native config. Pure file IO, so it
 /// needs no DB or emitter.
 #[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-pub fn acp_update_recur_config(
-    update: crate::commands::recur_config::RecurConfigUpdate,
+pub fn acp_update_ra_config(
+    update: crate::commands::ra_config::RaConfigUpdate,
 ) -> Result<(), AcpError> {
-    crate::commands::recur_config::update_recur_config(update)
+    crate::commands::ra_config::update_ra_config(update)
 }
 
 /// pi's built-in model catalog, asked of the configured runtime (see

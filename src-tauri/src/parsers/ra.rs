@@ -1,15 +1,15 @@
-//! History parser for **RecurAgent** (the `ra` CLI).
+//! History parser for **Ra** (the `ra` CLI).
 //!
 //! This file used to be a copy of [`crate::parsers::pi`] and read pi's
-//! `type`/`id`/`parentId` event tree. RecurAgent is a different program with a
+//! `type`/`id`/`parentId` event tree. Ra is a different program with a
 //! different session store, so that copy listed nothing but `~/.ra` never holds
 //! pi-shaped records: reading it linearly yielded sessions with no header, no
-//! turns, no titles. It is rewritten here against RecurAgent's real on-disk
+//! turns, no titles. It is rewritten here against Ra's real on-disk
 //! format (verified against its source).
 //!
 //! # Where the sessions live
 //!
-//! RecurAgent's data root is `$RA_HOME`, else `~/.ra` (on Windows
+//! Ra's data root is `$RA_HOME`, else `~/.ra` (on Windows
 //! `C:\Users\<you>\.ra`); RecurCode launches the agent with
 //! `ra acp --data-dir ~/.ra`, which is the same directory. Session transcripts
 //! are `.jsonl` files reachable from that root in any of these layouts, so the
@@ -84,21 +84,21 @@ use crate::parsers::{
     AgentParser, ParseError,
 };
 
-/// RecurAgent's data root — the directory walked for session `.jsonl` files.
+/// Ra's data root — the directory walked for session `.jsonl` files.
 ///
 /// `$RA_HOME` when set and non-empty, else `~/.ra`, mirroring
-/// `ra_core::brand::state_home` and [`crate::commands::recur_config::recur_config_root`]
+/// `ra_core::brand::state_home` and [`crate::commands::ra_config::ra_data_root`]
 /// so the panel, the launched `ra acp --data-dir`, and this parser read one and
 /// the same store. No tilde expansion is applied: the value is used as a path
-/// verbatim (the shell that set it already expanded it), exactly as RecurAgent
+/// verbatim (the shell that set it already expanded it), exactly as Ra
 /// itself does.
-pub(crate) fn resolve_recur_sessions_dir() -> PathBuf {
-    resolve_recur_sessions_dir_from(std::env::var_os("RA_HOME"), dirs::home_dir())
+pub(crate) fn resolve_ra_sessions_dir() -> PathBuf {
+    resolve_ra_sessions_dir_from(std::env::var_os("RA_HOME"), dirs::home_dir())
 }
 
-/// [`resolve_recur_sessions_dir`] as a pure function of its inputs, so tests
+/// [`resolve_ra_sessions_dir`] as a pure function of its inputs, so tests
 /// drive it without touching the process environment.
-fn resolve_recur_sessions_dir_from(
+fn resolve_ra_sessions_dir_from(
     ra_home: Option<OsString>,
     home_dir: Option<PathBuf>,
 ) -> PathBuf {
@@ -116,7 +116,7 @@ fn resolve_recur_sessions_dir_from(
 }
 
 /// Length a session key may keep before the encoder truncates it and appends its
-/// FNV-1a-64 hash (RecurAgent's own `MAX_KEY_LEN` + `_{hash:016X}`).
+/// FNV-1a-64 hash (Ra's own `MAX_KEY_LEN` + `_{hash:016X}`).
 const ENCODED_KEY_LIMIT: usize = 200;
 /// The hex-digest suffix length, without the leading `_`.
 const KEY_HASH_SUFFIX_LEN: usize = 16;
@@ -141,7 +141,7 @@ fn hex_digit(byte: u8) -> Option<u8> {
 /// escape is kept verbatim rather than dropped, so a stem that is not
 /// percent-encoded at all (a topic like `default`, or a hand-placed fixture)
 /// decodes to itself.
-pub(crate) fn decode_recur_session_stem(stem: &str) -> String {
+pub(crate) fn decode_ra_session_stem(stem: &str) -> String {
     let stem = strip_key_hash_suffix(stem);
     let bytes = stem.as_bytes();
     let mut out: Vec<u8> = Vec::with_capacity(bytes.len());
@@ -196,17 +196,17 @@ fn strip_key_hash_suffix(stem: &str) -> &str {
     }
 }
 
-/// `RecurAgent`'s sessions root, held by the parser. Named `base_dir` for
+/// `Ra`'s sessions root, held by the parser. Named `base_dir` for
 /// consistency with the other single-root parsers; it is the DATA root, not a
 /// `sessions` folder, because the layouts nest below it.
-pub struct RecurParser {
+pub struct RaParser {
     base_dir: PathBuf,
 }
 
-impl RecurParser {
+impl RaParser {
     pub fn new() -> Self {
         Self {
-            base_dir: resolve_recur_sessions_dir(),
+            base_dir: resolve_ra_sessions_dir(),
         }
     }
 
@@ -220,7 +220,7 @@ impl RecurParser {
 
     fn parse_summary(&self, path: &Path) -> Option<ConversationSummary> {
         let parsed = parse_session(path);
-        // A file the parser does not recognise as a RecurAgent session — no
+        // A file the parser does not recognise as a Ra session — no
         // header — is not a conversation. This is also what keeps an unrelated
         // `.jsonl` under the data root (an audit or telemetry log) off the list.
         if !parsed.has_header {
@@ -230,7 +230,7 @@ impl RecurParser {
 
         Some(ConversationSummary {
             id: parsed.session_id.unwrap_or_else(|| fallback_id(path)),
-            agent_type: AgentType::RecurAgent,
+            agent_type: AgentType::Ra,
             // The transcript records no working directory, so there is no folder
             // to show — the sessions list groups these under the agent instead.
             folder_path: None,
@@ -239,7 +239,7 @@ impl RecurParser {
             started_at,
             ended_at: parsed.last_ts,
             message_count: parsed.message_count,
-            // No model, no provider, no git branch in RecurAgent's transcript.
+            // No model, no provider, no git branch in Ra's transcript.
             model: None,
             git_branch: None,
             parent_id: parsed.parent_key,
@@ -263,7 +263,7 @@ impl RecurParser {
         backfill_turn_durations(&mut turns, &[]);
 
         let used_tokens = latest_turn_total_usage_tokens(&turns);
-        // RecurAgent persists neither a model nor a token count, so both sides of
+        // Ra persists neither a model nor a token count, so both sides of
         // the context meter are unknown and the meter is omitted rather than
         // guessed. Kept as a call (not a literal `None`) so the day the
         // transcript records a model it lights up with no surgery here.
@@ -273,7 +273,7 @@ impl RecurParser {
 
         let summary = ConversationSummary {
             id: conversation_id.to_string(),
-            agent_type: AgentType::RecurAgent,
+            agent_type: AgentType::Ra,
             folder_path: None,
             folder_name: None,
             title: resolve_title(parsed.title.clone(), parsed.first_user_text.clone()),
@@ -296,13 +296,13 @@ impl RecurParser {
     }
 }
 
-impl Default for RecurParser {
+impl Default for RaParser {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl AgentParser for RecurParser {
+impl AgentParser for RaParser {
     fn list_conversations(&self) -> Result<Vec<ConversationSummary>, ParseError> {
         let mut conversations = Vec::new();
         if !self.base_dir.exists() {
@@ -318,7 +318,7 @@ impl AgentParser for RecurParser {
                 continue;
             }
             if let Ok(Some(summary)) =
-                super::summary_cache::get_or_parse(AgentType::RecurAgent, path, || {
+                super::summary_cache::get_or_parse(AgentType::Ra, path, || {
                     Ok(self.parse_summary(path))
                 })
             {
@@ -355,7 +355,7 @@ impl AgentParser for RecurParser {
 }
 
 /// Whether a path is a candidate session file: a `.jsonl` that is a file.
-/// Whether it IS a RecurAgent session is decided by its header (see
+/// Whether it IS a Ra session is decided by its header (see
 /// [`parse_session`]), not by its directory, because the four layouts differ.
 fn is_session_file(path: &Path) -> bool {
     path.is_file() && path.extension().and_then(|e| e.to_str()) == Some("jsonl")
@@ -389,7 +389,7 @@ struct MessageRow {
     line_idx: usize,
 }
 
-/// Parse a RecurAgent session `.jsonl` into a chronologically-ordered,
+/// Parse a Ra session `.jsonl` into a chronologically-ordered,
 /// thread-grouped list of `UnifiedMessage`s plus session metadata.
 ///
 /// Three passes over the lines: read and classify (header / Message / control),
@@ -437,7 +437,7 @@ fn parse_session(path: &Path) -> SessionParse {
     }
 
     let Some(header) = header else {
-        // Not a RecurAgent session: an unrelated `.jsonl`, or a file whose header
+        // Not a Ra session: an unrelated `.jsonl`, or a file whose header
         // never got written. Drop the rows rather than inventing a conversation.
         return sp;
     };
@@ -535,7 +535,7 @@ fn order_rows_by_thread(rows: &[MessageRow]) -> Vec<usize> {
     order
 }
 
-/// Map one RecurAgent Message row onto a [`UnifiedMessage`], or `None` when it
+/// Map one Ra Message row onto a [`UnifiedMessage`], or `None` when it
 /// carries nothing renderable (an empty content string, an empty assistant
 /// reply with no calls and no reasoning).
 ///
@@ -596,7 +596,7 @@ fn message_row_to_unified(
         }
         if let Some(calls) = value.get("tool_calls").and_then(Value::as_array) {
             for call in calls {
-                // RecurAgent's per-call `metadata` blob is opaque, so it rides in
+                // Ra's per-call `metadata` blob is opaque, so it rides in
                 // `ToolUse.meta` namespaced under one key, mirroring how the
                 // delegation lifecycle stores its own object there.
                 let meta = call
@@ -604,7 +604,7 @@ fn message_row_to_unified(
                     .filter(|metadata| metadata.is_object())
                     .cloned()
                     .map(|metadata| {
-                        Value::Object([("recurAgent".to_string(), metadata)].into_iter().collect())
+                        Value::Object([("raAgent".to_string(), metadata)].into_iter().collect())
                     });
                 blocks.push(ContentBlock::ToolUse {
                     tool_use_id: string_field(call, "id"),
@@ -627,7 +627,7 @@ fn message_row_to_unified(
     }
 
     if is_role(value, "tool") {
-        // A tool result row. RecurAgent writes no error flag, so `is_error` is
+        // A tool result row. Ra writes no error flag, so `is_error` is
         // false — the content string is the result text as the agent saw it.
         let output = (!content.is_empty()).then(|| truncate_str(content, 4000));
         return Some(unified_message(
@@ -801,7 +801,7 @@ fn fallback_id(path: &Path) -> String {
         .unwrap_or_default()
         .to_string_lossy()
         .into_owned();
-    decode_recur_session_stem(&stem)
+    decode_ra_session_stem(&stem)
 }
 
 /// Prefer the header's own title, falling back to the first user prompt.
@@ -820,7 +820,7 @@ fn unified_message(
         role,
         content,
         timestamp: ts,
-        // RecurAgent's transcript records no usage and no model.
+        // Ra's transcript records no usage and no model.
         usage: None,
         duration_ms: None,
         model: None,
@@ -961,7 +961,7 @@ mod tests {
             &format!("sessions/{session_key}.jsonl"),
             records,
         );
-        RecurParser::with_base_dir(dir.path().to_path_buf())
+        RaParser::with_base_dir(dir.path().to_path_buf())
             .get_conversation(session_key)
             .expect("detail")
     }
@@ -1010,12 +1010,12 @@ mod tests {
             ],
         );
 
-        let parser = RecurParser::with_base_dir(dir.path().to_path_buf());
+        let parser = RaParser::with_base_dir(dir.path().to_path_buf());
 
         let summaries = parser.list_conversations().expect("list");
         assert_eq!(summaries.len(), 1, "the session is listed");
         let summary = &summaries[0];
-        assert_eq!(summary.agent_type, AgentType::RecurAgent);
+        assert_eq!(summary.agent_type, AgentType::Ra);
         assert_eq!(
             summary.id, session_key,
             "id comes from the header, not the filename"
@@ -1040,7 +1040,7 @@ mod tests {
         assert_eq!(summary.folder_path, None, "no cwd in the transcript");
 
         let detail = parser.get_conversation(session_key).expect("detail");
-        assert_eq!(detail.summary.agent_type, AgentType::RecurAgent);
+        assert_eq!(detail.summary.agent_type, AgentType::Ra);
         let roles: Vec<String> = detail
             .turns
             .iter()
@@ -1057,7 +1057,7 @@ mod tests {
         assert_eq!(detail.transcript_watermark, None);
         assert!(
             detail.turns.iter().all(|t| t.usage.is_none()),
-            "RecurAgent persists no token usage"
+            "Ra persists no token usage"
         );
     }
 
@@ -1468,7 +1468,7 @@ mod tests {
         // Nor a non-jsonl file.
         fs::write(base.join("config.json"), "{}").expect("config");
 
-        let summaries = RecurParser::with_base_dir(base.to_path_buf())
+        let summaries = RaParser::with_base_dir(base.to_path_buf())
             .list_conversations()
             .expect("list");
         let mut ids: Vec<&str> = summaries.iter().map(|s| s.id.as_str()).collect();
@@ -1482,16 +1482,16 @@ mod tests {
 
     #[test]
     fn percent_decode_reverses_the_filename_encoder() {
-        assert_eq!(decode_recur_session_stem("acp%3Aconv-1"), "acp:conv-1");
-        assert_eq!(decode_recur_session_stem("default"), "default");
-        assert_eq!(decode_recur_session_stem("a%20b"), "a b");
+        assert_eq!(decode_ra_session_stem("acp%3Aconv-1"), "acp:conv-1");
+        assert_eq!(decode_ra_session_stem("default"), "default");
+        assert_eq!(decode_ra_session_stem("a%20b"), "a b");
         // An escaped `%` itself (`%25`) decodes to one `%`, not to an escape.
-        assert_eq!(decode_recur_session_stem("100%25"), "100%");
+        assert_eq!(decode_ra_session_stem("100%25"), "100%");
         // A stray invalid escape is kept verbatim rather than dropped.
-        assert_eq!(decode_recur_session_stem("100%zz"), "100%zz");
+        assert_eq!(decode_ra_session_stem("100%zz"), "100%zz");
         // The encoder escapes every byte outside `[A-Za-z0-9_-]`, so a stem that
         // needs no escaping (a topic like `default`) decodes to itself.
-        assert_eq!(decode_recur_session_stem("a-b_c"), "a-b_c");
+        assert_eq!(decode_ra_session_stem("a-b_c"), "a-b_c");
     }
 
     /// A truncated key carries a `_{16 hex}` digest past the 200-byte limit; the
@@ -1503,13 +1503,13 @@ mod tests {
         let long = format!("{}_{:016X}", "k".repeat(200), 0x1234_ABCD_u64);
         assert_eq!(long.len(), 217);
         assert_eq!(
-            decode_recur_session_stem(&long),
+            decode_ra_session_stem(&long),
             "k".repeat(200),
             "a truncated key decodes back to its stored prefix"
         );
 
         let short = "session_DEADBEEFDEADBEEF";
-        assert_eq!(decode_recur_session_stem(short), short);
+        assert_eq!(decode_ra_session_stem(short), short);
     }
 
     #[test]
@@ -1527,7 +1527,7 @@ mod tests {
                 user("hi", "2026-06-27T10:00:02.000Z"),
             ],
         );
-        let parser = RecurParser::with_base_dir(dir.path().to_path_buf());
+        let parser = RaParser::with_base_dir(dir.path().to_path_buf());
         let summaries = parser.list_conversations().expect("list");
         assert_eq!(summaries[0].id, "the-real-key");
         assert!(parser.get_conversation("the-real-key").is_ok());
@@ -1577,7 +1577,7 @@ mod tests {
         )
         .unwrap();
 
-        let parser = RecurParser::with_base_dir(dir.path().to_path_buf());
+        let parser = RaParser::with_base_dir(dir.path().to_path_buf());
         let summaries = parser.list_conversations().expect("list survives");
         assert_eq!(summaries.len(), 1);
         assert_eq!(summaries[0].id, session_key);
@@ -1651,7 +1651,7 @@ mod tests {
     #[test]
     fn unknown_conversation_is_not_found() {
         let dir = tempdir().expect("tempdir");
-        let parser = RecurParser::with_base_dir(dir.path().to_path_buf());
+        let parser = RaParser::with_base_dir(dir.path().to_path_buf());
         assert!(matches!(
             parser.get_conversation("nope"),
             Err(ParseError::ConversationNotFound(_))
@@ -1660,7 +1660,7 @@ mod tests {
 
     #[test]
     fn nonexistent_base_dir_lists_nothing() {
-        let parser = RecurParser::with_base_dir(PathBuf::from("/nonexistent/ra-data"));
+        let parser = RaParser::with_base_dir(PathBuf::from("/nonexistent/ra-data"));
         assert!(parser
             .list_conversations()
             .expect("list is infallible")
@@ -1672,26 +1672,26 @@ mod tests {
         let dir = tempdir().expect("tempdir");
         fs::create_dir_all(dir.path().join("sessions")).expect("dir");
         fs::write(dir.path().join("sessions/empty.jsonl"), "").expect("write");
-        let parser = RecurParser::with_base_dir(dir.path().to_path_buf());
+        let parser = RaParser::with_base_dir(dir.path().to_path_buf());
         assert!(parser.list_conversations().expect("list").is_empty());
     }
 
     #[test]
     fn data_dir_prefers_ra_home_then_tilde_dot_ra() {
         assert_eq!(
-            resolve_recur_sessions_dir_from(
+            resolve_ra_sessions_dir_from(
                 Some(OsString::from("/srv/ra-data")),
                 Some(PathBuf::from("/home/demo"))
             ),
             PathBuf::from("/srv/ra-data")
         );
         assert_eq!(
-            resolve_recur_sessions_dir_from(None, Some(PathBuf::from("/home/demo"))),
+            resolve_ra_sessions_dir_from(None, Some(PathBuf::from("/home/demo"))),
             PathBuf::from("/home/demo/.ra")
         );
         // An empty env value is not a configured root.
         assert_eq!(
-            resolve_recur_sessions_dir_from(
+            resolve_ra_sessions_dir_from(
                 Some(OsString::new()),
                 Some(PathBuf::from("/home/demo"))
             ),
@@ -1699,7 +1699,7 @@ mod tests {
         );
         // No home at all still yields a usable relative root, never the fs root.
         assert_eq!(
-            resolve_recur_sessions_dir_from(None, None),
+            resolve_ra_sessions_dir_from(None, None),
             PathBuf::from(".ra")
         );
     }

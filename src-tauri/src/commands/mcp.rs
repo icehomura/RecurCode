@@ -3262,13 +3262,13 @@ pub fn read_servers_for_agent_type(
         // third-party extension). Scanning its extension config must not
         // change the servers forwarded to a pi ACP session.
         AgentType::Pi => Ok(BTreeMap::new()),
-        // RecurAgent has no agent-level MCP config file, and its ACP server
+        // Ra has no agent-level MCP config file, and its ACP server
         // consumes no `mcpServers` either — the ACP entry point builds no MCP
-        // client at all (see `AcpAgentMeta::RecurAgent`'s `supports_mcp`). There
+        // client at all (see `AcpAgentMeta::Ra`'s `supports_mcp`). There
         // is nothing to scan and nothing to forward: `.ra/mcp.json` is read by
-        // RecurAgent only on its own non-ACP launch paths, which RecurCode never
+        // Ra only on its own non-ACP launch paths, which RecurCode never
         // drives.
-        AgentType::RecurAgent => Ok(BTreeMap::new()),
+        AgentType::Ra => Ok(BTreeMap::new()),
         // deepseek-acp has no native MCP config file: it takes servers only
         // as `session/new`'s `mcpServers`. `$DSH_HOME/mcp.json` is RecurCode's own
         // record of what to send, and the ACP wire is the delivery path — so

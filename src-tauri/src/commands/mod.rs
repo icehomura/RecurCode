@@ -52,7 +52,7 @@ pub mod notification;
 pub mod pet;
 pub mod project_boot;
 pub mod question;
-pub mod recur_config;
+pub mod ra_config;
 pub mod agent_roles;
 pub mod project_structure;
 pub mod quick_messages;

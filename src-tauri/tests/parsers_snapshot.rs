@@ -16,7 +16,7 @@ use std::path::Path;
 use rc_lib::parsers::{
     claude::ClaudeParser, cline::ClineParser, codex::CodexParser, gemini::GeminiParser,
     hermes::HermesParser, kimi_code::KimiCodeParser, openclaw::OpenClawParser,
-    opencode::OpenCodeParser, recur::RecurParser, AgentParser,
+    opencode::OpenCodeParser, ra::RaParser, AgentParser,
 };
 use insta::assert_json_snapshot;
 use serde_json::json;
@@ -1769,14 +1769,14 @@ fn kimi_code_minimal_session_snapshot() {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// RecurAgent (`ra` CLI)
+// Ra (`ra` CLI)
 // ────────────────────────────────────────────────────────────────────────────
 
-/// Percent-encode a RecurAgent session key the way the CLI names its files:
+/// Percent-encode a Ra session key the way the CLI names its files:
 /// keep ASCII alphanumerics, `-` and `_`; percent-encode every other byte with
 /// uppercase hex (so `:` becomes `%3A`). Matches the scheme the on-disk
 /// fixtures under `tests/fixtures/recur/` are written with.
-fn recur_encode_key(key: &str) -> String {
+fn ra_encode_key(key: &str) -> String {
     let mut out = String::new();
     for byte in key.as_bytes() {
         let ch = *byte as char;
@@ -1789,17 +1789,17 @@ fn recur_encode_key(key: &str) -> String {
     out
 }
 
-/// One canonical per-user RecurAgent session (`<base>/users/<encoded-base-
+/// One canonical per-user Ra session (`<base>/users/<encoded-base-
 /// key>/sessions/<encoded-topic>.jsonl`): line 1 is a `SessionMeta` header, the
 /// rest are `Message` rows (snake_case, role a plain lowercase string, no
 /// discriminating tag). A user row's `thread_id` equals its `client_message_id`;
 /// the assistant row shares that `thread_id`. The conversation id is the header
 /// `session_key`.
 ///
-/// `RecurParser::with_base_dir` walks `<base>/**/*.jsonl`, so this exercises the
+/// `RaParser::with_base_dir` walks `<base>/**/*.jsonl`, so this exercises the
 /// same code path the committed fixtures under `tests/fixtures/recur/` use.
 #[test]
-fn recur_minimal_session_snapshot() {
+fn ra_minimal_session_snapshot() {
     let temp = tempfile::tempdir().expect("create tempdir");
     let base = temp.path().to_path_buf();
 
@@ -1808,7 +1808,7 @@ fn recur_minimal_session_snapshot() {
     let thread_id = "c8f1a2b3-0000-4000-8000-0000000000a9";
     let session_dir = base
         .join("users")
-        .join(recur_encode_key(session_key))
+        .join(ra_encode_key(session_key))
         .join("sessions");
 
     let jsonl = format!(
@@ -1848,19 +1848,19 @@ fn recur_minimal_session_snapshot() {
         }),
     );
     write(
-        &session_dir.join(format!("{}.jsonl", recur_encode_key(topic))),
+        &session_dir.join(format!("{}.jsonl", ra_encode_key(topic))),
         &jsonl,
     );
 
-    let parser = RecurParser::with_base_dir(base);
+    let parser = RaParser::with_base_dir(base);
     let summaries = parser.list_conversations().expect("list recur");
     let detail = parser.get_conversation(session_key).expect("detail recur");
 
-    assert_json_snapshot!("recur_list", summaries, {
+    assert_json_snapshot!("ra_list", summaries, {
         ".**.started_at" => "[ts]",
         ".**.ended_at" => "[ts]",
     });
-    assert_json_snapshot!("recur_detail", detail, {
+    assert_json_snapshot!("ra_detail", detail, {
         ".**.started_at" => "[ts]",
         ".**.ended_at" => "[ts]",
         ".**.timestamp" => "[ts]",

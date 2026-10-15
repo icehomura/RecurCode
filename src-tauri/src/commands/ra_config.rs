@@ -1,14 +1,14 @@
-//! RecurAgent native config read/write.
+//! Ra native config read/write.
 //!
-//! RecurAgent (the `ra` CLI) is self-managed over ACP: it owns its model,
+//! Ra (the `ra` CLI) is self-managed over ACP: it owns its model,
 //! providers, MCP servers and skills in its own `config.json` + `profiles/`.
 //! RecurCode's settings panel edits those native files so both the panel and
 //! the running `ra acp` process read the SAME source of truth.
 //!
-//! RecurCode launches the agent with `--data-dir <recur_root>`, which pins
-//! RecurAgent's `config_home` to that directory, so the files live at
-//! `<recur_root>/config.json` and `<recur_root>/profiles/<id>.json` — exactly
-//! what this module reads/writes. `<recur_root>` defaults to `~/.ra`.
+//! RecurCode launches the agent with `--data-dir <ra_root>`, which pins
+//! Ra's `config_home` to that directory, so the files live at
+//! `<ra_root>/config.json` and `<ra_root>/profiles/<id>.json` — exactly
+//! what this module reads/writes. `<ra_root>` defaults to `~/.ra`.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -17,9 +17,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::acp::error::AcpError;
 
-/// RecurAgent's data/config root. Kept in sync with the `--data-dir` the launch
+/// Ra's data/config root. Kept in sync with the `--data-dir` the launch
 /// path passes to `ra acp` and with the sessions root the `recur` parser reads.
-pub fn recur_config_root() -> PathBuf {
+pub fn ra_data_root() -> PathBuf {
     // RA_HOME overrides, else the brand state dir `~/.ra` (matches
     // `ra_core::brand::state_home`).
     if let Some(v) = std::env::var_os("RA_HOME") {
@@ -39,11 +39,11 @@ fn config_path(root: &Path) -> PathBuf {
 }
 
 /// Flat model-config keys a user edits from the panel. All optional so an
-/// update can patch a subset. Serde names match RecurAgent's `Config` exactly
+/// update can patch a subset. Serde names match Ra's `Config` exactly
 /// (verbatim snake_case, no rename).
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
-pub struct RecurModelConfig {
+pub struct RaModelConfig {
     pub provider: Option<String>,
     pub model: Option<String>,
     pub base_url: Option<String>,
@@ -55,14 +55,14 @@ pub struct RecurModelConfig {
 }
 
 /// One MCP server entry, kept as an opaque JSON object so the panel round-trips
-/// RecurAgent's `McpServerConfig` shape (command/args/env/url/headers/oauth/...)
+/// Ra's `McpServerConfig` shape (command/args/env/url/headers/oauth/...)
 /// without RecurCode needing to model every field.
-pub type RecurMcpServer = serde_json::Map<String, serde_json::Value>;
+pub type RaMcpServer = serde_json::Map<String, serde_json::Value>;
 
 /// A listed profile (id + display name).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RecurProfileSummary {
+pub struct RaProfileSummary {
     pub id: String,
     pub name: String,
 }
@@ -70,15 +70,15 @@ pub struct RecurProfileSummary {
 /// Everything the settings panel needs to render current state.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RecurConfigProjection {
+pub struct RaConfigProjection {
     /// Absolute path of the `config.json` this projection reads, so the UI can
     /// show the operator where their edits land.
     pub config_path: String,
     pub exists: bool,
-    pub model: RecurModelConfig,
+    pub model: RaModelConfig,
     /// Raw `mcp_servers` array, each entry an opaque object.
-    pub mcp_servers: Vec<RecurMcpServer>,
-    pub profiles: Vec<RecurProfileSummary>,
+    pub mcp_servers: Vec<RaMcpServer>,
+    pub profiles: Vec<RaProfileSummary>,
     /// Active profile id: `RA_PROFILE` if set, else the `default-profile`
     /// pointer, else empty (the built-in `coding` surface).
     pub active_profile: String,
@@ -87,11 +87,11 @@ pub struct RecurConfigProjection {
 /// A patch request. `None` fields leave the on-disk value untouched.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
-pub struct RecurConfigUpdate {
+pub struct RaConfigUpdate {
     #[serde(flatten)]
-    pub model: RecurModelConfig,
+    pub model: RaModelConfig,
     /// `Some(...)` replaces the whole array; `None` leaves it untouched.
-    pub mcp_servers: Option<Vec<RecurMcpServer>>,
+    pub mcp_servers: Option<Vec<RaMcpServer>>,
     /// `Some(id)` writes the `default-profile` pointer for the next launch.
     pub active_profile: Option<String>,
 }
@@ -106,7 +106,7 @@ fn read_json_object_or_empty(path: &Path) -> serde_json::Map<String, serde_json:
     }
 }
 
-/// Atomically write a JSON object (tmp + rename), matching RecurAgent's own
+/// Atomically write a JSON object (tmp + rename), matching Ra's own
 /// `Config::write_mutation` (which also preserves unknown keys by reading raw).
 fn write_json_object_pretty(path: &Path, map: &serde_json::Map<String, serde_json::Value>) -> Result<(), AcpError> {
     if let Some(parent) = path.parent() {
@@ -134,7 +134,7 @@ fn opt_u32(map: &serde_json::Map<String, serde_json::Value>, key: &str) -> Optio
     map.get(key).and_then(|v| v.as_u64()).map(|n| n as u32)
 }
 
-fn list_profiles(profiles_dir: &Path) -> Vec<RecurProfileSummary> {
+fn list_profiles(profiles_dir: &Path) -> Vec<RaProfileSummary> {
     let mut out = Vec::new();
     if let Ok(entries) = fs::read_dir(profiles_dir) {
         for entry in entries.flatten() {
@@ -149,24 +149,24 @@ fn list_profiles(profiles_dir: &Path) -> Vec<RecurProfileSummary> {
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| id.clone());
-            out.push(RecurProfileSummary { id, name });
+            out.push(RaProfileSummary { id, name });
         }
     }
     out.sort_by(|a, b| a.id.cmp(&b.id));
     out
 }
 
-/// Read RecurAgent's native config into a projection. Never errors on absent or
+/// Read Ra's native config into a projection. Never errors on absent or
 /// malformed files (they yield an empty, "not configured yet" state).
-pub fn load_recur_config() -> RecurConfigProjection {
-    load_recur_config_at(&recur_config_root())
+pub fn load_ra_config() -> RaConfigProjection {
+    load_ra_config_at(&ra_data_root())
 }
 
-pub(crate) fn load_recur_config_at(root: &Path) -> RecurConfigProjection {
+pub(crate) fn load_ra_config_at(root: &Path) -> RaConfigProjection {
     let path = config_path(root);
     let exists = path.is_file();
     let map = read_json_object_or_empty(&path);
-    let model = RecurModelConfig {
+    let model = RaModelConfig {
         provider: opt_string(&map, "provider"),
         model: opt_string(&map, "model"),
         base_url: opt_string(&map, "base_url"),
@@ -196,7 +196,7 @@ pub(crate) fn load_recur_config_at(root: &Path) -> RecurConfigProjection {
                 .filter(|s| !s.is_empty())
         })
         .unwrap_or_default();
-    RecurConfigProjection {
+    RaConfigProjection {
         config_path: path.display().to_string(),
         exists,
         model,
@@ -206,18 +206,18 @@ pub(crate) fn load_recur_config_at(root: &Path) -> RecurConfigProjection {
     }
 }
 
-/// Apply a patch to RecurAgent's native config, preserving every unknown key
-/// RecurAgent may store that this module does not model.
-pub fn update_recur_config(update: RecurConfigUpdate) -> Result<(), AcpError> {
-    update_recur_config_at(&recur_config_root(), update)
+/// Apply a patch to Ra's native config, preserving every unknown key
+/// Ra may store that this module does not model.
+pub fn update_ra_config(update: RaConfigUpdate) -> Result<(), AcpError> {
+    update_ra_config_at(&ra_data_root(), update)
 }
 
-pub(crate) fn update_recur_config_at(root: &Path, update: RecurConfigUpdate) -> Result<(), AcpError> {
+pub(crate) fn update_ra_config_at(root: &Path, update: RaConfigUpdate) -> Result<(), AcpError> {
     let path = config_path(root);
     let mut map = read_json_object_or_empty(&path);
 
     // Reject blank-but-present strings so a stray clear does not leave an empty
-    // key RecurAgent reads as a (broken) provider/model override.
+    // key Ra reads as a (broken) provider/model override.
     let put_str = |map: &mut serde_json::Map<String, serde_json::Value>, key: &str, v: &Option<String>| -> Result<(), AcpError> {
         match v.as_deref().map(str::trim) {
             Some("") if matches!(key, "provider" | "model") => {
@@ -277,17 +277,17 @@ mod tests {
         )
         .unwrap();
 
-        let update = RecurConfigUpdate {
-            model: RecurModelConfig {
+        let update = RaConfigUpdate {
+            model: RaModelConfig {
                 model: Some("gpt-4o".into()),
                 ..Default::default()
             },
             ..Default::default()
         };
-        update_recur_config_at(&dir, update).unwrap();
+        update_ra_config_at(&dir, update).unwrap();
 
         // Model changed, unrelated keys survived.
-        let after = load_recur_config_at(&dir);
+        let after = load_ra_config_at(&dir);
         assert_eq!(after.model.model.as_deref(), Some("gpt-4o"));
         assert_eq!(after.model.provider.as_deref(), Some("anthropic"));
         let raw = read_json_object_or_empty(&config_path(&dir));
@@ -300,23 +300,23 @@ mod tests {
     fn empty_provider_or_model_is_rejected() {
         let dir = std::env::temp_dir().join(format!("recur-cfg-err-{}", std::process::id()));
         let _ = fs::create_dir_all(&dir);
-        let update = RecurConfigUpdate {
-            model: RecurModelConfig {
+        let update = RaConfigUpdate {
+            model: RaModelConfig {
                 provider: Some("  ".into()),
                 ..Default::default()
             },
             ..Default::default()
         };
-        assert!(update_recur_config_at(&dir, update).is_err());
+        assert!(update_ra_config_at(&dir, update).is_err());
         let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn update_deserializes_from_camel_case_wire() {
         // The frontend sends camelCase; flatten must inline the model fields and
-        // rename mcpServers/activeProfile, matching `RecurConfigUpdate`'s wire.
+        // rename mcpServers/activeProfile, matching `RaConfigUpdate`'s wire.
         let json = r#"{"provider":"anthropic","baseUrl":"https://x","maxIterations":0,"mcpServers":[{"command":"npx","args":[]}],"activeProfile":"dev"}"#;
-        let upd: RecurConfigUpdate = serde_json::from_str(json).unwrap();
+        let upd: RaConfigUpdate = serde_json::from_str(json).unwrap();
         assert_eq!(upd.model.provider.as_deref(), Some("anthropic"));
         assert_eq!(upd.model.base_url.as_deref(), Some("https://x"));
         assert_eq!(upd.model.max_iterations, Some(0));
@@ -326,15 +326,15 @@ mod tests {
 
     #[test]
     fn projection_serializes_to_camel_case() {
-        let proj = RecurConfigProjection {
+        let proj = RaConfigProjection {
             config_path: "/x/config.json".into(),
             exists: true,
-            model: RecurModelConfig {
+            model: RaModelConfig {
                 base_url: Some("https://y".into()),
                 ..Default::default()
             },
             mcp_servers: vec![],
-            profiles: vec![RecurProfileSummary {
+            profiles: vec![RaProfileSummary {
                 id: "dev".into(),
                 name: "Dev".into(),
             }],

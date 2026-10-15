@@ -1,10 +1,10 @@
-# RecurAgent (`ra` CLI) session fixtures
+# Ra (`ra` CLI) session fixtures
 
-Raw on-disk fixtures for `parsers::recur::RecurParser`, mirroring RecurAgent's
+Raw on-disk fixtures for `parsers::ra::RaParser`, mirroring Ra's
 real storage layout. Read them with a parser pointed at this directory:
 
 ```rust
-let parser = RecurParser::with_base_dir(
+let parser = RaParser::with_base_dir(
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/recur"),
 );
 ```
@@ -16,7 +16,7 @@ and legacy-flat (`sessions/…`) trees below are picked up from the one call.
 
 `RA_HOME`, else `~/.ra` (Windows: `C:\Users\<you>\.ra`). This directory stands
 in for that root. Note what the root is **not**: there is no `agent/`
-subdirectory, and no pi-style `settings.json` / `auth.json` pair. RecurAgent
+subdirectory, and no pi-style `settings.json` / `auth.json` pair. Ra
 keeps its config in `<root>/config.json` plus `<root>/profiles/<id>.json`.
 
 ## Layouts

@@ -954,17 +954,17 @@ pub async fn acp_load_pi_config(
     Ok(Json(config))
 }
 
-pub async fn acp_load_recur_config(
+pub async fn acp_load_ra_config(
     Extension(_state): Extension<Arc<AppState>>,
-) -> Result<Json<crate::commands::recur_config::RecurConfigProjection>, AppCommandError> {
-    Ok(Json(crate::commands::recur_config::load_recur_config()))
+) -> Result<Json<crate::commands::ra_config::RaConfigProjection>, AppCommandError> {
+    Ok(Json(crate::commands::ra_config::load_ra_config()))
 }
 
-pub async fn acp_update_recur_config(
+pub async fn acp_update_ra_config(
     Extension(_state): Extension<Arc<AppState>>,
-    Json(params): Json<AcpUpdateRecurConfigParams>,
+    Json(params): Json<AcpUpdateRaConfigParams>,
 ) -> Result<Json<()>, AppCommandError> {
-    crate::commands::recur_config::update_recur_config(params.update)
+    crate::commands::ra_config::update_ra_config(params.update)
         .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
     Ok(Json(()))
 }
@@ -972,8 +972,8 @@ pub async fn acp_update_recur_config(
 /// Mirrors the desktop command's single `update` argument so both transports
 /// accept the same `{ update: {...} }` body.
 #[derive(serde::Deserialize)]
-pub struct AcpUpdateRecurConfigParams {
-    pub update: crate::commands::recur_config::RecurConfigUpdate,
+pub struct AcpUpdateRaConfigParams {
+    pub update: crate::commands::ra_config::RaConfigUpdate,
 }
 
 pub async fn acp_list_pi_model_capabilities(

@@ -1632,7 +1632,7 @@
       "configLoadFailed": "Pi 설정을 읽을 수 없습니다: {message}",
       "runtimeTooOld": "이 Pi는 너무 오래되었습니다. RecurCode에서 세션을 열려면 Pi {min} 이상이 필요합니다. 먼저 Pi를 업데이트하세요."
     },
-    "recur_agent": {
+    "ra": {
       "configManagement": "Recur Agent 설정",
       "configDescription": "Recur Agent는 모델 제공자의 API 키로 인증합니다. 키는 ~/.ra/agent/auth.json에, 모델 선택은 settings.json에 저장됩니다.",
       "providerLabel": "제공자",
@@ -1703,7 +1703,7 @@
       "modelSectionTitle": "모델 및 제공자",
       "saveModel": "모델 구성 저장",
       "apiKeyEnvLabel": "API 키 환경 변수 이름",
-      "apiKeyEnvHint": "RecurAgent가 키를 읽는 환경 변수 이름(예: ANTHROPIC_API_KEY).",
+      "apiKeyEnvHint": "Ra가 키를 읽는 환경 변수 이름(예: ANTHROPIC_API_KEY).",
       "apiTypeLabel": "API 프로토콜",
       "contextWindowLabel": "컨텍스트 창(토큰)",
       "maxIterationsLabel": "턴당 최대 반복",
@@ -1712,15 +1712,15 @@
       "profileNone": "기본(coding)",
       "profileHint": "프로필을 선택하면 새 세션용 기본 프로필 포인터가 저장됩니다.",
       "mcpServersTitle": "MCP 서버",
-      "mcpServersHint": "RecurAgent 자체의 MCP 서버(JSON으로 편집). ACP 계층은 세션별로 전달하지 않습니다.",
+      "mcpServersHint": "Ra 자체의 MCP 서버(JSON으로 편집). ACP 계층은 세션별로 전달하지 않습니다.",
       "mcpAdd": "서버 추가",
       "mcpRemove": "제거",
       "mcpInvalidJson": "잘못된 JSON — 저장되지 않음",
       "configPathLabel": "구성 파일",
       "configMissing": "구성 파일이 아직 없습니다 — 저장하면 생성됩니다.",
       "saved": "저장됨",
-      "loadFailed": "RecurAgent 구성을 불러오지 못했습니다",
-      "updateFailed": "RecurAgent 구성을 저장하지 못했습니다"
+      "loadFailed": "Ra 구성을 불러오지 못했습니다",
+      "updateFailed": "Ra 구성을 저장하지 못했습니다"
     },
     "addCustomAgent": "사용자 지정 에이전트 추가",
     "addCustomAgentHint": "ACP를 지원하는 모든 에이전트를 등록할 수 있습니다. 공개 ACP 레지스트리에서 선택하거나 레지스트리 정보를 붙여넣으세요.",

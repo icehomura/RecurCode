@@ -31,11 +31,11 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   acpDetectAgentLocalVersion,
   acpDownloadAgentBinary,
-  acpLoadRecurConfig,
+  acpLoadRaConfig,
   acpUninstallAgent,
-  acpUpdateRecurConfig,
-  type RecurConfigProjection,
-  type RecurConfigUpdate,
+  acpUpdateRaConfig,
+  type RaConfigProjection,
+  type RaConfigUpdate,
 } from "@/lib/api"
 import { useAgentInstallStream } from "@/hooks/use-agent-install-stream"
 import type { AcpAgentInfo } from "@/lib/types"
@@ -90,18 +90,18 @@ function mcpLabel(entry: Record<string, unknown>): string {
 }
 
 /**
- * Settings panel for the RecurAgent (`ra`) proxy. Bound to RecurAgent's native
- * config via `acpLoadRecurConfig` / `acpUpdateRecurConfig`, split into five
+ * Settings panel for the Ra (`ra`) proxy. Bound to Ra's native
+ * config via `acpLoadRaConfig` / `acpUpdateRaConfig`, split into five
  * concerns:
  *  - Model & provider — flat model-config keys written to config.json.
  *  - Profile — selects the active serve-profile pointer.
  *  - MCP servers — raw JSON entries round-tripped verbatim.
  *  - Config location — read-only path + exists indicator.
- *  - Environment — the per-agent `env_json` (API keys / `RA_*` vars) RecurAgent
+ *  - Environment — the per-agent `env_json` (API keys / `RA_*` vars) Ra
  *    reads from the launched process env.
  *  - Install — the `ra` binary, managed through the generic agent-binary API.
  */
-export function RecurConfigPanel({
+export function RaConfigPanel({
   agent,
   saving,
   onSaveEnv,
@@ -123,7 +123,7 @@ export function RecurConfigPanel({
   }, [])
 
   // --- config projection (source of truth for the baseline diff) ---
-  const [projection, setProjection] = useState<RecurConfigProjection | null>(
+  const [projection, setProjection] = useState<RaConfigProjection | null>(
     null
   )
   const [loading, setLoading] = useState(true)
@@ -166,7 +166,7 @@ export function RecurConfigPanel({
   const [binaryOp, setBinaryOp] = useState<"install" | "uninstall" | null>(null)
 
   // Populate the form from a freshly loaded projection.
-  const applyProjection = useCallback((proj: RecurConfigProjection) => {
+  const applyProjection = useCallback((proj: RaConfigProjection) => {
     setProjection(proj)
     setProvider(toStr(proj.model.provider))
     setModel(toStr(proj.model.model))
@@ -186,13 +186,13 @@ export function RecurConfigPanel({
   }, [])
 
   useEffect(() => {
-    acpLoadRecurConfig()
+    acpLoadRaConfig()
       .then((proj) => {
         if (mountedRef.current) applyProjection(proj)
       })
       .catch((error) => {
-        console.error("[RecurAgent] load config failed", error)
-        if (mountedRef.current) toast.error(t("recur_agent.loadFailed"))
+        console.error("[Ra] load config failed", error)
+        if (mountedRef.current) toast.error(t("ra.loadFailed"))
       })
       .finally(() => {
         if (mountedRef.current) setLoading(false)
@@ -208,7 +208,7 @@ export function RecurConfigPanel({
       setBinaryVersion(version)
       setBinaryKnown(true)
     } catch (error) {
-      console.error("[RecurAgent] detect binary failed", error)
+      console.error("[Ra] detect binary failed", error)
       if (mountedRef.current) {
         setBinaryVersion(null)
         setBinaryKnown(true)
@@ -235,7 +235,7 @@ export function RecurConfigPanel({
   const handleSaveModel = useCallback(async () => {
     if (!projection) return
     const base = projection.model
-    const update: RecurConfigUpdate = {}
+    const update: RaConfigUpdate = {}
 
     // Provider/model/endpoint/protocol/env-name: only send changed, trimmed
     // values; an empty field clears it (null).
@@ -273,12 +273,12 @@ export function RecurConfigPanel({
 
     setSavingModel(true)
     try {
-      await acpUpdateRecurConfig(update)
+      await acpUpdateRaConfig(update)
       await onSaved()
-      toast.success(t("recur_agent.saved"))
+      toast.success(t("ra.saved"))
     } catch (error) {
-      console.error("[RecurAgent] save config failed", error)
-      toast.error(t("recur_agent.updateFailed"))
+      console.error("[Ra] save config failed", error)
+      toast.error(t("ra.updateFailed"))
     } finally {
       if (mountedRef.current) setSavingModel(false)
     }
@@ -302,13 +302,13 @@ export function RecurConfigPanel({
       if (!projection || value === activeProfile) return
       setSavingProfile(true)
       try {
-        await acpUpdateRecurConfig({ activeProfile: value })
+        await acpUpdateRaConfig({ activeProfile: value })
         setActiveProfile(value)
         await onSaved()
-        toast.success(t("recur_agent.saved"))
+        toast.success(t("ra.saved"))
       } catch (error) {
-        console.error("[RecurAgent] save profile failed", error)
-        toast.error(t("recur_agent.updateFailed"))
+        console.error("[Ra] save profile failed", error)
+        toast.error(t("ra.updateFailed"))
       } finally {
         if (mountedRef.current) setSavingProfile(false)
       }
@@ -344,7 +344,7 @@ export function RecurConfigPanel({
       try {
         parsed = JSON.parse(draft.text)
       } catch {
-        toast.error(t("recur_agent.mcpInvalidJson"))
+        toast.error(t("ra.mcpInvalidJson"))
         return
       }
       if (
@@ -352,19 +352,19 @@ export function RecurConfigPanel({
         parsed === null ||
         Array.isArray(parsed)
       ) {
-        toast.error(t("recur_agent.mcpInvalidJson"))
+        toast.error(t("ra.mcpInvalidJson"))
         return
       }
       entries.push(parsed as Record<string, unknown>)
     }
     setSavingMcp(true)
     try {
-      await acpUpdateRecurConfig({ mcpServers: entries })
+      await acpUpdateRaConfig({ mcpServers: entries })
       await onSaved()
-      toast.success(t("recur_agent.saved"))
+      toast.success(t("ra.saved"))
     } catch (error) {
-      console.error("[RecurAgent] save mcp servers failed", error)
-      toast.error(t("recur_agent.updateFailed"))
+      console.error("[Ra] save mcp servers failed", error)
+      toast.error(t("ra.updateFailed"))
     } finally {
       if (mountedRef.current) setSavingMcp(false)
     }
@@ -376,10 +376,10 @@ export function RecurConfigPanel({
     try {
       await onSaveEnv(parseEnvText(envText), agent.enabled)
       await onSaved()
-      toast.success(t("recur_agent.saved"))
+      toast.success(t("ra.saved"))
     } catch (error) {
-      console.error("[RecurAgent] save env failed", error)
-      toast.error(t("recur_agent.updateFailed"))
+      console.error("[Ra] save env failed", error)
+      toast.error(t("ra.updateFailed"))
     } finally {
       if (mountedRef.current) setSavingEnv(false)
     }
@@ -394,7 +394,7 @@ export function RecurConfigPanel({
       await acpDownloadAgentBinary(agent.agent_type, taskId)
       await detectBinary()
     } catch (error) {
-      console.error("[RecurAgent] install binary failed", error)
+      console.error("[Ra] install binary failed", error)
     } finally {
       if (mountedRef.current) setBinaryOp(null)
     }
@@ -408,7 +408,7 @@ export function RecurConfigPanel({
       await acpUninstallAgent(agent.agent_type, taskId)
       await detectBinary()
     } catch (error) {
-      console.error("[RecurAgent] uninstall binary failed", error)
+      console.error("[Ra] uninstall binary failed", error)
     } finally {
       if (mountedRef.current) setBinaryOp(null)
     }
@@ -424,17 +424,17 @@ export function RecurConfigPanel({
         <div>
           <label className="flex items-center gap-1.5 text-xs font-medium">
             <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
-            {t("recur_agent.modelSectionTitle")}
+            {t("ra.modelSectionTitle")}
           </label>
           <p className="mt-1 text-2xs text-muted-foreground">
-            {t("recur_agent.configDescription")}
+            {t("ra.configDescription")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <label className="text-2xs text-muted-foreground">
-              {t("recur_agent.providerLabel")}
+              {t("ra.providerLabel")}
             </label>
             <Input
               value={provider}
@@ -446,7 +446,7 @@ export function RecurConfigPanel({
           </div>
           <div className="space-y-1.5">
             <label className="text-2xs text-muted-foreground">
-              {t("recur_agent.modelLabel")}
+              {t("ra.modelLabel")}
             </label>
             <Input
               value={model}
@@ -460,7 +460,7 @@ export function RecurConfigPanel({
 
         <div className="space-y-1.5">
           <label className="text-2xs text-muted-foreground">
-            {t("recur_agent.baseUrlLabel")}
+            {t("ra.baseUrlLabel")}
           </label>
           <Input
             value={baseUrl}
@@ -474,7 +474,7 @@ export function RecurConfigPanel({
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <label className="text-2xs text-muted-foreground">
-              {t("recur_agent.apiTypeLabel")}
+              {t("ra.apiTypeLabel")}
             </label>
             <Input
               value={apiType}
@@ -486,7 +486,7 @@ export function RecurConfigPanel({
           </div>
           <div className="space-y-1.5">
             <label className="text-2xs text-muted-foreground">
-              {t("recur_agent.apiKeyEnvLabel")}
+              {t("ra.apiKeyEnvLabel")}
             </label>
             <Input
               value={apiKeyEnv}
@@ -496,7 +496,7 @@ export function RecurConfigPanel({
               disabled={loading || savingModel}
             />
             <p className="text-3xs text-muted-foreground">
-              {t("recur_agent.apiKeyEnvHint")}
+              {t("ra.apiKeyEnvHint")}
             </p>
           </div>
         </div>
@@ -504,7 +504,7 @@ export function RecurConfigPanel({
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <label className="text-2xs text-muted-foreground">
-              {t("recur_agent.contextWindowLabel")}
+              {t("ra.contextWindowLabel")}
             </label>
             <Input
               type="number"
@@ -516,7 +516,7 @@ export function RecurConfigPanel({
           </div>
           <div className="space-y-1.5">
             <label className="text-2xs text-muted-foreground">
-              {t("recur_agent.maxIterationsLabel")}
+              {t("ra.maxIterationsLabel")}
             </label>
             <Input
               type="number"
@@ -530,13 +530,13 @@ export function RecurConfigPanel({
 
         <div className="flex items-center justify-between gap-2">
           <label className="text-2xs text-muted-foreground">
-            {t("recur_agent.formatAfterEditLabel")}
+            {t("ra.formatAfterEditLabel")}
           </label>
           <Switch
             checked={formatAfterEdit}
             onCheckedChange={setFormatAfterEdit}
             disabled={loading || savingModel}
-            aria-label={t("recur_agent.formatAfterEditLabel")}
+            aria-label={t("ra.formatAfterEditLabel")}
           />
         </div>
 
@@ -556,7 +556,7 @@ export function RecurConfigPanel({
             ) : (
               <>
                 <Save className="h-3.5 w-3.5" />
-                {t("recur_agent.saveModel")}
+                {t("ra.saveModel")}
               </>
             )}
           </Button>
@@ -567,16 +567,16 @@ export function RecurConfigPanel({
       <div className="space-y-3 rounded-md border bg-muted/10 p-3">
         <div>
           <label className="text-xs font-medium">
-            {t("recur_agent.profileLabel")}
+            {t("ra.profileLabel")}
           </label>
           <p className="mt-1 text-2xs text-muted-foreground">
-            {t("recur_agent.profileHint")}
+            {t("ra.profileHint")}
           </p>
         </div>
 
         {profiles.length === 0 ? (
           <p className="text-2xs text-muted-foreground">
-            {t("recur_agent.profileNone")}
+            {t("ra.profileNone")}
           </p>
         ) : (
           <Select
@@ -585,7 +585,7 @@ export function RecurConfigPanel({
             disabled={loading || savingProfile}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("recur_agent.profileNone")} />
+              <SelectValue placeholder={t("ra.profileNone")} />
             </SelectTrigger>
             <SelectContent align="start">
               {profiles.map((profile) => (
@@ -603,16 +603,16 @@ export function RecurConfigPanel({
         <div>
           <label className="flex items-center gap-1.5 text-xs font-medium">
             <Server className="h-3.5 w-3.5 text-muted-foreground" />
-            {t("recur_agent.mcpServersTitle")}
+            {t("ra.mcpServersTitle")}
           </label>
           <p className="mt-1 text-2xs text-muted-foreground">
-            {t("recur_agent.mcpServersHint")}
+            {t("ra.mcpServersHint")}
           </p>
         </div>
 
         {mcpDrafts.length === 0 ? (
           <p className="text-2xs text-muted-foreground">
-            {t("recur_agent.mcpServersHint")}
+            {t("ra.mcpServersHint")}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -621,7 +621,7 @@ export function RecurConfigPanel({
               try {
                 label = mcpLabel(JSON.parse(draft.text))
               } catch {
-                label = t("recur_agent.mcpInvalidJson")
+                label = t("ra.mcpInvalidJson")
               }
               return (
                 <li
@@ -644,7 +644,7 @@ export function RecurConfigPanel({
                       disabled={loading || savingMcp}
                     >
                       <Trash2 className="h-3 w-3" />
-                      {t("recur_agent.mcpRemove")}
+                      {t("ra.mcpRemove")}
                     </Button>
                   </div>
                   <Textarea
@@ -672,7 +672,7 @@ export function RecurConfigPanel({
             className="gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
-            {t("recur_agent.mcpAdd")}
+            {t("ra.mcpAdd")}
           </Button>
           <Button
             type="button"
@@ -689,7 +689,7 @@ export function RecurConfigPanel({
             ) : (
               <>
                 <Save className="h-3.5 w-3.5" />
-                {t("recur_agent.saveModel")}
+                {t("ra.saveModel")}
               </>
             )}
           </Button>
@@ -700,7 +700,7 @@ export function RecurConfigPanel({
       <div className="space-y-2 rounded-md border bg-muted/10 p-3">
         <label className="flex items-center gap-1.5 text-xs font-medium">
           <HardDrive className="h-3.5 w-3.5 text-muted-foreground" />
-          {t("recur_agent.configPathLabel")}
+          {t("ra.configPathLabel")}
         </label>
         {projection ? (
           <>
@@ -710,19 +710,19 @@ export function RecurConfigPanel({
             {projection.exists ? (
               <span className="flex items-center gap-1.5 text-2xs text-emerald-600">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                {t("recur_agent.saved")}
+                {t("ra.saved")}
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-2xs text-amber-600 dark:text-amber-400">
                 <XCircle className="h-3.5 w-3.5" />
-                {t("recur_agent.configMissing")}
+                {t("ra.configMissing")}
               </span>
             )}
           </>
         ) : (
           <p className="flex items-center gap-1.5 text-2xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            {t("recur_agent.binaryChecking")}
+            {t("ra.binaryChecking")}
           </p>
         )}
       </div>
@@ -765,10 +765,10 @@ export function RecurConfigPanel({
         <div>
           <label className="flex items-center gap-1.5 text-xs font-medium">
             <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
-            {t("recur_agent.binaryTitle")}
+            {t("ra.binaryTitle")}
           </label>
           <p className="mt-1 text-2xs text-muted-foreground">
-            {t("recur_agent.binaryDescription")}
+            {t("ra.binaryDescription")}
           </p>
         </div>
 
@@ -777,20 +777,20 @@ export function RecurConfigPanel({
             {checkingBinary ? (
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {t("recur_agent.binaryChecking")}
+                {t("ra.binaryChecking")}
               </span>
             ) : installed ? (
               <span className="flex items-start gap-1.5 text-emerald-600">
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span className="min-w-0 font-medium">
-                  {t("recur_agent.binaryInstalled")}
+                  {t("ra.binaryInstalled")}
                   {binaryVersion ? ` · ${binaryVersion}` : ""}
                 </span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <XCircle className="h-3.5 w-3.5 shrink-0" />
-                {t("recur_agent.binaryMissing")}
+                {t("ra.binaryMissing")}
               </span>
             )}
           </div>
@@ -801,7 +801,7 @@ export function RecurConfigPanel({
               size="sm"
               onClick={() => void detectBinary()}
               disabled={checkingBinary || binaryOp !== null}
-              title={t("recur_agent.recheck")}
+              title={t("ra.recheck")}
               className="h-7 px-2"
             >
               <RotateCw
@@ -841,12 +841,12 @@ export function RecurConfigPanel({
                   {binaryOp === "install" ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      {t("recur_agent.installing")}
+                      {t("ra.installing")}
                     </>
                   ) : (
                     <>
                       <Download className="h-3.5 w-3.5" />
-                      {t("recur_agent.installBinary")}
+                      {t("ra.installBinary")}
                     </>
                   )}
                 </Button>
