@@ -5050,7 +5050,7 @@ struct KimiManagedSpec {
     base_url: Option<String>,
     /// Direct `api_key` field (when the user picks "direct key" auth).
     api_key: Option<String>,
-    /// `[providers.rc.env]` sub-table entries — the env-sub-table API key, or
+    /// `[providers.RecurCode.env]` sub-table entries — the env-sub-table API key, or
     /// Vertex's `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION`.
     env: BTreeMap<String, String>,
     model: String,
@@ -5082,7 +5082,7 @@ const KIMI_CAPABILITY_THINKING: &str = "thinking";
 /// Same, but kimi drops the `Off` row: the model cannot stop reasoning.
 const KIMI_CAPABILITY_ALWAYS_THINKING: &str = "always_thinking";
 
-/// Upsert (`Some`) or remove (`None`) the rc-managed `[providers.rc]` +
+/// Upsert (`Some`) or remove (`None`) the rc-managed `[providers.RecurCode]` +
 /// `[models.rc-managed]` block in a parsed config.toml document, preserving
 /// every other section the user authored. Removal also resets `default_model`
 /// only when it points at our managed alias.
@@ -14907,7 +14907,7 @@ model = \"gw/x\"           # the model
 model_catalog_json = \"{value}\"
 model_provider = \"RecurCode\"
 
-[model_providers.rc]
+[model_providers.RecurCode]
 base_url = \"https://example.test/v1\"
 "
         )
@@ -14924,7 +14924,7 @@ base_url = \"https://example.test/v1\"
         // Comments and every unmanaged key survive verbatim.
         assert!(next.contains("# my codex config"));
         assert!(next.contains("model = \"gw/x\"           # the model"));
-        assert!(next.contains("[model_providers.rc]"));
+        assert!(next.contains("[model_providers.RecurCode]"));
         assert!(next.contains("base_url = \"https://example.test/v1\""));
         // No key → no rewrite at all (callers skip the disk write).
         assert!(remove_codex_catalog_key(&next, home).unwrap().is_none());
@@ -16909,7 +16909,7 @@ echo {"id":"rc-models","type":"response","command":"get_available_models","succe
 model = "gpt-5-codex"
 model_provider = "RecurCode"
 
-[model_providers.rc]
+[model_providers.RecurCode]
 base_url = "https://gateway.example/v1"
 wire_api = "responses"
 
@@ -17531,7 +17531,7 @@ wire_api = "chat"
             .and_then(|providers| providers.get("RecurCode"))
             .and_then(toml::Value::as_table)
             .cloned()
-            .expect("fragment must define model_providers.rc")
+            .expect("fragment must define model_providers.RecurCode")
     }
 
     fn auth_flag_of(table: &toml::map::Map<String, toml::Value>) -> Option<bool> {
@@ -17542,21 +17542,21 @@ wire_api = "chat"
     fn codex_auth_default_is_supplied_only_when_absent() {
         // RecurCode provisions its provider with the key in auth.json and no
         // `env_key`, so a provider WE create needs requires_openai_auth = true.
-        let mut fresh = provider_table_of("[model_providers.rc]\nbase_url = \"https://x/v1\"\n");
+        let mut fresh = provider_table_of("[model_providers.RecurCode]\nbase_url = \"https://x/v1\"\n");
         ensure_codex_provider_auth_default(&mut fresh);
         assert_eq!(auth_flag_of(&fresh), Some(true));
 
         // An explicit false is the user's call and must survive every path —
         // this is the regression the whole change exists for.
         let mut explicit_false = provider_table_of(
-            "[model_providers.rc]\nbase_url = \"https://x/v1\"\nrequires_openai_auth = false\n",
+            "[model_providers.RecurCode]\nbase_url = \"https://x/v1\"\nrequires_openai_auth = false\n",
         );
         ensure_codex_provider_auth_default(&mut explicit_false);
         assert_eq!(auth_flag_of(&explicit_false), Some(false));
 
         // An explicit true is left alone rather than rewritten.
         let mut explicit_true = provider_table_of(
-            "[model_providers.rc]\nrequires_openai_auth = true\n",
+            "[model_providers.RecurCode]\nrequires_openai_auth = true\n",
         );
         ensure_codex_provider_auth_default(&mut explicit_true);
         assert_eq!(auth_flag_of(&explicit_true), Some(true));
@@ -17568,8 +17568,8 @@ wire_api = "chat"
         // `!requires_openai_auth && <non-empty x-openai-actor-authorization>`,
         // so writing the default here would silently disable that auth path.
         let mut header_present = provider_table_of(
-            "[model_providers.rc]\nbase_url = \"https://x/v1\"\n\n\
-             [model_providers.rc.http_headers]\n\
+            "[model_providers.RecurCode]\nbase_url = \"https://x/v1\"\n\n\
+             [model_providers.RecurCode.http_headers]\n\
              x-openai-actor-authorization = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut header_present);
@@ -17577,7 +17577,7 @@ wire_api = "chat"
 
         // Header matching is case-insensitive, mirroring eq_ignore_ascii_case.
         let mut mixed_case = provider_table_of(
-            "[model_providers.rc.http_headers]\n\
+            "[model_providers.RecurCode.http_headers]\n\
              X-OpenAI-Actor-Authorization = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut mixed_case);
@@ -17585,7 +17585,7 @@ wire_api = "chat"
 
         // An inline table is the same table to the parser.
         let mut inline = provider_table_of(
-            "[model_providers.rc]\n\
+            "[model_providers.RecurCode]\n\
              http_headers = { \"x-openai-actor-authorization\" = \"local-image-extension\" }\n",
         );
         ensure_codex_provider_auth_default(&mut inline);
@@ -17594,7 +17594,7 @@ wire_api = "chat"
         // An empty header value does not enable the path upstream
         // (`!value.trim().is_empty()`), so the default still applies.
         let mut empty_value = provider_table_of(
-            "[model_providers.rc.http_headers]\nx-openai-actor-authorization = \"  \"\n",
+            "[model_providers.RecurCode.http_headers]\nx-openai-actor-authorization = \"  \"\n",
         );
         ensure_codex_provider_auth_default(&mut empty_value);
         assert_eq!(auth_flag_of(&empty_value), Some(true));
@@ -17602,8 +17602,8 @@ wire_api = "chat"
         // A header plus an explicit true is a contradictory config, but it is
         // the user's: never rewrite or remove it.
         let mut header_and_true = provider_table_of(
-            "[model_providers.rc]\nrequires_openai_auth = true\n\n\
-             [model_providers.rc.http_headers]\n\
+            "[model_providers.RecurCode]\nrequires_openai_auth = true\n\n\
+             [model_providers.RecurCode.http_headers]\n\
              x-openai-actor-authorization = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut header_and_true);
@@ -17612,7 +17612,7 @@ wire_api = "chat"
         // A quoted key containing dots is ONE literal key, not an http_headers
         // sub-table, so it must not suppress the default.
         let mut literal_dotted_key = provider_table_of(
-            "[model_providers.rc]\n\
+            "[model_providers.RecurCode]\n\
              \"http_headers.x-openai-actor-authorization\" = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut literal_dotted_key);
@@ -17630,12 +17630,12 @@ wire_api = "chat"
             std::fs::write(
                 &config_path,
                 "model_provider = \"RecurCode\"\n\n\
-                 [model_providers.rc]\n\
+                 [model_providers.RecurCode]\n\
                  base_url = \"https://old.example/v1\"\n\
                  name = \"RecurCode\"\n\
                  wire_api = \"responses\"\n\
                  requires_openai_auth = false\n\n\
-                 [model_providers.rc.http_headers]\n\
+                 [model_providers.RecurCode.http_headers]\n\
                  x-openai-actor-authorization = \"local-image-extension\"\n",
             )
             .expect("seed config.toml");
@@ -19804,7 +19804,7 @@ wire_api = "chat"
     fn kimi_managed_block_clear_preserves_user_sections() {
         let mut doc: toml::Value = r#"
 default_model = "mine"
-[providers.rc]
+[providers.RecurCode]
 type = "openai"
 api_key = "sk"
 [providers.mine]
@@ -19838,7 +19838,7 @@ model = "gpt"
     fn kimi_managed_block_clear_resets_our_default_and_empties() {
         let mut doc: toml::Value = r#"
 default_model = "rc-managed"
-[providers.rc]
+[providers.RecurCode]
 type = "kimi"
 [models.rc-managed]
 provider = "RecurCode"
@@ -20102,7 +20102,7 @@ model = "kimi-for-coding"
     fn kimi_project_managed_config_round_trips_reasoning_metadata() {
         let value: toml::Value = r#"
 default_model = "rc-managed"
-[providers.rc]
+[providers.RecurCode]
 type = "openai_responses"
 [models.rc-managed]
 provider = "RecurCode"
@@ -20137,7 +20137,7 @@ default_effort = "high"
         // The shape the panel wrote before this feature — the projection must
         // not invent empty arrays, or the panel would read reasoning as "on".
         let value: toml::Value = r#"
-[providers.rc]
+[providers.RecurCode]
 type = "kimi"
 [models.rc-managed]
 provider = "RecurCode"
@@ -20160,7 +20160,7 @@ max_context_size = 262144
         // single-source-of-truth between env override and config.toml.
         let value: toml::Value = r#"
 default_model = "rc-managed"
-[providers.rc]
+[providers.RecurCode]
 type = "anthropic"
 base_url = "https://api.anthropic.com"
 api_key = "sk-ant"
@@ -20209,9 +20209,9 @@ max_context_size = 200000
     #[test]
     fn kimi_project_managed_config_env_subtable_surfaces_as_env_auth() {
         let value: toml::Value = r#"
-[providers.rc]
+[providers.RecurCode]
 type = "openai"
-[providers.rc.env]
+[providers.RecurCode.env]
 OPENAI_API_KEY = "sk-x"
 [models.rc-managed]
 provider = "RecurCode"
