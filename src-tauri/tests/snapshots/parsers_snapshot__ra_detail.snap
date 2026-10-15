@@ -1,0 +1,57 @@
+---
+source: tests/parsers_snapshot.rs
+expression: detail
+---
+{
+  "summary": {
+    "id": "proj-snapshot:u9",
+    "agent_type": "ra",
+    "folder_path": null,
+    "folder_name": null,
+    "title": "snapshot ping",
+    "started_at": "[ts]",
+    "ended_at": "[ts]",
+    "message_count": 3,
+    "model": null,
+    "git_branch": null
+  },
+  "turns": [
+    {
+      "id": "turn-0",
+      "role": "user",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "ping"
+        }
+      ],
+      "timestamp": "[ts]",
+      "completed_at": "[ts]"
+    },
+    {
+      "id": "turn-1",
+      "role": "assistant",
+      "blocks": [
+        {
+          "type": "tool_use",
+          "tool_use_id": "call_snapshot_1",
+          "tool_name": "read_file",
+          "input_preview": "{\"path\":\"VERSION\"}"
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "call_snapshot_1",
+          "output_preview": "1.4.2\n",
+          "is_error": false
+        }
+      ],
+      "timestamp": "[ts]",
+      "duration_ms": 4000,
+      "completed_at": "[ts]"
+    }
+  ],
+  "session_stats": {
+    "total_usage": null,
+    "total_duration_ms": 4000
+  }
+}

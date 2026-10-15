@@ -5880,19 +5880,6 @@ pub(crate) async fn acp_fetch_kimi_models_core(
 // ---------------------------------------------------------------------------
 
 /// Resolve pi's coding-agent dir from RecurCode's own environment:
-/// `PI_CODING_AGENT_DIR` through pi's tilde rule, else `~/.pi/agent`. The same
-/// resolver the history parser uses, so the two cannot drift.
-/// Ra's data root (`RA_HOME` else `~/.ra`) — the exact directory
-/// RecurCode passes as `--data-dir` when launching `ra acp`, so `config.json`,
-/// `profiles/`, skills and the session store (`sessions/`, `users/*/sessions/`)
-/// all live under it. Delegated to [`crate::commands::ra_config::ra_data_root`]
-/// so the settings panel and the history parser can never drift onto different
-/// roots. Ra owns its layout natively — unlike pi there is no
-/// `~/.ra/agent` sub-dir.
-pub(crate) fn ra_data_dir() -> PathBuf {
-    crate::commands::ra_config::ra_data_root()
-}
-
 pub(crate) fn pi_agent_dir() -> PathBuf {
     crate::parsers::pi::resolve_pi_agent_dir()
 }
