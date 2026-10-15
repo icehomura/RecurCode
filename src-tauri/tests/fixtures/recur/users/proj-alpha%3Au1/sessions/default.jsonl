@@ -1,0 +1,3 @@
+{"schema_version":2,"session_key":"proj-alpha:u1","created_at":"2026-03-01T10:00:00Z","updated_at":"2026-03-01T10:00:05Z","sealed_segments":0,"topic":"default","title":"greet the user"}
+{"role":"user","content":"hello","timestamp":"2026-03-01T10:00:01Z","client_message_id":"c8f1a2b3-0000-4000-8000-0000000000f1","thread_id":"c8f1a2b3-0000-4000-8000-0000000000f1"}
+{"role":"assistant","content":"Hi! How can I help you today?","timestamp":"2026-03-01T10:00:05Z","thread_id":"c8f1a2b3-0000-4000-8000-0000000000f1"}

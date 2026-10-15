@@ -1,0 +1,7 @@
+{"schema_version":2,"session_key":"proj-delta:u4","created_at":"2026-03-04T08:00:00Z","updated_at":"2026-03-04T08:00:30Z","sealed_segments":0,"topic":"default","title":"walkthrough"}
+{"role":"user","content":"count from 1 to 3","timestamp":"2026-03-04T08:00:01Z","client_message_id":"c8f1a2b3-0000-4000-8000-0000000000d1","thread_id":"c8f1a2b3-0000-4000-8000-0000000000d1"}
+{"role":"assistant","content":"1, 2, 3","timestamp":"2026-03-04T08:00:05Z","thread_id":"c8f1a2b3-0000-4000-8000-0000000000d1"}
+{"role":"user","content":"now add 10 to each","timestamp":"2026-03-04T08:00:11Z","client_message_id":"c8f1a2b3-0000-4000-8000-0000000000d2","thread_id":"c8f1a2b3-0000-4000-8000-0000000000d2"}
+{"role":"assistant","content":"11, 12, 13","timestamp":"2026-03-04T08:00:18Z","thread_id":"c8f1a2b3-0000-4000-8000-0000000000d2"}
+{"role":"user","content":"thanks","timestamp":"2026-03-04T08:00:22Z","client_message_id":"c8f1a2b3-0000-4000-8000-0000000000d3","thread_id":"c8f1a2b3-0000-4000-8000-0000000000d3"}
+{"role":"assistant","content":"You're welcome!","timestamp":"2026-03-04T08:00:30Z","thread_id":"c8f1a2b3-0000-4000-8000-0000000000d3"}

@@ -16,7 +16,7 @@ use std::path::Path;
 use recur_code_lib::parsers::{
     claude::ClaudeParser, cline::ClineParser, codex::CodexParser, gemini::GeminiParser,
     hermes::HermesParser, kimi_code::KimiCodeParser, openclaw::OpenClawParser,
-    opencode::OpenCodeParser, AgentParser,
+    opencode::OpenCodeParser, recur::RecurParser, AgentParser,
 };
 use insta::assert_json_snapshot;
 use serde_json::json;
@@ -1761,6 +1761,106 @@ fn kimi_code_minimal_session_snapshot() {
         ".**.ended_at" => "[ts]",
     });
     assert_json_snapshot!("kimi_code_detail", detail, {
+        ".**.started_at" => "[ts]",
+        ".**.ended_at" => "[ts]",
+        ".**.timestamp" => "[ts]",
+        ".**.completed_at" => "[ts]",
+    });
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// RecurAgent (`ra` CLI)
+// ────────────────────────────────────────────────────────────────────────────
+
+/// Percent-encode a RecurAgent session key the way the CLI names its files:
+/// keep ASCII alphanumerics, `-` and `_`; percent-encode every other byte with
+/// uppercase hex (so `:` becomes `%3A`). Matches the scheme the on-disk
+/// fixtures under `tests/fixtures/recur/` are written with.
+fn recur_encode_key(key: &str) -> String {
+    let mut out = String::new();
+    for byte in key.as_bytes() {
+        let ch = *byte as char;
+        if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' {
+            out.push(ch);
+        } else {
+            out.push_str(&format!("%{:02X}", byte));
+        }
+    }
+    out
+}
+
+/// One canonical per-user RecurAgent session (`<base>/users/<encoded-base-
+/// key>/sessions/<encoded-topic>.jsonl`): line 1 is a `SessionMeta` header, the
+/// rest are `Message` rows (snake_case, role a plain lowercase string, no
+/// discriminating tag). A user row's `thread_id` equals its `client_message_id`;
+/// the assistant row shares that `thread_id`. The conversation id is the header
+/// `session_key`.
+///
+/// `RecurParser::with_base_dir` walks `<base>/**/*.jsonl`, so this exercises the
+/// same code path the committed fixtures under `tests/fixtures/recur/` use.
+#[test]
+fn recur_minimal_session_snapshot() {
+    let temp = tempfile::tempdir().expect("create tempdir");
+    let base = temp.path().to_path_buf();
+
+    let session_key = "proj-snapshot:u9";
+    let topic = "default";
+    let thread_id = "c8f1a2b3-0000-4000-8000-0000000000a9";
+    let session_dir = base
+        .join("users")
+        .join(recur_encode_key(session_key))
+        .join("sessions");
+
+    let jsonl = format!(
+        "{}\n{}\n{}\n{}\n",
+        json!({
+            "schema_version": 2,
+            "session_key": session_key,
+            "created_at": "2026-03-09T10:00:00Z",
+            "updated_at": "2026-03-09T10:00:09Z",
+            "sealed_segments": 0,
+            "topic": topic,
+            "title": "snapshot ping"
+        }),
+        json!({
+            "role": "user",
+            "content": "ping",
+            "timestamp": "2026-03-09T10:00:01Z",
+            "client_message_id": thread_id,
+            "thread_id": thread_id
+        }),
+        json!({
+            "role": "assistant",
+            "content": "",
+            "timestamp": "2026-03-09T10:00:04Z",
+            "thread_id": thread_id,
+            "tool_calls": [
+                { "id": "call_snapshot_1", "name": "read_file",
+                  "arguments": { "path": "VERSION" } }
+            ]
+        }),
+        json!({
+            "role": "tool",
+            "content": "1.4.2\n",
+            "timestamp": "2026-03-09T10:00:05Z",
+            "thread_id": thread_id,
+            "tool_call_id": "call_snapshot_1"
+        }),
+    );
+    write(
+        &session_dir.join(format!("{}.jsonl", recur_encode_key(topic))),
+        &jsonl,
+    );
+
+    let parser = RecurParser::with_base_dir(base);
+    let summaries = parser.list_conversations().expect("list recur");
+    let detail = parser.get_conversation(session_key).expect("detail recur");
+
+    assert_json_snapshot!("recur_list", summaries, {
+        ".**.started_at" => "[ts]",
+        ".**.ended_at" => "[ts]",
+    });
+    assert_json_snapshot!("recur_detail", detail, {
         ".**.started_at" => "[ts]",
         ".**.ended_at" => "[ts]",
         ".**.timestamp" => "[ts]",
