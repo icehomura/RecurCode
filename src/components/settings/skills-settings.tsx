@@ -101,6 +101,7 @@ function defaultSkillLayoutForAgent(
   existingLayout?: AgentSkillLayout | null
 ): AgentSkillLayout | null {
   if (existingLayout) return existingLayout
+  if (agentType === "ra") return "skill_directory"
   if (agentType === "claude_code") return "skill_directory"
   if (agentType === "open_code") return "skill_directory"
   if (agentType === "codex") return "skill_directory"

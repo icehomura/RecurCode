@@ -62,6 +62,7 @@ const DEFAULT_SENTINEL = "__rc_default__"
 const TAB_SWITCH_DEBOUNCE_MS = 250
 
 const BUILTIN_AGENT_TYPES: AgentType[] = [
+  "ra",
   "claude_code",
   "codex",
   "open_code",
@@ -138,7 +139,7 @@ export function DelegationAgentDefaultsPanel({
     ],
     [agents]
   )
-  const [selectedAgent, setSelectedAgent] = useState<AgentType>("claude_code")
+  const [selectedAgent, setSelectedAgent] = useState<AgentType>("ra")
   // Snapshot and the agent it was probed from, in ONE state value: the tab
   // switch below is debounced, so for that whole window `selectedAgent` is
   // already the new tab while the snapshot on screen is still the old agent's.
