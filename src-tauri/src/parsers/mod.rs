@@ -2000,7 +2000,7 @@ mod route_sanitizer_tests {
         let capped = super::title_from_user_text(&persisted);
         let marker = "{\"kind\":\"rc_internal_agent_routes\"";
         assert!(
-            capped.contains("{\"kind\":\"RecurCode") && !capped.contains(marker),
+            capped.contains("{\"kind\":\"rc_i") && !capped.contains(marker),
             "the cap must land INSIDE the marker, or this repeats the previous \
              test — got {capped:?}"
         );

@@ -251,6 +251,7 @@ mod tests {
             (AgentType::DeepSeek, "deepseek"),
             (AgentType::Qoder, "qoder"),
             (AgentType::Antigravity, "antigravity"),
+            (AgentType::Ra, "ra"),
         ];
         for (agent, wire) in expected {
             assert_eq!(agent.as_wire(), wire);

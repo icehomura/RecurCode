@@ -860,7 +860,7 @@ mod tests {
         assert_eq!(halved, "hi");
 
         // A parser that caps without an ellipsis leaves the same fragment bare.
-        let mut bare = String::from("hi  {\"kind\":\"RecurCode");
+        let mut bare = String::from("hi  {\"kind\":\"rc_int");
         cut_at_route_frame_marker(&mut bare);
         assert_eq!(bare, "hi");
 

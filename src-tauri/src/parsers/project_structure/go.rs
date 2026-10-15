@@ -80,7 +80,14 @@ pub fn extract_symbols(content: &str) -> Vec<ExtractedSymbol> {
         // Function / method (func keyword)
         if let Some(caps) = re_func().captures(trimmed) {
             let name = caps[1].to_string();
-            let is_method = trimmed.starts_with("func") && trimmed.contains(')') && !trimmed.starts_with("func(");
+            // A Go method has a receiver: `func (recv) Name(...)`. A plain
+            // function is `func Name(...)`. Detect the receiver by whether the
+            // text right after the `func` keyword opens with `(` — the previous
+            // `contains(')')` heuristic mislabeled every function as a method.
+            let is_method = trimmed
+                .trim_start_matches("func")
+                .trim_start()
+                .starts_with('(');
             let mut meta = HashMap::new();
             if trimmed.contains("http.Handler") || name == "ServeHTTP" {
                 meta.insert("http_handler".into(), "true".into());
