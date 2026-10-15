@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { defaultRehypePlugins } from "streamdown"
 
-import { rehypePluginsAllowingRecurCode } from "./rehype-allow-RecurCode"
+import { rehypePluginsAllowingRecurCode } from "./rehype-allow-rc"
 
 /** Pull the href protocol allow-list out of a `[rehypeSanitize, schema]` tuple. */
 function hrefProtocols(plugin: unknown): string[] | undefined {

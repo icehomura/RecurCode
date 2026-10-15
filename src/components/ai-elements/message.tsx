@@ -31,7 +31,7 @@ import {
 import { markdownLinkComponents } from "./markdown-link"
 import { messageBlockComponents } from "./json-render-pre"
 import { maskLiteralSpans } from "./markdown-mask"
-import { rehypePluginsAllowingRecurCode } from "./rehype-allow-RecurCode"
+import { rehypePluginsAllowingRecurCode } from "./rehype-allow-rc"
 import { remarkTrimCjkAutolinkTail } from "./remark-cjk-autolink-tail"
 import { withRelativeFileLinks } from "./rehype-relative-file-links"
 import { remarkRewriteFileUriLinks } from "./remark-file-uri-links"
@@ -477,7 +477,7 @@ const remarkPlugins = [
 
 // Streamdown's default rehype pipeline strips `rc://` reference hrefs in
 // sanitization (rendering them as "[blocked]"); re-derive it so they survive to
-// MarkdownLink → ReferenceBadge. See rehype-allow-RecurCode for the full rationale.
+// MarkdownLink → ReferenceBadge. See rehype-allow-rc for the full rationale.
 // …and relative local links (`./a.md`, `src/a.md`, `~/a.md`) keep their href
 // through harden, which would otherwise flatten them to a root path or block
 // them. See rehype-relative-file-links.

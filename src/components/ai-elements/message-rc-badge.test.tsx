@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest"
 // regression. Only the link-safety hook is stubbed (irrelevant to badges).
 //
 // These are ASSISTANT-path guards: `rc://` reference links render as inline
-// badges via MarkdownLink + rehype-allow-RecurCode regardless of role. (User messages
+// badges via MarkdownLink + rehype-allow-rc regardless of role. (User messages
 // no longer go through MessageResponse — see message/plain-text-with-badges.tsx.)
 vi.mock("next-intl", () => {
   const t = (key: string) => key

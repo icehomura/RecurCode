@@ -109,7 +109,7 @@ importers:
         version: 6.0.0
       '@xyflow/react':
         specifier: ^12.11.5
-        version: 12.11.5(@types/react-dom@19.2.4(@types/react@19.2.13))(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 12.11.5(@types/react-dom@19.2.4(@types/react@19.2.13))(@types/react@19.2.13)(immer@11.1.21)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       ai:
         specifier: ^6.0.78
         version: 6.0.78(zod@4.6.5)
@@ -232,7 +232,7 @@ importers:
         version: 4.6.5
       zustand:
         specifier: ^5.0.14
-        version: 5.0.14(@types/react@19.2.13)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
+        version: 5.0.14(@types/react@19.2.13)(immer@11.1.21)(react@19.2.4)(use-sync-external-store@1.7.0(react@19.2.4))
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.1.18
@@ -315,6 +315,10 @@ importers:
       yaml:
         specifier: ^2.9.0
         version: 2.9.0
+    optionalDependencies:
+      '@next/swc-win32-x64-msvc':
+        specifier: 16.1.6
+        version: 16.1.6
 
 packages:
 
@@ -4414,6 +4418,7 @@ packages:
   eslint@9.39.2:
     resolution: {integrity: sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -10164,13 +10169,13 @@ snapshots:
 
   '@xterm/xterm@6.0.0': {}
 
-  '@xyflow/react@12.11.5(@types/react-dom@19.2.4(@types/react@19.2.13))(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@xyflow/react@12.11.5(@types/react-dom@19.2.4(@types/react@19.2.13))(@types/react@19.2.13)(immer@11.1.21)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@xyflow/system': 0.0.81
       classcat: 5.0.5
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-      zustand: 4.4.0(@types/react@19.2.13)(react@19.2.4)
+      zustand: 4.4.0(@types/react@19.2.13)(immer@11.1.21)(react@19.2.4)
     optionalDependencies:
       '@types/react': 19.2.13
       '@types/react-dom': 19.2.4(@types/react@19.2.13)
@@ -14752,17 +14757,19 @@ snapshots:
 
   zod@4.6.5: {}
 
-  zustand@4.4.0(@types/react@19.2.13)(react@19.2.4):
+  zustand@4.4.0(@types/react@19.2.13)(immer@11.1.21)(react@19.2.4):
     dependencies:
       use-sync-external-store: 1.2.0(react@19.2.4)
     optionalDependencies:
       '@types/react': 19.2.13
+      immer: 11.1.21
       react: 19.2.4
 
-  zustand@5.0.14(@types/react@19.2.13)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4)):
+  zustand@5.0.14(@types/react@19.2.13)(immer@11.1.21)(react@19.2.4)(use-sync-external-store@1.7.0(react@19.2.4)):
     optionalDependencies:
       '@types/react': 19.2.13
+      immer: 11.1.21
       react: 19.2.4
-      use-sync-external-store: 1.6.0(react@19.2.4)
+      use-sync-external-store: 1.7.0(react@19.2.4)
 
   zwitch@2.0.4: {}
