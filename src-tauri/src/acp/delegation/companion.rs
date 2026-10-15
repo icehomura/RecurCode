@@ -767,7 +767,7 @@ async fn build_tools_call_spawn(
         }
         "get_session_info" => {
             // `session_id` is the RecurCode conversation id the agent read out of a
-            // `recurcode://session/<id>` reference. Accept a JSON number or a numeric
+            // `rc://session/<id>` reference. Accept a JSON number or a numeric
             // string (some hosts stringify integer args); reject anything else
             // synchronously so the LLM can fix it.
             let session_id = match parse_session_id(&arguments) {
@@ -777,7 +777,7 @@ async fn build_tools_call_spawn(
                         id,
                         -32602,
                         "get_session_info requires an integer `session_id` \
-                         (the number in the recurcode://session/<id> reference)",
+                         (the number in the rc://session/<id> reference)",
                     ));
                 }
             };
@@ -7574,7 +7574,7 @@ mod tests {
                 { "targetId": "w2", "app": { "key": "com.apple.mail", "name": "Mail", "pid": 6 },
                   "bounds": { "x": 0, "y": 0, "width": 800, "height": 600 }, "onScreen": true,
                   "level": "none" },
-                { "targetId": "w3", "app": { "key": "app.recurcode", "name": "RecurCode", "pid": 7 },
+                { "targetId": "w3", "app": { "key": "app.rc", "name": "RecurCode", "pid": 7 },
                   "bounds": { "x": 0, "y": 0, "width": 800, "height": 600 }, "onScreen": true,
                   "level": "none", "note": "RecurCode's own window" }
             ]

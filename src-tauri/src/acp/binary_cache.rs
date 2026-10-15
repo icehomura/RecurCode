@@ -19,7 +19,7 @@ static TRASH_COUNTER: AtomicU64 = AtomicU64::new(0);
 /// Resolution order mirrors `paths.rs`:
 /// 1. `$RC_HOME/acp-binaries`
 /// 2. `$RC_DATA_DIR/acp-binaries` (server mode)
-/// 3. `<data-local>/app.recurcode/acp-binaries`
+/// 3. `<data-local>/app.rc/acp-binaries`
 ///
 /// **Not** `dirs::cache_dir()`, which is where this used to live. On Windows
 /// the two are the same directory (`%LOCALAPPDATA%`), so nothing moves there.
@@ -38,7 +38,7 @@ pub(crate) fn cache_dir() -> Result<PathBuf, AcpError> {
     }
     let base = dirs::data_local_dir()
         .ok_or_else(|| AcpError::DownloadFailed("cannot determine data directory".into()))?;
-    Ok(base.join("app.recurcode").join("acp-binaries"))
+    Ok(base.join("app.rc").join("acp-binaries"))
 }
 
 /// The pre-relocation root, when it is a DIFFERENT directory that still exists.
@@ -48,7 +48,7 @@ pub(crate) fn cache_dir() -> Result<PathBuf, AcpError> {
 /// read-through below is therefore a transient state that ends when
 /// [`migrate_legacy_root`] succeeds, never a steady-state dual root.
 pub(crate) fn legacy_cache_dir() -> Option<PathBuf> {
-    let legacy = dirs::cache_dir()?.join("app.recurcode").join("acp-binaries");
+    let legacy = dirs::cache_dir()?.join("app.rc").join("acp-binaries");
     let current = cache_dir().ok()?;
     (legacy != current && legacy.is_dir()).then_some(legacy)
 }

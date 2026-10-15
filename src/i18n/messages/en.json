@@ -1376,7 +1376,7 @@
       "authTypeHint": "Where the API key is written inside config.toml.",
       "rawEditorLabel": "Edit config.toml directly",
       "rawEditorWarning": "Saving here overwrites the entire file verbatim, replacing the structured settings above.",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "Official Subscription",
     "authModeCustomEndpoint": "Custom Endpoint",
@@ -3905,7 +3905,7 @@
         "collapse": "Collapse",
         "errorTitle": "Feedback check failed"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "Reading session {session}",
         "getSessionInfoNoId": "Reading a session",
         "taskProgress": "Progress: {message}",
@@ -5531,7 +5531,7 @@
       "stop": "Stop sharing",
       "stopWithKey": "Stop sharing every window ({key})"
     },
-    "recurCodeGranted": "RecurCode itself has Accessibility or Screen Recording, so agents' shells can use it without anything being shared. Unless you need it, turn it off for RecurCode in System Settings.",
+    "rcGranted": "RecurCode itself has Accessibility or Screen Recording, so agents' shells can use it without anything being shared. Unless you need it, turn it off for RecurCode in System Settings.",
     "backend": {
       "idle": "Not started",
       "downloading": "Downloading the driver…",
@@ -5634,7 +5634,7 @@
       "skipped": "{count, plural, one {# window could not be shared; it may have closed.} other {# windows could not be shared; they may have closed.}}",
       "unshareable": "{count, plural, one {# window can't be shared} other {# windows can't be shared}}",
       "noneShareable": "None of these windows can be shared.",
-      "recurCodeWhy": "RecurCode's windows are never shared: an agent that could operate RecurCode could approve its own requests or share more windows with itself. The same goes for other copies of RecurCode."
+      "rcWhy": "RecurCode's windows are never shared: an agent that could operate RecurCode could approve its own requests or share more windows with itself. The same goes for other copies of RecurCode."
     },
     "settings": {
       "pageTitle": "Computer use",
@@ -6258,7 +6258,7 @@
     "editor": {
       "createTitle": "New custom skill",
       "editTitle": "Edit custom skill",
-      "description": "Custom skills live in the shared store (~/.recurcode/skills) and can be enabled for any agent.",
+      "description": "Custom skills live in the shared store (~/.rc/skills) and can be enabled for any agent.",
       "idLabel": "Skill id",
       "idPlaceholder": "e.g. my-workflow",
       "contentLabel": "SKILL.md",
@@ -6417,7 +6417,7 @@
       "npm_missing": "npm was not found on the app PATH.",
       "not_installed": "This agent does not appear to be installed.",
       "installed_but_unresolved": "The agent is recorded as installed, but the app cannot locate its executable.",
-      "user_prefix_not_on_path": "Installed into the fallback prefix (~/.recurcode/npm-global), which is not on the app PATH. Fully restart the app and try again.",
+      "user_prefix_not_on_path": "Installed into the fallback prefix (~/.rc/npm-global), which is not on the app PATH. Fully restart the app and try again.",
       "homebrew_bin_not_on_path": "Installed under the Homebrew bin, which is not on the app PATH (Apple Silicon keg split).",
       "terminal_only_path": "The command resolves in your terminal but not in the app — a GUI PATH gap. Launch the app from a terminal, or reinstall from Agent Settings.",
       "npm_prefix_timeout": "npm prefix -g was too slow (over 1.5s), so fallback detection was skipped. Restart the app and try again.",

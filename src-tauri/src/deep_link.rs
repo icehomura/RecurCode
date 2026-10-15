@@ -1,32 +1,32 @@
-//! OS-level `recurcode://` URL scheme.
+//! OS-level `rc://` URL scheme.
 //!
-//! In-app markdown already uses `recurcode://session/<id>` and `recurcode://agent/<type>`
+//! In-app markdown already uses `rc://session/<id>` and `rc://agent/<type>`
 //! as reference links. Those stay in-process badges. This module is the
-//! **system** handler: a click in another app, `open recurcode://…`, or a browser
+//! **system** handler: a click in another app, `open rc://…`, or a browser
 //! custom-scheme navigation should bring the desktop workspace forward and
 //! focus the named conversation.
 //!
 //! Supported forms:
 //!
-//! - `recurcode://session/<id>` — RecurCode's numeric conversation PK, or an agent's
+//! - `rc://session/<id>` — RecurCode's numeric conversation PK, or an agent's
 //!   `external_id` (Grok UUID, Codex thread id, …)
-//! - `recurcode://workspace?conversationId=<id>` — same lookup; `folderId` and
+//! - `rc://workspace?conversationId=<id>` — same lookup; `folderId` and
 //!   `agent` are optional and filled from the row when omitted
-//! - `recurcode://open` / `recurcode://` — just show the main window
+//! - `rc://open` / `rc://` — just show the main window
 //!
-//! `recurcode://agent/…`, `recurcode://commit/…`, and `recurcode://embedded/…` are
+//! `rc://agent/…`, `rc://commit/…`, and `rc://embedded/…` are
 //! in-app mention badges, not OS navigation, and are ignored here.
 
 use crate::db::service::conversation_service;
 use crate::db::AppDatabase;
 use crate::models::DbConversationSummary;
 
-/// What a parsed `recurcode://` URL wants the desktop app to do.
+/// What a parsed `rc://` URL wants the desktop app to do.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeepLink {
     /// Bring the workspace forward without targeting a conversation.
     Open,
-    /// Focus a conversation looked up by `recurcode://session/<ref>`.
+    /// Focus a conversation looked up by `rc://session/<ref>`.
     Session { session_ref: String },
     /// Explicit workspace query. `conversation_id` is required; folder and
     /// agent are filled from the database when omitted.
@@ -37,7 +37,7 @@ pub enum DeepLink {
     },
 }
 
-/// A `recurcode://` link resolved to a conversation the workspace can open.
+/// A `rc://` link resolved to a conversation the workspace can open.
 ///
 /// Serializes as the payload of [`take_pending_deep_link`], in the same
 /// camelCase shape as the `workspace://focus-conversation` event so both
@@ -71,12 +71,12 @@ impl FocusTarget {
     }
 }
 
-/// Parse a `RecurCode:` / `recurcode://` URL. Returns `None` for a different scheme
+/// Parse a `RecurCode:` / `rc://` URL. Returns `None` for a different scheme
 /// or for in-app mention badges that must not navigate the workspace.
 pub fn parse_deep_link(raw: &str) -> Option<DeepLink> {
     let raw = raw.trim();
     let rest = raw
-        .strip_prefix("recurcode://")
+        .strip_prefix("rc://")
         .or_else(|| raw.strip_prefix("RecurCode:"))?;
     let rest = rest.trim_start_matches('/');
     if rest.is_empty() {
@@ -207,7 +207,7 @@ pub async fn resolve_deep_link(
 #[cfg(feature = "tauri-runtime")]
 pub const PENDING_EVENT: &str = "workspace://deep-link-pending";
 
-/// The one channel a resolved `recurcode://` target travels on.
+/// The one channel a resolved `rc://` target travels on.
 ///
 /// The obvious design — emit the target like the pet panel does — cannot work
 /// here, in both directions. An emit reaches only webviews that *already*
@@ -350,7 +350,7 @@ mod tests {
     #[test]
     fn parses_session_numeric_id() {
         assert_eq!(
-            parse_deep_link("recurcode://session/214"),
+            parse_deep_link("rc://session/214"),
             Some(DeepLink::Session {
                 session_ref: "214".into()
             })
@@ -362,7 +362,7 @@ mod tests {
             })
         );
         assert_eq!(
-            parse_deep_link("recurcode://session/214/"),
+            parse_deep_link("rc://session/214/"),
             Some(DeepLink::Session {
                 session_ref: "214".into()
             })
@@ -372,13 +372,13 @@ mod tests {
     #[test]
     fn parses_session_external_id() {
         assert_eq!(
-            parse_deep_link("recurcode://session/0193c0de-aaaa-7bbb-8ccc-ddddeeeeffff"),
+            parse_deep_link("rc://session/0193c0de-aaaa-7bbb-8ccc-ddddeeeeffff"),
             Some(DeepLink::Session {
                 session_ref: "0193c0de-aaaa-7bbb-8ccc-ddddeeeeffff".into()
             })
         );
         assert_eq!(
-            parse_deep_link("recurcode://session/codex_abc%20123"),
+            parse_deep_link("rc://session/codex_abc%20123"),
             Some(DeepLink::Session {
                 session_ref: "codex_abc 123".into()
             })
@@ -392,9 +392,9 @@ mod tests {
     #[test]
     fn session_segment_is_case_insensitive_but_the_ref_is_not() {
         for raw in [
-            "recurcode://SESSION/Codex_AbC",
-            "recurcode://Session/Codex_AbC",
-            "recurcode://sEsSiOn/Codex_AbC",
+            "rc://SESSION/Codex_AbC",
+            "rc://Session/Codex_AbC",
+            "rc://sEsSiOn/Codex_AbC",
         ] {
             assert_eq!(
                 parse_deep_link(raw),
@@ -408,19 +408,19 @@ mod tests {
 
     #[test]
     fn rejects_path_traversal_and_in_app_badges() {
-        assert_eq!(parse_deep_link("recurcode://session/../etc/passwd"), None);
-        assert_eq!(parse_deep_link("recurcode://session/"), None);
-        assert_eq!(parse_deep_link("recurcode://agent/grok"), None);
-        assert_eq!(parse_deep_link("recurcode://commit/abc"), None);
+        assert_eq!(parse_deep_link("rc://session/../etc/passwd"), None);
+        assert_eq!(parse_deep_link("rc://session/"), None);
+        assert_eq!(parse_deep_link("rc://agent/grok"), None);
+        assert_eq!(parse_deep_link("rc://commit/abc"), None);
         assert_eq!(parse_deep_link("https://example.com/session/1"), None);
     }
 
     #[test]
     fn parses_open_and_workspace_query() {
-        assert_eq!(parse_deep_link("recurcode://"), Some(DeepLink::Open));
-        assert_eq!(parse_deep_link("recurcode://open"), Some(DeepLink::Open));
+        assert_eq!(parse_deep_link("rc://"), Some(DeepLink::Open));
+        assert_eq!(parse_deep_link("rc://open"), Some(DeepLink::Open));
         assert_eq!(
-            parse_deep_link("recurcode://workspace?conversationId=9&folderId=3&agent=grok"),
+            parse_deep_link("rc://workspace?conversationId=9&folderId=3&agent=grok"),
             Some(DeepLink::Workspace {
                 folder_id: Some(3),
                 conversation_id: 9,
@@ -428,24 +428,24 @@ mod tests {
             })
         );
         assert_eq!(
-            parse_deep_link("recurcode://workspace?conversationId=9"),
+            parse_deep_link("rc://workspace?conversationId=9"),
             Some(DeepLink::Workspace {
                 folder_id: None,
                 conversation_id: 9,
                 agent: None,
             })
         );
-        assert_eq!(parse_deep_link("recurcode://workspace"), None);
+        assert_eq!(parse_deep_link("rc://workspace"), None);
     }
 
     #[test]
     fn argv_keeps_only_rc_urls() {
         let argv = [
             "/Applications/RecurCode.app/Contents/MacOS/RecurCode",
-            "recurcode://session/12",
+            "rc://session/12",
             "--flag",
         ];
-        assert_eq!(urls_from_argv(&argv), vec!["recurcode://session/12".to_string()]);
+        assert_eq!(urls_from_argv(&argv), vec!["rc://session/12".to_string()]);
     }
 
     #[tokio::test]
@@ -577,11 +577,11 @@ mod tests {
 
         assert_eq!(startup_workspace_path(&db, &[]).await, "workspace");
         assert_eq!(
-            startup_workspace_path(&db, &["recurcode://open".into()]).await,
+            startup_workspace_path(&db, &["rc://open".into()]).await,
             "workspace"
         );
         assert_eq!(
-            startup_workspace_path(&db, &["recurcode://session/999999".into()]).await,
+            startup_workspace_path(&db, &["rc://session/999999".into()]).await,
             "workspace"
         );
         assert_eq!(
@@ -589,8 +589,8 @@ mod tests {
                 &db,
                 &[
                     "--some-flag".into(),
-                    "recurcode://open".into(),
-                    format!("recurcode://session/{id}"),
+                    "rc://open".into(),
+                    format!("rc://session/{id}"),
                 ]
             )
             .await,

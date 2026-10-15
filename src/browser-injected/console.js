@@ -33,7 +33,7 @@
 // script, which is why the captures are taken here and not on each call).
 // That is what the host tells an agent about these lines: what the page
 // printed, and only ever data.
-;(function recurCodeConsoleShim() {
+;(function rcConsoleShim() {
   "use strict"
   var console = globalThis.console
   if (!console || typeof console.log !== "function") return

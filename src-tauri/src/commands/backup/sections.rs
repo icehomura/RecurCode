@@ -4,15 +4,15 @@
 //! Backup ([`super::core::create_backup_core`]) and restore
 //! ([`super::restore::apply_pending_restore_with_paths`]) both iterate
 //! [`MANAGED_SECTIONS`]. They used to keep separate hardcoded lists kept in
-//! sync by hand, and they drifted: `~/.recurcode/acp-transcripts` — the ONLY copy
+//! sync by hand, and they drifted: `~/.rc/acp-transcripts` — the ONLY copy
 //! of a custom ACP agent's conversation text, since the DB stores no duplicate
 //! — was in neither list, so a backup/restore round-trip left the conversation
 //! rows behind with every message gone. One table, two consumers, plus
 //! `every_section_is_packed_and_swapped` so a new section that is added to the
 //! table but not wired up fails loudly instead of silently losing data.
 //!
-//! This is an ALLOWLIST, not `~/.recurcode` minus a denylist: a future
-//! `~/.recurcode/<secrets>` must not be swept into an archive just because nobody
+//! This is an ALLOWLIST, not `~/.rc` minus a denylist: a future
+//! `~/.rc/<secrets>` must not be swept into an archive just because nobody
 //! remembered to exclude it. Deliberately out of the table: `logs/`
 //! (diagnostics), `cache/` (refetchable), `npm-global/` (machine-bound
 //! toolchain), `agents/` (no reader/writer in the current code) and the
@@ -169,7 +169,7 @@ pub fn is_excluded_section_entry(rel: &Path) -> bool {
     rel.components().any(|c| match c {
         std::path::Component::Normal(s) => {
             let s = s.to_string_lossy();
-            s == ".tmp" || s.starts_with(".recurcode")
+            s == ".tmp" || s.starts_with(".rc")
         }
         _ => false,
     })
@@ -177,7 +177,7 @@ pub fn is_excluded_section_entry(rel: &Path) -> bool {
 
 /// Live location of every managed section, resolved once so backup and restore
 /// agree and so tests can point the whole set at a temp dir instead of the
-/// real `~/.recurcode`.
+/// real `~/.rc`.
 #[derive(Debug, Clone)]
 pub struct LiveRoots {
     paths: BTreeMap<&'static str, PathBuf>,

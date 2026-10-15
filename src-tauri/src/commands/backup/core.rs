@@ -347,7 +347,7 @@ mod tests {
     }
 
     /// Every managed section rooted under `live_base/<id>` so the test drives
-    /// the real `MANAGED_SECTIONS` table without touching the user's `~/.recurcode`.
+    /// the real `MANAGED_SECTIONS` table without touching the user's `~/.rc`.
     fn inputs<'a>(
         conn: &'a DatabaseConnection,
         data_dir: &'a Path,
@@ -375,7 +375,7 @@ mod tests {
         std::fs::create_dir_all(uploads.join(".tmp")).unwrap();
         std::fs::write(uploads.join("att.txt"), b"attachment").unwrap();
         std::fs::write(uploads.join(".tmp/partial"), b"should be skipped").unwrap();
-        let dest = dir.path().join("backup.recurcode.zip");
+        let dest = dir.path().join("backup.rc.zip");
 
         let cancel = CancellationToken::new();
         let manifest = create_backup_core(
@@ -428,7 +428,7 @@ mod tests {
         let db = fresh_disk_db(dir.path()).await;
         let live = dir.path().join("live");
         std::fs::create_dir_all(live.join("uploads")).unwrap();
-        let dest = dir.path().join("backup.recurcodebak");
+        let dest = dir.path().join("backup.rcbak");
 
         let cancel = CancellationToken::new();
         create_backup_core(
@@ -491,7 +491,7 @@ mod tests {
             .unwrap();
         let live = src_dir.path().join("live");
         std::fs::create_dir_all(live.join("uploads")).unwrap();
-        let dest = src_dir.path().join("backup.recurcode.zip");
+        let dest = src_dir.path().join("backup.rc.zip");
 
         let cancel = CancellationToken::new();
         create_backup_core(
@@ -520,7 +520,7 @@ mod tests {
         assert!(restore_dir.path().join(PENDING_MARKER).is_file());
 
         // Apply on "startup" → live DB carries the two seeded folders. Inject
-        // temp section roots so the test never touches ~/.recurcode.
+        // temp section roots so the test never touches ~/.rc.
         let restore_live = LiveRoots::rooted_at(&restore_dir.path().join("live"));
         let applied =
             apply_pending_restore_with_paths(restore_dir.path(), &restore_live).unwrap();
@@ -542,7 +542,7 @@ mod tests {
         let db = fresh_disk_db(src_dir.path()).await;
         let live = src_dir.path().join("live");
         std::fs::create_dir_all(live.join("uploads")).unwrap(); // exists, no files
-        let dest = src_dir.path().join("backup.recurcode.zip");
+        let dest = src_dir.path().join("backup.rc.zip");
         let cancel = CancellationToken::new();
         create_backup_core(
             inputs(&db.conn, src_dir.path(), &live),
@@ -612,7 +612,7 @@ mod tests {
             }
         }
 
-        let dest = src_dir.path().join("backup.recurcode.zip");
+        let dest = src_dir.path().join("backup.rc.zip");
         let cancel = CancellationToken::new();
         let manifest = create_backup_core(
             inputs(&db.conn, src_dir.path(), &live),
@@ -684,7 +684,7 @@ mod tests {
     }
 
     /// D1 itself: the conversation text of a custom ACP agent lives ONLY in
-    /// `~/.recurcode/acp-transcripts`, so this is the round-trip that used to lose
+    /// `~/.rc/acp-transcripts`, so this is the round-trip that used to lose
     /// every message while keeping the conversation row.
     #[tokio::test]
     async fn custom_agent_transcript_survives_roundtrip() {
@@ -698,7 +698,7 @@ mod tests {
         std::fs::create_dir_all(transcript.parent().unwrap()).unwrap();
         std::fs::write(&transcript, b"{\"type\":\"user\",\"text\":\"hello\"}\n").unwrap();
 
-        let dest = src_dir.path().join("backup.recurcode.zip");
+        let dest = src_dir.path().join("backup.rc.zip");
         let cancel = CancellationToken::new();
         create_backup_core(
             inputs(&db.conn, src_dir.path(), &live),

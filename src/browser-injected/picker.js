@@ -50,7 +50,7 @@
 // every field is capped here and again in the host (`browser/handoff.rs`),
 // and the host's renderer marks the whole thing as page content rather than
 // instruction.
-;(function recurCodeBrowserPicker() {
+;(function rcBrowserPicker() {
   "use strict"
   if (typeof globalThis.__rcSend !== "function") return
   if (globalThis.__rcPicker) return

@@ -165,9 +165,9 @@ export interface DownloadOutcome {
  *  result directly, so the UI never has to guess what a status refers to. */
 export const CONFIG_SYNC_STATUS_EVENT = "config-sync://status"
 
-export const CONFIG_EXPORT_EXTENSION = "recurcodecfg.json"
+export const CONFIG_EXPORT_EXTENSION = "rccfg.json"
 
-/** `rc-config-2026-05-04-11-32-07.recurcodecfg.json` — sortable, and obvious
+/** `rc-config-2026-05-04-11-32-07.rccfg.json` — sortable, and obvious
  *  in a downloads folder six months later. */
 export function defaultExportFileName(now: Date = new Date()): string {
   const stamp = now.toISOString().slice(0, 19).replace(/[:T]/g, "-")

@@ -1,7 +1,7 @@
 //! Desktop-pet data model.
 //!
 //! Field shapes mirror the Codex `/pet` + `/hatch` format so a directory under
-//! `~/.codex/pets/<id>/` can be copied verbatim into `~/.recurcode/pets/<id>/` and
+//! `~/.codex/pets/<id>/` can be copied verbatim into `~/.rc/pets/<id>/` and
 //! work without further translation.
 
 use std::path::PathBuf;
@@ -148,7 +148,7 @@ pub struct ImportablePet {
     pub display_name: String,
     pub description: Option<String>,
     pub source_path: PathBuf,
-    /// True when an entry of the same id already exists in `~/.recurcode/pets/`.
+    /// True when an entry of the same id already exists in `~/.rc/pets/`.
     pub already_imported: bool,
 }
 

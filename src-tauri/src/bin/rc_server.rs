@@ -69,7 +69,7 @@ fn main() -> ExitCode {
     //    the credential subprocess — converges on the same root the
     //    server itself chose for the database. Without this, a default
     //    deployment (env var unset) puts the DB under
-    //    `dirs::data_dir()/RecurCode` but uploads under `~/.recurcode/uploads`,
+    //    `dirs::data_dir()/RecurCode` but uploads under `~/.rc/uploads`,
     //    splitting the persistent surface across two filesystem roots
     //    and silently breaking single-volume backups, container mounts,
     //    and any `file://` URI in session history that points at an
@@ -92,7 +92,7 @@ fn main() -> ExitCode {
     let _log_guard = rc_lib::logging::init::init_server();
 
     // `RC_HOME` overrides `RC_DATA_DIR` for uploads/pets inside
-    // `paths::rc_*_root` (legacy `~/.recurcode/` layout). If both are set
+    // `paths::rc_*_root` (legacy `~/.rc/` layout). If both are set
     // and resolve to different roots, the database and uploads land on
     // different filesystems — a silent split. Warn loudly so the
     // operator notices before relying on a backup or volume mount that
@@ -470,7 +470,7 @@ async fn async_main() -> ExitCode {
     }
 
     // Install bundled expert skills into the central store
-    // (`~/.recurcode/skills/`). Runs in the background; failures are logged
+    // (`~/.rc/skills/`). Runs in the background; failures are logged
     // but non-fatal.
     tokio::spawn(async move {
         let report = rc_lib::commands::experts::ensure_central_experts_installed().await;

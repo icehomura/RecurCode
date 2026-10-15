@@ -8,9 +8,9 @@ import type { ReferenceAttrs } from "./types"
 
 const badge: ReferenceAttrs = {
   refType: "file",
-  id: "recurcode://embedded/1",
+  id: "rc://embedded/1",
   label: "button#export",
-  uri: "recurcode://embedded/1",
+  uri: "rc://embedded/1",
   meta: { fileKind: "file" },
 }
 

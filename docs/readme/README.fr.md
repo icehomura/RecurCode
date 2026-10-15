@@ -268,7 +268,7 @@ Un éditeur, des diffs en direct et côte à côte, un client git complet avec u
 - **[Lanceur de projet](https://docs.codeg.app/guide/project-boot)** — créez visuellement le squelette d'un nouveau projet, avec un aperçu en direct
 - **[À votre image](https://docs.codeg.app/reference/settings/appearance)** — douze thèmes que vous pouvez recolorer token par token, fonds d'écran, rayon des coins et CSS personnalisé — dans n'importe laquelle des dix langues de l'interface
 - **[Sauvegarde et synchronisation](https://docs.codeg.app/reference/settings/system#backup-restore)** — sauvegardes chiffrées et synchronisation de la configuration entre machines, via un fichier ou votre propre serveur WebDAV
-- **[Schéma d'URL](../../docs/url-scheme.md)** — `recurcode://session/<id>` ouvre une conversation depuis une autre application (bureau)
+- **[Schéma d'URL](../../docs/url-scheme.md)** — `rc://session/<id>` ouvre une conversation depuis une autre application (bureau)
 - **Et plus encore** — presque chaque version apporte du nouveau ; les [notes de version](https://github.com/spacering-net/codeg/releases) en donnent la liste complète
 
 ## 🤖 Agents pris en charge

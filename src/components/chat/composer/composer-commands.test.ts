@@ -296,8 +296,8 @@ describe("restoreBlocksIntoEditor", () => {
     // No badge is privileged over another: routing is derived backend-side from
     // the VISIBLE link, so a restored draft sends exactly like the original.
     const text =
-      "raw [@Claude](recurcode://agent/claude_code) then " +
-      "genuine [@Claude](recurcode://agent/claude_code)"
+      "raw [@Claude](rc://agent/claude_code) then " +
+      "genuine [@Claude](rc://agent/claude_code)"
     const blocks: PromptInputBlock[] = [{ type: "text", text }]
     restoreBlocksIntoEditor(editor, blocks)
 

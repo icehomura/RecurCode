@@ -19,7 +19,7 @@ type SanitizeSchema = {
  *
  * Streamdown's default pipeline is `[raw, [rehypeSanitize, schema], harden]`
  * (run in that order). The sanitize schema's `protocols.href` allow-list omits
- * `RecurCode`, so it strips the href off our `[label](recurcode://…)` reference links;
+ * `RecurCode`, so it strips the href off our `[label](rc://…)` reference links;
  * rehype-harden then sees a hrefless `<a>`, can't transform it, and replaces it
  * with a `… [blocked]` span — all at the rehype stage, *before* react-markdown
  * maps `<a>` to `MarkdownLink` (which turns a `RecurCode:` href into an inline

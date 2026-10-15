@@ -268,7 +268,7 @@ RecurCode 可以作為桌面應用、可用任何瀏覽器開啟的自架伺服�
 - **[專案啟動器](https://docs.codeg.app/zh/guide/project-boot)** — 視覺化建立新專案，並即時預覽
 - **[外觀自訂](https://docs.codeg.app/zh/reference/settings/appearance)** — 十二套主題都能逐個色彩 token 重新調色，還有桌布、圓角與自訂 CSS——介面支援十種語言
 - **[備份與同步](https://docs.codeg.app/zh/reference/settings/system#backup-restore)** — 加密備份，以及透過檔案或你自己的 WebDAV 伺服器在多台機器之間同步設定
-- **[URL Scheme](../../docs/url-scheme.md)** — 用 `recurcode://session/<id>` 從其他應用程式開啟對話（桌面端）
+- **[URL Scheme](../../docs/url-scheme.md)** — 用 `rc://session/<id>` 從其他應用程式開啟對話（桌面端）
 - **還有更多** — 幾乎每個版本都會加入新東西；完整清單見 [發行說明](https://github.com/spacering-net/codeg/releases)
 
 ## 🤖 支援的智慧體

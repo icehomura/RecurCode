@@ -12,7 +12,7 @@ describe("parseRecurCodeReferenceUri", () => {
   it("returns null for non-reference schemes", () => {
     expect(parseRecurCodeReferenceUri("https://example.com", "x")).toBeNull()
     expect(parseRecurCodeReferenceUri("data:text/plain,abc", "x")).toBeNull()
-    expect(parseRecurCodeReferenceUri("recurcode://unknown/1", "x")).toBeNull()
+    expect(parseRecurCodeReferenceUri("rc://unknown/1", "x")).toBeNull()
   })
 
   it("parses a file uri, falling back to the basename when label is empty", () => {
@@ -29,19 +29,19 @@ describe("parseRecurCodeReferenceUri", () => {
 
   it("parses an agent uri, stripping a leading @ from the label", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://agent/codex", "@Codex")
+      parseRecurCodeReferenceUri("rc://agent/codex", "@Codex")
     ).toMatchObject({
       refType: "agent",
       id: "codex",
       label: "Codex",
-      uri: "recurcode://agent/codex",
+      uri: "rc://agent/codex",
       meta: { agentType: "codex" },
     })
   })
 
   it("falls back to the agent type when the agent label is empty", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://agent/claude_code", "")
+      parseRecurCodeReferenceUri("rc://agent/claude_code", "")
     ).toMatchObject({
       refType: "agent",
       id: "claude_code",
@@ -52,12 +52,12 @@ describe("parseRecurCodeReferenceUri", () => {
 
   it("parses a new-format session uri, recovering the agent type", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://session/codex_abc123", "My chat")
+      parseRecurCodeReferenceUri("rc://session/codex_abc123", "My chat")
     ).toMatchObject({
       refType: "session",
       id: "codex_abc123",
       label: "My chat",
-      uri: "recurcode://session/codex_abc123",
+      uri: "rc://session/codex_abc123",
       meta: { agentType: "codex" },
     })
   })
@@ -67,63 +67,63 @@ describe("parseRecurCodeReferenceUri", () => {
     // split would yield "claude" / "open". The whole `<type>_<external_id>` is
     // the id and the full type is recovered by prefix match.
     expect(
-      parseRecurCodeReferenceUri("recurcode://session/claude_code_sess-9", "")
+      parseRecurCodeReferenceUri("rc://session/claude_code_sess-9", "")
     ).toMatchObject({
       id: "claude_code_sess-9",
       meta: { agentType: "claude_code" },
     })
     expect(
-      parseRecurCodeReferenceUri("recurcode://session/open_code_x", "")?.meta
+      parseRecurCodeReferenceUri("rc://session/open_code_x", "")?.meta
     ).toEqual({ agentType: "open_code" })
     expect(
-      parseRecurCodeReferenceUri("recurcode://session/open_claw_y", "")?.meta
+      parseRecurCodeReferenceUri("rc://session/open_claw_y", "")?.meta
     ).toEqual({ agentType: "open_claw" })
   })
 
   it("treats a legacy numeric session id as opaque (no agent icon)", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://session/123", "Login")
+      parseRecurCodeReferenceUri("rc://session/123", "Login")
     ).toMatchObject({
       refType: "session",
       id: "123",
       label: "Login",
-      uri: "recurcode://session/123",
+      uri: "rc://session/123",
       meta: null,
     })
   })
 
   it("treats a non-agent-prefixed token as a plain session id", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://session/randomtoken", "")
+      parseRecurCodeReferenceUri("rc://session/randomtoken", "")
     ).toMatchObject({ refType: "session", id: "randomtoken", meta: null })
   })
 
   it("falls back to #id for an empty session label", () => {
-    expect(parseRecurCodeReferenceUri("recurcode://session/123", "")?.label).toBe(
+    expect(parseRecurCodeReferenceUri("rc://session/123", "")?.label).toBe(
       "#123"
     )
   })
 
   it("parses a commit uri, deriving the short hash", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://commit/%2Frepo@abc1234def5678", "abc1234")
+      parseRecurCodeReferenceUri("rc://commit/%2Frepo@abc1234def5678", "abc1234")
     ).toMatchObject({
       refType: "commit",
       id: "abc1234def5678",
       label: "abc1234",
-      uri: "recurcode://commit/%2Frepo@abc1234def5678",
+      uri: "rc://commit/%2Frepo@abc1234def5678",
       meta: { shortHash: "abc1234" },
     })
   })
 
   it("parses a skill uri, moving the label's leading `/`·`$` into the prefix", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://skill/review", "/review")
+      parseRecurCodeReferenceUri("rc://skill/review", "/review")
     ).toMatchObject({
       refType: "skill",
       id: "review",
       label: "review",
-      uri: "recurcode://skill/review",
+      uri: "rc://skill/review",
       // The stripped trigger is kept so re-serializing the badge emits the
       // same `/review` token it was parsed from.
       meta: { invocationPrefix: "/" },
@@ -131,7 +131,7 @@ describe("parseRecurCodeReferenceUri", () => {
     // The `$` prefix ($skill / Codex expert) is stripped — and kept — the same
     // way, so a `$deploy` token never re-serializes to `/deploy`.
     expect(
-      parseRecurCodeReferenceUri("recurcode://skill/deploy", "$deploy")
+      parseRecurCodeReferenceUri("rc://skill/deploy", "$deploy")
     ).toMatchObject({
       label: "deploy",
       meta: { invocationPrefix: "$" },
@@ -139,7 +139,7 @@ describe("parseRecurCodeReferenceUri", () => {
   })
 
   it("falls back to the bare id for an empty skill label", () => {
-    expect(parseRecurCodeReferenceUri("recurcode://skill/deploy", "")).toMatchObject({
+    expect(parseRecurCodeReferenceUri("rc://skill/deploy", "")).toMatchObject({
       label: "deploy",
       // No literal token to read a trigger from → serializer's `/` default.
       meta: null,
@@ -148,18 +148,18 @@ describe("parseRecurCodeReferenceUri", () => {
 
   it("parses an embedded-attachment uri as an inert file badge", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://embedded/9f3c-uuid", "report.pdf")
+      parseRecurCodeReferenceUri("rc://embedded/9f3c-uuid", "report.pdf")
     ).toMatchObject({
       refType: "file",
       label: "report.pdf",
-      uri: "recurcode://embedded/9f3c-uuid",
+      uri: "rc://embedded/9f3c-uuid",
       meta: { fileKind: "file" },
     })
   })
 
   it("falls back to a generic label for an empty embedded-attachment label", () => {
     expect(
-      parseRecurCodeReferenceUri("recurcode://embedded/9f3c-uuid", "")?.label
+      parseRecurCodeReferenceUri("rc://embedded/9f3c-uuid", "")?.label
     ).toBe("resource")
   })
 
@@ -167,7 +167,7 @@ describe("parseRecurCodeReferenceUri", () => {
     const uri = buildEmbeddedReferenceUri()
     expect(isEmbeddedReferenceUri(uri)).toBe(true)
     expect(isEmbeddedReferenceUri("file:///rc-embedded/real.ts")).toBe(false)
-    expect(isEmbeddedReferenceUri("recurcode://session/abc")).toBe(false)
+    expect(isEmbeddedReferenceUri("rc://session/abc")).toBe(false)
   })
 })
 
@@ -198,9 +198,9 @@ describe("an embedded reference uri that carries its ref", () => {
   it("carries no ref for a badge minted without one", () => {
     expect(refOfEmbeddedReferenceUri(buildEmbeddedReferenceUri())).toBeNull()
     expect(refOfEmbeddedReferenceUri(buildEmbeddedReferenceUri(""))).toBeNull()
-    expect(refOfEmbeddedReferenceUri("recurcode://embedded/9f3c-uuid")).toBeNull()
-    expect(refOfEmbeddedReferenceUri("recurcode://embedded/%E0%A4%A")).toBeNull()
-    expect(refOfEmbeddedReferenceUri("recurcode://session/abc")).toBeNull()
+    expect(refOfEmbeddedReferenceUri("rc://embedded/9f3c-uuid")).toBeNull()
+    expect(refOfEmbeddedReferenceUri("rc://embedded/%E0%A4%A")).toBeNull()
+    expect(refOfEmbeddedReferenceUri("rc://session/abc")).toBeNull()
   })
 
   it("is still an inert file badge with the label it was given", () => {

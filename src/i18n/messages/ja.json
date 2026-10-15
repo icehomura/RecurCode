@@ -1376,7 +1376,7 @@
       "authTypeHint": "config.toml 内で API キーを書き込む場所。",
       "rawEditorLabel": "config.toml を直接編集",
       "rawEditorWarning": "ここで保存するとファイル全体がそのまま上書きされ、上の構造化設定が置き換えられます。",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "公式サブスクリプション",
     "authModeCustomEndpoint": "カスタムエンドポイント",
@@ -3904,7 +3904,7 @@
         "collapse": "折りたたむ",
         "errorTitle": "フィードバックの確認に失敗しました"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "セッション {session} を読み取り中",
         "getSessionInfoNoId": "セッションを読み取り中",
         "taskProgress": "進捗: {message}",
@@ -5448,7 +5448,7 @@
       "stop": "共有を停止",
       "stopWithKey": "すべてのウィンドウの共有を停止（{key}）"
     },
-    "recurCodeGranted": "RecurCode 自体に「アクセシビリティ」または「画面収録」が許可されているため、エージェントのシェルは共有なしでそれを使えます。必要なければ、システム設定で RecurCode の許可をオフにしてください。",
+    "rcGranted": "RecurCode 自体に「アクセシビリティ」または「画面収録」が許可されているため、エージェントのシェルは共有なしでそれを使えます。必要なければ、システム設定で RecurCode の許可をオフにしてください。",
     "backend": {
       "idle": "未起動",
       "downloading": "ドライバーをダウンロード中…",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, other {# 個のウィンドウを共有できませんでした。閉じられた可能性があります。}}",
       "unshareable": "{count, plural, other {共有できないウィンドウ # 個}}",
       "noneShareable": "共有できるウィンドウはありません。",
-      "recurCodeWhy": "RecurCode のウィンドウは決して共有されません。RecurCode を操作できるエージェントは、自分の要求を自分で承認したり、自分にさらにウィンドウを共有したりできてしまうためです。ほかの RecurCode のウィンドウも同様です。"
+      "rcWhy": "RecurCode のウィンドウは決して共有されません。RecurCode を操作できるエージェントは、自分の要求を自分で承認したり、自分にさらにウィンドウを共有したりできてしまうためです。ほかの RecurCode のウィンドウも同様です。"
     },
     "settings": {
       "pageTitle": "コンピューター操作",
@@ -6175,7 +6175,7 @@
     "editor": {
       "createTitle": "カスタムスキルを新規作成",
       "editTitle": "カスタムスキルを編集",
-      "description": "カスタムスキルは共有ストア（~/.recurcode/skills）に保存され、任意のエージェントで有効化できます。",
+      "description": "カスタムスキルは共有ストア（~/.rc/skills）に保存され、任意のエージェントで有効化できます。",
       "idLabel": "スキル ID",
       "idPlaceholder": "例: my-workflow",
       "contentLabel": "SKILL.md",
@@ -6334,7 +6334,7 @@
       "npm_missing": "アプリの PATH に npm が見つかりませんでした。",
       "not_installed": "このエージェントはインストールされていないようです。",
       "installed_but_unresolved": "インストール済みと記録されていますが、アプリが実行ファイルを見つけられません。",
-      "user_prefix_not_on_path": "フォールバックのプレフィックス（~/.recurcode/npm-global）にインストールされていますが、アプリの PATH に含まれていません。アプリを完全に再起動して再試行してください。",
+      "user_prefix_not_on_path": "フォールバックのプレフィックス（~/.rc/npm-global）にインストールされていますが、アプリの PATH に含まれていません。アプリを完全に再起動して再試行してください。",
       "homebrew_bin_not_on_path": "Homebrew の bin にインストールされていますが、アプリの PATH に含まれていません（Apple Silicon の keg 分割）。",
       "terminal_only_path": "このコマンドはターミナルでは解決されますが、アプリでは解決されません。GUI の PATH のずれです。ターミナルからアプリを起動するか、エージェント設定から再インストールしてください。",
       "npm_prefix_timeout": "npm prefix -g が遅すぎました（1.5 秒超）。フォールバック検出をスキップしました。アプリを再起動して再試行してください。",

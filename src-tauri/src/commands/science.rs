@@ -4,7 +4,7 @@
 //! almost verbatim. Science skills (curated from
 //! K-Dense-AI/scientific-agent-skills) are bundled into the binary via
 //! `include_dir!` and, on startup, extracted into the same central store as
-//! experts — `~/.recurcode/skills/<id>/`. Users enable a science skill for any ACP
+//! experts — `~/.rc/skills/<id>/`. Users enable a science skill for any ACP
 //! agent by symlinking (or Windows-junctioning) the agent's skill dir into the
 //! central copy.
 //!
@@ -160,7 +160,7 @@ fn mutation_lock() -> &'static Mutex<()> {
 }
 
 // ─── Paths ──────────────────────────────────────────────────────────────
-// The central store is shared with experts (`~/.recurcode/skills/`); only the
+// The central store is shared with experts (`~/.rc/skills/`); only the
 // manifest file differs, so the two sources never clobber each other's state.
 
 fn manifest_path() -> PathBuf {

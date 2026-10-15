@@ -36,7 +36,7 @@ const grant: BridgeGrant = {
 const hostGrant: BridgeGrant = {
   ...grant,
   bridgePort: null,
-  bridgeHost: "3000.recurcode.example",
+  bridgeHost: "3000.rc.example",
 }
 
 beforeEach(() => {
@@ -201,12 +201,12 @@ describe("bridge URLs", () => {
     // browser keeps the port it is already talking to — including none at
     // all, which is what a deployment behind 443 looks like.
     const page = { protocol: "https:", hostname: "RecurCode.example", port: "" }
-    expect(bridgeOrigin(hostGrant, page)).toBe("https://3000.recurcode.example")
+    expect(bridgeOrigin(hostGrant, page)).toBe("https://3000.rc.example")
     expect(bridgeEntryUrl(hostGrant, page)).toBe(
-      "https://3000.recurcode.example/__rc_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
+      "https://3000.rc.example/__rc_bridge/enter/cap123?to=%2Fdocs%3Fx%3D1"
     )
     expect(bridgeOrigin(hostGrant, { ...page, port: "8443" })).toBe(
-      "https://3000.recurcode.example:8443"
+      "https://3000.rc.example:8443"
     )
     // The hostname the server worked out wins over the public host it would
     // have used for a bridge port, and over the page's own host.
@@ -215,7 +215,7 @@ describe("bridge URLs", () => {
         { ...hostGrant, publicHost: "bridge.example" },
         { protocol: "http:", hostname: "elsewhere.example", port: "3080" }
       )
-    ).toBe("http://3000.recurcode.example:3080")
+    ).toBe("http://3000.rc.example:3080")
   })
 
   it("send an empty path to the root and keep the address's fragment", () => {

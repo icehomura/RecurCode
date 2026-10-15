@@ -214,7 +214,7 @@ const remarkPlugins = [
   remarkTrimCjkAutolinkTail,
 ]
 
-// The same links survive as in MessageResponse: `recurcode://` references keep
+// The same links survive as in MessageResponse: `rc://` references keep
 // their href through sanitize (rehype-allow-RecurCode), which would otherwise leave
 // "@Codex [blocked]", and relative local links keep theirs through harden —
 // without that `./a.md` would leave harden as `/a.md` and a bare `a.md` would

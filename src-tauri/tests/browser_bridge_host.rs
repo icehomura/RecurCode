@@ -301,7 +301,7 @@ async fn only_a_name_rc_handed_out_is_the_bridges() {
     assert_eq!(response.text().await.unwrap(), "RecurCode's own page");
     // Including a workbench whose own hostname starts with a number: under
     // the shape rule its every request would have been the bridge's.
-    let response = get(format!("{upstream}.recurcode:{RecurCode}")).await.unwrap();
+    let response = get(format!("{upstream}.rc:{RecurCode}")).await.unwrap();
     assert_eq!(response.text().await.unwrap(), "RecurCode's own page");
     // The name that was handed out still works, and a second one is minted
     // for a workbench reached at a second hostname.

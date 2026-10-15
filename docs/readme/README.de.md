@@ -268,7 +268,7 @@ Ein Editor, Live- und Zwei-Spalten-Diffs, ein vollwertiger Git-Client mit dreisp
 - **[Projekt-Boot](https://docs.codeg.app/guide/project-boot)** — ein neues Projekt visuell aufsetzen, mit Live-Vorschau
 - **[Mach es zu deinem](https://docs.codeg.app/reference/settings/appearance)** — zwölf Themes, die du Token für Token umfärben kannst, Hintergrundbilder, Eckenradius und eigenes CSS — in jeder der zehn Oberflächensprachen
 - **[Sicherung & Synchronisierung](https://docs.codeg.app/reference/settings/system#backup-restore)** — verschlüsselte Sicherungen sowie Konfigurationssynchronisierung zwischen Rechnern über eine Datei oder deinen eigenen WebDAV-Server
-- **[URL-Schema](../../docs/url-scheme.md)** — `recurcode://session/<id>` öffnet eine Unterhaltung aus einer anderen App heraus (Desktop)
+- **[URL-Schema](../../docs/url-scheme.md)** — `rc://session/<id>` öffnet eine Unterhaltung aus einer anderen App heraus (Desktop)
 - **Und noch mehr** — fast jede Version bringt etwas Neues; die vollständige Liste steht in den [Versionshinweisen](https://github.com/spacering-net/codeg/releases)
 
 ## 🤖 Unterstützte Agenten

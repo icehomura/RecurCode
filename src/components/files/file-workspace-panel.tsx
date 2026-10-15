@@ -1020,7 +1020,7 @@ export function FileWorkspacePanel() {
         // `expandLineSelection`, honoring the user's choice of ⌘L as "add to
         // chat". The empty case is handled in `run` — `addSelectionToChat`
         // attaches the current line — so menu / ⌘L always do something useful.
-        precondition: "recurCodeSelectionAttachable",
+        precondition: "rcSelectionAttachable",
         run: () => addSelectionToChat(),
       })
       addFileToChatActionRef.current?.dispose()
@@ -1031,7 +1031,7 @@ export function FileWorkspacePanel() {
         contextMenuOrder: 1.6,
         // Whole-file attach is independent of any selection; share the same
         // attachability gate (real file tab + folder + active conversation).
-        precondition: "recurCodeSelectionAttachable",
+        precondition: "rcSelectionAttachable",
         run: () => addFileToChat(),
       })
     },
@@ -1381,11 +1381,11 @@ export function FileWorkspacePanel() {
       applyGitChangeDecorations()
 
       // --- "Add selection to chat": context-menu action, ⌘L shortcut, and the
-      // floating pill. All three are gated by the `recurCodeSelectionAttachable`
+      // floating pill. All three are gated by the `rcSelectionAttachable`
       // context key so they only appear for a real file tab with an active
       // conversation to attach to.
       const attachableKey = editorInstance.createContextKey<boolean>(
-        "recurCodeSelectionAttachable",
+        "rcSelectionAttachable",
         false
       )
       attachableKeyRef.current = attachableKey

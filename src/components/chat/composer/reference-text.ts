@@ -92,7 +92,7 @@ function escapeLinkDestination(uri: string): string {
  *
  * References with a URI render as a Markdown link `[label](uri)` — matching how
  * the backend's `user_blocks_from_prompt` already folds ResourceLinks into
- * `[name](uri)`. Agents render as `[@label](recurcode://agent/…)` when they carry a
+ * `[name](uri)`. Agents render as `[@label](rc://agent/…)` when they carry a
  * routing uri, or as plain `@label` otherwise. Skills render as the `/id`
  * invocation token (the stable id, never the possibly-localized display label).
  * Every interpolated label/uri is escaped — and free-standing URL/email-like

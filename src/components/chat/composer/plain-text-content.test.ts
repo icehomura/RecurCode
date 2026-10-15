@@ -75,8 +75,8 @@ describe("decidePastedContent", () => {
 
   it("hydrates references when forcing text/plain over an external HTML fragment", () => {
     const decision = decidePastedContent({
-      html: "<div>run [@Codex](recurcode://agent/codex)</div>",
-      text: "run [@Codex](recurcode://agent/codex)",
+      html: "<div>run [@Codex](rc://agent/codex)</div>",
+      text: "run [@Codex](rc://agent/codex)",
     })
     expect(decision).toEqual([
       { type: "text", text: "run " },
@@ -92,7 +92,7 @@ describe("decidePastedContent", () => {
     // inserted, which is what makes a copied delegation message re-send with
     // its routing reminder intact.
     const content = textToHydratedInlineContent(
-      "ask [@Antigravity](recurcode://agent/antigravity)"
+      "ask [@Antigravity](rc://agent/antigravity)"
     )
     const agent = content?.find((node) => node.type === "reference")
     expect(agent).toMatchObject({
@@ -155,7 +155,7 @@ describe("textToSeededInlineContent", () => {
     // filling one into the composer must show badges, not `[label](uri)` text.
     expect(
       textToSeededInlineContent(
-        "/review [app.ts](file:///repo/app.ts) with [@Codex](recurcode://agent/codex)",
+        "/review [app.ts](file:///repo/app.ts) with [@Codex](rc://agent/codex)",
         KNOWN
       )
     ).toEqual([
@@ -182,7 +182,7 @@ describe("textToSeededInlineContent", () => {
 
   it("hydrates a session link", () => {
     expect(
-      textToSeededInlineContent("续上次 [排查登录](recurcode://session/42)")
+      textToSeededInlineContent("续上次 [排查登录](rc://session/42)")
     ).toEqual([
       { type: "text", text: "续上次 " },
       {
@@ -205,8 +205,8 @@ describe("textToSeededInlineContent", () => {
 
   it("keeps an embedded-attachment link literal (it would be dropped on send)", () => {
     expect(
-      textToSeededInlineContent("see [report.pdf](recurcode://embedded/abc-123)")
-    ).toEqual(textToInlineContent("see [report.pdf](recurcode://embedded/abc-123)"))
+      textToSeededInlineContent("see [report.pdf](rc://embedded/abc-123)")
+    ).toEqual(textToInlineContent("see [report.pdf](rc://embedded/abc-123)"))
   })
 })
 
@@ -337,7 +337,7 @@ describe("textToHydratedInlineContent", () => {
 
   it("hydrates session links and maps newlines around badges to hard breaks", () => {
     expect(
-      textToHydratedInlineContent("re:\n[My chat](recurcode://session/42)")
+      textToHydratedInlineContent("re:\n[My chat](rc://session/42)")
     ).toEqual([
       { type: "text", text: "re:" },
       { type: "hardBreak" },
@@ -347,7 +347,7 @@ describe("textToHydratedInlineContent", () => {
           refType: "session",
           id: "42",
           label: "My chat",
-          uri: "recurcode://session/42",
+          uri: "rc://session/42",
         }),
       },
     ])
@@ -358,16 +358,16 @@ describe("textToHydratedInlineContent", () => {
     // it here, and send serialization omits embedded badges — hydrating one
     // would silently delete the pasted text on send.
     expect(
-      textToHydratedInlineContent("see [report.pdf](recurcode://embedded/abc-123)")
+      textToHydratedInlineContent("see [report.pdf](rc://embedded/abc-123)")
     ).toBeNull()
     // Alongside a real reference the rest still hydrates; the embedded link
     // stays text.
     const mixed = textToHydratedInlineContent(
-      "[report.pdf](recurcode://embedded/abc-123) vs [app.ts](file:///repo/app.ts)"
+      "[report.pdf](rc://embedded/abc-123) vs [app.ts](file:///repo/app.ts)"
     )
     expect(mixed?.[0]).toEqual({
       type: "text",
-      text: "[report.pdf](recurcode://embedded/abc-123)",
+      text: "[report.pdf](rc://embedded/abc-123)",
     })
     expect(mixed?.[2]).toEqual({
       type: "reference",

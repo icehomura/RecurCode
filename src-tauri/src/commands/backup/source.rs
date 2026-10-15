@@ -292,7 +292,7 @@ mod tests {
     fn plaintext_archive(dir: &Path) -> PathBuf {
         use crate::commands::backup::manifest::{BackupManifest, BACKUP_FORMAT_VERSION, BACKUP_KIND};
         use sea_orm_migration::MigratorTrait;
-        let zip = dir.join("backup.recurcode.zip");
+        let zip = dir.join("backup.rc.zip");
         let db = dir.join("db.bin");
         std::fs::write(&db, b"DB").unwrap();
         let mut b = archive::ArchiveBuilder::create(&zip).unwrap();
@@ -350,7 +350,7 @@ mod tests {
         let data_dir = dir.path().join("data");
         std::fs::create_dir_all(&data_dir).unwrap();
         let plain = plaintext_archive(dir.path());
-        let enc = dir.path().join("backup.recurcodebak");
+        let enc = dir.path().join("backup.rcbak");
         crypto::encrypt_file(&plain, &enc, "s3cret", &CancellationToken::new()).unwrap();
 
         // No passphrase: nothing is decrypted and no handle is issued.
@@ -397,7 +397,7 @@ mod tests {
         let data_dir = dir.path().join("data");
         std::fs::create_dir_all(&data_dir).unwrap();
         let plain = plaintext_archive(dir.path());
-        let enc = dir.path().join("backup.recurcodebak");
+        let enc = dir.path().join("backup.rcbak");
         crypto::encrypt_file(&plain, &enc, "s3cret", &CancellationToken::new()).unwrap();
         let prepared = prepare_source_core(&enc, &data_dir, Some("s3cret"), false)
             .await

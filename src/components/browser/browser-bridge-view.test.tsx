@@ -241,14 +241,14 @@ describe("BrowserBridgeView", () => {
     const hostGrant: BridgeGrant = {
       ...grant,
       bridgePort: null,
-      bridgeHost: "3000.recurcode.example",
+      bridgeHost: "3000.rc.example",
     }
     api.bridgeOpen.mockResolvedValue(hostGrant)
     api.probeBridge.mockResolvedValue(false)
     renderView(<BrowserBridgeView tab={tab()} />)
     await screen.findByText("The bridge port can't be reached")
     const notice = screen.getByRole("status")
-    expect(notice).toHaveTextContent("3000.recurcode.example")
+    expect(notice).toHaveTextContent("3000.rc.example")
     expect(notice).toHaveTextContent("RC_BRIDGE_HOST_PATTERN")
     expect(notice).not.toHaveTextContent("RC_BRIDGE_PORTS")
   })

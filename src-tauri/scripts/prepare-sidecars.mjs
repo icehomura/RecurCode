@@ -95,7 +95,7 @@ function resolveHostTriple() {
   }
 }
 
-// The helper as an app: its Info.plist (identifier `app.recurcode.computer-helper`,
+// The helper as an app: its Info.plist (identifier `app.rc.computer-helper`,
 // no Dock icon), its executable, RecurCode's icon. Sealed ad hoc, so a bundle
 // signed around it accepts it; release.yml signs it again with the Developer
 // ID before `tauri build`.

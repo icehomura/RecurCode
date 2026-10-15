@@ -268,7 +268,7 @@ RecurCode를 데스크톱 앱으로, 어떤 브라우저에서든 여는 자체 
 - **[프로젝트 부트](https://docs.codeg.app/guide/project-boot)** — 실시간 미리보기와 함께 새 프로젝트의 뼈대를 시각적으로 만듭니다
 - **[내 취향대로](https://docs.codeg.app/reference/settings/appearance)** — 토큰 단위로 색을 바꿀 수 있는 열두 가지 테마, 배경화면, 모서리 둥글기, 사용자 지정 CSS — 열 가지 인터페이스 언어 중 어느 언어로든
 - **[백업과 동기화](https://docs.codeg.app/reference/settings/system#backup-restore)** — 암호화된 백업, 그리고 파일이나 직접 운영하는 WebDAV 서버를 통한 컴퓨터 간 설정 동기화
-- **[URL 스킴](../../docs/url-scheme.md)** — `recurcode://session/<id>`로 다른 앱에서 대화를 엽니다(데스크톱)
+- **[URL 스킴](../../docs/url-scheme.md)** — `rc://session/<id>`로 다른 앱에서 대화를 엽니다(데스크톱)
 - **그 밖에도** — 거의 모든 릴리스마다 새로운 것이 더해집니다. 전체 목록은 [릴리스 노트](https://github.com/spacering-net/codeg/releases)에 있습니다
 
 ## 🤖 지원 에이전트

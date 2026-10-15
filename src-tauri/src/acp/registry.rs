@@ -3652,7 +3652,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // 2.0.2 read through both: a multi-folder workspace's folders are
             // real symlinks under the cwd (RecurCode sends no
             // `additionalDirectories`), and an expert or office skill is
-            // `~/.kimi-code/skills/<id>` linked to `~/.recurcode/skills/<id>` —
+            // `~/.kimi-code/skills/<id>` linked to `~/.rc/skills/<id>` —
             // still listed as `skill:<id>`, but a `Read` of the skill's own
             // supporting files through the link is now refused. Both degrade
             // rather than break: the error names the real path, and reading

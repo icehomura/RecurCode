@@ -1576,12 +1576,12 @@ describe("materializeClaudeHardeningFlags — save-time toggle defaults", () => 
 })
 
 describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default", () => {
-  /** Read `model_providers.recurcode.requires_openai_auth` back out of a result. */
+  /** Read `model_providers.rc.requires_openai_auth` back out of a result. */
   function authFlagOf(configTomlText: string): boolean | undefined {
     const parsed = parseTomlDocument(configTomlText) as {
       model_providers?: Record<string, { requires_openai_auth?: unknown }>
     }
-    const value = parsed.model_providers?.recurcode?.requires_openai_auth
+    const value = parsed.model_providers?.rc?.requires_openai_auth
     return typeof value === "boolean" ? value : undefined
   }
 
@@ -1599,7 +1599,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
   const BOUND_PROVIDER = [
     'model_provider = "RecurCode"',
     "",
-    "[model_providers.recurcode]",
+    "[model_providers.rc]",
     'base_url = "https://old.example/v1"',
     'name = "RecurCode"',
     'wire_api = "responses"',
@@ -1631,7 +1631,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
         const toml = [
           BOUND_PROVIDER,
           "",
-          "[model_providers.recurcode.http_headers]",
+          "[model_providers.rc.http_headers]",
           'x-openai-actor-authorization = "local-image-extension"',
         ].join("\n")
         expect(
@@ -1648,7 +1648,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
       "# my hand-written codex config",
       'model_provider = "RecurCode"',
       "",
-      "[model_providers.recurcode]",
+      "[model_providers.rc]",
       'base_url = "https://old.example/v1"',
       "# keep the actor-authorization arrangement intact",
       "requires_openai_auth = false",
@@ -1665,7 +1665,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
     const toml = [
       BOUND_PROVIDER,
       "",
-      "[model_providers.recurcode.http_headers]",
+      "[model_providers.rc.http_headers]",
       'X-OpenAI-Actor-Authorization = "local-image-extension"',
     ].join("\n")
     expect(authFlagOf(patchCodexConfigTomlText(toml, ENTRY))).toBeUndefined()
@@ -1675,7 +1675,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
     const toml = [
       'model_provider = "RecurCode"',
       "",
-      "[model_providers.recurcode]",
+      "[model_providers.rc]",
       'base_url = "https://old.example/v1"',
       'http_headers = { "x-openai-actor-authorization" = "local-image-extension" }',
     ].join("\n")
@@ -1684,14 +1684,14 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
 
   // Asserted on the text, not the parse: the text writers predate this change
   // and cannot patch a provider spelled with root-level dotted keys — they
-  // append a `[model_providers.recurcode]` section that redefines the same table.
+  // append a `[model_providers.rc]` section that redefines the same table.
   // That limitation is pre-existing and out of scope here; what matters is
   // that the header is still recognized, so no auth default is added.
   it("reads the header out of a root-level dotted key too", () => {
     const toml = [
       'model_provider = "RecurCode"',
-      'model_providers.recurcode.base_url = "https://old.example/v1"',
-      'model_providers.recurcode.http_headers."x-openai-actor-authorization" = "local-image-extension"',
+      'model_providers.rc.base_url = "https://old.example/v1"',
+      'model_providers.rc.http_headers."x-openai-actor-authorization" = "local-image-extension"',
     ].join("\n")
     expect(patchCodexConfigTomlText(toml, ENTRY)).not.toContain(
       "requires_openai_auth"
@@ -1704,7 +1704,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
     const toml = [
       BOUND_PROVIDER,
       "",
-      "[model_providers.recurcode.http_headers]",
+      "[model_providers.rc.http_headers]",
       'x-openai-actor-authorization = "   "',
     ].join("\n")
     expect(authFlagOf(patchCodexConfigTomlText(toml, ENTRY))).toBe(true)
@@ -1715,7 +1715,7 @@ describe("patchCodexConfigTomlText — RecurCode's requires_openai_auth default"
       BOUND_PROVIDER,
       "requires_openai_auth = true",
       "",
-      "[model_providers.recurcode.http_headers]",
+      "[model_providers.rc.http_headers]",
       'x-openai-actor-authorization = "local-image-extension"',
     ].join("\n")
     expect(authFlagOf(patchCodexConfigTomlText(toml, ENTRY))).toBe(true)
@@ -1846,13 +1846,13 @@ describe("codex [features].default_mode_request_user_input toggle", () => {
       expect(readsBackAs(on)).toBe(true)
     })
 
-    // `features.x` under `[model_providers.recurcode]` is
-    // `model_providers.recurcode.features.x` — a key codex ignores. Reading it
+    // `features.x` under `[model_providers.rc]` is
+    // `model_providers.rc.features.x` — a key codex ignores. Reading it
     // would show a value no save could ever clear.
     it("ignores the same text nested inside another section", () => {
       expect(
         readsBackAs(
-          `model_provider = "RecurCode"\n\n[model_providers.recurcode]\nfeatures.${KEY} = true\n`
+          `model_provider = "RecurCode"\n\n[model_providers.rc]\nfeatures.${KEY} = true\n`
         )
       ).toBe(false)
     })
@@ -1905,7 +1905,7 @@ describe("codex [features].default_mode_request_user_input toggle", () => {
     })
 
     it("does not reach past one into another table's keys", () => {
-      const src = `model = "gpt-5"\n\n[model_providers.recurcode] # my gateway\nfeatures.${KEY} = true\n`
+      const src = `model = "gpt-5"\n\n[model_providers.rc] # my gateway\nfeatures.${KEY} = true\n`
       // Nested, so the switch reads off — and switching it off must not go
       // delete the provider-local key it never owned.
       expect(readsBackAs(src)).toBe(false)
@@ -1959,7 +1959,7 @@ describe("codex [features].default_mode_request_user_input toggle", () => {
     const toml = [
       'model_provider = "RecurCode"',
       "",
-      "[model_providers.recurcode]",
+      "[model_providers.rc]",
       'base_url = "https://example.test/v1"',
       "supports_websockets = true",
     ].join("\n")
@@ -2013,14 +2013,14 @@ describe("codex WebSocket feature key survives unrelated toggles", () => {
   }
 
   // The fallback reads the feature key, so a nested `features.…` line — which
-  // is really `model_providers.recurcode.features.…` and means nothing to codex —
+  // is really `model_providers.rc.features.…` and means nothing to codex —
   // must not reach it. Otherwise any unrelated toggle would quietly promote a
   // provider-local key into a global WebSocket flag.
   it("is not conjured out of a nested dotted key", () => {
     const nested = [
       'model_provider = "RecurCode"',
       "",
-      "[model_providers.recurcode]",
+      "[model_providers.rc]",
       'base_url = "https://example.test/v1"',
       "features.responses_websockets_v2 = true",
     ].join("\n")
@@ -2040,7 +2040,7 @@ describe("codex WebSocket feature key survives unrelated toggles", () => {
     const bound = [
       'model_provider = "RecurCode"',
       "",
-      "[model_providers.recurcode]",
+      "[model_providers.rc]",
       'base_url = "https://example.test/v1"',
       "supports_websockets = true",
       "",

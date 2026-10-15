@@ -3,7 +3,7 @@
 //! Two operations are exposed:
 //! - `list(...)` — proxies the public `GET /api/pets` listing endpoint and
 //!   annotates each entry with `alreadyInstalled` based on what is already
-//!   under `~/.recurcode/pets/`.
+//!   under `~/.rc/pets/`.
 //! - `install(...)` — downloads `GET /api/pets/{id}/download` (a zip
 //!   containing `pet.json` + `spritesheet.webp`), validates the contents
 //!   with the same rules as a manual `pet_add`, and atomically renames the

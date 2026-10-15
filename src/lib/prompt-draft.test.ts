@@ -130,7 +130,7 @@ describe("promptDraftTitleSeed", () => {
   // the cut, and a link cut in half no longer reads as a badge's name.
   it("names a new conversation after the badge, not half its link", () => {
     const displayText =
-      "[Marked-up screenshot](recurcode://embedded/https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3DRecurCode#2f5c8f1a-1b2c-4d5e-8f90-a1b2c3d4e5f6)"
+      "[Marked-up screenshot](rc://embedded/https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3DRecurCode#2f5c8f1a-1b2c-4d5e-8f90-a1b2c3d4e5f6)"
     expect(promptDraftTitleSeed({ blocks: [], displayText }, "Attached")).toBe(
       "Marked-up screenshot"
     )

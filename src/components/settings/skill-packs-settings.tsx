@@ -77,7 +77,7 @@ export function SkillPacksSettings() {
     [router, pathname, searchParams]
   )
 
-  // All three packs link from ONE shared central store (~/.recurcode/skills), so a
+  // All three packs link from ONE shared central store (~/.rc/skills), so a
   // single, tab-independent "open central folder" is correct for every tab.
   const handleOpenCentralDir = useCallback(async () => {
     try {
@@ -85,7 +85,7 @@ export function SkillPacksSettings() {
       if (isDesktop() && getActiveRemoteConnectionId() === null) {
         // Desktop: reveal the folder. `revealItemInDir` (not `openPath`) is
         // deliberate — the opener plugin's scope rejects `openPath` for the
-        // hidden `~/.recurcode/...` path.
+        // hidden `~/.rc/...` path.
         await revealItemInDir(path)
       } else {
         await openFolder(path)

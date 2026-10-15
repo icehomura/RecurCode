@@ -1376,7 +1376,7 @@
       "authTypeHint": "API Key 在 config.toml 中的寫入位置。",
       "rawEditorLabel": "直接編輯 config.toml",
       "rawEditorWarning": "在此儲存會按原文覆寫整個檔案，取代掉上方的結構化設定。",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "官網訂閱",
     "authModeCustomEndpoint": "自定義介面",
@@ -3904,7 +3904,7 @@
         "collapse": "收合",
         "errorTitle": "回饋檢查失敗"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "讀取會話 {session}",
         "getSessionInfoNoId": "讀取會話",
         "taskProgress": "進度：{message}",
@@ -5448,7 +5448,7 @@
       "stop": "停止分享",
       "stopWithKey": "停止分享所有視窗（{key}）"
     },
-    "recurCodeGranted": "RecurCode 本身擁有「輔助使用」或「螢幕錄製」權限，智慧體的命令列可以不經分享直接使用它。如非必要，請在系統設定中為 RecurCode 關閉。",
+    "rcGranted": "RecurCode 本身擁有「輔助使用」或「螢幕錄製」權限，智慧體的命令列可以不經分享直接使用它。如非必要，請在系統設定中為 RecurCode 關閉。",
     "backend": {
       "idle": "未啟動",
       "downloading": "正在下載驅動程式…",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, other {有 # 個視窗未能分享，可能已經關閉。}}",
       "unshareable": "{count, plural, other {# 個視窗不能分享}}",
       "noneShareable": "這些視窗都不能分享。",
-      "recurCodeWhy": "RecurCode 的視窗永遠不能分享：能操作 RecurCode 的智慧體可以替自己批准請求，或給自己分享更多視窗。其他 RecurCode 執行個體的視窗也一樣。"
+      "rcWhy": "RecurCode 的視窗永遠不能分享：能操作 RecurCode 的智慧體可以替自己批准請求，或給自己分享更多視窗。其他 RecurCode 執行個體的視窗也一樣。"
     },
     "settings": {
       "pageTitle": "電腦操作",
@@ -6175,7 +6175,7 @@
     "editor": {
       "createTitle": "新增自訂技能",
       "editTitle": "編輯自訂技能",
-      "description": "自訂技能存放於共用庫（~/.recurcode/skills），可為任意智能體啟用。",
+      "description": "自訂技能存放於共用庫（~/.rc/skills），可為任意智能體啟用。",
       "idLabel": "技能 ID",
       "idPlaceholder": "例如 my-workflow",
       "contentLabel": "SKILL.md",
@@ -6334,7 +6334,7 @@
       "npm_missing": "在應用的 PATH 上找不到 npm。",
       "not_installed": "此智能體似乎尚未安裝。",
       "installed_but_unresolved": "紀錄顯示已安裝，但應用無法定位其執行檔。",
-      "user_prefix_not_on_path": "安裝到了回退前綴（~/.recurcode/npm-global），但它不在應用的 PATH 上。請徹底重新啟動應用後再試。",
+      "user_prefix_not_on_path": "安裝到了回退前綴（~/.rc/npm-global），但它不在應用的 PATH 上。請徹底重新啟動應用後再試。",
       "homebrew_bin_not_on_path": "安裝在 Homebrew 的 bin 目錄下，但它不在應用的 PATH 上（Apple Silicon keg 拆分）。",
       "terminal_only_path": "此命令在你的終端機能解析，但在應用中不能——這是 GUI PATH 差異。請從終端機啟動應用，或在智能體設定中重新安裝。",
       "npm_prefix_timeout": "npm prefix -g 太慢（超過 1.5 秒），已略過回退偵測。請重新啟動應用後再試。",

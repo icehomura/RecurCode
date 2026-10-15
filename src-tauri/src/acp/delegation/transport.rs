@@ -187,7 +187,7 @@ pub struct BrokerAskRequest {
     pub questions: Vec<QuestionSpec>,
 }
 
-/// Resolve a session the user referenced (`recurcode://session/<id>`) into its
+/// Resolve a session the user referenced (`rc://session/<id>`) into its
 /// metadata + stats, optionally with its recent messages. Backs the
 /// `get_session_info` MCP tool. Authenticated by the same per-launch `token`; the
 /// lookup is by RecurCode's internal conversation id (the number in the reference),
@@ -196,7 +196,7 @@ pub struct BrokerAskRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BrokerSessionRequest {
     pub token: String,
-    /// RecurCode's internal conversation PK (the number in `recurcode://session/<id>`).
+    /// RecurCode's internal conversation PK (the number in `rc://session/<id>`).
     pub session_id: i32,
     /// How many of the most recent turns to include as compacted text. `None` /
     /// `0` → metadata only (no transcript parse); a positive value is clamped to

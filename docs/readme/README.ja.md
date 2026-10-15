@@ -268,7 +268,7 @@ RecurCode はデスクトップアプリとしても、任意のブラウザで�
 - **[プロジェクトブート](https://docs.codeg.app/guide/project-boot)** — ライブプレビュー付きで新規プロジェクトを視覚的に構築
 - **[自分好みに](https://docs.codeg.app/reference/settings/appearance)** — カラートークン単位で塗り替えられる 12 のテーマ、壁紙、角丸、カスタム CSS — インターフェースは 10 言語に対応
 - **[バックアップと同期](https://docs.codeg.app/reference/settings/system#backup-restore)** — 暗号化バックアップと、ファイルまたは自分の WebDAV サーバーを介したマシン間の設定同期
-- **[URL スキーム](../../docs/url-scheme.md)** — `recurcode://session/<id>` で別のアプリから会話を開けます（デスクトップ）
+- **[URL スキーム](../../docs/url-scheme.md)** — `rc://session/<id>` で別のアプリから会話を開けます（デスクトップ）
 - **まだまだあります** — ほぼすべてのリリースで何かが加わります。全リストは [リリースノート](https://github.com/spacering-net/codeg/releases) で確認できます
 
 ## 🤖 対応エージェント

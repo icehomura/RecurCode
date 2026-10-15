@@ -151,7 +151,7 @@ describe("resolveFileReferenceTarget", () => {
     expect(
       resolveFileReferenceTarget("https://example.com", "/repo")
     ).toBeNull()
-    expect(resolveFileReferenceTarget("recurcode://embedded/x", "/repo")).toBeNull()
+    expect(resolveFileReferenceTarget("rc://embedded/x", "/repo")).toBeNull()
     // Relative with no active folder: nothing could be revealed or copied.
     expect(resolveFileReferenceTarget("./src/app.ts", null)).toBeNull()
   })
@@ -190,7 +190,7 @@ describe("FileReferenceActions", () => {
   })
 
   it("passes the badge through untouched when the target has no local path", () => {
-    const { container } = renderActions("recurcode://embedded/abc-123")
+    const { container } = renderActions("rc://embedded/abc-123")
     expect(screen.getByTestId("badge")).toBeInTheDocument()
     expect(document.querySelector("[data-file-actions]")).toBeNull()
 

@@ -2315,8 +2315,8 @@ function extractCodexTomlImportantValues(
         continue
       }
       // The three dotted `features.*` spellings below are ROOT-scoped on
-      // purpose. Inside `[model_providers.recurcode]` the same text means
-      // `model_providers.recurcode.features.…` — a key codex ignores — and the
+      // purpose. Inside `[model_providers.rc]` the same text means
+      // `model_providers.rc.features.…` — a key codex ignores — and the
       // writer only ever touches the root spelling. Reading a nested one would
       // show a value no save could clear, and (for the websocket flag, which
       // the writer re-derives on every patch) would promote a provider-local
@@ -2648,8 +2648,8 @@ function removeTomlSection(
  * turning it ON would emit a config.toml the backend refuses to persist.
  *
  * Only lines above the FIRST section header are considered: inside
- * `[model_providers.recurcode]`, `features.skills` means
- * `model_providers.recurcode.features.skills`, an unrelated key we must not touch.
+ * `[model_providers.rc]`, `features.skills` means
+ * `model_providers.rc.features.skills`, an unrelated key we must not touch.
  */
 function stripRootDottedKey(
   lines: string[],
@@ -2976,13 +2976,13 @@ function ensureCodexProviderDefaults(
   }
   let next = configTomlText
   const current = extractCodexTomlImportantValues(next)
-  const recurCodeBaseUrl =
+  const rcBaseUrl =
     current.providerBaseUrls[CODEX_DEFAULT_MODEL_PROVIDER] ?? ""
   next = patchCodexProviderField(
     next,
     CODEX_DEFAULT_MODEL_PROVIDER,
     "base_url",
-    `base_url = ${JSON.stringify(recurCodeBaseUrl)}`
+    `base_url = ${JSON.stringify(rcBaseUrl)}`
   )
   next = patchCodexProviderField(
     next,
@@ -8997,7 +8997,7 @@ model_provider = "RecurCode"
 [features]
 responses_websockets_v2 = true
 
-[model_providers.recurcode]
+[model_providers.rc]
 base_url = "https://api.openai.com/v1"
 supports_websockets = true`}
                         className="min-h-40 max-h-80 font-mono text-xs"

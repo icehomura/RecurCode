@@ -68,7 +68,7 @@ async fn export_download_upload_inspect_stage_roundtrip() {
     // 3. Upload it back.
     let form = MultipartForm::new().add_part(
         "file",
-        Part::bytes(bytes).file_name("rc-backup.recurcode.zip"),
+        Part::bytes(bytes).file_name("rc-backup.rc.zip"),
     );
     let up = server
         .post("/api/backup_upload")

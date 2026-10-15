@@ -1440,13 +1440,13 @@ impl AgentConnection {
 /// Directory handed to codex-acp via `APP_SERVER_LOGS` so its adapter-side
 /// (ACP ↔ Codex app-server translation) logs land on disk for support.
 ///
-/// Roots under the same `<cache>/app.recurcode` tree as
+/// Roots under the same `<cache>/app.rc` tree as
 /// [`binary_cache::cache_dir`] for consistency. Returns `None` — and the
 /// caller injects nothing — when the system cache dir is unknown or the
 /// directory can't be created: diagnostics must never block a connection.
 fn codex_app_server_log_dir() -> Option<String> {
     let dir = dirs::cache_dir()?
-        .join("app.recurcode")
+        .join("app.rc")
         .join("acp-logs")
         .join("codex-acp");
     std::fs::create_dir_all(&dir).ok()?;
@@ -23512,7 +23512,7 @@ mod tests {
 
     #[test]
     fn final_agent_boundary_appends_routes_for_every_agent_holding_a_snapshot() {
-        let visible = "ask [@Antigravity](recurcode://agent/antigravity) to build";
+        let visible = "ask [@Antigravity](rc://agent/antigravity) to build";
         let blocks = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];

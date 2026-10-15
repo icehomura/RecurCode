@@ -88,7 +88,7 @@ import {
  *   `resource` blob for agents that take embedded context but reject images).
  * - **Everything else** → an inline file-reference badge in the editor document,
  *   exactly like an `@`-file mention. A real path uses its `file://` uri; bytes
- *   with no path (a desktop paste) get an inert `recurcode://embedded/…` display uri
+ *   with no path (a desktop paste) get an inert `rc://embedded/…` display uri
  *   whose real block is held in `embeddedPayloadsRef` until send.
  *
  * Every entry point funnels through the same classifier, so paste, OS drop,
@@ -251,7 +251,7 @@ export function useComposerAttachments({
   // Insert one inline file reference badge per item, matching `@`-file mentions.
   // A genuine `file://` item uses its uri directly (deduped against the document);
   // an item carrying a `realBlock` (embedded bytes / `data:` link) gets an inert
-  // `recurcode://embedded/…` display uri (carrying the item's `ref`, when it has
+  // `rc://embedded/…` display uri (carrying the item's `ref`, when it has
   // one) and its block is stashed in `embeddedPayloadsRef` for send-time
   // reconciliation. Badges append at the doc
   // end by default; pass `atCaret` to drop them at the composer's current caret

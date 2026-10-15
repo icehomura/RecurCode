@@ -2319,7 +2319,7 @@ mod tests {
         let mut vault = window(30, 333, 9, "Vault");
         vault.app = raw_app(30, 333, "com.1password.1password");
         let mut own = window(1, 444, 10, "RecurCode");
-        own.app = raw_app(1, 444, "app.recurcode");
+        own.app = raw_app(1, 444, "app.rc");
         let (listed, _) = table.observe(&[vault, own, window(10, 111, 5, "a")], None);
 
         let blocklist = Blocklist::new(&[]);

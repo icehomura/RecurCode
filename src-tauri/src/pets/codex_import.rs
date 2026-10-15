@@ -82,7 +82,7 @@ pub fn list_importable_codex_pets() -> Result<Vec<ImportablePet>, AppCommandErro
     Ok(out)
 }
 
-/// Copy selected Codex pets into `~/.recurcode/pets/`. Each entry copies the full
+/// Copy selected Codex pets into `~/.rc/pets/`. Each entry copies the full
 /// source directory; we deliberately re-validate nothing — Codex already
 /// produced a working pet, and we want round-trip fidelity.
 pub fn import_codex_pets(

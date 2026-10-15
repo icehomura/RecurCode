@@ -1,4 +1,4 @@
-//! User-scoped preferences stored at `~/.recurcode/preferences.json`.
+//! User-scoped preferences stored at `~/.rc/preferences.json`.
 //!
 //! These are settings that must be readable **before** the Tauri builder and
 //! tokio runtime start (e.g. the webview rendering flags applied via
@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 const PREFERENCES_FILE_NAME: &str = "preferences.json";
-const RC_DIR_NAME: &str = ".recurcode";
+const RC_DIR_NAME: &str = ".rc";
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]

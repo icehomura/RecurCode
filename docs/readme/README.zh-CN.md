@@ -268,7 +268,7 @@ RecurCode 可以作为桌面应用运行，也可以作为用任意浏览器访�
 - **[项目启动器](https://docs.codeg.app/zh/guide/project-boot)** — 可视化创建新项目，并实时预览
 - **[外观自定义](https://docs.codeg.app/zh/reference/settings/appearance)** — 十二套主题都能逐个色彩 token 重新调色，还有壁纸、圆角与自定义 CSS——界面支持十种语言
 - **[备份与同步](https://docs.codeg.app/zh/reference/settings/system#backup-restore)** — 可加密的备份，以及通过文件或你自己的 WebDAV 服务器在多台机器之间同步配置
-- **[URL Scheme](../../docs/url-scheme.md)** — 用 `recurcode://session/<id>` 从其它应用直接打开一个会话（桌面端）
+- **[URL Scheme](../../docs/url-scheme.md)** — 用 `rc://session/<id>` 从其它应用直接打开一个会话（桌面端）
 - **还有更多** — 几乎每个版本都有新东西；完整清单见 [发布说明](https://github.com/spacering-net/codeg/releases)
 
 ## 🤖 支持的智能体

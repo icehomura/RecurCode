@@ -944,7 +944,7 @@ mod tests {
             "chat": { "id": -100123, "username": "RecurCodeTopics" }
         });
 
-        assert!(telegram_message_chat_matches(&message, "@recurcodetopics"));
+        assert!(telegram_message_chat_matches(&message, "@rctopics"));
         assert!(telegram_message_chat_matches(&message, "RCTOPICS"));
         assert!(!telegram_message_chat_matches(&message, "other"));
     }

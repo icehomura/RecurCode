@@ -60,7 +60,7 @@ pub const HELPER_TEAM_ID: Option<&str> = option_env!("RC_COMPUTER_TEAM_ID");
 
 /// The helper's signing identifier (its designated requirement names it too):
 /// on macOS, the bundle identifier of the helper app.
-pub const HELPER_SIGNING_ID: &str = "app.recurcode.computer-helper";
+pub const HELPER_SIGNING_ID: &str = "app.rc.computer-helper";
 
 /// The helper's own app inside RecurCode's on macOS, in `Contents/Helpers/`. macOS
 /// charges an executable's permissions to the app bundle it sits in, so a
@@ -1523,7 +1523,7 @@ mod tests {
     /// identifier — rather than the executable inside it.
     #[test]
     fn the_helper_app_is_what_is_revealed() {
-        let copy = Path::new("/Users/u/Library/Application Support/app.recurcode/computer-helper")
+        let copy = Path::new("/Users/u/Library/Application Support/app.rc/computer-helper")
             .join(HELPER_APP);
         assert_eq!(
             app_of(copy.join("Contents/MacOS").join(helper_file_name())),
@@ -1547,7 +1547,7 @@ mod tests {
         for alone in [
             Path::new("/src/RecurCode/src-tauri/target/debug").join(name),
             Path::new("/Applications/RecurCode.app/Contents/MacOS").join(name),
-            Path::new("/Users/u/Library/Application Support/app.recurcode/computer-helper")
+            Path::new("/Users/u/Library/Application Support/app.rc/computer-helper")
                 .join(HELPER_APP)
                 .join("Contents/MacOS")
                 .join(name),
@@ -1564,7 +1564,7 @@ mod tests {
     #[test]
     fn the_copy_runs_only_in_an_app_of_its_own() {
         let exe = |app: &Path| app.join("Contents/MacOS").join(helper_file_name());
-        let home = Path::new("/Users/u/Library/Application Support/app.recurcode/computer-helper");
+        let home = Path::new("/Users/u/Library/Application Support/app.rc/computer-helper");
         assert!(alone_in_its_app(&exe(&home.join(HELPER_APP))));
         for wrong in [
             exe(&Path::new("/Applications/RecurCode.app/Contents/Helpers").join(HELPER_APP)),

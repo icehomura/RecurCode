@@ -1226,10 +1226,10 @@ pub async fn get_by_id(
     Ok(summary)
 }
 
-/// Resolve a `recurcode://session/<ref>` path to a live (non-deleted) conversation.
+/// Resolve a `rc://session/<ref>` path to a live (non-deleted) conversation.
 ///
 /// `session_ref` is either RecurCode's numeric primary key (what MCP and the
-/// `recurcode://session/<id>` markdown mentions use) or the agent's own session
+/// `rc://session/<id>` markdown mentions use) or the agent's own session
 /// id stored as `external_id` (a Grok UUID, a Codex thread id, …). Several
 /// rows can share an `external_id` across agents; the most recently updated
 /// live row wins. Missing rows return `Ok(None)` — a stale deep link is not

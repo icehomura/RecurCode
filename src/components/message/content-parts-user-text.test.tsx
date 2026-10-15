@@ -48,7 +48,7 @@ function stackedChildren(container: HTMLElement): number {
 }
 
 describe("ContentPartsRenderer — empty user text parts", () => {
-  const PROSE = "ask [@Codex CLI](recurcode://agent/codex) to build a test page"
+  const PROSE = "ask [@Codex CLI](rc://agent/codex) to build a test page"
 
   it("renders one stack child for one text part", () => {
     const { container } = renderParts([{ type: "text", text: PROSE }], "user")

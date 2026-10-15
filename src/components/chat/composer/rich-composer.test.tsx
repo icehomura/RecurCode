@@ -84,7 +84,7 @@ describe("RichComposer", () => {
     // Restored draft / queued message / injected template: seeded wire-format
     // text shows badges and re-serializes to exactly what was seeded.
     const { ref } = await mount()
-    const text = "续 [排查登录](recurcode://session/42) 的问题"
+    const text = "续 [排查登录](rc://session/42) 的问题"
     act(() => {
       ref.current?.setText(text)
     })

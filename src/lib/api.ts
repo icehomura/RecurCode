@@ -4331,7 +4331,7 @@ export async function uploadAttachment(
   if (file.size === 0) {
     // Skip empty files at the entry — both the web and remote-desktop
     // transports would otherwise dutifully POST a zero-byte multipart part
-    // (the server records it under `~/.recurcode/uploads/<bucket>/...`), and
+    // (the server records it under `~/.rc/uploads/<bucket>/...`), and
     // we'd attach a ResourceLink to an empty file. Throw the sentinel and
     // let the pool's catch block log + continue.
     throw new EmptyAttachmentError(file.name)
@@ -5780,7 +5780,7 @@ export async function exportBackupDesktop(
 ): Promise<BackupManifest | null> {
   const { save } = await import("@tauri-apps/plugin-dialog")
   const encrypted = !!opts.passphrase
-  const ext = encrypted ? "recurcodebak" : "recurcode.zip"
+  const ext = encrypted ? "rcbak" : "rc.zip"
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")
   const destPath = await save({
     defaultPath: `rc-backup-${stamp}.${ext}`,

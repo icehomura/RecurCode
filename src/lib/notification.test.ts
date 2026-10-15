@@ -183,14 +183,14 @@ describe("getNotificationIdentity", () => {
     // points at a host that never registers this command, and the identity we
     // want to report is the one on the screen in front of the user.
     shellCall.mockResolvedValueOnce({
-      bundleId: "app.recurcode",
-      requestedBundleId: "app.recurcode",
+      bundleId: "app.rc",
+      requestedBundleId: "app.rc",
       degraded: false,
     })
 
     await expect(getNotificationIdentity()).resolves.toEqual({
-      bundleId: "app.recurcode",
-      requestedBundleId: "app.recurcode",
+      bundleId: "app.rc",
+      requestedBundleId: "app.rc",
       degraded: false,
     })
     expect(shellCall).toHaveBeenCalledWith("notification_identity")
@@ -203,7 +203,7 @@ describe("getNotificationIdentity", () => {
     // nothing.
     shellCall.mockResolvedValueOnce({
       bundleId: "com.apple.Terminal",
-      requestedBundleId: "app.recurcode",
+      requestedBundleId: "app.rc",
       degraded: true,
     })
 

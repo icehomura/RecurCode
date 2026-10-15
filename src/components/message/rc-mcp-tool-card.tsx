@@ -65,7 +65,7 @@ export function RecurCodeMcpToolCard({
   errorText,
   state,
 }: Props) {
-  const t = useTranslations("Folder.chat.recurcodeMcpTool")
+  const t = useTranslations("Folder.chat.rcMcpTool")
   const [expanded, setExpanded] = useState(false)
   const panelId = useId()
 

@@ -595,12 +595,12 @@ pub(crate) fn prepend_to_path(dir: &std::path::Path) {
     std::env::set_var("PATH", new_path);
 }
 
-/// Return the user-local npm prefix directory (`~/.recurcode/npm-global/`).
+/// Return the user-local npm prefix directory (`~/.rc/npm-global/`).
 ///
 /// Used as a fallback when `npm install -g` fails with EACCES because the
 /// system global prefix (e.g. `/usr/local/lib/node_modules/`) is not writable.
 pub(crate) fn user_npm_prefix() -> Option<PathBuf> {
-    dirs::home_dir().map(|h| h.join(".recurcode").join("npm-global"))
+    dirs::home_dir().map(|h| h.join(".rc").join("npm-global"))
 }
 
 /// Ensure the user-local npm prefix `bin/` directory is in `PATH` so that

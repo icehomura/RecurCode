@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react"
 // A position also survives a reload, which keeps `history.state` but restarts
 // this module: a counter would hand out ids that stale entries still carry,
 // and a stale twin of a layer's id reads as that layer's own entry.
-const DEPTH_KEY = "recurCodeBackDismissDepth"
+const DEPTH_KEY = "rcBackDismissDepth"
 
 // Depths whose entry an open layer holds right now. An entry carrying a depth
 // that is not in here is a leftover nobody owns.

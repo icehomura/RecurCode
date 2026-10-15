@@ -1376,7 +1376,7 @@
       "authTypeHint": "config.toml 안에서 API 키를 기록할 위치입니다.",
       "rawEditorLabel": "config.toml 직접 편집",
       "rawEditorWarning": "여기서 저장하면 파일 전체가 그대로 덮어써져 위의 구조화된 설정이 대체됩니다.",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "공식 구독",
     "authModeCustomEndpoint": "사용자 정의 엔드포인트",
@@ -3904,7 +3904,7 @@
         "collapse": "접기",
         "errorTitle": "피드백 확인 실패"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "세션 {session} 읽는 중",
         "getSessionInfoNoId": "세션 읽는 중",
         "taskProgress": "진행: {message}",
@@ -5448,7 +5448,7 @@
       "stop": "공유 중지",
       "stopWithKey": "모든 창의 공유 중지 ({key})"
     },
-    "recurCodeGranted": "RecurCode 자체에 「손쉬운 사용」 또는 「화면 기록」 권한이 있어, 에이전트의 셸이 공유 없이 이를 사용할 수 있습니다. 필요하지 않다면 시스템 설정에서 RecurCode의 권한을 끄세요.",
+    "rcGranted": "RecurCode 자체에 「손쉬운 사용」 또는 「화면 기록」 권한이 있어, 에이전트의 셸이 공유 없이 이를 사용할 수 있습니다. 필요하지 않다면 시스템 설정에서 RecurCode의 권한을 끄세요.",
     "backend": {
       "idle": "시작 안 됨",
       "downloading": "드라이버 다운로드 중…",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, other {창 #개를 공유하지 못했습니다. 닫혔을 수 있습니다.}}",
       "unshareable": "{count, plural, other {공유할 수 없는 창 #개}}",
       "noneShareable": "공유할 수 있는 창이 없습니다.",
-      "recurCodeWhy": "RecurCode의 창은 절대 공유되지 않습니다. RecurCode를 조작할 수 있는 에이전트는 자신의 요청을 스스로 승인하거나 자신에게 창을 더 공유할 수 있기 때문입니다. 다른 RecurCode의 창도 마찬가지입니다."
+      "rcWhy": "RecurCode의 창은 절대 공유되지 않습니다. RecurCode를 조작할 수 있는 에이전트는 자신의 요청을 스스로 승인하거나 자신에게 창을 더 공유할 수 있기 때문입니다. 다른 RecurCode의 창도 마찬가지입니다."
     },
     "settings": {
       "pageTitle": "컴퓨터 사용",
@@ -6175,7 +6175,7 @@
     "editor": {
       "createTitle": "새 사용자 지정 스킬",
       "editTitle": "사용자 지정 스킬 편집",
-      "description": "사용자 지정 스킬은 공유 저장소(~/.recurcode/skills)에 있으며 모든 에이전트에서 사용할 수 있습니다.",
+      "description": "사용자 지정 스킬은 공유 저장소(~/.rc/skills)에 있으며 모든 에이전트에서 사용할 수 있습니다.",
       "idLabel": "스킬 ID",
       "idPlaceholder": "예: my-workflow",
       "contentLabel": "SKILL.md",
@@ -6334,7 +6334,7 @@
       "npm_missing": "앱 PATH에서 npm을 찾을 수 없습니다.",
       "not_installed": "이 에이전트가 설치되지 않은 것 같습니다.",
       "installed_but_unresolved": "설치된 것으로 기록되어 있지만 앱이 실행 파일을 찾지 못합니다.",
-      "user_prefix_not_on_path": "폴백 프리픽스(~/.recurcode/npm-global)에 설치되었지만 앱 PATH에 없습니다. 앱을 완전히 재시작한 후 다시 시도하세요.",
+      "user_prefix_not_on_path": "폴백 프리픽스(~/.rc/npm-global)에 설치되었지만 앱 PATH에 없습니다. 앱을 완전히 재시작한 후 다시 시도하세요.",
       "homebrew_bin_not_on_path": "Homebrew bin에 설치되었지만 앱 PATH에 없습니다(Apple Silicon keg 분리).",
       "terminal_only_path": "이 명령은 터미널에서는 확인되지만 앱에서는 확인되지 않습니다. GUI PATH 불일치입니다. 터미널에서 앱을 실행하거나 에이전트 설정에서 다시 설치하세요.",
       "npm_prefix_timeout": "npm prefix -g가 너무 느립니다(1.5초 초과). 폴백 감지를 건너뛰었습니다. 앱을 재시작한 후 다시 시도하세요.",

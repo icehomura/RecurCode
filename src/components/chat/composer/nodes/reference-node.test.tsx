@@ -52,14 +52,14 @@ const sessionRef: ReferenceAttrs = {
   refType: "session",
   id: "123",
   label: "Login refactor",
-  uri: "recurcode://session/123",
+  uri: "rc://session/123",
   meta: { agentType: "codex", status: "in_progress" },
 }
 const commitRef: ReferenceAttrs = {
   refType: "commit",
   id: "abc1234def",
   label: "abc1234",
-  uri: "recurcode://commit/repo@abc1234def",
+  uri: "rc://commit/repo@abc1234def",
   meta: { message: "fix login", shortHash: "abc1234" },
 }
 const skillRef: ReferenceAttrs = {
@@ -90,8 +90,8 @@ describe("Reference node", () => {
   it.each([
     ["file", fileRef, "[app.ts](file:///repo/src/app.ts)"],
     ["agent", agentRef, "@Claude Code"],
-    ["session", sessionRef, "[Login refactor](recurcode://session/123)"],
-    ["commit", commitRef, "[abc1234](recurcode://commit/repo@abc1234def)"],
+    ["session", sessionRef, "[Login refactor](rc://session/123)"],
+    ["commit", commitRef, "[abc1234](rc://commit/repo@abc1234def)"],
     ["skill", skillRef, "/code-review"],
   ])(
     "serializes a %s reference to its inline token",
@@ -175,7 +175,7 @@ describe("Reference node", () => {
     expect(node?.attrs).toMatchObject({
       refType: "commit",
       id: "abc1234def",
-      uri: "recurcode://commit/repo@abc1234def",
+      uri: "rc://commit/repo@abc1234def",
     })
     expect(node?.attrs?.meta).toMatchObject({ shortHash: "abc1234" })
   })

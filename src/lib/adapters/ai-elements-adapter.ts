@@ -1071,18 +1071,18 @@ function handleMarkdownLink(
   // the real path, not `file:///C:\\dir`. `match` (returned for inline-kept
   // refs) keeps the original bracketed form untouched.
   const normalizedUri = unwrapReferenceDestination(uri)
-  // A `recurcode://` reference (session / commit / agent) renders as an inline badge
+  // A `rc://` reference (session / commit / agent) renders as an inline badge
   // in the transcript (markdown-link → ReferenceBadge); never lift it to the
   // bottom resource-chip row. The guard mirrors markdown-link's interception
   // (`href.startsWith("RecurCode:")`): an unrecognized RecurCode path is parsed back to
   // null there and degrades to a plain inline link — still in-flow, never a chip.
-  // (The `@`-prefixed agent link `[@label](recurcode://agent/…)` would otherwise be
+  // (The `@`-prefixed agent link `[@label](rc://agent/…)` would otherwise be
   // caught by `hasMentionLabel` below.)
   if (normalizedUri.toLowerCase().startsWith("RecurCode:")) {
-    // A `recurcode://embedded/…` ref is a path-less pasted attachment — still an
+    // A `rc://embedded/…` ref is a path-less pasted attachment — still an
     // attached file, so it is COPIED to the row too (kept inline as its inert
     // badge). Other RecurCode refs are not attachments: inline only.
-    if (normalizedUri.toLowerCase().startsWith("recurcode://embedded/")) {
+    if (normalizedUri.toLowerCase().startsWith("rc://embedded/")) {
       // One whose uri carries the ref of the block behind it — a page the
       // built-in browser handed over — is listed by that ref, as the page it
       // came from: the badge in the prose already says what it is, and this is
@@ -1260,7 +1260,7 @@ function webSiteOf(uri: string): { host: string; origin: string } | null {
  * The badge the composer showed in place of an embedded attachment, written
  * back as the inline token the transcript parses into one.
  *
- * Its uri is the same `recurcode://embedded/…` shape the composer mints for one
+ * Its uri is the same `rc://embedded/…` shape the composer mints for one
  * (`buildEmbeddedReferenceUri`), carrying the ref the way the composer's own
  * badge for a page does, so the transcript renders the rebuilt badge through
  * exactly the same branch: an inert file badge, never a link to anywhere.

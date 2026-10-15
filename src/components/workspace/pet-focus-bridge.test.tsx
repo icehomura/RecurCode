@@ -98,7 +98,7 @@ describe("PetFocusBridge", () => {
     expect(addFolderToWorkspaceById).not.toHaveBeenCalled()
   })
 
-  // A `recurcode://session/<id>` that reaches the backend before this component
+  // A `rc://session/<id>` that reaches the backend before this component
   // subscribes (macOS cold start) is parked there, and the nudge that went with
   // it was dropped — the mount drain is what finds it.
   it("opens the tab for a deep link parked before it subscribed", async () => {

@@ -25,7 +25,7 @@
 // The host defines `__rcSend(string)` before this script runs. Messages
 // are `{ kind, payload }` JSON strings; the host treats every field as
 // untrusted input.
-;(function recurCodeBrowserHelper() {
+;(function rcBrowserHelper() {
   "use strict"
   if (typeof globalThis.__rcSend !== "function") return
   if (globalThis.__rcHelperInstalled) return

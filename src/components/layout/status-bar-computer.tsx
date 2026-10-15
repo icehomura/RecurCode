@@ -78,7 +78,7 @@ import { stopShortcutLabel } from "@/lib/computer/stop-shortcut"
 import type { GrantLevel } from "@/lib/computer/types"
 import { useComputerEnabled } from "@/lib/computer/use-computer-enabled"
 import {
-  recurCodeHoldsPermission,
+  rcHoldsPermission,
   useComputerStatus,
 } from "@/lib/computer/use-computer-status"
 import { useComputerStopKey } from "@/lib/computer/use-stop-key"
@@ -265,7 +265,7 @@ function ComputerPopover() {
   }
 
   const liveBackend = backend ?? status?.backend ?? null
-  const recurCodeLeaks = recurCodeHoldsPermission(status)
+  const rcLeaks = rcHoldsPermission(status)
   const permissions = status?.permissions
   const development = liveBackend?.peer === "development"
   const shortcut = stopKey?.active
@@ -337,10 +337,10 @@ function ComputerPopover() {
             </Button>
           )}
 
-          {recurCodeLeaks && (
+          {rcLeaks && (
             <div className="flex gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1.5 text-2xs text-amber-600 dark:text-amber-400">
               <ShieldAlert className="mt-0.5 size-3.5 shrink-0" />
-              <span>{t("recurCodeGranted")}</span>
+              <span>{t("rcGranted")}</span>
             </div>
           )}
 

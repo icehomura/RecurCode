@@ -375,14 +375,14 @@ describe("CursorConfigPanel", () => {
       membership: null,
       error: null,
       binary_path:
-        "/Users/x/Library/Caches/app.recurcode/acp-binaries/cursor/dist-package/cursor-agent",
+        "/Users/x/Library/Caches/app.rc/acp-binaries/cursor/dist-package/cursor-agent",
     })
     // Empty env → subscription mode.
     const { onSaveEnv, onSaved } = renderPanel({ env: {} })
 
     // The login command uses the resolved binary path, not a bare name.
     await screen.findByText(
-      "/Users/x/Library/Caches/app.recurcode/acp-binaries/cursor/dist-package/cursor-agent login"
+      "/Users/x/Library/Caches/app.rc/acp-binaries/cursor/dist-package/cursor-agent login"
     )
 
     fireEvent.click(

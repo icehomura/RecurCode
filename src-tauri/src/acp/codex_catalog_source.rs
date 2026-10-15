@@ -90,7 +90,7 @@ fn codex_acp_dir(prefix: &Path) -> PathBuf {
 }
 
 /// Candidate codex-acp package dirs: the global npm prefix and RecurCode's user
-/// prefix (`~/.recurcode/npm-global`, used when a global install hit EACCES).
+/// prefix (`~/.rc/npm-global`, used when a global install hit EACCES).
 async fn codex_acp_dirs() -> Vec<PathBuf> {
     let mut dirs = Vec::new();
     if let Some(prefix) = crate::commands::acp::cached_npm_global_prefix().await {

@@ -62,7 +62,7 @@ pub async fn backup_create_ticket(
     Json(params): Json<CreateBackupParams>,
 ) -> Result<Json<BackupTicketResult>, AppCommandError> {
     let encrypted = params.passphrase.as_deref().is_some_and(|p| !p.is_empty());
-    let ext = if encrypted { "recurcodebak" } else { "recurcode.zip" };
+    let ext = if encrypted { "rcbak" } else { "rc.zip" };
 
     let tmp_dir = state.data_dir.join(BACKUP_TMP_DIR);
     tokio::fs::create_dir_all(&tmp_dir)

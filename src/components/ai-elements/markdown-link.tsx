@@ -106,9 +106,9 @@ export function MarkdownLink({
     )
   }
 
-  // A recurcode:// reference link renders as an inline badge, mirroring the
+  // A rc:// reference link renders as an inline badge, mirroring the
   // composer's reference chips: session / commit / agent links, plus the inert
-  // `recurcode://embedded/…` badge a path-less pasted attachment serializes to (its
+  // `rc://embedded/…` badge a path-less pasted attachment serializes to (its
   // bytes travel out of band, so it has no openable target). The same parser the
   // editor uses on draft restore recovers refType/id/meta from the uri; the link
   // text is the label.

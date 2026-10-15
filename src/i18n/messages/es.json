@@ -1376,7 +1376,7 @@
       "authTypeHint": "Dónde se escribe la clave de API dentro de config.toml.",
       "rawEditorLabel": "Editar config.toml directamente",
       "rawEditorWarning": "Guardar aquí sobrescribe el archivo completo tal cual y reemplaza la configuración estructurada de arriba.",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "Suscripción oficial",
     "authModeCustomEndpoint": "Endpoint personalizado",
@@ -3904,7 +3904,7 @@
         "collapse": "Contraer",
         "errorTitle": "Error al comprobar los comentarios"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "Leyendo la sesión {session}",
         "getSessionInfoNoId": "Leyendo una sesión",
         "taskProgress": "Progreso: {message}",
@@ -5448,7 +5448,7 @@
       "stop": "Dejar de compartir",
       "stopWithKey": "Dejar de compartir todas las ventanas ({key})"
     },
-    "recurCodeGranted": "RecurCode tiene Accesibilidad o Grabación de pantalla, así que la shell de los agentes puede usarla sin que compartas nada. Si no lo necesitas, desactívalo para RecurCode en Ajustes del Sistema.",
+    "rcGranted": "RecurCode tiene Accesibilidad o Grabación de pantalla, así que la shell de los agentes puede usarla sin que compartas nada. Si no lo necesitas, desactívalo para RecurCode en Ajustes del Sistema.",
     "backend": {
       "idle": "Sin iniciar",
       "downloading": "Descargando el controlador…",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, one {No se pudo compartir # ventana; puede que se haya cerrado.} other {No se pudieron compartir # ventanas; puede que se hayan cerrado.}}",
       "unshareable": "{count, plural, one {# ventana no se puede compartir} other {# ventanas no se pueden compartir}}",
       "noneShareable": "Ninguna de estas ventanas se puede compartir.",
-      "recurCodeWhy": "Las ventanas de RecurCode nunca se comparten: un agente que pudiera manejar RecurCode podría aprobar sus propias solicitudes o compartirse más ventanas. Lo mismo vale para otras copias de RecurCode."
+      "rcWhy": "Las ventanas de RecurCode nunca se comparten: un agente que pudiera manejar RecurCode podría aprobar sus propias solicitudes o compartirse más ventanas. Lo mismo vale para otras copias de RecurCode."
     },
     "settings": {
       "pageTitle": "Uso del ordenador",
@@ -6175,7 +6175,7 @@
     "editor": {
       "createTitle": "Nueva habilidad personalizada",
       "editTitle": "Editar habilidad personalizada",
-      "description": "Las habilidades personalizadas se guardan en el almacén compartido (~/.recurcode/skills) y pueden habilitarse para cualquier agente.",
+      "description": "Las habilidades personalizadas se guardan en el almacén compartido (~/.rc/skills) y pueden habilitarse para cualquier agente.",
       "idLabel": "ID de habilidad",
       "idPlaceholder": "p. ej. my-workflow",
       "contentLabel": "SKILL.md",
@@ -6334,7 +6334,7 @@
       "npm_missing": "No se encontró npm en el PATH de la app.",
       "not_installed": "Este agente no parece estar instalado.",
       "installed_but_unresolved": "Consta como instalado, pero la app no puede localizar su ejecutable.",
-      "user_prefix_not_on_path": "Se instaló en el prefijo de reserva (~/.recurcode/npm-global), que no está en el PATH de la app. Reinicia por completo la app e inténtalo de nuevo.",
+      "user_prefix_not_on_path": "Se instaló en el prefijo de reserva (~/.rc/npm-global), que no está en el PATH de la app. Reinicia por completo la app e inténtalo de nuevo.",
       "homebrew_bin_not_on_path": "Se instaló en el bin de Homebrew, que no está en el PATH de la app (división de keg en Apple Silicon).",
       "terminal_only_path": "El comando se resuelve en tu terminal pero no en la app: una diferencia de PATH de la GUI. Inicia la app desde una terminal o reinstala desde Ajustes de agentes.",
       "npm_prefix_timeout": "npm prefix -g fue demasiado lento (más de 1,5 s), por lo que se omitió la detección de reserva. Reinicia la app e inténtalo de nuevo.",

@@ -1,7 +1,7 @@
 import { getTransport, isDesktop, isRemoteDesktopMode } from "@/lib/transport"
 import type { AgentType } from "@/lib/types"
 
-/** A `recurcode://` link the backend resolved before the workspace was listening. */
+/** A `rc://` link the backend resolved before the workspace was listening. */
 export interface PendingDeepLink {
   folderId: number
   conversationId: number
@@ -12,7 +12,7 @@ export interface PendingDeepLink {
  * Drain the deep link the desktop app was opened with.
  *
  * `workspace://focus-conversation` reaches only webviews that have already
- * subscribed, so a cold-start `recurcode://session/<id>` — resolved in Rust while
+ * subscribed, so a cold-start `rc://session/<id>` — resolved in Rust while
  * the window is still loading — would otherwise be dropped. The backend parks
  * the resolved target; this takes it (once) when `PetFocusBridge` is ready.
  *

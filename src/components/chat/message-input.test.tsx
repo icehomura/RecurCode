@@ -718,7 +718,7 @@ describe("MessageInput attach-to-chat insertion position", () => {
       )
     )
     expect(serializeDocToText(editor.state.doc)).not.toContain(
-      "recurcode://embedded/"
+      "rc://embedded/"
     )
   })
 
@@ -863,7 +863,7 @@ describe("MessageInput session-mention attach", () => {
         conversation: summary(42, "Fix auth"),
       })
     })
-    const link = "[Fix auth](recurcode://session/42)"
+    const link = "[Fix auth](rc://session/42)"
     await waitFor(() =>
       expect(serializeDocToText(editor.state.doc)).toContain(link)
     )
@@ -883,7 +883,7 @@ describe("MessageInput session-mention attach", () => {
     })
     await waitFor(() =>
       expect(serializeDocToText(editor.state.doc)).toContain(
-        "[#7](recurcode://session/7)"
+        "[#7](rc://session/7)"
       )
     )
   })
@@ -897,7 +897,7 @@ describe("MessageInput session-mention attach", () => {
       })
     })
     expect(serializeDocToText(editor.state.doc)).not.toContain(
-      "recurcode://session/42"
+      "rc://session/42"
     )
   })
 
@@ -907,7 +907,7 @@ describe("MessageInput session-mention attach", () => {
     act(() => {
       emitAttachSessionToSession({ tabId: "tab-1", conversation })
     })
-    const link = "[Fix auth](recurcode://session/42)"
+    const link = "[Fix auth](rc://session/42)"
     await waitFor(() =>
       expect(serializeDocToText(editor.state.doc)).toContain(link)
     )

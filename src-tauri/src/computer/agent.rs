@@ -26,7 +26,7 @@ use super::protocol::RawApp;
 /// RecurCode's own bundle identifier (`tauri.conf.json`), matched on any process
 /// so a second RecurCode — a development build next to the installed one — is as
 /// out of reach as this one.
-pub const RC_BUNDLE_ID: &str = "app.recurcode";
+pub const RC_BUNDLE_ID: &str = "app.rc";
 
 /// The file names RecurCode's executable goes by, matched on any process's path
 /// for the same reason, where an application has no bundle identifier to
@@ -805,7 +805,7 @@ mod tests {
         let list = Blocklist::new(&[]);
         for RecurCode in [
             app(100, None, None),
-            app(200, Some("app.recurcode"), None),
+            app(200, Some("app.rc"), None),
             app(200, Some("APP.RC"), None),
             app(300, None, Some("/Applications/RecurCode.app")),
             app(

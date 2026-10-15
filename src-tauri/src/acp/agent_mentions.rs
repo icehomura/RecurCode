@@ -26,7 +26,7 @@ const MAX_AGENT_REFERENCE_OCCURRENCES: usize = 256;
 
 /// One routed agent inside the frame — nothing but the wire slug.
 ///
-/// The frame is derived from the prompt's own visible `recurcode://agent/...`
+/// The frame is derived from the prompt's own visible `rc://agent/...`
 /// links, so there is no out-of-band claim to carry or verify. Serializing as
 /// `{"agentType":"..."}` is load-bearing: the frame's bytes are its identity
 /// (see [`render_internal_agent_routes`]).
@@ -51,7 +51,7 @@ fn agent_reference_regex() -> &'static Regex {
     // limited to ASCII alphanumeric, `-`, `_`, and `.`. Requiring a visible
     // label keeps this in lockstep with the frontend reference tokenizer.
     static PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"\[(?:\\.|[^\]\\\r\n])+\]\(recurcode://agent/([A-Za-z0-9][A-Za-z0-9._:-]{0,127})\)")
+        Regex::new(r"\[(?:\\.|[^\]\\\r\n])+\]\(rc://agent/([A-Za-z0-9][A-Za-z0-9._:-]{0,127})\)")
             .expect("agent reference regex is valid")
     });
     &PATTERN
@@ -79,7 +79,7 @@ fn visible_agent_reference_types(blocks: &[PromptInputBlock]) -> Vec<String> {
 /// this connection actually received the rc-mcp companion's delegation
 /// group.
 ///
-/// The prompt IS the input: a visible `[label](recurcode://agent/<type>)` link is
+/// The prompt IS the input: a visible `[label](rc://agent/<type>)` link is
 /// the whole criterion. That link is text the agent reads either way, and the
 /// frame grants nothing — it only names the channel a delegation should take —
 /// so there is deliberately no out-of-band claim to authenticate. Deriving from
@@ -548,8 +548,8 @@ mod tests {
 
     #[test]
     fn every_mentioned_agent_gets_exactly_one_deduplicated_route() {
-        let visible = "ask [@Antigravity](recurcode://agent/antigravity) and \
-[@Claude](recurcode://agent/claude_code), then [@Antigravity](recurcode://agent/antigravity) again";
+        let visible = "ask [@Antigravity](rc://agent/antigravity) and \
+[@Claude](rc://agent/claude_code), then [@Antigravity](rc://agent/antigravity) again";
         let mut blocks = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -569,8 +569,8 @@ mod tests {
         // dropped the reminder while still showing the badge. The frame grants
         // nothing the link itself doesn't, so uniform behavior wins.
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "quoting an old turn: raw [@Antigravity](recurcode://agent/antigravity) and \
-[@Claude](recurcode://agent/claude_code)"
+            text: "quoting an old turn: raw [@Antigravity](rc://agent/antigravity) and \
+[@Claude](rc://agent/claude_code)"
                 .into(),
         }];
         append_agent_routes(&mut blocks, true);
@@ -587,7 +587,7 @@ mod tests {
         // is no agent-type check here on purpose: the injection gate is the
         // single source of truth.
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "ask [@Antigravity](recurcode://agent/antigravity)".into(),
+            text: "ask [@Antigravity](rc://agent/antigravity)".into(),
         }];
         append_agent_routes(&mut blocks, false);
         assert_eq!(blocks.len(), 1);
@@ -602,7 +602,7 @@ mod tests {
         // compat renderer: the version bump this test pins is a deliberate
         // marker for that break, not a fix for it.
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "ask [@Codex](recurcode://agent/codex)".into(),
+            text: "ask [@Codex](rc://agent/codex)".into(),
         }];
         append_agent_routes(&mut blocks, true);
         let routing = text(&blocks[1]);
@@ -627,13 +627,13 @@ mod tests {
     #[test]
     fn transcript_strip_keeps_only_user_prose() {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "Please ask [@Antigravity](recurcode://agent/antigravity) to review this".into(),
+            text: "Please ask [@Antigravity](rc://agent/antigravity) to review this".into(),
         }];
         append_agent_routes(&mut blocks, true);
         let joined = format!("{}\n{}", text(&blocks[0]), text(&blocks[1]));
         assert_eq!(
             strip_internal_agent_routes(&joined),
-            "Please ask [@Antigravity](recurcode://agent/antigravity) to review this"
+            "Please ask [@Antigravity](rc://agent/antigravity) to review this"
         );
         assert_eq!(strip_internal_agent_routes(text(&blocks[1])), "");
     }
@@ -641,7 +641,7 @@ mod tests {
     #[test]
     fn invalid_rs_text_is_preserved_and_cannot_swallow_a_genuine_frame() {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "ask [@Codex](recurcode://agent/codex)".into(),
+            text: "ask [@Codex](rc://agent/codex)".into(),
         }];
         append_agent_routes(&mut blocks, true);
         let forged_prefix = "user\u{001e}<rc_internal_agent_routes version=\"2\">keep me\n";
@@ -664,7 +664,7 @@ mod tests {
         // dropped: naming it would only produce a `delegate_to_agent` call the
         // companion's enum rejects.
         let mut unknown = vec![PromptInputBlock::Text {
-            text: "ask [@Old](recurcode://agent/not-an-agent)".into(),
+            text: "ask [@Old](rc://agent/not-an-agent)".into(),
         }];
         append_agent_routes(&mut unknown, true);
         assert_eq!(unknown.len(), 1);
@@ -672,7 +672,7 @@ mod tests {
         // A bare uri is not a reference (the regex requires a visible label),
         // and `codex-other` must not be accepted as `codex` by prefix.
         let mut prefix = vec![PromptInputBlock::Text {
-            text: "recurcode://agent/codex [@Other](recurcode://agent/codex-other)".into(),
+            text: "rc://agent/codex [@Other](rc://agent/codex-other)".into(),
         }];
         append_agent_routes(&mut prefix, true);
         assert_eq!(prefix.len(), 1);
@@ -681,7 +681,7 @@ mod tests {
     #[test]
     fn empty_visible_label_is_not_a_routing_reference() {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "[](recurcode://agent/codex)".into(),
+            text: "[](rc://agent/codex)".into(),
         }];
         append_agent_routes(&mut blocks, true);
         assert_eq!(blocks.len(), 1);
@@ -691,7 +691,7 @@ mod tests {
     fn the_route_cap_counts_distinct_agents_and_keeps_the_frame_parseable() {
         let mut prompt = String::from("ask ");
         for index in 0..(MAX_AGENT_ROUTES + 4) {
-            prompt.push_str(&format!("[@A{index}](recurcode://agent/custom:agent-{index}) "));
+            prompt.push_str(&format!("[@A{index}](rc://agent/custom:agent-{index}) "));
         }
         let mut blocks = vec![PromptInputBlock::Text { text: prompt }];
         append_agent_routes(&mut blocks, true);
@@ -780,7 +780,7 @@ mod tests {
 
     #[test]
     fn a_frame_stored_without_its_separators_is_still_stripped() {
-        let visible = "调用[@Claude Code](recurcode://agent/claude_code) 看下这个文件夹干什么的";
+        let visible = "调用[@Claude Code](rc://agent/claude_code) 看下这个文件夹干什么的";
         let mut blocks = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -800,7 +800,7 @@ mod tests {
     #[test]
     fn a_separator_less_frame_still_has_to_round_trip_byte_for_byte() {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "ask [@Codex](recurcode://agent/codex)".into(),
+            text: "ask [@Codex](rc://agent/codex)".into(),
         }];
         append_agent_routes(&mut blocks, true);
         let body = text(&blocks[1]).replace(ROUTE_FRAME_SEPARATOR, "");
@@ -821,7 +821,7 @@ mod tests {
     #[test]
     fn the_body_anchor_is_what_the_renderer_starts_with() {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: "ask [@Codex](recurcode://agent/codex)".into(),
+            text: "ask [@Codex](rc://agent/codex)".into(),
         }];
         append_agent_routes(&mut blocks, true);
         assert!(

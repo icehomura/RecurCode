@@ -8509,7 +8509,7 @@ mod tests {
             .join(format!(
                 "rollout-2026-08-15T16-00-00-{conversation_id}.jsonl"
             ));
-        let visible = "Ask [@Antigravity](recurcode://agent/antigravity) to review";
+        let visible = "Ask [@Antigravity](rc://agent/antigravity) to review";
         let mut prompt = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -8584,7 +8584,7 @@ mod tests {
             .join(format!(
                 "rollout-2026-08-15T16-00-00-{conversation_id}.jsonl"
             ));
-        let visible = "Ask [@Codex](recurcode://agent/codex) to inspect this";
+        let visible = "Ask [@Codex](rc://agent/codex) to inspect this";
         let mut prompt = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];
@@ -8701,7 +8701,7 @@ mod tests {
         use crate::acp::agent_mentions::append_agent_routes;
         use crate::acp::types::PromptInputBlock;
 
-        let visible = "Review this image [@Codex](recurcode://agent/codex)";
+        let visible = "Review this image [@Codex](rc://agent/codex)";
         let mut prompt = vec![PromptInputBlock::Text {
             text: visible.into(),
         }];

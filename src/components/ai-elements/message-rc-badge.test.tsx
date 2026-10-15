@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from "vitest"
 
 // Exercise the REAL Streamdown pipeline (no streamdown mock) so the assertion
 // covers actual rehype sanitize + harden behavior — the layer that previously
-// stripped `recurcode://` hrefs and rendered them as "[blocked]". The isolated
+// stripped `rc://` hrefs and rendered them as "[blocked]". The isolated
 // MarkdownLink unit test runs after that layer, so it could not catch the
 // regression. Only the link-safety hook is stubbed (irrelevant to badges).
 //
-// These are ASSISTANT-path guards: `recurcode://` reference links render as inline
+// These are ASSISTANT-path guards: `rc://` reference links render as inline
 // badges via MarkdownLink + rehype-allow-RecurCode regardless of role. (User messages
 // no longer go through MessageResponse — see message/plain-text-with-badges.tsx.)
 vi.mock("next-intl", () => {
@@ -29,7 +29,7 @@ describe("MessageResponse — RecurCode references survive sanitization (real St
   it("renders an agent reference inline as a badge, not as '[blocked]'", async () => {
     const { container } = render(
       <MessageResponse>
-        {"[@Codex CLI](recurcode://agent/codex) hi"}
+        {"[@Codex CLI](rc://agent/codex) hi"}
       </MessageResponse>
     )
     await waitFor(() => {
@@ -45,7 +45,7 @@ describe("MessageResponse — RecurCode references survive sanitization (real St
   it("renders a session reference inline as a badge", async () => {
     const { container } = render(
       <MessageResponse>
-        {"see [#42](recurcode://session/claude_code_abc)"}
+        {"see [#42](rc://session/claude_code_abc)"}
       </MessageResponse>
     )
     await waitFor(() => {
@@ -62,7 +62,7 @@ describe("MessageResponse — RecurCode references survive sanitization (real St
   it("renders a commit reference inline as a badge", async () => {
     const { container } = render(
       <MessageResponse>
-        {"[a1b2c3d](recurcode://commit/%2Frepo@a1b2c3ddeadbeef)"}
+        {"[a1b2c3d](rc://commit/%2Frepo@a1b2c3ddeadbeef)"}
       </MessageResponse>
     )
     await waitFor(() => {
@@ -97,7 +97,7 @@ describe("ReasoningContent — RecurCode references survive sanitization (real S
     const { container } = render(
       <Reasoning isStreaming={false} defaultOpen>
         <ReasoningContent>
-          {"[@Codex CLI](recurcode://agent/codex) hi"}
+          {"[@Codex CLI](rc://agent/codex) hi"}
         </ReasoningContent>
       </Reasoning>
     )

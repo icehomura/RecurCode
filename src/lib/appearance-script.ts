@@ -46,7 +46,7 @@ export const STORAGE_KEY_TERMINAL_FONT_CUSTOM = "rc-terminal-font-custom"
 export const STORAGE_KEY_TERMINAL_FONT_SIZE = "rc-terminal-font-size"
 export const STORAGE_KEY_TERMINAL_LIGATURES = "rc-terminal-ligatures"
 
-// Workspace 背景图片。图片本身存磁盘（~/.recurcode/backgrounds/），localStorage 只存
+// Workspace 背景图片。图片本身存磁盘（~/.rc/backgrounds/），localStorage 只存
 // 展示配置。仅 enabled 与 panel-opacity 需要预水合（它们作用于首帧就存在的结构性
 // 表面）；mask/blur/fill 水合后才有意义（图片异步到达），不进 inline 脚本。
 export const STORAGE_KEY_WORKSPACE_BG_ENABLED = "rc-workspace-bg-enabled"

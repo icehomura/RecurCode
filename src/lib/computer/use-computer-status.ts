@@ -148,8 +148,8 @@ export function useComputerStatus(live: boolean) {
 /** RecurCode itself holds a permission — one every agent's shell holds too.
  *  Only for a RecurCode that is its own responsible process: a development build
  *  run from a terminal reports the terminal's. */
-export function recurCodeHoldsPermission(status: ComputerStatus | null): boolean {
-  const RecurCode = status?.recurcode
+export function rcHoldsPermission(status: ComputerStatus | null): boolean {
+  const RecurCode = status?.rc
   return (
     !!RecurCode?.selfResponsible && (RecurCode.accessibility || RecurCode.screenRecording)
   )

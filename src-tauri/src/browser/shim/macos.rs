@@ -1,6 +1,6 @@
 //! macOS shim on top of `WKWebView` / `WKUserContentController` (objc2).
 //!
-//! The helper script and the `recurCodeBrowser` message handler live in the
+//! The helper script and the `rcBrowser` message handler live in the
 //! `WKContentWorld` named `RecurCode`: a separate JavaScript global for the same
 //! DOM, invisible to page scripts and immune to their prototype tampering.
 //! `WKContentWorld` needs macOS 11; older systems fall back to the page world
@@ -35,7 +35,7 @@ use super::super::hooks::{classify_load_error, LoadFailure};
 use super::super::profile::{self, BrowserProxy, ProxyScheme};
 
 pub const WORLD_NAME: &str = "RecurCode";
-pub const HANDLER_NAME: &str = "recurCodeBrowser";
+pub const HANDLER_NAME: &str = "rcBrowser";
 
 thread_local! {
     // Controllers that already carry our handler + scripts. A popup created
@@ -127,7 +127,7 @@ pub fn install_world(
             controller.addScriptMessageHandler_contentWorld_name(
                 proto,
                 &world,
-                ns_string!("recurCodeBrowser"),
+                ns_string!("rcBrowser"),
             );
             for source in scripts {
                 let script = WKUserScript::initWithSource_injectionTime_forMainFrameOnly_inContentWorld(
@@ -142,7 +142,7 @@ pub fn install_world(
             add_page_scripts(&controller, page_scripts, mtm);
             Ok(true)
         } else {
-            controller.addScriptMessageHandler_name(proto, ns_string!("recurCodeBrowser"));
+            controller.addScriptMessageHandler_name(proto, ns_string!("rcBrowser"));
             for source in scripts {
                 let script = WKUserScript::initWithSource_injectionTime_forMainFrameOnly(
                     mtm.alloc(),

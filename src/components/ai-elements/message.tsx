@@ -475,7 +475,7 @@ const remarkPlugins = [
   remarkTrimCjkAutolinkTail,
 ]
 
-// Streamdown's default rehype pipeline strips `recurcode://` reference hrefs in
+// Streamdown's default rehype pipeline strips `rc://` reference hrefs in
 // sanitization (rendering them as "[blocked]"); re-derive it so they survive to
 // MarkdownLink → ReferenceBadge. See rehype-allow-RecurCode for the full rationale.
 // …and relative local links (`./a.md`, `src/a.md`, `~/a.md`) keep their href

@@ -33,7 +33,7 @@ export interface AttachSessionToSessionDetail {
   /**
    * The conversation being mentioned. Carried whole (rather than by id) so the
    * consumer builds the badge through the same `sessionToSuggestion` adapter the
-   * `@` panel uses — one source of truth for the label / `recurcode://session/<id>`
+   * `@` panel uses — one source of truth for the label / `rc://session/<id>`
    * uri / agent + status + branch meta.
    */
   conversation: DbConversationSummary

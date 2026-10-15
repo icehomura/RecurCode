@@ -322,8 +322,8 @@ jobs:
             exit 1
           fi
           anchor="anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = \"${APPLE_TEAM_ID}\""
-          echo "RC_COMPUTER_PEER_REQUIREMENT=identifier \"app.recurcode\" and ${anchor}" >> "$GITHUB_ENV"
-          echo "RC_COMPUTER_HELPER_REQUIREMENT=identifier \"app.recurcode.computer-helper\" and ${anchor}" >> "$GITHUB_ENV"
+          echo "RC_COMPUTER_PEER_REQUIREMENT=identifier \"app.rc\" and ${anchor}" >> "$GITHUB_ENV"
+          echo "RC_COMPUTER_HELPER_REQUIREMENT=identifier \"app.rc.computer-helper\" and ${anchor}" >> "$GITHUB_ENV"
           echo "RC_COMPUTER_TEAM_ID=${APPLE_TEAM_ID}" >> "$GITHUB_ENV"
 
       # Build the sidecars — the `rc-mcp` companion and the

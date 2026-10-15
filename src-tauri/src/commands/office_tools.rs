@@ -3,7 +3,7 @@
 //!
 //! Skills are loaded dynamically from the OfficeCLI binary (`officecli
 //! load_skill <id>`) and placed in the same central store
-//! (`~/.recurcode/skills/<id>/`) used by built-in experts. Enabling a skill for
+//! (`~/.rc/skills/<id>/`) used by built-in experts. Enabling a skill for
 //! an agent reuses the expert system's symlink mechanism.
 
 use std::collections::BTreeMap;
@@ -113,7 +113,7 @@ pub struct SkillSyncReport {
 
 struct SkillDef {
     /// Canonical skill identity used throughout RecurCode: the central-store
-    /// directory name (`~/.recurcode/skills/<id>/`) and the agent invocation
+    /// directory name (`~/.rc/skills/<id>/`) and the agent invocation
     /// name (`/<id>`). Matches the SKILL.md frontmatter `name:` so the
     /// directory and the skill's self-declared name agree.
     id: &'static str,

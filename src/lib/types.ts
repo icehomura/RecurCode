@@ -3816,7 +3816,7 @@ export interface AgentSkillContent {
 
 /**
  * Built-in expert skills, sourced from obra/superpowers and bundled into
- * the RecurCode binary. Experts live in a central store at `~/.recurcode/skills/`
+ * the RecurCode binary. Experts live in a central store at `~/.rc/skills/`
  * and are linked into agent skill directories on demand.
  */
 export interface ExpertMetadata {
@@ -3874,7 +3874,7 @@ export interface LinkOpResult {
 /**
  * A user-authored "custom" skill. The fourth skill pack: unlike the bundled
  * experts/science/office packs, these are created/edited/imported/deleted by
- * the user, but live in the SAME central store (`~/.recurcode/skills/<id>/`) and
+ * the user, but live in the SAME central store (`~/.rc/skills/<id>/`) and
  * reuse the experts link primitives. A skill is "custom" iff its central-store
  * directory id is not claimed by any bundled pack. Link statuses reuse
  * `ExpertInstallStatus`/`LinkOp`/`LinkOpResult` (the `expertId` field carries
@@ -3912,7 +3912,7 @@ export interface CustomImportResult {
 /**
  * Built-in scientific-research skills, curated from
  * K-Dense-AI/scientific-agent-skills and bundled into the RecurCode binary. They
- * share the central store (`~/.recurcode/skills/`) and link primitives with
+ * share the central store (`~/.rc/skills/`) and link primitives with
  * experts; link statuses reuse `ExpertInstallStatus`/`LinkOp`/`LinkOpResult`
  * (the `expertId` field carries the science skill id).
  */

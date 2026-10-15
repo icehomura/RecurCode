@@ -5211,7 +5211,7 @@ mod tests {
             &db,
             conn_id,
             vec![PromptInputBlock::Text {
-                text: "ask [@Antigravity](recurcode://agent/antigravity) to review".into(),
+                text: "ask [@Antigravity](rc://agent/antigravity) to review".into(),
             }],
             Some(folder_id),
             None,
@@ -5235,14 +5235,14 @@ mod tests {
         assert!(matches!(
             blocks.as_slice(),
             [PromptInputBlock::Text { text }]
-                if text == "ask [@Antigravity](recurcode://agent/antigravity) to review"
+                if text == "ask [@Antigravity](rc://agent/antigravity) to review"
         ));
         let (message_id, user_blocks) = user_message.expect("root prompt is broadcast");
         assert_eq!(message_id, "optimistic-route");
         assert!(matches!(
             user_blocks.as_slice(),
             [crate::acp::types::UserMessageBlock::Text { text }]
-                if text == "ask [@Antigravity](recurcode://agent/antigravity) to review"
+                if text == "ask [@Antigravity](rc://agent/antigravity) to review"
         ));
     }
 

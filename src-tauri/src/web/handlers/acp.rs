@@ -1535,7 +1535,7 @@ mod tests {
             "connectionId": "conn-1",
             "blocks": [{
                 "type": "text",
-                "text": "ask [@Antigravity](recurcode://agent/antigravity)"
+                "text": "ask [@Antigravity](rc://agent/antigravity)"
             }],
             "agentMentions": [{"agentType": "codex", "proof": "whatever"}]
         }))

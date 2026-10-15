@@ -59,7 +59,7 @@ function pushProseSegments(
     // `/`·`$` so the badge label is the bare slug (`build`, `deploy`) — matching
     // the composer's inline command/skill badge.
     const attrs = parseRecurCodeReferenceUri(
-      `recurcode://skill/${encodeURIComponent(slug)}`,
+      `rc://skill/${encodeURIComponent(slug)}`,
       token
     )
     out.push(

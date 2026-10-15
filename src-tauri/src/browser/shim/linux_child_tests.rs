@@ -36,7 +36,7 @@ fn linux_browser_regressions() {
         ],
         || {
             let mut context = tauri::generate_context!();
-            context.config_mut().identifier = "app.recurcode.linux-browser-test".into();
+            context.config_mut().identifier = "app.rc.linux-browser-test".into();
             let mut app = tauri::Builder::default()
                 .any_thread()
                 .manage(BrowserRegistry::default())

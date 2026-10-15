@@ -268,7 +268,7 @@ Un editor, diffs en vivo y lado a lado, un cliente de git completo con un editor
 - **[Inicializador de proyecto](https://docs.codeg.app/guide/project-boot)** — genera la estructura inicial de un proyecto nuevo de forma visual, con vista previa en vivo
 - **[Hazlo tuyo](https://docs.codeg.app/reference/settings/appearance)** — doce temas que puedes recolorear token a token, fondos de pantalla, radio de las esquinas y CSS personalizado, con la interfaz en cualquiera de sus diez idiomas
 - **[Copia de seguridad y sincronización](https://docs.codeg.app/reference/settings/system#backup-restore)** — copias de seguridad cifradas y sincronización de la configuración entre máquinas mediante un archivo o tu propio servidor WebDAV
-- **[Esquema de URL](../../docs/url-scheme.md)** — `recurcode://session/<id>` abre una conversación desde otra app (escritorio)
+- **[Esquema de URL](../../docs/url-scheme.md)** — `rc://session/<id>` abre una conversación desde otra app (escritorio)
 - **Y más** — casi todas las versiones añaden algo; las [notas de versión](https://github.com/spacering-net/codeg/releases) recogen la lista completa
 
 ## 🤖 Agentes compatibles

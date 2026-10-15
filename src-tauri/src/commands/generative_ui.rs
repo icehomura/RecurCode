@@ -9,7 +9,7 @@
 //!     Packs — the same matrix the Experts tab uses.
 //!
 //! The skill reaches an agent the way the bundled skill packs do: a central
-//! copy in the shared store (`~/.recurcode/skills/ui-render`), symlinked (or
+//! copy in the shared store (`~/.rc/skills/ui-render`), symlinked (or
 //! junctioned) into the agent's preferred skill directory. A cell of the
 //! matrix links or unlinks at once, and what it shows is the link on disk:
 //! nothing is stored anywhere else. Startup brings the central copy up to date

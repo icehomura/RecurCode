@@ -72,7 +72,7 @@ export interface ReferenceAttrs {
   /** Human-readable display label. */
   label: string
   /**
-   * Serialization URI (`file://…` / `recurcode://…`) used when sending, or null for
+   * Serialization URI (`file://…` / `rc://…`) used when sending, or null for
    * agents and skills which serialize to plain text.
    */
   uri: string | null

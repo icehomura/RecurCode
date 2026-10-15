@@ -10,7 +10,7 @@
 //! ## Shape
 //!
 //! The envelope is JSON, not a binary header like
-//! [`crate::commands::backup::crypto`]'s `.recurcodebak`. Three reasons: the remote
+//! [`crate::commands::backup::crypto`]'s `.rcbak`. Three reasons: the remote
 //! file keeps its `config.json` name and stays a JSON document a cloud drive's
 //! web UI will preview; the import path can tell an encrypted payload from a
 //! plaintext one by looking at the same parsed value it already reads the
@@ -63,7 +63,7 @@ use crate::app_error::{
 /// binary cannot read.
 pub const ENVELOPE_VERSION: u32 = 1;
 /// The JSON key whose presence identifies an encrypted payload.
-pub const ENVELOPE_MARKER: &str = "recurCodeConfigEncryption";
+pub const ENVELOPE_MARKER: &str = "rcConfigEncryption";
 
 const ALGO: &str = "AES-256-GCM";
 const KDF: &str = "Argon2id";

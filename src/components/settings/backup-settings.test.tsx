@@ -114,7 +114,7 @@ async function selectBackup(preview: Record<string, unknown>) {
     preview,
   } as never)
   const input = document.querySelector('input[type="file"]') as HTMLInputElement
-  const file = new File(["x"], "b.recurcode.zip")
+  const file = new File(["x"], "b.rc.zip")
   Object.defineProperty(input, "files", { value: [file] })
   fireEvent.change(input)
   await waitFor(() => expect(uploadBackupWeb).toHaveBeenCalled())

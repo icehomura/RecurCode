@@ -1376,7 +1376,7 @@
       "authTypeHint": "Wo der API-Schlüssel innerhalb von config.toml abgelegt wird.",
       "rawEditorLabel": "config.toml direkt bearbeiten",
       "rawEditorWarning": "Speichern hier überschreibt die gesamte Datei wortwörtlich und ersetzt die strukturierten Einstellungen oben.",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "Offizielles Abonnement",
     "authModeCustomEndpoint": "Benutzerdefinierter Endpunkt",
@@ -3904,7 +3904,7 @@
         "collapse": "Einklappen",
         "errorTitle": "Feedback-Prüfung fehlgeschlagen"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "Sitzung {session} wird gelesen",
         "getSessionInfoNoId": "Sitzung wird gelesen",
         "taskProgress": "Fortschritt: {message}",
@@ -5448,7 +5448,7 @@
       "stop": "Freigabe beenden",
       "stopWithKey": "Freigabe aller Fenster beenden ({key})"
     },
-    "recurCodeGranted": "RecurCode selbst hat Bedienungshilfen oder Bildschirmaufnahme – die Shells der Agenten können das ohne jede Freigabe nutzen. Schalte es für RecurCode in den Systemeinstellungen aus, wenn du es nicht brauchst.",
+    "rcGranted": "RecurCode selbst hat Bedienungshilfen oder Bildschirmaufnahme – die Shells der Agenten können das ohne jede Freigabe nutzen. Schalte es für RecurCode in den Systemeinstellungen aus, wenn du es nicht brauchst.",
     "backend": {
       "idle": "Nicht gestartet",
       "downloading": "Treiber wird geladen …",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, one {# Fenster konnte nicht freigegeben werden; es wurde vielleicht geschlossen.} other {# Fenster konnten nicht freigegeben werden; sie wurden vielleicht geschlossen.}}",
       "unshareable": "{count, plural, one {# Fenster lässt sich nicht freigeben} other {# Fenster lassen sich nicht freigeben}}",
       "noneShareable": "Keines dieser Fenster lässt sich freigeben.",
-      "recurCodeWhy": "Fenster von RecurCode werden nie freigegeben: Ein Agent, der RecurCode bedienen könnte, könnte seine eigenen Anfragen genehmigen oder sich weitere Fenster freigeben. Dasselbe gilt für andere rc-Instanzen."
+      "rcWhy": "Fenster von RecurCode werden nie freigegeben: Ein Agent, der RecurCode bedienen könnte, könnte seine eigenen Anfragen genehmigen oder sich weitere Fenster freigeben. Dasselbe gilt für andere rc-Instanzen."
     },
     "settings": {
       "pageTitle": "Computernutzung",
@@ -6175,7 +6175,7 @@
     "editor": {
       "createTitle": "Neuer benutzerdefinierter Skill",
       "editTitle": "Benutzerdefinierten Skill bearbeiten",
-      "description": "Benutzerdefinierte Skills liegen im gemeinsamen Speicher (~/.recurcode/skills) und können für jeden Agenten aktiviert werden.",
+      "description": "Benutzerdefinierte Skills liegen im gemeinsamen Speicher (~/.rc/skills) und können für jeden Agenten aktiviert werden.",
       "idLabel": "Skill-ID",
       "idPlaceholder": "z. B. my-workflow",
       "contentLabel": "SKILL.md",
@@ -6334,7 +6334,7 @@
       "npm_missing": "npm wurde im PATH der App nicht gefunden.",
       "not_installed": "Dieser Agent scheint nicht installiert zu sein.",
       "installed_but_unresolved": "Als installiert vermerkt, aber die App findet die ausführbare Datei nicht.",
-      "user_prefix_not_on_path": "In das Ausweich-Prefix (~/.recurcode/npm-global) installiert, das nicht im PATH der App liegt. Starte die App komplett neu und versuche es erneut.",
+      "user_prefix_not_on_path": "In das Ausweich-Prefix (~/.rc/npm-global) installiert, das nicht im PATH der App liegt. Starte die App komplett neu und versuche es erneut.",
       "homebrew_bin_not_on_path": "Unter dem Homebrew-bin installiert, das nicht im PATH der App liegt (Apple-Silicon-Keg-Trennung).",
       "terminal_only_path": "Der Befehl wird in deinem Terminal aufgelöst, aber nicht in der App – eine GUI-PATH-Lücke. Starte die App aus einem Terminal oder installiere sie in den Agent-Einstellungen neu.",
       "npm_prefix_timeout": "npm prefix -g war zu langsam (über 1,5 s), daher wurde die Ausweicherkennung übersprungen. Starte die App neu und versuche es erneut.",

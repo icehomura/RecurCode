@@ -35,8 +35,8 @@ export function fileToSuggestion(
 }
 
 /**
- * ACP agent → agent reference. Carries a `recurcode://agent/<agent_type>` uri as a
- * routing anchor: it serializes inline as `[@label](recurcode://agent/…)` and
+ * ACP agent → agent reference. Carries a `rc://agent/<agent_type>` uri as a
+ * routing anchor: it serializes inline as `[@label](rc://agent/…)` and
  * renders as a badge in the transcript. The readable link IS the routing
  * anchor: the backend derives the delegation reminder from it at send time, so
  * nothing has to travel out-of-band alongside the prompt.
@@ -47,7 +47,7 @@ export function agentToSuggestion(agent: AcpAgentInfo): SuggestionItem {
       refType: "agent",
       id: agent.agent_type,
       label: agent.name || getAgentLabel(agent.agent_type),
-      uri: `recurcode://agent/${agent.agent_type}`,
+      uri: `rc://agent/${agent.agent_type}`,
       meta: { agentType: agent.agent_type, available: agent.available },
     },
     detail: agent.description || null,
@@ -57,7 +57,7 @@ export function agentToSuggestion(agent: AcpAgentInfo): SuggestionItem {
 
 /**
  * Conversation → session reference. The serialization uri encodes RecurCode's
- * internal numeric conversation id as `recurcode://session/<conversation_id>` — the
+ * internal numeric conversation id as `rc://session/<conversation_id>` — the
  * stable key the `get_session_info` MCP tool resolves directly (it then reads the
  * row's bound `external_id` + `agent_type` server-side). The `@`-panel option row
  * still shows the owning agent's icon via `meta.agentType`; the inline session
@@ -73,7 +73,7 @@ export function sessionToSuggestion(
   // whitespace-only title (folding can't turn blank into non-blank).
   const label =
     formatConversationTitle(conversation.title).trim() || `#${conversation.id}`
-  const uri = `recurcode://session/${conversation.id}`
+  const uri = `rc://session/${conversation.id}`
   return {
     reference: {
       refType: "session",
@@ -92,7 +92,7 @@ export function sessionToSuggestion(
 }
 
 /**
- * Git commit → commit reference (`recurcode://commit/<repoKey>@<fullHash>`).
+ * Git commit → commit reference (`rc://commit/<repoKey>@<fullHash>`).
  * `repoKey` identifies the repository (e.g. its path) and is URI-encoded.
  */
 export function commitToSuggestion(
@@ -104,7 +104,7 @@ export function commitToSuggestion(
       refType: "commit",
       id: entry.full_hash,
       label: entry.hash,
-      uri: `recurcode://commit/${encodeURIComponent(repoKey)}@${entry.full_hash}`,
+      uri: `rc://commit/${encodeURIComponent(repoKey)}@${entry.full_hash}`,
       meta: {
         shortHash: entry.hash,
         message: entry.message,

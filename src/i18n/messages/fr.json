@@ -1376,7 +1376,7 @@
       "authTypeHint": "Où la clé API est écrite à l'intérieur de config.toml.",
       "rawEditorLabel": "Modifier config.toml directement",
       "rawEditorWarning": "Enregistrer ici écrase tout le fichier tel quel et remplace les réglages structurés ci-dessus.",
-      "rawEditorPlaceholder": "[providers.recurcode]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
+      "rawEditorPlaceholder": "[providers.rc]\ntype = \"kimi\"\nbase_url = \"https://api.moonshot.cn/v1\"\napi_key = \"sk-...\""
     },
     "authModeOfficialSubscription": "Abonnement officiel",
     "authModeCustomEndpoint": "Endpoint personnalisé",
@@ -3904,7 +3904,7 @@
         "collapse": "Réduire",
         "errorTitle": "Échec de la vérification des retours"
       },
-      "recurCodeMcpTool": {
+      "rcMcpTool": {
         "getSessionInfo": "Lecture de la session {session}",
         "getSessionInfoNoId": "Lecture d’une session",
         "taskProgress": "Progression : {message}",
@@ -5448,7 +5448,7 @@
       "stop": "Arrêter le partage",
       "stopWithKey": "Arrêter le partage de toutes les fenêtres ({key})"
     },
-    "recurCodeGranted": "RecurCode lui-même dispose d'Accessibilité ou d'Enregistrement de l'écran : le shell des agents peut s'en servir sans rien partager. Si vous n'en avez pas besoin, désactivez-le pour RecurCode dans Réglages Système.",
+    "rcGranted": "RecurCode lui-même dispose d'Accessibilité ou d'Enregistrement de l'écran : le shell des agents peut s'en servir sans rien partager. Si vous n'en avez pas besoin, désactivez-le pour RecurCode dans Réglages Système.",
     "backend": {
       "idle": "Non démarré",
       "downloading": "Téléchargement du pilote…",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, one {# fenêtre n'a pas pu être partagée ; elle a peut-être été fermée.} other {# fenêtres n'ont pas pu être partagées ; elles ont peut-être été fermées.}}",
       "unshareable": "{count, plural, one {# fenêtre ne peut pas être partagée} other {# fenêtres ne peuvent pas être partagées}}",
       "noneShareable": "Aucune de ces fenêtres ne peut être partagée.",
-      "recurCodeWhy": "Les fenêtres de RecurCode ne sont jamais partagées : un agent capable de manipuler RecurCode pourrait approuver ses propres demandes ou se partager d'autres fenêtres. Il en va de même pour les autres instances de RecurCode."
+      "rcWhy": "Les fenêtres de RecurCode ne sont jamais partagées : un agent capable de manipuler RecurCode pourrait approuver ses propres demandes ou se partager d'autres fenêtres. Il en va de même pour les autres instances de RecurCode."
     },
     "settings": {
       "pageTitle": "Utilisation de l'ordinateur",
@@ -6175,7 +6175,7 @@
     "editor": {
       "createTitle": "Nouvelle compétence personnalisée",
       "editTitle": "Modifier la compétence personnalisée",
-      "description": "Les compétences personnalisées sont stockées dans le magasin partagé (~/.recurcode/skills) et peuvent être activées pour n'importe quel agent.",
+      "description": "Les compétences personnalisées sont stockées dans le magasin partagé (~/.rc/skills) et peuvent être activées pour n'importe quel agent.",
       "idLabel": "ID de la compétence",
       "idPlaceholder": "ex. my-workflow",
       "contentLabel": "SKILL.md",
@@ -6334,7 +6334,7 @@
       "npm_missing": "npm est introuvable dans le PATH de l'app.",
       "not_installed": "Cet agent ne semble pas installé.",
       "installed_but_unresolved": "Enregistré comme installé, mais l'app ne trouve pas son exécutable.",
-      "user_prefix_not_on_path": "Installé dans le préfixe de secours (~/.recurcode/npm-global), qui n'est pas dans le PATH de l'app. Redémarrez complètement l'app et réessayez.",
+      "user_prefix_not_on_path": "Installé dans le préfixe de secours (~/.rc/npm-global), qui n'est pas dans le PATH de l'app. Redémarrez complètement l'app et réessayez.",
       "homebrew_bin_not_on_path": "Installé sous le bin de Homebrew, qui n'est pas dans le PATH de l'app (séparation keg Apple Silicon).",
       "terminal_only_path": "La commande se résout dans votre terminal mais pas dans l'app : un écart de PATH GUI. Lancez l'app depuis un terminal ou réinstallez depuis les Paramètres des agents.",
       "npm_prefix_timeout": "npm prefix -g était trop lent (plus de 1,5 s), la détection de secours a été ignorée. Redémarrez l'app et réessayez.",

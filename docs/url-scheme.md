@@ -1,22 +1,22 @@
 # URL scheme
 
-The desktop app registers the custom URL scheme `recurcode://` so another program
+The desktop app registers the custom URL scheme `rc://` so another program
 can bring RecurCode forward and open a specific conversation.
 
-This is the OS handler for the same `recurcode://session/<id>` form already used
-as an in-app markdown mention. Mention badges (`recurcode://agent/…`,
-`recurcode://commit/…`, `recurcode://embedded/…`) stay in-process and are **not**
+This is the OS handler for the same `rc://session/<id>` form already used
+as an in-app markdown mention. Mention badges (`rc://agent/…`,
+`rc://commit/…`, `rc://embedded/…`) stay in-process and are **not**
 OS navigation.
 
 ## Forms
 
 | URL | Effect |
 | --- | --- |
-| `recurcode://session/214` | Open conversation **214** (RecurCode's numeric id) |
-| `recurcode://session/<external-id>` | Open by the agent's own session id (Grok UUID, Codex thread id, …) |
-| `recurcode://workspace?conversationId=214` | Same lookup. `folderId` and `agent` are optional; when omitted they are read from the row |
-| `recurcode://workspace?folderId=3&conversationId=214&agent=grok` | Same, but rejected if folder or agent do not match the row |
-| `recurcode://open` / `recurcode://` | Show the workspace, no tab change |
+| `rc://session/214` | Open conversation **214** (RecurCode's numeric id) |
+| `rc://session/<external-id>` | Open by the agent's own session id (Grok UUID, Codex thread id, …) |
+| `rc://workspace?conversationId=214` | Same lookup. `folderId` and `agent` are optional; when omitted they are read from the row |
+| `rc://workspace?folderId=3&conversationId=214&agent=grok` | Same, but rejected if folder or agent do not match the row |
+| `rc://open` / `rc://` | Show the workspace, no tab change |
 
 A missing or deleted conversation is a no-op besides showing the workspace.
 
@@ -24,17 +24,17 @@ A missing or deleted conversation is a no-op besides showing the workspace.
 
 ```bash
 # macOS / Linux
-open "recurcode://session/214"
-xdg-open "recurcode://session/214"
+open "rc://session/214"
+xdg-open "rc://session/214"
 
 # Windows
-start recurcode://session/214
+start rc://session/214
 ```
 
 From a local web app (the custom scheme cannot be `fetch`'d; assign it):
 
 ```js
-window.location.href = "recurcode://session/214"
+window.location.href = "rc://session/214"
 ```
 
 ## Cold start vs already running

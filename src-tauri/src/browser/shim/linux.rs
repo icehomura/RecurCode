@@ -3,7 +3,7 @@
 //! The helper script and the primitive it posts through live in a WebKitGTK
 //! **script world** named `RecurCode`: `UserScript::for_world` injects the helper
 //! there and `register_script_message_handler_in_world` puts
-//! `window.webkit.messageHandlers.recurcodeBrowser` in the same world — a separate
+//! `window.webkit.messageHandlers.rcBrowser` in the same world — a separate
 //! JavaScript global over the same DOM, invisible to page scripts and immune to
 //! their prototype tampering, exactly like macOS's `WKContentWorld`. The send
 //! primitive is spelled the same way it is on macOS, so both platforms share
@@ -14,8 +14,8 @@
 //! the frame that sent it — no `WKFrameInfo`, no execution context — so there
 //! is no frame to check a message against. What stands in for that check is
 //! WHICH HANDLER it arrived on: the helper is injected twice, once into the top
-//! frame with a primitive that posts through `recurCodeBrowser`, and once into every
-//! frame with one that posts through `recurCodeBrowserFrame` — that second one
+//! frame with a primitive that posts through `rcBrowser`, and once into every
+//! frame with one that posts through `rcBrowserFrame` — that second one
 //! leaves the top frame's alone, by asking whether it is the top frame rather
 //! than by running in a particular order. Messages
 //! on the second handler are reported as not-the-main-frame, which is the same
@@ -73,10 +73,10 @@ pub use super::{NavigationEvent, NavigationSink, PageCloseSink};
 pub const WORLD_NAME: &str = "RecurCode";
 /// The message handler the TOP frame's helper posts through — the same name
 /// macOS registers, so `channel::PREFIX_SCRIPT` is the send primitive on both.
-pub const HANDLER_NAME: &str = "recurCodeBrowser";
+pub const HANDLER_NAME: &str = "rcBrowser";
 /// The one every other frame posts through. What arrives here is reported as
 /// not the main frame.
-pub const FRAME_HANDLER_NAME: &str = "recurCodeBrowserFrame";
+pub const FRAME_HANDLER_NAME: &str = "rcBrowserFrame";
 
 /// A channel message and whether it came from the page's own frame. Unlike the
 /// other platforms this sink is already bound to one tab: a Linux surface owns

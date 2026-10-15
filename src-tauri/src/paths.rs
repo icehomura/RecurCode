@@ -1,20 +1,20 @@
 //! Centralized resolution of rc-owned filesystem paths.
 //!
-//! Mirrors the conventions already used by `preferences.rs` (`~/.recurcode/`)
-//! and `experts.rs` (`~/.recurcode/skills/`). New features that need a
+//! Mirrors the conventions already used by `preferences.rs` (`~/.rc/`)
+//! and `experts.rs` (`~/.rc/skills/`). New features that need a
 //! user-scoped persistent directory should call into this module instead of
-//! re-deriving `dirs::home_dir().join(".recurcode")` themselves.
+//! re-deriving `dirs::home_dir().join(".rc")` themselves.
 //!
 //! The `rc_*_root` data directories resolve `$RC_HOME`, then
-//! `$RC_DATA_DIR`, then `~/.recurcode`. Both binaries export `RC_DATA_DIR`
+//! `$RC_DATA_DIR`, then `~/.rc`. Both binaries export `RC_DATA_DIR`
 //! before anything reads it — the desktop app from [`desktop_data_dir`] at the
 //! top of `run()`, `rc-server` in `main` — so the data directory is what
-//! they resolve to, and `~/.recurcode` only serves a process started without
+//! they resolve to, and `~/.rc` only serves a process started without
 //! either variable.
 
 use std::path::{Path, PathBuf};
 
-const RC_DIR_NAME: &str = ".recurcode";
+const RC_DIR_NAME: &str = ".rc";
 const PETS_DIR_NAME: &str = "pets";
 const BROWSER_PROFILES_DIR_NAME: &str = "browser-profiles";
 const UPLOADS_DIR_NAME: &str = "uploads";
@@ -23,9 +23,9 @@ const TURN_TIMINGS_DIR_NAME: &str = "turn-timings";
 const ACP_TRANSCRIPTS_DIR_NAME: &str = "acp-transcripts";
 const BACKGROUNDS_DIR_NAME: &str = "backgrounds";
 
-/// `$RC_HOME` if set (and non-empty), else `~/.recurcode/`.
+/// `$RC_HOME` if set (and non-empty), else `~/.rc/`.
 ///
-/// Returns the relative `.recurcode` path when no home directory is available;
+/// Returns the relative `.rc` path when no home directory is available;
 /// callers must still handle creation failures gracefully.
 pub fn rc_home_dir() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
@@ -41,7 +41,7 @@ pub fn rc_home_dir() -> PathBuf {
 /// Resolution order:
 /// 1. `$RC_HOME/pets` (explicit override, used in tests and custom installs)
 /// 2. `$RC_DATA_DIR/pets` (the data directory, see the module docs)
-/// 3. `~/.recurcode/pets` (neither set)
+/// 3. `~/.rc/pets` (neither set)
 pub fn rc_pets_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(PETS_DIR_NAME);
@@ -76,7 +76,7 @@ pub fn rc_browser_profiles_root() -> PathBuf {
 /// Resolution order matches `rc_pets_root()`:
 /// 1. `$RC_HOME/uploads`
 /// 2. `$RC_DATA_DIR/uploads` (the data directory, see the module docs)
-/// 3. `~/.recurcode/uploads` (neither set)
+/// 3. `~/.rc/uploads` (neither set)
 ///
 /// Files in this directory are not garbage-collected by RecurCode itself —
 /// later conversations may still reference them via `file://` URIs
@@ -112,7 +112,7 @@ pub fn rc_uploads_root() -> PathBuf {
 /// Resolution mirrors [`rc_pets_root`] exactly:
 /// 1. `$RC_HOME/backgrounds` (explicit override)
 /// 2. `$RC_DATA_DIR/backgrounds` (the data directory, see the module docs)
-/// 3. `~/.recurcode/backgrounds` (neither set)
+/// 3. `~/.rc/backgrounds` (neither set)
 pub fn rc_backgrounds_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(BACKGROUNDS_DIR_NAME);
@@ -132,7 +132,7 @@ pub fn rc_backgrounds_root() -> PathBuf {
 /// filesystem root as uploads/pets/the database:
 /// 1. `$RC_HOME/logs` (explicit override)
 /// 2. `$RC_DATA_DIR/logs` (the data directory, see the module docs)
-/// 3. `~/.recurcode/logs` (neither set)
+/// 3. `~/.rc/logs` (neither set)
 ///
 /// Pure env + `dirs::home_dir()`, so it is callable at the very start of a
 /// process — before the database (or, in `rc-server`, the tokio runtime)
@@ -160,7 +160,7 @@ pub fn rc_logs_root() -> PathBuf {
 /// Resolution mirrors [`rc_uploads_root`]:
 /// 1. `$RC_HOME/turn-timings`
 /// 2. `$RC_DATA_DIR/turn-timings` (the data directory, see the module docs)
-/// 3. `~/.recurcode/turn-timings` (neither set)
+/// 3. `~/.rc/turn-timings` (neither set)
 pub fn rc_turn_timings_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(TURN_TIMINGS_DIR_NAME);
@@ -182,7 +182,7 @@ pub fn rc_turn_timings_root() -> PathBuf {
 /// Resolution mirrors [`rc_turn_timings_root`]:
 /// 1. `$RC_HOME/acp-transcripts`
 /// 2. `$RC_DATA_DIR/acp-transcripts` (the data directory, see the module docs)
-/// 3. `~/.recurcode/acp-transcripts` (neither set)
+/// 3. `~/.rc/acp-transcripts` (neither set)
 pub fn rc_acp_transcripts_root() -> PathBuf {
     if let Some(custom) = std::env::var_os("RC_HOME").filter(|s| !s.is_empty()) {
         return PathBuf::from(custom).join(ACP_TRANSCRIPTS_DIR_NAME);
@@ -206,7 +206,7 @@ pub fn rc_acp_transcripts_root() -> PathBuf {
 ///
 /// Exporting it only in `setup`, as the desktop app used to, left the log
 /// directory to depend on how the process was started: a launch from the
-/// Start menu or the Dock wrote to `~/.recurcode/logs`, while an instance RecurCode
+/// Start menu or the Dock wrote to `~/.rc/logs`, while an instance RecurCode
 /// restarted (after an update) inherited the variable and wrote beside the
 /// database — and the Settings page always opened the latter.
 pub fn desktop_data_dir(
@@ -315,24 +315,24 @@ mod tests {
         let platform = std::env::temp_dir().join("platform-data");
         let preset = std::env::temp_dir().join("preset-data");
         assert_eq!(
-            desktop_data_dir(None, Some(&platform), "app.recurcode"),
-            Some(platform.join("app.recurcode"))
+            desktop_data_dir(None, Some(&platform), "app.rc"),
+            Some(platform.join("app.rc"))
         );
         assert_eq!(
-            desktop_data_dir(Some(std::ffi::OsStr::new("")), Some(&platform), "app.recurcode"),
-            Some(platform.join("app.recurcode")),
+            desktop_data_dir(Some(std::ffi::OsStr::new("")), Some(&platform), "app.rc"),
+            Some(platform.join("app.rc")),
             "an empty preset is no preset"
         );
         assert_eq!(
-            desktop_data_dir(Some(preset.as_os_str()), Some(&platform), "app.recurcode"),
+            desktop_data_dir(Some(preset.as_os_str()), Some(&platform), "app.rc"),
             Some(preset.clone())
         );
         assert_eq!(
-            desktop_data_dir(Some(preset.as_os_str()), None, "app.recurcode"),
+            desktop_data_dir(Some(preset.as_os_str()), None, "app.rc"),
             Some(preset)
         );
-        assert_eq!(desktop_data_dir(None, None, "app.recurcode"), None);
-        let relative = desktop_data_dir(Some(std::ffi::OsStr::new("data")), None, "app.recurcode")
+        assert_eq!(desktop_data_dir(None, None, "app.rc"), None);
+        let relative = desktop_data_dir(Some(std::ffi::OsStr::new("data")), None, "app.rc")
             .expect("a relative preset");
         assert!(relative.is_absolute(), "{}", relative.display());
         assert!(relative.ends_with("data"));
@@ -343,8 +343,8 @@ mod tests {
     #[test]
     fn simplifies_a_verbatim_drive_path() {
         assert_eq!(
-            simplify_verbatim_path(Path::new(r"\\?\C:\Users\song\.recurcode\uploads\b\img.png")),
-            PathBuf::from(r"C:\Users\song\.recurcode\uploads\b\img.png")
+            simplify_verbatim_path(Path::new(r"\\?\C:\Users\song\.rc\uploads\b\img.png")),
+            PathBuf::from(r"C:\Users\song\.rc\uploads\b\img.png")
         );
     }
 
@@ -365,7 +365,7 @@ mod tests {
     #[test]
     fn leaves_every_other_shape_untouched() {
         for path in [
-            "/home/u/.recurcode/uploads/b/img.png",
+            "/home/u/.rc/uploads/b/img.png",
             "/data/uploads/b/img.png",
             r"C:\Users\song\img.png",
             r"\\srv\share\img.png",

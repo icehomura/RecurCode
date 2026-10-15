@@ -54,7 +54,7 @@ pub type MessageSink = Arc<dyn Fn(String, bool, usize) + Send + Sync>;
 /// in the same world, so the page never sees either. WebKit spells the message
 /// handler the same way on both its ports, so macOS and Linux share this.
 #[cfg(any(target_os = "macos", target_os = "linux"))]
-pub const PREFIX_SCRIPT: &str = "globalThis.__rcSend = function (m) { window.webkit.messageHandlers.recurcodeBrowser.postMessage(String(m)); };";
+pub const PREFIX_SCRIPT: &str = "globalThis.__rcSend = function (m) { window.webkit.messageHandlers.rcBrowser.postMessage(String(m)); };";
 
 /// The same primitive for a SUBFRAME's copy of the helper, posting through a
 /// handler the host treats as non-main-frame (Linux only — macOS learns the
@@ -66,7 +66,7 @@ pub const PREFIX_SCRIPT: &str = "globalThis.__rcSend = function (m) { window.web
 /// engine's business, and a tab whose own page reported itself as a subframe
 /// would lose its address bar and never say hello.
 #[cfg(target_os = "linux")]
-pub const FRAME_PREFIX_SCRIPT: &str = "if (window.top !== window) { globalThis.__rcSend = function (m) { window.webkit.messageHandlers.recurcodeBrowserFrame.postMessage(String(m)); }; }";
+pub const FRAME_PREFIX_SCRIPT: &str = "if (window.top !== window) { globalThis.__rcSend = function (m) { window.webkit.messageHandlers.rcBrowserFrame.postMessage(String(m)); }; }";
 
 #[derive(Debug, Deserialize)]
 pub struct Envelope {
@@ -280,7 +280,7 @@ mod tests {
 
     #[test]
     fn helper_is_bundled_and_self_contained() {
-        assert!(HELPER_JS.contains("recurCodeBrowserHelper"));
+        assert!(HELPER_JS.contains("rcBrowserHelper"));
         assert!(!HELPER_JS.contains("import "));
         assert!(!HELPER_JS.contains("require("));
     }

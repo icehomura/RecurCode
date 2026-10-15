@@ -57,7 +57,7 @@
 //!
 //! One origin per target port does not have to mean one *port* per target.
 //! `RC_BRIDGE_HOST_PATTERN` names the targets by hostname instead —
-//! `3000.recurcode.example.com` for port 3000 — and then the bridge binds nothing
+//! `3000.rc.example.com` for port 3000 — and then the bridge binds nothing
 //! of its own: those requests arrive on RecurCode's own listener, are recognised
 //! by their `Host` before anything else looks at them, and are answered here
 //! and nowhere else in RecurCode. A deployment publishes one port, and a reverse
@@ -68,7 +68,7 @@
 //!
 //! Everything above still holds, and one part of it gets stronger: cookies
 //! ignore ports but not hostnames, so a capability set on
-//! `3000.recurcode.example.com` is never sent to `3001.recurcode.example.com` at all,
+//! `3000.rc.example.com` is never sent to `3001.rc.example.com` at all,
 //! where between two bridge ports it was sent and then refused. The hostname
 //! must be same-site with the workbench for the browser to send the cookie
 //! into the frame at all, which a subdomain of the workbench's own host is by
@@ -203,7 +203,7 @@ impl BridgeConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum HostPattern {
     /// `auto`: the port is one label in front of the host the workbench
-    /// itself was reached at — `3000.recurcode.example.com` for a workbench on
+    /// itself was reached at — `3000.rc.example.com` for a workbench on
     /// `RecurCode.example.com`, `3000.localhost` for one on `localhost`.
     Subdomain,
     /// A template naming `{port}`: `{port}.preview.example.com`,
@@ -1766,22 +1766,22 @@ mod tests {
         let json = serde_json::to_value(BridgeGrant {
             target_port: 3000,
             bridge_port: None,
-            bridge_host: Some("3000.recurcode.example".into()),
+            bridge_host: Some("3000.rc.example".into()),
             entry_path: "/__rc_bridge/enter/abc".into(),
             public_host: None,
         })
         .unwrap();
         assert!(json["bridgePort"].is_null());
-        assert_eq!(json["bridgeHost"], "3000.recurcode.example");
+        assert_eq!(json["bridgeHost"], "3000.rc.example");
 
         let json = serde_json::to_value(BridgeStatus {
             enabled: true,
             ports: Vec::new(),
             public_host: None,
-            host_pattern: Some("{port}.recurcode.example".into()),
+            host_pattern: Some("{port}.rc.example".into()),
         })
         .unwrap();
-        assert_eq!(json["hostPattern"], "{port}.recurcode.example");
+        assert_eq!(json["hostPattern"], "{port}.rc.example");
     }
 
     #[test]
@@ -1831,9 +1831,9 @@ mod tests {
         let auto = HostPattern::Subdomain;
         let template = HostPattern::parse("p{port}-RecurCode.example.com").unwrap();
 
-        assert_eq!(auto.render(3000, "RecurCode.example.com").as_deref(), Some("3000.recurcode.example.com"));
+        assert_eq!(auto.render(3000, "RecurCode.example.com").as_deref(), Some("3000.rc.example.com"));
         assert_eq!(auto.render(3000, "LOCALHOST").as_deref(), Some("3000.localhost"));
-        assert_eq!(auto.target_of("3000.recurcode.example.com"), Some(3000));
+        assert_eq!(auto.target_of("3000.rc.example.com"), Some(3000));
         assert_eq!(auto.target_of("3000.LOCALHOST"), Some(3000));
         assert_eq!(template.render(5173, "ignored").as_deref(), Some("p5173-RecurCode.example.com"));
         assert_eq!(template.target_of("p5173-RecurCode.example.com"), Some(5173));
@@ -1868,8 +1868,8 @@ mod tests {
 
     #[test]
     fn a_hostname_is_read_out_of_the_authority() {
-        assert_eq!(hostname_of("3000.recurcode.example:8080").as_deref(), Some("3000.recurcode.example"));
-        assert_eq!(hostname_of(" 3000.RecurCode.Example ").as_deref(), Some("3000.recurcode.example"));
+        assert_eq!(hostname_of("3000.rc.example:8080").as_deref(), Some("3000.rc.example"));
+        assert_eq!(hostname_of(" 3000.RecurCode.Example ").as_deref(), Some("3000.rc.example"));
         // Addresses are not names — `3000.` in front of one names nothing.
         assert_eq!(hostname_of("[::1]:3080"), None);
         assert_eq!(hostname_of("127.0.0.1:3080"), None);
@@ -1918,40 +1918,40 @@ mod tests {
             addressed_hostnames(&request(pairs, "/x"), true)
         };
 
-        assert_eq!(direct(&[("host", "3000.RecurCode.Test:8080")]), ["3000.recurcode.test"]);
+        assert_eq!(direct(&[("host", "3000.RecurCode.Test:8080")]), ["3000.rc.test"]);
         // A forwarding header a page added to its own request does not
         // replace the `Host` it cannot drop — both are read, so naming the
         // workbench in one cannot carry the request off the bridge.
         assert_eq!(
-            proxied(&[("host", "3000.recurcode.test"), ("x-forwarded-host", "RecurCode.test")]),
-            ["3000.recurcode.test", "RecurCode.test"]
+            proxied(&[("host", "3000.rc.test"), ("x-forwarded-host", "RecurCode.test")]),
+            ["3000.rc.test", "RecurCode.test"]
         );
         // A proxy that appends rather than replaces, and one that sends the
         // header twice: every value counts.
         assert_eq!(
-            proxied(&[("host", "RecurCode:3080"), ("x-forwarded-host", "evil.test, 3000.recurcode.test")]),
-            ["RecurCode", "evil.test", "3000.recurcode.test"]
+            proxied(&[("host", "RecurCode:3080"), ("x-forwarded-host", "evil.test, 3000.rc.test")]),
+            ["RecurCode", "evil.test", "3000.rc.test"]
         );
         // Without a declared proxy in front, forwarding headers are nobody's
         // word for anything.
         assert_eq!(
-            direct(&[("host", "3000.recurcode.test"), ("x-forwarded-host", "RecurCode.test")]),
-            ["3000.recurcode.test"]
+            direct(&[("host", "3000.rc.test"), ("x-forwarded-host", "RecurCode.test")]),
+            ["3000.rc.test"]
         );
         // HTTP/2 carries the authority in the request line, with no `Host`
         // header at all.
         assert_eq!(
-            addressed_hostnames(&request(&[], "http://3000.recurcode.test:8080/x"), false),
-            ["3000.recurcode.test"]
+            addressed_hostnames(&request(&[], "http://3000.rc.test:8080/x"), false),
+            ["3000.rc.test"]
         );
         // `Host` wins over the URI's authority where both are there, as it
         // does for every other reader of this request.
         assert_eq!(
             addressed_hostnames(
-                &request(&[("host", "3000.recurcode.test")], "http://9.recurcode.test/x"),
+                &request(&[("host", "3000.rc.test")], "http://9.rc.test/x"),
                 false
             ),
-            ["3000.recurcode.test"]
+            ["3000.rc.test"]
         );
         // Addresses name no bridge target, and nothing at all is nothing.
         assert!(direct(&[("host", "127.0.0.1:3080")]).is_empty());
@@ -1964,7 +1964,7 @@ mod tests {
         let template = HostPattern::parse("{port}.preview.example.com").unwrap();
         let names = |raw: &[&str]| raw.iter().map(|s| s.to_string()).collect::<Vec<_>>();
         let none = HashSet::new();
-        let handed_out = HashSet::from(["3000.recurcode.test".to_string()]);
+        let handed_out = HashSet::from(["3000.rc.test".to_string()]);
 
         // A wildcard the operator handed over: the bridge answers for every
         // name under it, open target or not, handed out or not.
@@ -1977,19 +1977,19 @@ mod tests {
         assert!(!unclaimed_is_the_bridges(Some(&template), &names(&["RecurCode.example.com"]), &none));
         assert!(!unclaimed_is_the_bridges(Some(&template), &names(&["preview.example.com"]), &none));
         // `auto` claims nothing it did not hand out: the shape alone would
-        // take a workbench on `3000.recurcode.test` away from RecurCode.
-        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3000.recurcode.test"]), &none));
+        // take a workbench on `3000.rc.test` away from RecurCode.
+        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3000.rc.test"]), &none));
         assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&[]), &none));
         // But once it has handed a name out, the name is the bridge's for
         // as long as this process runs — the target can idle away, the
         // origin the page ran on does not.
-        assert!(unclaimed_is_the_bridges(Some(&auto), &names(&["3000.recurcode.test"]), &handed_out));
-        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3001.recurcode.test"]), &handed_out));
+        assert!(unclaimed_is_the_bridges(Some(&auto), &names(&["3000.rc.test"]), &handed_out));
+        assert!(!unclaimed_is_the_bridges(Some(&auto), &names(&["3001.rc.test"]), &handed_out));
         // And it stays the bridge's with no configuration at all behind it:
         // switching the bridge off, or pointing it somewhere else, does not
         // reach the browser's memory of that origin.
-        assert!(unclaimed_is_the_bridges(None, &names(&["3000.recurcode.test"]), &handed_out));
-        assert!(!unclaimed_is_the_bridges(None, &names(&["3001.recurcode.test"]), &handed_out));
+        assert!(unclaimed_is_the_bridges(None, &names(&["3000.rc.test"]), &handed_out));
+        assert!(!unclaimed_is_the_bridges(None, &names(&["3001.rc.test"]), &handed_out));
         assert!(!unclaimed_is_the_bridges(None, &names(&["3000.preview.example.com"]), &none));
     }
 

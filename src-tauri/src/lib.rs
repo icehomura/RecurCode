@@ -375,7 +375,7 @@ mod tauri_app {
 
     /// Opt-out users can disable webview hardware acceleration to work around
     /// GPU driver bugs that produce a black-screen or glitching webview. The
-    /// flag is stored in a tiny sidecar file at `~/.recurcode/preferences.json` so
+    /// flag is stored in a tiny sidecar file at `~/.rc/preferences.json` so
     /// it can be read **before** anything else in `run()` — `set_var` is only
     /// sound while the process is single-threaded, and the logging init alone
     /// spawns a `tracing_appender` worker.
@@ -524,7 +524,7 @@ mod tauri_app {
         // The data directory next, for the same reason, and before the logging
         // init resolves the log directory from it — the order `rc-server`
         // keeps. When `setup` exported it, the logs of a launch from the Start
-        // menu or the Dock went to `~/.recurcode/logs`, while an instance RecurCode
+        // menu or the Dock went to `~/.rc/logs`, while an instance RecurCode
         // restarted inherited the variable and wrote beside the database (see
         // `paths::desktop_data_dir`). Written back absolutized even when
         // preset, so subprocesses inherit an absolute path (a relative one
@@ -567,10 +567,10 @@ mod tauri_app {
         // Skipped in debug builds so a locally-built `cargo run` instance
         // can run alongside an installed release build of RecurCode during
         // development. Debug desktop builds use an isolated SQLite file, but
-        // they still share other `app.recurcode` data-dir artifacts with release.
+        // they still share other `app.rc` data-dir artifacts with release.
         #[cfg(not(debug_assertions))]
         let builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-            // Second launches on Windows/Linux carry `recurcode://…` on argv.
+            // Second launches on Windows/Linux carry `rc://…` on argv.
             // macOS delivers the same URL via the deep-link plugin instead.
             crate::deep_link::handle_argv(app, &argv);
         }));
@@ -609,7 +609,7 @@ mod tauri_app {
             // webview is granted the plugin's commands.
             .plugin(tauri_plugin_global_shortcut::Builder::new().build())
             // "Launch at login". LaunchAgent rather than AppleScript on macOS:
-            // writing `~/Library/LaunchAgents/recurcode.plist` needs no Automation
+            // writing `~/Library/LaunchAgents/rc.plist` needs no Automation
             // consent prompt, where scripting System Events does. No extra
             // startup args — an auto-started RecurCode is the same app the user
             // would have launched by hand.
@@ -732,7 +732,7 @@ mod tauri_app {
 
                 // `RC_HOME` overrides `RC_DATA_DIR` inside
                 // `paths::rc_uploads_root` / `rc_pets_root` for
-                // backwards-compatibility with the legacy `~/.recurcode/`
+                // backwards-compatibility with the legacy `~/.rc/`
                 // layout. If both are set and point at different roots,
                 // uploads/pets land on `RC_HOME` while the database
                 // lands on `RC_DATA_DIR` — a silent split. The
@@ -815,7 +815,7 @@ mod tauri_app {
                 tauri::async_runtime::spawn(crate::scratch_sweep_task());
 
                 // Install bundled expert skills into the central store
-                // (`~/.recurcode/skills/`). Runs in the background and does
+                // (`~/.rc/skills/`). Runs in the background and does
                 // not block startup; failures are logged but non-fatal.
                 tauri::async_runtime::spawn(async move {
                     let report = crate::commands::experts::ensure_central_experts_installed().await;
@@ -836,7 +836,7 @@ mod tauri_app {
                 });
 
                 // Install bundled scientific-research skills into the same
-                // central store (`~/.recurcode/skills/`). Background, non-blocking;
+                // central store (`~/.rc/skills/`). Background, non-blocking;
                 // failures are logged but non-fatal.
                 tauri::async_runtime::spawn(async move {
                     let report = crate::commands::science::ensure_central_science_installed().await;
@@ -1326,7 +1326,7 @@ mod tauri_app {
                     tauri::async_runtime::spawn(crate::work_task::run_task_engine(engine));
                 }
 
-                // OS `recurcode://` URLs. Register the listener after the DB is
+                // OS `rc://` URLs. Register the listener after the DB is
                 // live so a warm-start click can look the conversation up.
                 // Cold-start URLs are also read here and baked into the main
                 // window path — an event emitted before the webview subscribes
@@ -1389,7 +1389,7 @@ mod tauri_app {
 
                 // The workspace windows open at the last quit come back: the
                 // local one (`main`) and every remote workspace window (see
-                // `workspace_windows`). A `recurcode://` link on the command line
+                // `workspace_windows`). A `rc://` link on the command line
                 // asks for the local workspace, which then opens in front
                 // whatever the last session left.
                 let restore = tauri::async_runtime::block_on(workspace_windows::load_restore(
@@ -1405,7 +1405,7 @@ mod tauri_app {
                 // `list_open_folder_details` / `list_opened_tabs` inside it. It
                 // starts hidden only when it was hidden to the tray at quit and
                 // other workspace windows are coming back in its place; the
-                // tray, a `recurcode://` link and the other explicit local-workspace
+                // tray, a `rc://` link and the other explicit local-workspace
                 // actions still bring it up, and so do the Dock and a second
                 // launch once no other workspace is open or on its way back.
                 if app.get_webview_window("main").is_none() {

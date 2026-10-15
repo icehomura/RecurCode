@@ -53,21 +53,21 @@ describe("parseUserMessageSegments", () => {
     })
 
     it("parses an agent link and strips the leading @", () => {
-      const attrs = onlyReference("[@Codex](recurcode://agent/codex)")
+      const attrs = onlyReference("[@Codex](rc://agent/codex)")
       expect(attrs.refType).toBe("agent")
       expect(attrs.label).toBe("Codex")
       expect(attrs.meta?.agentType).toBe("codex")
     })
 
     it("parses a session link", () => {
-      const attrs = onlyReference("re [My chat](recurcode://session/42)")
+      const attrs = onlyReference("re [My chat](rc://session/42)")
       expect(attrs.refType).toBe("session")
-      expect(attrs.uri).toBe("recurcode://session/42")
+      expect(attrs.uri).toBe("rc://session/42")
     })
 
     it("parses a commit link", () => {
       const attrs = onlyReference(
-        "[a1b2c3d](recurcode://commit/%2Frepo@a1b2c3ddeadbeef)"
+        "[a1b2c3d](rc://commit/%2Frepo@a1b2c3ddeadbeef)"
       )
       expect(attrs.refType).toBe("commit")
       expect(attrs.id).toBe("a1b2c3ddeadbeef")
@@ -215,7 +215,7 @@ describe("parseUserMessageSegments", () => {
           refType: "agent",
           id: "codex",
           label: "Codex",
-          uri: "recurcode://agent/codex",
+          uri: "rc://agent/codex",
           meta: { agentType: "codex" },
         }),
       ],
@@ -225,7 +225,7 @@ describe("parseUserMessageSegments", () => {
           refType: "session",
           id: "42",
           label: "My chat",
-          uri: "recurcode://session/42",
+          uri: "rc://session/42",
         }),
       ],
       [
@@ -234,7 +234,7 @@ describe("parseUserMessageSegments", () => {
           refType: "commit",
           id: "a1b2c3ddeadbeef",
           label: "a1b2c3d",
-          uri: "recurcode://commit/%2Frepo@a1b2c3ddeadbeef",
+          uri: "rc://commit/%2Frepo@a1b2c3ddeadbeef",
           meta: { shortHash: "a1b2c3d" },
         }),
       ],

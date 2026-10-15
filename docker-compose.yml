@@ -21,11 +21,11 @@ services:
       - RC_HOST=0.0.0.0
       # - RC_BRIDGE_PORTS=3081-3090   # or `off` to disable the port bridge
       # Name the dev servers by hostname instead of giving each one a port:
-      # `3000.recurcode.example.com` reaches the container's port 3000 over the
+      # `3000.rc.example.com` reaches the container's port 3000 over the
       # published 3080, so nothing above has to be published and no range has
       # to be guessed. Needs a wildcard DNS record for the name and, behind a
       # reverse proxy, a wildcard vhost pointing at this service and passing
-      # `Host` through (Caddy: `*.recurcode.example.com { reverse_proxy rc:3080 }`).
+      # `Host` through (Caddy: `*.rc.example.com { reverse_proxy rc:3080 }`).
       # `auto` puts the port one label in front of whatever host the workbench
       # itself was opened at.
       # - RC_BRIDGE_HOST_PATTERN=auto

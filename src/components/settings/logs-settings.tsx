@@ -604,7 +604,7 @@ export function LogsSettings() {
     try {
       const path = await openLogsDir()
       // `revealItemInDir` (not `openPath`): the opener plugin's path scope
-      // rejects the hidden `~/.recurcode/logs` path under its require-literal-
+      // rejects the hidden `~/.rc/logs` path under its require-literal-
       // leading-dot Unix default, whereas reveal is not scope-checked.
       await revealItemInDir(path)
     } catch (err) {

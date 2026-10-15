@@ -16,7 +16,7 @@
 //!   the user's may resume a suspended child.
 //! * **What it finds on `PATH`.** The driver runs `plutil`, `ps` and
 //!   `osascript` by bare name. RecurCode's own `PATH` carries directories the user
-//!   (and so any agent) can write — the login shell's, `~/.recurcode/npm-global/bin`
+//!   (and so any agent) can write — the login shell's, `~/.rc/npm-global/bin`
 //!   first of all, Homebrew's — and a fake `ps` in one of them would run with
 //!   the helper's grants the next time the driver lists applications. So the
 //!   driver gets a fixed system `PATH` and nothing else from this process's
@@ -102,11 +102,11 @@ pub fn helper_data_dir() -> Option<PathBuf> {
         } else {
             home.join(".local").join("share")
         };
-        Some(base.join("app.recurcode").join("computer-helper"))
+        Some(base.join("app.rc").join("computer-helper"))
     }
     #[cfg(windows)]
     {
-        dirs::data_local_dir().map(|d| d.join("app.recurcode").join("computer-helper"))
+        dirs::data_local_dir().map(|d| d.join("app.rc").join("computer-helper"))
     }
 }
 

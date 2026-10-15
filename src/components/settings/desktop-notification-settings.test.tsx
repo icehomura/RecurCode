@@ -284,14 +284,14 @@ describe("the delivering identity", () => {
   it("names the app the OS files the notifications under", async () => {
     permission.mockReturnValue("managed_by_os")
     identity.mockResolvedValue({
-      bundleId: "app.recurcode",
-      requestedBundleId: "app.recurcode",
+      bundleId: "app.rc",
+      requestedBundleId: "app.rc",
       degraded: false,
     })
     renderSection()
     expandSection()
 
-    expect(await screen.findByText("app.recurcode")).toBeInTheDocument()
+    expect(await screen.findByText("app.rc")).toBeInTheDocument()
     expect(screen.getByText("Delivered as")).toBeInTheDocument()
   })
 
@@ -302,7 +302,7 @@ describe("the delivering identity", () => {
     permission.mockReturnValue("managed_by_os")
     identity.mockResolvedValue({
       bundleId: "com.apple.Terminal",
-      requestedBundleId: "app.recurcode",
+      requestedBundleId: "app.rc",
       degraded: true,
     })
     renderSection()

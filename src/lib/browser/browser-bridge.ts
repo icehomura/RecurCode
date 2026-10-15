@@ -18,7 +18,7 @@ export interface BridgeStatus {
   /** Hostname to use for the bridge instead of the page's own. */
   publicHost: string | null
   /** How a target is named when the server addresses them by hostname on its
-   *  own port (`{port}.recurcode.example.com`, `auto`). */
+   *  own port (`{port}.rc.example.com`, `auto`). */
   hostPattern: string | null
 }
 

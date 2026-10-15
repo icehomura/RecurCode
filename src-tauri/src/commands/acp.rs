@@ -612,7 +612,7 @@ pub(crate) async fn verify_agent_installed(agent_type: AgentType) -> Result<(), 
 /// `npm list -g <package_name> --json` and parsing the JSON output.
 ///
 /// Checks both the system global prefix and the user-local prefix
-/// (`~/.recurcode/npm-global/`) so packages installed via the EACCES fallback are
+/// (`~/.rc/npm-global/`) so packages installed via the EACCES fallback are
 /// found as well.
 ///
 /// `pub(crate)` so env diagnostics can report the installed version it sees
@@ -798,7 +798,7 @@ struct AgentDiag {
     resolve_npx: Option<String>,
     /// `<npm prefix -g>/bin/<cmd>` when it exists.
     system_prefix_bin: Option<String>,
-    /// `~/.recurcode/npm-global/bin/<cmd>` (EACCES fallback) when it exists.
+    /// `~/.rc/npm-global/bin/<cmd>` (EACCES fallback) when it exists.
     user_prefix_bin: Option<String>,
     /// Homebrew global bin (`/opt/homebrew/bin/<cmd>` etc.) when it exists (macOS).
     homebrew_bin: Option<String>,
@@ -1294,7 +1294,7 @@ fn compute_verdict(inp: &DiagInputs) -> DiagnosticsVerdict {
                 return diag_verdict(
                     DiagLevel::Fail,
                     "user_prefix_not_on_path",
-                    "Installed into the EACCES fallback prefix (~/.recurcode/npm-global), which is not on the app's PATH.",
+                    "Installed into the EACCES fallback prefix (~/.rc/npm-global), which is not on the app's PATH.",
                 );
             }
             if agent.homebrew_bin.is_some() {
@@ -1438,7 +1438,7 @@ fn build_report(
                 None,
             ));
             checks.push(diag_check(
-                "~/.recurcode/npm-global/bin/<cmd>",
+                "~/.rc/npm-global/bin/<cmd>",
                 a.user_prefix_bin.as_deref().unwrap_or("absent"),
                 if a.user_prefix_bin.is_some() { DiagLevel::Warn } else { DiagLevel::Info },
                 a.user_prefix_bin.as_ref().map(|_| "EACCES fallback dir — reached by the connect gate only if it's on PATH"),
@@ -1697,7 +1697,7 @@ mod diagnostics_tests {
     fn verdict_user_prefix_not_on_path() {
         let mut inp = base_inputs();
         let mut a = agent_installed_unresolved();
-        a.user_prefix_bin = Some("/home/u/.recurcode/npm-global/bin/codex-acp".to_string());
+        a.user_prefix_bin = Some("/home/u/.rc/npm-global/bin/codex-acp".to_string());
         inp.agent = Some(a);
         let v = compute_verdict(&inp);
         assert_eq!(v.code, "user_prefix_not_on_path");
@@ -2507,7 +2507,7 @@ async fn install_npm_global_package_streaming_inner(
     Ok(())
 }
 
-/// Fallback: install an npm package into a user-local prefix (`~/.recurcode/npm-global/`)
+/// Fallback: install an npm package into a user-local prefix (`~/.rc/npm-global/`)
 /// when the system global prefix is not writable (EACCES).
 async fn install_npm_to_user_prefix_streaming(
     package: &str,
@@ -2653,7 +2653,7 @@ async fn uninstall_npm_global_package(package: &str) -> Result<(), AcpError> {
     Ok(())
 }
 
-/// Uninstall an npm package from the user-local prefix (`~/.recurcode/npm-global/`).
+/// Uninstall an npm package from the user-local prefix (`~/.rc/npm-global/`).
 async fn uninstall_npm_from_user_prefix(package_name: &str) -> Result<(), AcpError> {
     let prefix = match crate::process::user_npm_prefix() {
         Some(p) if p.exists() => p,
@@ -5050,7 +5050,7 @@ struct KimiManagedSpec {
     base_url: Option<String>,
     /// Direct `api_key` field (when the user picks "direct key" auth).
     api_key: Option<String>,
-    /// `[providers.recurcode.env]` sub-table entries — the env-sub-table API key, or
+    /// `[providers.rc.env]` sub-table entries — the env-sub-table API key, or
     /// Vertex's `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION`.
     env: BTreeMap<String, String>,
     model: String,
@@ -5082,7 +5082,7 @@ const KIMI_CAPABILITY_THINKING: &str = "thinking";
 /// Same, but kimi drops the `Off` row: the model cannot stop reasoning.
 const KIMI_CAPABILITY_ALWAYS_THINKING: &str = "always_thinking";
 
-/// Upsert (`Some`) or remove (`None`) the rc-managed `[providers.recurcode]` +
+/// Upsert (`Some`) or remove (`None`) the rc-managed `[providers.rc]` +
 /// `[models.rc-managed]` block in a parsed config.toml document, preserving
 /// every other section the user authored. Removal also resets `default_model`
 /// only when it points at our managed alias.
@@ -9457,7 +9457,7 @@ fn skill_content_path(layout: AgentSkillLayout, skill_path: &Path) -> PathBuf {
 /// recursively and files are unlinked. This prevents `remove_dir_all` from
 /// accidentally wiping the contents of a symlink target — which is critical
 /// for the Experts feature where agent skill dirs may contain symlinks into
-/// the central `~/.recurcode/skills/` store.
+/// the central `~/.rc/skills/` store.
 pub(crate) fn remove_skill_entry(path: &Path) -> std::io::Result<()> {
     let meta = fs::symlink_metadata(path)?;
     let file_type = meta.file_type();
@@ -14907,7 +14907,7 @@ model = \"gw/x\"           # the model
 model_catalog_json = \"{value}\"
 model_provider = \"RecurCode\"
 
-[model_providers.recurcode]
+[model_providers.rc]
 base_url = \"https://example.test/v1\"
 "
         )
@@ -14924,7 +14924,7 @@ base_url = \"https://example.test/v1\"
         // Comments and every unmanaged key survive verbatim.
         assert!(next.contains("# my codex config"));
         assert!(next.contains("model = \"gw/x\"           # the model"));
-        assert!(next.contains("[model_providers.recurcode]"));
+        assert!(next.contains("[model_providers.rc]"));
         assert!(next.contains("base_url = \"https://example.test/v1\""));
         // No key → no rewrite at all (callers skip the disk write).
         assert!(remove_codex_catalog_key(&next, home).unwrap().is_none());
@@ -16909,7 +16909,7 @@ echo {"id":"rc-models","type":"response","command":"get_available_models","succe
 model = "gpt-5-codex"
 model_provider = "RecurCode"
 
-[model_providers.recurcode]
+[model_providers.rc]
 base_url = "https://gateway.example/v1"
 wire_api = "responses"
 
@@ -17531,7 +17531,7 @@ wire_api = "chat"
             .and_then(|providers| providers.get("RecurCode"))
             .and_then(toml::Value::as_table)
             .cloned()
-            .expect("fragment must define model_providers.recurcode")
+            .expect("fragment must define model_providers.rc")
     }
 
     fn auth_flag_of(table: &toml::map::Map<String, toml::Value>) -> Option<bool> {
@@ -17542,21 +17542,21 @@ wire_api = "chat"
     fn codex_auth_default_is_supplied_only_when_absent() {
         // RecurCode provisions its provider with the key in auth.json and no
         // `env_key`, so a provider WE create needs requires_openai_auth = true.
-        let mut fresh = provider_table_of("[model_providers.recurcode]\nbase_url = \"https://x/v1\"\n");
+        let mut fresh = provider_table_of("[model_providers.rc]\nbase_url = \"https://x/v1\"\n");
         ensure_codex_provider_auth_default(&mut fresh);
         assert_eq!(auth_flag_of(&fresh), Some(true));
 
         // An explicit false is the user's call and must survive every path —
         // this is the regression the whole change exists for.
         let mut explicit_false = provider_table_of(
-            "[model_providers.recurcode]\nbase_url = \"https://x/v1\"\nrequires_openai_auth = false\n",
+            "[model_providers.rc]\nbase_url = \"https://x/v1\"\nrequires_openai_auth = false\n",
         );
         ensure_codex_provider_auth_default(&mut explicit_false);
         assert_eq!(auth_flag_of(&explicit_false), Some(false));
 
         // An explicit true is left alone rather than rewritten.
         let mut explicit_true = provider_table_of(
-            "[model_providers.recurcode]\nrequires_openai_auth = true\n",
+            "[model_providers.rc]\nrequires_openai_auth = true\n",
         );
         ensure_codex_provider_auth_default(&mut explicit_true);
         assert_eq!(auth_flag_of(&explicit_true), Some(true));
@@ -17568,8 +17568,8 @@ wire_api = "chat"
         // `!requires_openai_auth && <non-empty x-openai-actor-authorization>`,
         // so writing the default here would silently disable that auth path.
         let mut header_present = provider_table_of(
-            "[model_providers.recurcode]\nbase_url = \"https://x/v1\"\n\n\
-             [model_providers.recurcode.http_headers]\n\
+            "[model_providers.rc]\nbase_url = \"https://x/v1\"\n\n\
+             [model_providers.rc.http_headers]\n\
              x-openai-actor-authorization = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut header_present);
@@ -17577,7 +17577,7 @@ wire_api = "chat"
 
         // Header matching is case-insensitive, mirroring eq_ignore_ascii_case.
         let mut mixed_case = provider_table_of(
-            "[model_providers.recurcode.http_headers]\n\
+            "[model_providers.rc.http_headers]\n\
              X-OpenAI-Actor-Authorization = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut mixed_case);
@@ -17585,7 +17585,7 @@ wire_api = "chat"
 
         // An inline table is the same table to the parser.
         let mut inline = provider_table_of(
-            "[model_providers.recurcode]\n\
+            "[model_providers.rc]\n\
              http_headers = { \"x-openai-actor-authorization\" = \"local-image-extension\" }\n",
         );
         ensure_codex_provider_auth_default(&mut inline);
@@ -17594,7 +17594,7 @@ wire_api = "chat"
         // An empty header value does not enable the path upstream
         // (`!value.trim().is_empty()`), so the default still applies.
         let mut empty_value = provider_table_of(
-            "[model_providers.recurcode.http_headers]\nx-openai-actor-authorization = \"  \"\n",
+            "[model_providers.rc.http_headers]\nx-openai-actor-authorization = \"  \"\n",
         );
         ensure_codex_provider_auth_default(&mut empty_value);
         assert_eq!(auth_flag_of(&empty_value), Some(true));
@@ -17602,8 +17602,8 @@ wire_api = "chat"
         // A header plus an explicit true is a contradictory config, but it is
         // the user's: never rewrite or remove it.
         let mut header_and_true = provider_table_of(
-            "[model_providers.recurcode]\nrequires_openai_auth = true\n\n\
-             [model_providers.recurcode.http_headers]\n\
+            "[model_providers.rc]\nrequires_openai_auth = true\n\n\
+             [model_providers.rc.http_headers]\n\
              x-openai-actor-authorization = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut header_and_true);
@@ -17612,7 +17612,7 @@ wire_api = "chat"
         // A quoted key containing dots is ONE literal key, not an http_headers
         // sub-table, so it must not suppress the default.
         let mut literal_dotted_key = provider_table_of(
-            "[model_providers.recurcode]\n\
+            "[model_providers.rc]\n\
              \"http_headers.x-openai-actor-authorization\" = \"local-image-extension\"\n",
         );
         ensure_codex_provider_auth_default(&mut literal_dotted_key);
@@ -17630,12 +17630,12 @@ wire_api = "chat"
             std::fs::write(
                 &config_path,
                 "model_provider = \"RecurCode\"\n\n\
-                 [model_providers.recurcode]\n\
+                 [model_providers.rc]\n\
                  base_url = \"https://old.example/v1\"\n\
                  name = \"RecurCode\"\n\
                  wire_api = \"responses\"\n\
                  requires_openai_auth = false\n\n\
-                 [model_providers.recurcode.http_headers]\n\
+                 [model_providers.rc.http_headers]\n\
                  x-openai-actor-authorization = \"local-image-extension\"\n",
             )
             .expect("seed config.toml");
@@ -19628,7 +19628,7 @@ wire_api = "chat"
         // leading double-quoted string makes PowerShell parse the line as a
         // string expression and fail with "Unexpected token" instead of running
         // uvx; an unquoted bare path runs in both cmd and PowerShell.
-        let path = r"C:\Users\Administrator\AppData\Local\app.recurcode\acp-binaries\uv-tool\windows-x86_64\uvx.exe";
+        let path = r"C:\Users\Administrator\AppData\Local\app.rc\acp-binaries\uv-tool\windows-x86_64\uvx.exe";
         assert_eq!(shell_quote_arg_for(path, true), path);
         // On POSIX the backslash is the escape char, so it still forces quoting.
         assert_eq!(shell_quote_arg_for(path, false), format!("'{path}'"));
@@ -19804,7 +19804,7 @@ wire_api = "chat"
     fn kimi_managed_block_clear_preserves_user_sections() {
         let mut doc: toml::Value = r#"
 default_model = "mine"
-[providers.recurcode]
+[providers.rc]
 type = "openai"
 api_key = "sk"
 [providers.mine]
@@ -19838,7 +19838,7 @@ model = "gpt"
     fn kimi_managed_block_clear_resets_our_default_and_empties() {
         let mut doc: toml::Value = r#"
 default_model = "rc-managed"
-[providers.recurcode]
+[providers.rc]
 type = "kimi"
 [models.rc-managed]
 provider = "RecurCode"
@@ -20102,7 +20102,7 @@ model = "kimi-for-coding"
     fn kimi_project_managed_config_round_trips_reasoning_metadata() {
         let value: toml::Value = r#"
 default_model = "rc-managed"
-[providers.recurcode]
+[providers.rc]
 type = "openai_responses"
 [models.rc-managed]
 provider = "RecurCode"
@@ -20137,7 +20137,7 @@ default_effort = "high"
         // The shape the panel wrote before this feature — the projection must
         // not invent empty arrays, or the panel would read reasoning as "on".
         let value: toml::Value = r#"
-[providers.recurcode]
+[providers.rc]
 type = "kimi"
 [models.rc-managed]
 provider = "RecurCode"
@@ -20160,7 +20160,7 @@ max_context_size = 262144
         // single-source-of-truth between env override and config.toml.
         let value: toml::Value = r#"
 default_model = "rc-managed"
-[providers.recurcode]
+[providers.rc]
 type = "anthropic"
 base_url = "https://api.anthropic.com"
 api_key = "sk-ant"
@@ -20209,9 +20209,9 @@ max_context_size = 200000
     #[test]
     fn kimi_project_managed_config_env_subtable_surfaces_as_env_auth() {
         let value: toml::Value = r#"
-[providers.recurcode]
+[providers.rc]
 type = "openai"
-[providers.recurcode.env]
+[providers.rc.env]
 OPENAI_API_KEY = "sk-x"
 [models.rc-managed]
 provider = "RecurCode"

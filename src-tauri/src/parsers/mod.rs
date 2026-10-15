@@ -1792,7 +1792,7 @@ mod route_sanitizer_tests {
     /// every MCP-capable agent then persists into its own transcript.
     fn routing_frame(agent_wire: &str) -> String {
         let mut blocks = vec![PromptInputBlock::Text {
-            text: format!("ask [@A](recurcode://agent/{agent_wire}) to help"),
+            text: format!("ask [@A](rc://agent/{agent_wire}) to help"),
         }];
         append_agent_routes(&mut blocks, true);
         match &blocks[1] {
@@ -1891,7 +1891,7 @@ mod route_sanitizer_tests {
         // The whole point of the shared decorator: this fixture stands in for
         // claude / gemini / opencode / … , none of which know about the frame.
         let frame = routing_frame("antigravity");
-        let visible = "ask [@A](recurcode://agent/antigravity) to help";
+        let visible = "ask [@A](rc://agent/antigravity) to help";
         let detail = sanitized(Fixture {
             summary: summary(Some(&format!("{visible}\n{frame}")), 2),
             turns: vec![
@@ -1917,7 +1917,7 @@ mod route_sanitizer_tests {
     /// blank band under an `@`-mention bubble reopened from history.
     #[test]
     fn a_frame_in_its_own_block_leaves_no_empty_block_behind() {
-        let visible = "ask [@A](recurcode://agent/claude_code) to help";
+        let visible = "ask [@A](rc://agent/claude_code) to help";
         let mut user = turn(TurnRole::User, visible);
         user.blocks.push(ContentBlock::Text {
             text: routing_frame("claude_code"),
@@ -1941,7 +1941,7 @@ mod route_sanitizer_tests {
     /// message — same symptom, different transcript shape.
     #[test]
     fn a_blank_line_before_the_frame_is_not_left_behind() {
-        let visible = "ask [@A](recurcode://agent/codex) to help";
+        let visible = "ask [@A](rc://agent/codex) to help";
         let frame = routing_frame("codex");
         let detail = sanitized(Fixture {
             summary: summary(Some(visible), 1),
@@ -1962,7 +1962,7 @@ mod route_sanitizer_tests {
     /// inside the sidebar title as well.
     #[test]
     fn a_frame_an_agent_stored_without_separators_leaves_neither_prose_nor_title() {
-        let visible = "ask [@A](recurcode://agent/antigravity) to help";
+        let visible = "ask [@A](rc://agent/antigravity) to help";
         let frame = routing_frame("antigravity");
         // ` ` block join + each separator rewritten to ` `.
         let persisted = format!("{visible} {}", frame.replace('\u{001e}', " "));
@@ -1993,7 +1993,7 @@ mod route_sanitizer_tests {
     /// exists for the agents that rewrite the separators away.
     #[test]
     fn a_title_capped_halfway_through_the_marker_still_leaks_nothing() {
-        let prose = format!("{} ask [@A](recurcode://agent/antigravity) to help", "x".repeat(66));
+        let prose = format!("{} ask [@A](rc://agent/antigravity) to help", "x".repeat(66));
         let frame = routing_frame("antigravity");
         let persisted = format!("{prose} {}", frame.replace('\u{001e}', " "));
 
@@ -2294,9 +2294,9 @@ mod tests {
             fold_reference_links("看看 [README.md](file:///Users/x/README.md) 这是什么"),
             "看看 README.md 这是什么"
         );
-        // recurcode:// links fold too; an agent mention keeps its `@`.
+        // rc:// links fold too; an agent mention keeps its `@`.
         assert_eq!(
-            fold_reference_links("调用 [@Codex CLI](recurcode://agent/codex) 执行"),
+            fold_reference_links("调用 [@Codex CLI](rc://agent/codex) 执行"),
             "调用 @Codex CLI 执行"
         );
         // Multiple links in one string.

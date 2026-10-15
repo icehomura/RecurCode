@@ -2178,39 +2178,39 @@ const MARKED_SCREENSHOT_BLOCK = [
 ].join("\n")
 
 /** The display uri a badge for a hand-off from google.com carries… */
-const GOOGLE_URI = "recurcode://embedded/https%3A%2F%2Fwww.google.com%2F"
+const GOOGLE_URI = "rc://embedded/https%3A%2F%2Fwww.google.com%2F"
 /** …and the one the chip for the site it came from is keyed by. */
-const GOOGLE_SITE = "recurcode://embedded/https%3A%2F%2Fwww.google.com"
+const GOOGLE_SITE = "rc://embedded/https%3A%2F%2Fwww.google.com"
 /** The same pair for linux.do. */
-const LINUX_DO_URI = "recurcode://embedded/https%3A%2F%2Flinux.do%2F"
-const LINUX_DO_SITE = "recurcode://embedded/https%3A%2F%2Flinux.do"
+const LINUX_DO_URI = "rc://embedded/https%3A%2F%2Flinux.do%2F"
+const LINUX_DO_SITE = "rc://embedded/https%3A%2F%2Flinux.do"
 
 describe("extractUserResourcesFromText — RecurCode references stay inline", () => {
-  it("keeps a recurcode://agent link inline (the @-prefixed label no longer lifts it to a chip)", () => {
-    const input = "ask [@Codex](recurcode://agent/codex) to review"
+  it("keeps a rc://agent link inline (the @-prefixed label no longer lifts it to a chip)", () => {
+    const input = "ask [@Codex](rc://agent/codex) to review"
     const { text, resources } = extractUserResourcesFromText(input)
     expect(resources).toEqual([])
     expect(text).toBe(input)
   })
 
-  it("keeps recurcode://session and recurcode://commit links inline", () => {
+  it("keeps rc://session and rc://commit links inline", () => {
     const session = extractUserResourcesFromText(
-      "see [#42](recurcode://session/claude_code_abc)"
+      "see [#42](rc://session/claude_code_abc)"
     )
     expect(session.resources).toEqual([])
-    expect(session.text).toBe("see [#42](recurcode://session/claude_code_abc)")
+    expect(session.text).toBe("see [#42](rc://session/claude_code_abc)")
 
     const commit = extractUserResourcesFromText(
-      "from [a1b2c3d](recurcode://commit/%2Frepo@a1b2c3ddeadbeef)"
+      "from [a1b2c3d](rc://commit/%2Frepo@a1b2c3ddeadbeef)"
     )
     expect(commit.resources).toEqual([])
     expect(commit.text).toBe(
-      "from [a1b2c3d](recurcode://commit/%2Frepo@a1b2c3ddeadbeef)"
+      "from [a1b2c3d](rc://commit/%2Frepo@a1b2c3ddeadbeef)"
     )
   })
 
-  it("keeps a recurcode://session link inline even when its label starts with @ (a session titled '@…')", () => {
-    const input = "ping [@周报](recurcode://session/codex_99)"
+  it("keeps a rc://session link inline even when its label starts with @ (a session titled '@…')", () => {
+    const input = "ping [@周报](rc://session/codex_99)"
     const { text, resources } = extractUserResourcesFromText(input)
     expect(resources).toEqual([])
     expect(text).toBe(input)
@@ -2342,14 +2342,14 @@ describe("extractUserResourcesFromText — RecurCode references stay inline", ()
     expect(text).toBe("raw <file:///x/@foo [blocked].txt> ok")
   })
 
-  it("chips a recurcode://embedded attachment while keeping its inert badge inline", () => {
+  it("chips a rc://embedded attachment while keeping its inert badge inline", () => {
     const { text, resources } = extractUserResourcesFromText(
-      "here [report.pdf](recurcode://embedded/abc-123) ok"
+      "here [report.pdf](rc://embedded/abc-123) ok"
     )
     expect(resources).toEqual([
-      { name: "report.pdf", uri: "recurcode://embedded/abc-123", mime_type: null },
+      { name: "report.pdf", uri: "rc://embedded/abc-123", mime_type: null },
     ])
-    expect(text).toBe("here [report.pdf](recurcode://embedded/abc-123) ok")
+    expect(text).toBe("here [report.pdf](rc://embedded/abc-123) ok")
   })
 
   // The composer's badge for something the built-in browser handed over
@@ -2380,8 +2380,8 @@ describe("extractUserResourcesFromText — RecurCode references stay inline", ()
   // The chip is the site, so two pages of one site are one chip — two chips
   // reading "linux.do" would look like the same thing listed twice.
   it("lists two pages of one site under it once", () => {
-    const topic = "recurcode://embedded/https%3A%2F%2Flinux.do%2Ft%2Ftopic%2F1"
-    const latest = "recurcode://embedded/https%3A%2F%2Flinux.do%2Flatest%3Fpage%3D2"
+    const topic = "rc://embedded/https%3A%2F%2Flinux.do%2Ft%2Ftopic%2F1"
+    const latest = "rc://embedded/https%3A%2F%2Flinux.do%2Flatest%3Fpage%3D2"
     const { resources } = extractUserResourcesFromText(
       `[Page screenshot](${topic}#a) [a.title](${latest}#b)`
     )
@@ -2401,12 +2401,12 @@ describe("extractUserResourcesFromText — RecurCode references stay inline", ()
 
   it("keeps both file:// and session links inline; only the file is also chipped", () => {
     const { text, resources } = extractUserResourcesFromText(
-      "compare [foo.ts](file:///x/foo.ts) with [#42](recurcode://session/codex_abc)"
+      "compare [foo.ts](file:///x/foo.ts) with [#42](rc://session/codex_abc)"
     )
     expect(resources).toEqual([
       { name: "foo.ts", uri: "file:///x/foo.ts", mime_type: null },
     ])
-    expect(text).toContain("[#42](recurcode://session/codex_abc)")
+    expect(text).toContain("[#42](rc://session/codex_abc)")
     expect(text).toContain("[foo.ts](file:///x/foo.ts)")
   })
 
@@ -2462,7 +2462,7 @@ describe("extractUserResourcesFromText — RecurCode references stay inline", ()
     expect(resources).toEqual([
       {
         name: "shop.test",
-        uri: "recurcode://embedded/https%3A%2F%2Fshop.test",
+        uri: "rc://embedded/https%3A%2F%2Fshop.test",
         mime_type: null,
       },
     ])
@@ -2480,7 +2480,7 @@ describe("extractUserResourcesFromText — RecurCode references stay inline", ()
     expect(resources).toEqual([
       {
         name: "notes.md-2f8c",
-        uri: "recurcode://embedded/clipboard%3A%2F%2Fnotes.md-2f8c",
+        uri: "rc://embedded/clipboard%3A%2F%2Fnotes.md-2f8c",
         mime_type: null,
       },
     ])
@@ -2543,7 +2543,7 @@ describe("adaptMessageTurn — user reference resources", () => {
         role: "user",
         timestamp: "2026-06-11T00:00:00.000Z",
         blocks: [
-          { type: "text", text: "ask [@Codex](recurcode://agent/codex) to review" },
+          { type: "text", text: "ask [@Codex](rc://agent/codex) to review" },
         ],
       },
       msgText
@@ -2553,7 +2553,7 @@ describe("adaptMessageTurn — user reference resources", () => {
     expect(adapted.content).toHaveLength(1)
     const part = adapted.content[0]
     if (part.type !== "text") throw new Error("expected a text part")
-    expect(part.text).toContain("[@Codex](recurcode://agent/codex)")
+    expect(part.text).toContain("[@Codex](rc://agent/codex)")
   })
 
   it("chips a folded file link AND keeps it inline as a badge; session stays inline", () => {
@@ -2568,7 +2568,7 @@ describe("adaptMessageTurn — user reference resources", () => {
         blocks: [
           {
             type: "text",
-            text: "compare these [#42](recurcode://session/codex_abc)",
+            text: "compare these [#42](rc://session/codex_abc)",
           },
           { type: "text", text: "[foo.ts](file:///x/foo.ts)" },
         ],
@@ -2582,7 +2582,7 @@ describe("adaptMessageTurn — user reference resources", () => {
     const joined = adapted.content
       .map((p) => (p.type === "text" ? p.text : ""))
       .join("\n")
-    expect(joined).toContain("[#42](recurcode://session/codex_abc)")
+    expect(joined).toContain("[#42](rc://session/codex_abc)")
     expect(joined).toContain("[foo.ts](file:///x/foo.ts)")
   })
 
@@ -2618,7 +2618,7 @@ describe("adaptMessageTurn — user reference resources", () => {
     expect(adapted.content).toEqual([
       {
         type: "text",
-        text: "[a.title.raw-link.raw-topic-link](recurcode://embedded/https%3A%2F%2Flinux.do%2F) what is this post",
+        text: "[a.title.raw-link.raw-topic-link](rc://embedded/https%3A%2F%2Flinux.do%2F) what is this post",
       },
     ])
   })
@@ -2673,7 +2673,7 @@ describe("adaptMessageTurn — user reference resources", () => {
       msgText
     )
 
-    const uri = "recurcode://embedded/https%3A%2F%2Flinux.do%2Ft%2Ftopic%2F1"
+    const uri = "rc://embedded/https%3A%2F%2Flinux.do%2Ft%2Ftopic%2F1"
     // The site alone: the path is on the page, not what the chip is for.
     expect(adapted.userResources).toEqual([
       { name: "linux.do", uri: LINUX_DO_SITE, mime_type: null },
@@ -2743,7 +2743,7 @@ describe("adaptMessageTurn — user reference resources", () => {
       msgText
     )
 
-    const uri = "recurcode://embedded/http%3A%2F%2F127.0.0.1%3A3000%2F"
+    const uri = "rc://embedded/http%3A%2F%2F127.0.0.1%3A3000%2F"
     expect(adapted.content).toEqual([
       { type: "text", text: `[2 console errors](${uri}) why` },
     ])
@@ -2751,7 +2751,7 @@ describe("adaptMessageTurn — user reference resources", () => {
     expect(adapted.userResources).toEqual([
       {
         name: "127.0.0.1:3000",
-        uri: "recurcode://embedded/http%3A%2F%2F127.0.0.1%3A3000",
+        uri: "rc://embedded/http%3A%2F%2F127.0.0.1%3A3000",
         mime_type: null,
       },
     ])
@@ -2901,13 +2901,13 @@ describe("adaptMessageTurn — user reference resources", () => {
     expect(adapted.content).toEqual([
       {
         type: "text",
-        text: "[Page screenshot](recurcode://embedded/http%3A%2F%2Fx.test%2F)",
+        text: "[Page screenshot](rc://embedded/http%3A%2F%2Fx.test%2F)",
       },
     ])
     expect(adapted.userResources).toEqual([
       {
         name: "x.test",
-        uri: "recurcode://embedded/http%3A%2F%2Fx.test",
+        uri: "rc://embedded/http%3A%2F%2Fx.test",
         mime_type: null,
       },
     ])
@@ -2931,7 +2931,7 @@ describe("adaptMessageTurn — user reference resources", () => {
     expect(adapted.content).toEqual([
       {
         type: "text",
-        text: "[a.title.raw-link.raw-topic-link](recurcode://embedded/https%3A%2F%2Flinux.do%2F) https://linux.do/",
+        text: "[a.title.raw-link.raw-topic-link](rc://embedded/https%3A%2F%2Flinux.do%2F) https://linux.do/",
       },
     ])
   })

@@ -756,7 +756,7 @@ mod tests {
 
     #[test]
     fn the_picker_script_is_self_contained() {
-        assert!(PICKER_JS.contains("recurCodeBrowserPicker"));
+        assert!(PICKER_JS.contains("rcBrowserPicker"));
         assert!(!PICKER_JS.contains("import "));
         assert!(!PICKER_JS.contains("require("));
         assert!(PICKER_JS.contains(PICKER_GLOBAL));

@@ -66,7 +66,7 @@ import type { DriverInfo, OsPermission } from "@/lib/computer/types"
 import { useComputerDriver } from "@/lib/computer/use-computer-driver"
 import { useComputerEnabled } from "@/lib/computer/use-computer-enabled"
 import {
-  recurCodeHoldsPermission,
+  rcHoldsPermission,
   useComputerStatus,
 } from "@/lib/computer/use-computer-status"
 
@@ -387,10 +387,10 @@ function MacPermissions({ enabled }: { enabled: boolean }) {
           )}
         </>
       )}
-      {recurCodeHoldsPermission(status) && (
+      {rcHoldsPermission(status) && (
         <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-5 text-amber-600 dark:text-amber-400">
           <ShieldAlert className="mt-0.5 size-3.5 shrink-0" />
-          <span>{t("recurCodeGranted")}</span>
+          <span>{t("rcGranted")}</span>
         </div>
       )}
       {error && <SettingsError>{error}</SettingsError>}

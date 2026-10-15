@@ -597,7 +597,7 @@ pub fn discard_pending_restore_core(data_dir: &Path) -> Result<bool, AppCommandE
 /// Resolves the live uploads root + preferences path via the env-aware
 /// `paths::*` resolvers (production), then delegates to
 /// [`apply_pending_restore_with_paths`]. Tests call the inner fn with temp
-/// paths so they never touch the real `~/.recurcode`.
+/// paths so they never touch the real `~/.rc`.
 pub fn apply_pending_restore_on_startup(
     data_dir: &Path,
 ) -> Result<RestoreApplied, std::io::Error> {

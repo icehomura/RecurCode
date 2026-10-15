@@ -268,7 +268,7 @@ An editor, live and side-by-side diffs, a full git client with a three-pane merg
 - **[Project Boot](https://docs.codeg.app/guide/project-boot)** — scaffold a new project visually, with a live preview
 - **[Make It Yours](https://docs.codeg.app/reference/settings/appearance)** — twelve themes you can recolor token by token, wallpapers, corner radius, and custom CSS — in any of ten interface languages
 - **[Backup & Sync](https://docs.codeg.app/reference/settings/system#backup-restore)** — encrypted backups, and configuration sync between machines through a file or your own WebDAV server
-- **[URL Scheme](./docs/url-scheme.md)** — `recurcode://session/<id>` opens a conversation from another app (desktop)
+- **[URL Scheme](./docs/url-scheme.md)** — `rc://session/<id>` opens a conversation from another app (desktop)
 - **And more** — nearly every release adds something; the [release notes](https://github.com/spacering-net/codeg/releases) are the full list
 
 ## 🤖 Supported Agents

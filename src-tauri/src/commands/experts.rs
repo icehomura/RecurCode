@@ -2,7 +2,7 @@
 //!
 //! Experts are curated skills (from obra/superpowers) that RecurCode bundles
 //! into its binary via `include_dir!`. On startup they are extracted to a
-//! central directory `~/.recurcode/skills/<id>/`. Users can then enable an
+//! central directory `~/.rc/skills/<id>/`. Users can then enable an
 //! expert for any ACP agent by creating a symbolic link (or Windows
 //! junction) from the agent's skill directory into the central copy.
 //!
@@ -47,7 +47,7 @@ use crate::models::agent::AgentType;
 
 static EXPERTS_BUNDLE: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/experts");
 
-const CENTRAL_DIR_NAME: &str = ".recurcode";
+const CENTRAL_DIR_NAME: &str = ".rc";
 const CENTRAL_SKILLS_SUBDIR: &str = "skills";
 const MANIFEST_FILE: &str = ".manifest.json";
 const EXPERTS_TOML: &str = "experts.toml";

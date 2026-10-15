@@ -95,7 +95,7 @@ describe("blocksToRestoredDraft", () => {
       [
         {
           type: "resource_link",
-          uri: "recurcode://session/123",
+          uri: "rc://session/123",
           name: "Login refactor",
           mime_type: null,
           description: null,
@@ -107,7 +107,7 @@ describe("blocksToRestoredDraft", () => {
       refType: "session",
       id: "123",
       label: "Login refactor",
-      uri: "recurcode://session/123",
+      uri: "rc://session/123",
     })
   })
 
@@ -116,7 +116,7 @@ describe("blocksToRestoredDraft", () => {
       [
         {
           type: "resource_link",
-          uri: "recurcode://session/codex_sess1",
+          uri: "rc://session/codex_sess1",
           name: "My chat",
           mime_type: null,
           description: null,
@@ -128,7 +128,7 @@ describe("blocksToRestoredDraft", () => {
       refType: "session",
       id: "codex_sess1",
       label: "My chat",
-      uri: "recurcode://session/codex_sess1",
+      uri: "rc://session/codex_sess1",
       meta: { agentType: "codex" },
     })
   })
@@ -138,7 +138,7 @@ describe("blocksToRestoredDraft", () => {
       [
         {
           type: "resource_link",
-          uri: "recurcode://commit/%2Frepo%20a@abc1234def5678",
+          uri: "rc://commit/%2Frepo%20a@abc1234def5678",
           name: "abc1234",
           mime_type: null,
           description: null,

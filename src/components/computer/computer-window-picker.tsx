@@ -853,7 +853,7 @@ export function ComputerWindowPicker({
                   </ul>
                   {unshareable.some((w) => w.notGrantable === "RecurCode") && (
                     <p className="mt-2 text-2xs leading-snug text-muted-foreground">
-                      {t("recurCodeWhy")}
+                      {t("rcWhy")}
                     </p>
                   )}
                 </CollapsibleContent>

@@ -1,6 +1,6 @@
 //! Custom (user-authored) skills management.
 //!
-//! The fourth "skill pack" in RecurCode's central store `~/.recurcode/skills/<id>/`.
+//! The fourth "skill pack" in RecurCode's central store `~/.rc/skills/<id>/`.
 //! Unlike experts/science/office — which bundle *read-only* content into the
 //! binary — custom skills are created, edited, imported and deleted by the
 //! user. They live in the SAME central store and are enabled for an ACP agent
@@ -12,7 +12,7 @@
 //! store that holds a `SKILL.md` and whose id is NOT claimed by a bundled pack
 //! (experts ∪ science ∪ office ∪ the generative-UI skill). This keeps the store's disjoint-id-namespace
 //! safety model (see `science.rs`) holding for custom too, and lets a user drop
-//! a folder into `~/.recurcode/skills` and have it appear on refresh. The startup
+//! a folder into `~/.rc/skills` and have it appear on refresh. The startup
 //! extraction of bundled packs is id-scoped (hash + manifest + backup, never a
 //! wipe), so it never touches unclaimed custom directories.
 //!
