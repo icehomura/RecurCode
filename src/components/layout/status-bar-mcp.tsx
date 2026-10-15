@@ -12,12 +12,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import {
-  getRecurCodeMcpServiceStatus,
+  getRcMcpServiceStatus,
   openSettingsWindow,
-  setRecurCodeMcpToolGroup,
-  startRecurCodeMcpService,
-  type RecurCodeMcpServiceState,
-  type RecurCodeMcpServiceStatus,
+  setRcMcpToolGroup,
+  startRcMcpService,
+  type RcMcpServiceState,
+  type RcMcpServiceStatus,
 } from "@/lib/api"
 import {
   AGENT_TOOLS_NAMESPACE,
@@ -33,7 +33,7 @@ const POLL_MS = 60_000
 
 /** `unknown` is frontend-only: the status call itself failed, which says
  * nothing about the service and must not be painted as a service fault. */
-type IndicatorState = RecurCodeMcpServiceState | "unknown"
+type IndicatorState = RcMcpServiceState | "unknown"
 
 /** Badge tint per state. `disabled` and `unknown` stay neutral on purpose: the
  * service is not faulty in either case, and colouring them would train people
@@ -86,7 +86,7 @@ export function StatusBarMcp() {
   const t = useTranslations("Folder.statusBar.mcp")
   const tools = useTranslations(AGENT_TOOLS_NAMESPACE)
   const [open, setOpen] = useState(false)
-  const [status, setStatus] = useState<RecurCodeMcpServiceStatus | null>(null)
+  const [status, setStatus] = useState<RcMcpServiceStatus | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -102,7 +102,7 @@ export function StatusBarMcp() {
   const refresh = useCallback(async () => {
     const seq = ++seqRef.current
     try {
-      const next = await getRecurCodeMcpServiceStatus()
+      const next = await getRcMcpServiceStatus()
       if (!aliveRef.current || seq !== seqRef.current) return
       setStatus(next)
       setLoadError(null)
@@ -134,7 +134,7 @@ export function StatusBarMcp() {
     setStarting(true)
     setActionError(null)
     try {
-      await startRecurCodeMcpService()
+      await startRcMcpService()
       await refresh()
     } catch (e) {
       if (aliveRef.current) setActionError(toErrorMessage(e))
@@ -147,7 +147,7 @@ export function StatusBarMcp() {
     setPending((prev) => ({ ...prev, [key]: next }))
     setActionError(null)
     try {
-      await setRecurCodeMcpToolGroup(key, next)
+      await setRcMcpToolGroup(key, next)
       // Re-read before releasing the optimistic value, so the switch hands
       // over to a `status` that already reflects the write.
       await refresh()

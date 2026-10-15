@@ -31,8 +31,8 @@ import {
 
 import { cn } from "@/lib/utils"
 import {
-  parseRecurCodeMcpToolCall,
-  type RecurCodeMcpWorkbenchTool,
+  parseRcMcpToolCall,
+  type RcMcpWorkbenchTool,
 } from "@/lib/rc-mcp-tool"
 import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 import { MessageResponse } from "@/components/ai-elements/message"
@@ -41,7 +41,7 @@ import { StatusBadge } from "@/components/message/delegation-status-badge"
 
 interface Props {
   /** Canonical tool name — selects the label, icon and argument to state. */
-  tool: RecurCodeMcpWorkbenchTool
+  tool: RcMcpWorkbenchTool
   /** Raw JSON arguments the agent sent to the tool. */
   input?: string | null
   output?: string | null
@@ -49,7 +49,7 @@ interface Props {
   state?: ToolCallState
 }
 
-const ICONS: Record<RecurCodeMcpWorkbenchTool, typeof BookOpen> = {
+const ICONS: Record<RcMcpWorkbenchTool, typeof BookOpen> = {
   get_session_info: BookOpen,
   task_progress: Signpost,
   task_complete: CircleCheckBig,
@@ -58,7 +58,7 @@ const ICONS: Record<RecurCodeMcpWorkbenchTool, typeof BookOpen> = {
   resume_delegation: RotateCcw,
 }
 
-export function RecurCodeMcpToolCard({
+export function RcMcpToolCard({
   tool,
   input,
   output,
@@ -70,7 +70,7 @@ export function RecurCodeMcpToolCard({
   const panelId = useId()
 
   const model = useMemo(
-    () => parseRecurCodeMcpToolCall({ tool, input, output, errorText, state }),
+    () => parseRcMcpToolCall({ tool, input, output, errorText, state }),
     [tool, input, output, errorText, state]
   )
 

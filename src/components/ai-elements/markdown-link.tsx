@@ -6,7 +6,7 @@ import { FileText, Globe, Mail, Phone, type LucideIcon } from "lucide-react"
 import type { Components, LinkSafetyModalProps } from "streamdown"
 
 import { ReferenceBadge } from "@/components/chat/composer/badges/reference-badge"
-import { parseRecurCodeReferenceUri } from "@/components/chat/composer/reference-uri"
+import { parseRcReferenceUri } from "@/components/chat/composer/reference-uri"
 import { FileReferenceActions } from "@/components/message/file-reference-actions"
 import type { ReferenceAttrs } from "@/components/chat/composer/types"
 import { classifyResourceKind, type ResourceKind } from "@/lib/resource-kind"
@@ -113,7 +113,7 @@ export function MarkdownLink({
   // editor uses on draft restore recovers refType/id/meta from the uri; the link
   // text is the label.
   if (href.toLowerCase().startsWith("RecurCode:")) {
-    const reference = parseRecurCodeReferenceUri(href, nodeText(children))
+    const reference = parseRcReferenceUri(href, nodeText(children))
     if (reference) return <ReferenceBadge data={reference} />
   }
 

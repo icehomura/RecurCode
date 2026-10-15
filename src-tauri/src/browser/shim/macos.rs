@@ -52,14 +52,14 @@ define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
     #[ivars = HandlerIvars]
-    pub struct RecurCodeMessageHandler;
+    pub struct RcMessageHandler;
 
-    unsafe impl NSObjectProtocol for RecurCodeMessageHandler {}
+    unsafe impl NSObjectProtocol for RcMessageHandler {}
 
-    unsafe impl WKScriptMessageHandler for RecurCodeMessageHandler {
+    unsafe impl WKScriptMessageHandler for RcMessageHandler {
         #[unsafe(method(userContentController:didReceiveScriptMessage:))]
         fn did_receive(
-            this: &RecurCodeMessageHandler,
+            this: &RcMessageHandler,
             _controller: &WKUserContentController,
             message: &WKScriptMessage,
         ) {
@@ -81,7 +81,7 @@ define_class!(
     }
 );
 
-impl RecurCodeMessageHandler {
+impl RcMessageHandler {
     fn new(sink: MessageSink, mtm: MainThreadMarker) -> Retained<Self> {
         let this = mtm.alloc::<Self>().set_ivars(HandlerIvars { sink });
         // SAFETY: plain NSObject init.
@@ -118,7 +118,7 @@ pub fn install_world(
         // place already, and the sink resolves the tab per message.
         return Ok(supports_content_world(&controller));
     }
-    let handler = RecurCodeMessageHandler::new(sink, mtm);
+    let handler = RcMessageHandler::new(sink, mtm);
     let proto = ProtocolObject::from_ref(&*handler);
     // SAFETY: main thread, live controller; WebKit retains the handler.
     unsafe {
@@ -602,7 +602,7 @@ pub use super::{NavigationEvent, NavigationSink};
 thread_local! {
     /// Wrappers by `WKWebView` pointer, kept alive here (`navigationDelegate`
     /// is a weak property).
-    static NAV_DELEGATES: RefCell<HashMap<usize, Retained<RecurCodeNavigationDelegate>>> =
+    static NAV_DELEGATES: RefCell<HashMap<usize, Retained<RcNavigationDelegate>>> =
         RefCell::new(HashMap::new());
     /// Whether the navigation action currently being decided targets the main
     /// frame. Set around the forward to wry, whose synchronous call into the
@@ -636,11 +636,11 @@ define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
     #[ivars = NavigationDelegateIvars]
-    pub struct RecurCodeNavigationDelegate;
+    pub struct RcNavigationDelegate;
 
-    unsafe impl NSObjectProtocol for RecurCodeNavigationDelegate {}
+    unsafe impl NSObjectProtocol for RcNavigationDelegate {}
 
-    impl RecurCodeNavigationDelegate {
+    impl RcNavigationDelegate {
         #[unsafe(method(respondsToSelector:))]
         fn responds_to_selector(&self, selector: Sel) -> bool {
             self.class().responds_to(selector) || self.ivars().inner.respondsToSelector(selector)
@@ -652,7 +652,7 @@ define_class!(
         }
     }
 
-    unsafe impl WKNavigationDelegate for RecurCodeNavigationDelegate {
+    unsafe impl WKNavigationDelegate for RcNavigationDelegate {
         #[unsafe(method(webView:decidePolicyForNavigationAction:decisionHandler:))]
         fn decide_policy(
             &self,
@@ -768,7 +768,7 @@ define_class!(
     }
 );
 
-impl RecurCodeNavigationDelegate {
+impl RcNavigationDelegate {
     fn new(
         inner: Retained<ProtocolObject<dyn WKNavigationDelegate>>,
         sink: NavigationSink,
@@ -909,7 +909,7 @@ pub fn install_navigation_delegate(webview: &wry::WebView, sink: NavigationSink)
     // SAFETY: main thread, live webview.
     let inner = unsafe { wk.navigationDelegate() }
         .ok_or_else(|| "the webview has no navigation delegate to wrap".to_string())?;
-    let delegate = RecurCodeNavigationDelegate::new(inner, sink, mtm);
+    let delegate = RcNavigationDelegate::new(inner, sink, mtm);
     // SAFETY: main thread; the wrapper is retained in `NAV_DELEGATES` below,
     // which is what keeps the weak `navigationDelegate` valid.
     unsafe { wk.setNavigationDelegate(Some(ProtocolObject::from_ref(&*delegate))) };
@@ -943,7 +943,7 @@ pub use super::PageCloseSink;
 thread_local! {
     /// Wrappers by `WKWebView` pointer, kept alive here (`UIDelegate` is a
     /// weak property). Dropped with the navigation wrapper above.
-    static UI_DELEGATES: RefCell<HashMap<usize, Retained<RecurCodeUIDelegate>>> =
+    static UI_DELEGATES: RefCell<HashMap<usize, Retained<RcUIDelegate>>> =
         RefCell::new(HashMap::new());
 }
 
@@ -956,11 +956,11 @@ define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
     #[ivars = UIDelegateIvars]
-    pub struct RecurCodeUIDelegate;
+    pub struct RcUIDelegate;
 
-    unsafe impl NSObjectProtocol for RecurCodeUIDelegate {}
+    unsafe impl NSObjectProtocol for RcUIDelegate {}
 
-    impl RecurCodeUIDelegate {
+    impl RcUIDelegate {
         #[unsafe(method(respondsToSelector:))]
         fn responds_to_selector(&self, selector: Sel) -> bool {
             self.class().responds_to(selector) || self.ivars().inner.respondsToSelector(selector)
@@ -972,7 +972,7 @@ define_class!(
         }
     }
 
-    unsafe impl WKUIDelegate for RecurCodeUIDelegate {
+    unsafe impl WKUIDelegate for RcUIDelegate {
         #[unsafe(method(webViewDidClose:))]
         fn web_view_did_close(&self, _webview: &WKWebView) {
             (self.ivars().sink)();
@@ -980,7 +980,7 @@ define_class!(
     }
 );
 
-impl RecurCodeUIDelegate {
+impl RcUIDelegate {
     fn new(
         inner: Retained<ProtocolObject<dyn WKUIDelegate>>,
         sink: PageCloseSink,
@@ -1006,7 +1006,7 @@ pub fn install_page_close_hook(webview: &wry::WebView, sink: PageCloseSink) -> R
     // SAFETY: main thread, live webview.
     let inner = unsafe { wk.UIDelegate() }
         .ok_or_else(|| "the webview has no UI delegate to wrap".to_string())?;
-    let delegate = RecurCodeUIDelegate::new(inner, sink, mtm);
+    let delegate = RcUIDelegate::new(inner, sink, mtm);
     // SAFETY: main thread; the wrapper is retained in `UI_DELEGATES` above,
     // which is what keeps the weak `UIDelegate` valid.
     unsafe { wk.setUIDelegate(Some(ProtocolObject::from_ref(&*delegate))) };

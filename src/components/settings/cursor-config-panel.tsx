@@ -201,7 +201,7 @@ const WINDOWS_HOST_PATH = /^(?:[A-Za-z]:[\\/]|\\\\)/
  * all: that is the reported case where the offered command "just cannot be
  * run". The instructions have to say where to run it and how to get through it
  * without a browser. */
-export function cursorLoginRunsOnRecurCodeHost(
+export function cursorLoginRunsOnRcHost(
   desktop: boolean,
   remoteDesktop: boolean
 ): boolean {
@@ -211,7 +211,7 @@ export function cursorLoginRunsOnRecurCodeHost(
 /** Whether `NO_OPEN_BROWSER=1` — Cursor's documented way to print the sign-in
  * URL instead of opening a browser — can be put in front of the command.
  *
- * Deliberately narrower than [`cursorLoginRunsOnRecurCodeHost`]: the prefix is
+ * Deliberately narrower than [`cursorLoginRunsOnRcHost`]: the prefix is
  * POSIX shell syntax, so on a Windows host cmd/PowerShell would read it as the
  * program name and the command would fail outright. Those users still get the
  * remote wording, which tells them to set the variable themselves. */
@@ -220,7 +220,7 @@ export function cursorLoginIsHeadless(
   desktop: boolean,
   remoteDesktop: boolean
 ): boolean {
-  if (!cursorLoginRunsOnRecurCodeHost(desktop, remoteDesktop)) return false
+  if (!cursorLoginRunsOnRcHost(desktop, remoteDesktop)) return false
   return !WINDOWS_HOST_PATH.test((binaryPath ?? "").trim())
 }
 
@@ -485,7 +485,7 @@ export function CursorConfigPanel({
 
   // Two decisions, not one: WHERE the command runs drives the wording, and
   // only a POSIX host can carry the env prefix.
-  const remoteLogin = cursorLoginRunsOnRecurCodeHost(
+  const remoteLogin = cursorLoginRunsOnRcHost(
     isDesktop(),
     isRemoteDesktopMode()
   )

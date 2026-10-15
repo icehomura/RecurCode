@@ -7,11 +7,11 @@
 
 const TOKEN_KEY = "rc_token"
 
-export function getRecurCodeToken(): string {
+export function getRcToken(): string {
   return localStorage.getItem(TOKEN_KEY) ?? ""
 }
 
-export function redirectToRecurCodeLogin(): void {
+export function redirectToRcLogin(): void {
   if (window.location.pathname.startsWith("/login")) return
   localStorage.removeItem(TOKEN_KEY)
   window.location.href = "/login"

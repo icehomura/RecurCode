@@ -6,7 +6,7 @@ import {
   isRemoteDesktopMode,
   notifyRemoteDesktopUnauthorized,
 } from "./transport"
-import { getRecurCodeToken } from "./transport/web-auth"
+import { getRcToken } from "./transport/web-auth"
 import { notifyWebUnauthorized } from "./transport/web-connection-store"
 import { getCurrentEffectiveAppLocale } from "./i18n"
 import {
@@ -4355,7 +4355,7 @@ export async function uploadAttachment(
     )
   }
 
-  const token = getRecurCodeToken()
+  const token = getRcToken()
   const form = new FormData()
   form.append("file", file, file.name)
   if (sessionId) form.append("session_id", sessionId)
@@ -4455,7 +4455,7 @@ async function workspaceFileFetch(
   body: BodyInit,
   isMultipart: boolean
 ): Promise<Response> {
-  const token = getRecurCodeToken()
+  const token = getRcToken()
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
   }
@@ -4523,7 +4523,7 @@ export async function uploadWorkspaceFile(
   }
 
   return new Promise<UploadWorkspaceFileResult>((resolve, reject) => {
-    const token = getRecurCodeToken()
+    const token = getRcToken()
     const xhr = new XMLHttpRequest()
     xhr.open("POST", `${window.location.origin}/api/upload_workspace_file`)
     xhr.setRequestHeader("Authorization", `Bearer ${token}`)
@@ -5388,16 +5388,16 @@ export async function setDelegationSettings(
 
 // ─── rc-mcp service status ──────────────────────────────────────────
 
-/** Headline verdict from Rust `RecurCodeMcpServiceState`. Ordered by which problem
+/** Headline verdict from Rust `RcMcpServiceState`. Ordered by which problem
  * to solve first: only `stopped` is repairable from this process. */
-export type RecurCodeMcpServiceState =
+export type RcMcpServiceState =
   | "stopped"
   | "unavailable"
   | "disabled"
   | "running"
 
 /** One toggleable companion tool group, named by its `--features` slug. */
-export interface RecurCodeMcpToolGroup {
+export interface RcMcpToolGroup {
   key: string
   enabled: boolean
   /** The group this one lives inside, when it lives inside one
@@ -5407,15 +5407,15 @@ export interface RecurCodeMcpToolGroup {
   requires?: string | null
 }
 
-/** Mirror of Rust `RecurCodeMcpServiceStatus`. */
-export interface RecurCodeMcpServiceStatus {
-  state: RecurCodeMcpServiceState
+/** Mirror of Rust `RcMcpServiceStatus`. */
+export interface RcMcpServiceStatus {
+  state: RcMcpServiceState
   /** Whether the broker socket answered a liveness ping just now. */
   listening: boolean
   socket_path: string
   /** Resolved `rc-mcp` path; `null` when the lookup came up empty. */
   binary_path: string | null
-  tool_groups: RecurCodeMcpToolGroup[]
+  tool_groups: RcMcpToolGroup[]
   companion_count: number
   session_count: number
   active_delegations: number
@@ -5428,19 +5428,19 @@ export interface RecurCodeMcpServiceStatus {
   can_start: boolean
 }
 
-export async function getRecurCodeMcpServiceStatus(): Promise<RecurCodeMcpServiceStatus> {
+export async function getRcMcpServiceStatus(): Promise<RcMcpServiceStatus> {
   return getTransport().call("get_rc_mcp_service_status")
 }
 
 /** Bind the broker socket if it isn't already answering. Idempotent. */
-export async function startRecurCodeMcpService(): Promise<void> {
+export async function startRcMcpService(): Promise<void> {
   return getTransport().call("start_rc_mcp_service")
 }
 
 /** Flip one tool group by the slug the status report uses. The backend
  * dispatches to that feature's own settings writer, so this is the same write
  * the settings window performs — sibling fields and change events included. */
-export async function setRecurCodeMcpToolGroup(
+export async function setRcMcpToolGroup(
   key: string,
   enabled: boolean
 ): Promise<void> {
@@ -5838,7 +5838,7 @@ export async function uploadBackupWeb(
   onProgress?: (loaded: number, total: number) => void
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const token = getRecurCodeToken()
+    const token = getRcToken()
     const xhr = new XMLHttpRequest()
     xhr.open("POST", `${window.location.origin}/api/backup_upload`)
     xhr.setRequestHeader("Authorization", `Bearer ${token}`)

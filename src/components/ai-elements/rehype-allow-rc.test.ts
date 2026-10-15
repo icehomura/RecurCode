@@ -44,8 +44,8 @@ describe("rehypePluginsAllowingRecurCode", () => {
     // round-trip. Neither spelling alone is safe to rely on across upgrades.
     expect(span).toEqual(
       expect.arrayContaining([
-        "dataRecurCodeLocalImage",
-        "dataRecurCodeImageLinked",
+        "dataRcLocalImage",
+        "dataRcImageLinked",
         "data-rc-local-image",
         "data-rc-image-linked",
       ])

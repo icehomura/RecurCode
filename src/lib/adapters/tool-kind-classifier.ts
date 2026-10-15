@@ -48,7 +48,7 @@ const ASK_USER_QUESTION_SUFFIX_RE = /[^a-z0-9]ask_user_question$/
 const CHECK_USER_FEEDBACK_SUFFIX_RE = /[^a-z0-9]check_user_feedback$/
 
 /**
- * The rc-mcp workbench companions, which own `RecurCodeMcpToolCard` (and, for
+ * The rc-mcp workbench companions, which own `RcMcpToolCard` (and, for
  * `resume_delegation`, `ResumedDelegationCard`). Same bare-name-plus-suffix
  * treatment as the delegation tools above: the bare form is what the live path
  * produces post-`inferLiveToolName`, the suffix form is the raw

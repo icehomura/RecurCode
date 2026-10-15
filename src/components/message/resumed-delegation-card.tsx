@@ -34,14 +34,14 @@
  *
  * Renders `fallback` when no sub-agent resolves — a REFUSED resume
  * (`not_resumable`, unknown task) has none, and the caller passes
- * `RecurCodeMcpToolCard`, which states the refusal reason.
+ * `RcMcpToolCard`, which states the refusal reason.
  */
 
 import { useId, useMemo, useState, type ReactNode } from "react"
 import { ChevronDown, ChevronRight, RotateCcw } from "lucide-react"
 import { useTranslations } from "next-intl"
 
-import { parseRecurCodeMcpToolCall } from "@/lib/rc-mcp-tool"
+import { parseRcMcpToolCall } from "@/lib/rc-mcp-tool"
 import { isRefusedResume } from "@/lib/delegation-card"
 import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 import { DelegationCardRow } from "@/components/message/delegation-card-row"
@@ -81,7 +81,7 @@ export function ResumedDelegationCard({
   // argument — the key everything else is resolved by.
   const call = useMemo(
     () =>
-      parseRecurCodeMcpToolCall({
+      parseRcMcpToolCall({
         tool: "resume_delegation",
         input,
         output,
@@ -121,7 +121,7 @@ export function ResumedDelegationCard({
   // `agent_type` / `child_conversation_id`, which is enough to satisfy
   // `hasModel`. Drawing the card here would assert — corner marker and all —
   // that a sub-agent was revived when it was not, and would bury the refusal
-  // reason, the single thing the user has to read. `RecurCodeMcpToolCard` states
+  // reason, the single thing the user has to read. `RcMcpToolCard` states
   // it plainly.
   if (!hasModel || isRefusedResume(output, errorText)) {
     return <>{fallback}</>

@@ -1,4 +1,4 @@
-import { parseRecurCodeReferenceUri } from "@/components/chat/composer/reference-uri"
+import { parseRcReferenceUri } from "@/components/chat/composer/reference-uri"
 import type { ReferenceAttrs } from "@/components/chat/composer/types"
 import {
   INVOCATION_TOKEN_RE,
@@ -58,7 +58,7 @@ function pushProseSegments(
     // Resolve through the shared reference parser, which strips the leading
     // `/`·`$` so the badge label is the bare slug (`build`, `deploy`) — matching
     // the composer's inline command/skill badge.
-    const attrs = parseRecurCodeReferenceUri(
+    const attrs = parseRcReferenceUri(
       `rc://skill/${encodeURIComponent(slug)}`,
       token
     )
@@ -92,7 +92,7 @@ export interface UserMessageSegmentOptions {
  * Two passes over the shared wire format (unchanged by this feature):
  *  1. {@link tokenizeReferenceLinks} splits `[label](dest)` links from prose. A
  *     link whose (angle-unwrapped) destination is a `file:`/`RecurCode:` reference
- *     becomes a badge via {@link parseRecurCodeReferenceUri}; any other link stays
+ *     becomes a badge via {@link parseRcReferenceUri}; any other link stays
  *     literal (rendered as its raw `[label](dest)` source).
  *  2. The prose between links is scanned for bare `/slug`·`$slug` skill tokens.
  *
@@ -112,7 +112,7 @@ export function parseUserMessageSegments(
     if (token.type === "link") {
       const destination = unwrapReferenceDestination(token.destination)
       if (REFERENCE_SCHEME.test(destination)) {
-        const attrs = parseRecurCodeReferenceUri(
+        const attrs = parseRcReferenceUri(
           destination,
           unescapeReferenceLabel(token.label)
         )

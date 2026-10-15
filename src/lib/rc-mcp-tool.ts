@@ -18,7 +18,7 @@
  * generic tool shell and rendered as a raw argument dump under a name like
  * `"task_progress (rc-mcp MCP Server)"`. This module resolves the one detail
  * each call is actually about (which session, which message, which verdict) plus
- * its result text, so `RecurCodeMcpToolCard` can state it in one line.
+ * its result text, so `RcMcpToolCard` can state it in one line.
  *
  * Both sides of the wire are host-dependent, so parsing mirrors what the
  * delegation cards already do:
@@ -50,21 +50,21 @@ export const RC_MCP_WORKBENCH_TOOLS = [
   "resume_delegation",
 ] as const
 
-export type RecurCodeMcpWorkbenchTool = (typeof RC_MCP_WORKBENCH_TOOLS)[number]
+export type RcMcpWorkbenchTool = (typeof RC_MCP_WORKBENCH_TOOLS)[number]
 
 const TOOL_SET: ReadonlySet<string> = new Set(RC_MCP_WORKBENCH_TOOLS)
 
 /** Whether `name` is one of the workbench companions, in canonical form. */
-export function isRecurCodeMcpWorkbenchTool(
+export function isRcMcpWorkbenchTool(
   name: string
-): name is RecurCodeMcpWorkbenchTool {
+): name is RcMcpWorkbenchTool {
   return TOOL_SET.has(name.toLowerCase().trim())
 }
 
 /** `task_complete`'s three allowed verdicts (validated companion-side). */
 export type TaskVerdict = "success" | "needs_review" | "blocked"
 
-export interface RecurCodeMcpToolModel {
+export interface RcMcpToolModel {
   /**
    * The single argument worth stating in the collapsed row: the session id,
    * the progress message, the completion summary, the automation/task title.
@@ -181,7 +181,7 @@ function parseArgs(
 
 /** Which argument each tool's row is about, and how to recognize its payload. */
 const ARG_SPECS: Record<
-  RecurCodeMcpWorkbenchTool,
+  RcMcpWorkbenchTool,
   {
     /** Keys that identify the arguments object (any one present is enough). */
     fields: readonly string[]
@@ -305,7 +305,7 @@ function readResultObject(obj: Record<string, unknown>): string | null {
 }
 
 /**
- * Resolve everything `RecurCodeMcpToolCard` renders from a tool call's raw input,
+ * Resolve everything `RcMcpToolCard` renders from a tool call's raw input,
  * raw output and lifecycle state.
  *
  * `errorText` (or an `output-error` state) always wins the status: these tools
@@ -313,13 +313,13 @@ function readResultObject(obj: Record<string, unknown>): string | null {
  * with no work task to attribute it to — as ordinary `isError: false` text, so
  * an `err` badge really does mean the call itself failed.
  */
-export function parseRecurCodeMcpToolCall(params: {
-  tool: RecurCodeMcpWorkbenchTool
+export function parseRcMcpToolCall(params: {
+  tool: RcMcpWorkbenchTool
   input?: string | null
   output?: string | null
   errorText?: string | null
   state?: ToolCallState
-}): RecurCodeMcpToolModel {
+}): RcMcpToolModel {
   const spec = ARG_SPECS[params.tool]
   const args = parseArgs(params.input, (obj) =>
     spec.fields.some((field) => obj[field] !== undefined)

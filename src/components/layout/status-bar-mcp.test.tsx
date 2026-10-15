@@ -1,17 +1,17 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { RecurCodeMcpServiceStatus } from "@/lib/api"
+import type { RcMcpServiceStatus } from "@/lib/api"
 
-const getRecurCodeMcpServiceStatus = vi.fn<() => Promise<RecurCodeMcpServiceStatus>>()
-const startRecurCodeMcpService = vi.fn<() => Promise<void>>()
-const setRecurCodeMcpToolGroup = vi.fn<(k: string, e: boolean) => Promise<void>>()
+const getRcMcpServiceStatus = vi.fn<() => Promise<RcMcpServiceStatus>>()
+const startRcMcpService = vi.fn<() => Promise<void>>()
+const setRcMcpToolGroup = vi.fn<(k: string, e: boolean) => Promise<void>>()
 const openSettingsWindow = vi.fn()
 
 vi.mock("@/lib/api", () => ({
-  getRecurCodeMcpServiceStatus: () => getRecurCodeMcpServiceStatus(),
-  startRecurCodeMcpService: () => startRecurCodeMcpService(),
-  setRecurCodeMcpToolGroup: (k: string, e: boolean) => setRecurCodeMcpToolGroup(k, e),
+  getRcMcpServiceStatus: () => getRcMcpServiceStatus(),
+  startRcMcpService: () => startRcMcpService(),
+  setRcMcpToolGroup: (k: string, e: boolean) => setRcMcpToolGroup(k, e),
   openSettingsWindow: (...args: unknown[]) => openSettingsWindow(...args),
 }))
 
@@ -19,8 +19,8 @@ import { StatusBarMcp } from "./status-bar-mcp"
 import enMessages from "@/i18n/messages/en.json"
 
 function makeStatus(
-  overrides: Partial<RecurCodeMcpServiceStatus> = {}
-): RecurCodeMcpServiceStatus {
+  overrides: Partial<RcMcpServiceStatus> = {}
+): RcMcpServiceStatus {
   return {
     state: "running",
     listening: true,
@@ -52,7 +52,7 @@ async function mount() {
     </NextIntlClientProvider>
   )
   // Wait for the mount fetch to land before anyone reads the trigger.
-  await waitFor(() => expect(getRecurCodeMcpServiceStatus).toHaveBeenCalled())
+  await waitFor(() => expect(getRcMcpServiceStatus).toHaveBeenCalled())
 }
 
 /** Open the popover. The trigger is the only button until it opens. */
@@ -67,13 +67,13 @@ function toolSwitch(label: string) {
 }
 
 beforeEach(() => {
-  getRecurCodeMcpServiceStatus.mockReset()
-  startRecurCodeMcpService.mockReset()
-  setRecurCodeMcpToolGroup.mockReset()
+  getRcMcpServiceStatus.mockReset()
+  startRcMcpService.mockReset()
+  setRcMcpToolGroup.mockReset()
   openSettingsWindow.mockReset()
-  getRecurCodeMcpServiceStatus.mockResolvedValue(makeStatus())
-  startRecurCodeMcpService.mockResolvedValue(undefined)
-  setRecurCodeMcpToolGroup.mockResolvedValue(undefined)
+  getRcMcpServiceStatus.mockResolvedValue(makeStatus())
+  startRcMcpService.mockResolvedValue(undefined)
+  setRcMcpToolGroup.mockResolvedValue(undefined)
   // The real one returns a promise the component attaches a `.catch` to.
   openSettingsWindow.mockResolvedValue(undefined)
 })
@@ -152,7 +152,7 @@ describe("StatusBarMcp", () => {
    * on in passing while the browser itself is off — the backend would drop it
    * and the row would be promising a tool nothing can call. */
   it("shows a switch that lives inside another as off and untouchable", async () => {
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({
         tool_groups: [
           { key: "browser", enabled: false },
@@ -167,10 +167,10 @@ describe("StatusBarMcp", () => {
     expect(evalSwitch).toBeDisabled()
     expect(evalSwitch).not.toBeChecked()
     fireEvent.click(evalSwitch)
-    expect(setRecurCodeMcpToolGroup).not.toHaveBeenCalled()
+    expect(setRcMcpToolGroup).not.toHaveBeenCalled()
 
     // With the group on it is an ordinary row again, and writes its own key.
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({
         tool_groups: [
           { key: "browser", enabled: true },
@@ -184,7 +184,7 @@ describe("StatusBarMcp", () => {
     )
     fireEvent.click(toolSwitch("Run code in the built-in browser"))
     await waitFor(() =>
-      expect(setRecurCodeMcpToolGroup).toHaveBeenCalledWith("browser_eval", true)
+      expect(setRcMcpToolGroup).toHaveBeenCalledWith("browser_eval", true)
     )
   })
 
@@ -192,7 +192,7 @@ describe("StatusBarMcp", () => {
     await mount()
     await openPopover()
 
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({
         tool_groups: [
           { key: "delegation", enabled: true },
@@ -207,7 +207,7 @@ describe("StatusBarMcp", () => {
     fireEvent.click(toolSwitch("Ask user question"))
 
     await waitFor(() =>
-      expect(setRecurCodeMcpToolGroup).toHaveBeenCalledWith("ask", true)
+      expect(setRcMcpToolGroup).toHaveBeenCalledWith("ask", true)
     )
     await waitFor(() => expect(toolSwitch("Ask user question")).toBeChecked())
   })
@@ -215,7 +215,7 @@ describe("StatusBarMcp", () => {
   /** A rejected write must not leave the switch showing a position no setting
    * backs — it snaps back to the last known truth and says why. */
   it("reverts a switch whose write was refused", async () => {
-    setRecurCodeMcpToolGroup.mockRejectedValue(new Error("database is locked"))
+    setRcMcpToolGroup.mockRejectedValue(new Error("database is locked"))
     await mount()
     await openPopover()
 
@@ -228,7 +228,7 @@ describe("StatusBarMcp", () => {
       expect(toolSwitch("Ask user question")).not.toBeChecked()
     )
     // The refusal is not a reason to re-read: the status never changed.
-    expect(getRecurCodeMcpServiceStatus).toHaveBeenCalledTimes(2)
+    expect(getRcMcpServiceStatus).toHaveBeenCalledTimes(2)
   })
 
   /** Settings must land on the page that actually holds these switches. With
@@ -244,21 +244,21 @@ describe("StatusBarMcp", () => {
 
   /** The headline promise of the feature: a dead socket is repairable in place. */
   it("offers the start button when stopped and refetches after starting", async () => {
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({ state: "stopped", listening: false, session_count: 0 })
     )
     await mount()
     await openPopover()
 
     const start = screen.getByRole("button", { name: /Start service/ })
-    getRecurCodeMcpServiceStatus.mockResolvedValue(makeStatus())
+    getRcMcpServiceStatus.mockResolvedValue(makeStatus())
     fireEvent.click(start)
 
-    await waitFor(() => expect(startRecurCodeMcpService).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(startRcMcpService).toHaveBeenCalledTimes(1))
     // Status is re-read after the start so the popover reflects the new truth
     // rather than the one that motivated the click.
     await waitFor(() =>
-      expect(getRecurCodeMcpServiceStatus.mock.calls.length).toBeGreaterThan(1)
+      expect(getRcMcpServiceStatus.mock.calls.length).toBeGreaterThan(1)
     )
     await waitFor(() =>
       expect(
@@ -270,7 +270,7 @@ describe("StatusBarMcp", () => {
   /** A start we know would fail must not be offered — `can_start` is false in
    * runtimes that never bound a socket. */
   it("hides the start button when the process holds no service handle", async () => {
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({ state: "stopped", listening: false, can_start: false })
     )
     await mount()
@@ -284,7 +284,7 @@ describe("StatusBarMcp", () => {
   /** Every other state is a healthy socket, so nothing here can start it. The
    * missing binary is named by the hint line, not by a row of its own. */
   it("does not offer a start button for a missing companion binary", async () => {
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({ state: "unavailable", binary_path: null })
     )
     await mount()
@@ -299,10 +299,10 @@ describe("StatusBarMcp", () => {
   })
 
   it("surfaces a failed start without claiming the service is broken", async () => {
-    getRecurCodeMcpServiceStatus.mockResolvedValue(
+    getRcMcpServiceStatus.mockResolvedValue(
       makeStatus({ state: "stopped", listening: false })
     )
-    startRecurCodeMcpService.mockRejectedValue(new Error("address already in use"))
+    startRcMcpService.mockRejectedValue(new Error("address already in use"))
     await mount()
     await openPopover()
 
@@ -315,7 +315,7 @@ describe("StatusBarMcp", () => {
   /** A failed status call says nothing about the service, so it must not be
    * painted as a service fault. */
   it("falls back to an unknown state when the status call fails", async () => {
-    getRecurCodeMcpServiceStatus.mockRejectedValue(new Error("transport offline"))
+    getRcMcpServiceStatus.mockRejectedValue(new Error("transport offline"))
     await mount()
     await openPopover2()
 

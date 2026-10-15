@@ -39,7 +39,7 @@ import {
 import { AgentToolCallPart } from "./agent-tool-call"
 import { ToolGroupPart } from "./tool-group-part"
 import { AskQuestionResultCard } from "./ask-question-result-card"
-import { RecurCodeMcpToolCard } from "./rc-mcp-tool-card"
+import { RcMcpToolCard } from "./rc-mcp-tool-card"
 import { ResumedDelegationCard } from "./resumed-delegation-card"
 import { CollabAgentCard } from "./collab-agent-card"
 import {
@@ -68,7 +68,7 @@ import {
   WAIT_TOOL_NAME,
 } from "@/lib/shell-session-tool"
 import { COLLAB_AGENT_TOOL_NAME } from "@/lib/collab-tool"
-import { isRecurCodeMcpWorkbenchTool } from "@/lib/rc-mcp-tool"
+import { isRcMcpWorkbenchTool } from "@/lib/rc-mcp-tool"
 import { fsSeparator } from "@/lib/path-utils"
 import { DelegatedSubThread } from "./delegated-sub-thread"
 import { DelegationStatusCard } from "./delegation-status-card"
@@ -2862,7 +2862,7 @@ const ToolCallPart = memo(function ToolCallPart({
         // a hook to find out), so the fallback goes in rather than the decision
         // coming out.
         fallback={
-          <RecurCodeMcpToolCard
+          <RcMcpToolCard
             tool="resume_delegation"
             input={part.input ?? null}
             output={part.output ?? null}
@@ -2878,9 +2878,9 @@ const ToolCallPart = memo(function ToolCallPart({
   // reporting, chat authoring). One compact line stating what the call was
   // about, in the same visual language as the delegation cards, instead of the
   // generic tool shell's raw argument dump.
-  if (isRecurCodeMcpWorkbenchTool(toolNameLower)) {
+  if (isRcMcpWorkbenchTool(toolNameLower)) {
     return (
-      <RecurCodeMcpToolCard
+      <RcMcpToolCard
         tool={toolNameLower}
         input={part.input ?? null}
         output={part.output ?? null}

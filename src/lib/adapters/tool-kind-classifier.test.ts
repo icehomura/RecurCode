@@ -92,14 +92,14 @@ describe("isAgentLikeToolName", () => {
   // `resume_delegation` was added to `RC_MCP_WORKBENCH_TOOLS` the copy was
   // not updated, so the resume card spent its life wrapped in a spurious
   // "工具 ×1" group shell. Pin the relationship so it can't drift again.
-  it("covers every tool that owns a RecurCodeMcpToolCard", () => {
+  it("covers every tool that owns a RcMcpToolCard", () => {
     for (const tool of RC_MCP_WORKBENCH_TOOLS) {
       expect(isAgentLikeToolName(tool)).toBe(true)
     }
   })
 
   it("matches the rc-mcp workbench companions across host naming conventions", () => {
-    // Each owns a RecurCodeMcpToolCard, so it breaks the tool-group run and renders
+    // Each owns a RcMcpToolCard, so it breaks the tool-group run and renders
     // standalone rather than folding into a "工具 ×N" tally.
     for (const tool of [
       "get_session_info",

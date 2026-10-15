@@ -62,7 +62,7 @@ export interface AgentToolGroupPresentation {
   icon: LucideIcon
   /** The slug this one lives inside, when it lives inside one. Shown off and
    *  not touchable until its parent is on, in both surfaces. The backend
-   *  sends the same relation on the wire (`RecurCodeMcpToolGroup.requires`); this
+   *  sends the same relation on the wire (`RcMcpToolGroup.requires`); this
    *  is the copy for the settings panel, which reads the switches from their
    *  own endpoints rather than from the status report. */
   requires?: string

@@ -13,7 +13,7 @@ function base64UrlEncode(value: string): string {
     .replace(/=+$/g, "")
 }
 
-export function buildRecurCodeWebSocketProtocols(token: string): string[] {
+export function buildRcWebSocketProtocols(token: string): string[] {
   const trimmed = token.trim()
   if (!trimmed) return [RC_WS_PROTOCOL]
   return [

@@ -19,7 +19,7 @@ import {
   reconnectWebNow,
   subscribeWebConnection,
 } from "@/lib/transport/web-connection-store"
-import { redirectToRecurCodeLogin } from "@/lib/transport/web-auth"
+import { redirectToRcLogin } from "@/lib/transport/web-auth"
 
 // Debounce before the "reconnecting" dialog is shown. Server restarts, brief
 // network blips, and laptop sleep/wake usually recover within a few seconds —
@@ -120,7 +120,7 @@ export function WebConnectionGuard() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           {showUnauthorized ? (
-            <Button onClick={() => redirectToRecurCodeLogin()}>
+            <Button onClick={() => redirectToRcLogin()}>
               {t("goToLogin")}
             </Button>
           ) : (

@@ -14,8 +14,8 @@
 //! Each fails differently and each is invisible today: a missing binary logs
 //! one line at spawn time, a dead socket logs nothing at all, and "everything
 //! is off in settings" looks identical to both from a conversation. This
-//! module collapses the three into one [`RecurCodeMcpServiceStatus`] the status-bar
-//! indicator renders, with a single headline [`RecurCodeMcpServiceState`] so the
+//! module collapses the three into one [`RcMcpServiceStatus`] the status-bar
+//! indicator renders, with a single headline [`RcMcpServiceState`] so the
 //! popover can offer exactly one next step.
 //!
 //! Only #2 is startable from here — #1 needs a reinstall. #3 is a settings
@@ -48,7 +48,7 @@ use crate::web::event_bridge::EventEmitter;
 /// state hides is still reported field-by-field alongside it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum RecurCodeMcpServiceState {
+pub enum RcMcpServiceState {
     /// The broker socket isn't answering. Companions would launch and fail to
     /// reach RecurCode. Fixable here — see [`start_rc_mcp_service_core`].
     Stopped,
@@ -68,7 +68,7 @@ pub enum RecurCodeMcpServiceState {
 /// render whatever the backend currently supports without a lockstep frontend
 /// change.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RecurCodeMcpToolGroup {
+pub struct RcMcpToolGroup {
     pub key: String,
     pub enabled: bool,
     /// The slug this one is part of, when it is part of one: `browser_eval`
@@ -79,7 +79,7 @@ pub struct RecurCodeMcpToolGroup {
     pub requires: Option<String>,
 }
 
-impl RecurCodeMcpToolGroup {
+impl RcMcpToolGroup {
     fn group(key: &str, enabled: bool) -> Self {
         Self {
             key: key.to_string(),
@@ -98,8 +98,8 @@ impl RecurCodeMcpToolGroup {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RecurCodeMcpServiceStatus {
-    pub state: RecurCodeMcpServiceState,
+pub struct RcMcpServiceStatus {
+    pub state: RcMcpServiceState,
     /// Whether the broker socket answered a liveness ping just now.
     pub listening: bool,
     /// UDS path (unix) or named-pipe name (Windows) the companions dial.
@@ -107,7 +107,7 @@ pub struct RecurCodeMcpServiceStatus {
     /// Resolved `rc-mcp` path, or `None` when the lookup came up empty.
     pub binary_path: Option<String>,
     /// Tool groups and their current switches, in companion `--features` order.
-    pub tool_groups: Vec<RecurCodeMcpToolGroup>,
+    pub tool_groups: Vec<RcMcpToolGroup>,
     /// Companions currently holding a valid token, and how many distinct agent
     /// sessions they belong to.
     pub companion_count: u32,
@@ -131,7 +131,7 @@ pub struct RecurCodeMcpServiceStatus {
 /// they arrive from different places in each runtime (Tauri managed state vs
 /// `AppState` fields) and seven positional `&` arguments of similar type is a
 /// silent argument-swap waiting to happen.
-pub struct RecurCodeMcpStatusSources<'a> {
+pub struct RcMcpStatusSources<'a> {
     pub broker: &'a DelegationBroker,
     pub tokens: &'a TokenRegistry,
     pub feedback: &'a FeedbackRuntimeConfig,
@@ -145,8 +145,8 @@ pub struct RecurCodeMcpStatusSources<'a> {
 /// Build the report. Probes the socket for real (one ping round-trip), so
 /// callers should treat this as a network-ish call, not a field read.
 pub async fn rc_mcp_service_status_core(
-    sources: RecurCodeMcpStatusSources<'_>,
-) -> RecurCodeMcpServiceStatus {
+    sources: RcMcpStatusSources<'_>,
+) -> RcMcpServiceStatus {
     let handle = service::current();
     // Without an installed handle there is no socket to probe and no way to
     // start one; report the configured path so the popover can still name what
@@ -175,23 +175,23 @@ pub async fn rc_mcp_service_status_core(
     // to look for a switch that doesn't exist.
     let browser_cfg = sources.browser.snapshot().await;
     let tool_groups = vec![
-        RecurCodeMcpToolGroup::group("delegation", delegation_cfg.enabled),
-        RecurCodeMcpToolGroup::group("feedback", sources.feedback.is_enabled().await),
-        RecurCodeMcpToolGroup::group("ask", sources.question.is_enabled().await),
-        RecurCodeMcpToolGroup::group("sessions", sources.session_info.is_enabled().await),
-        RecurCodeMcpToolGroup::group("automations", authoring_cfg.automations_enabled),
-        RecurCodeMcpToolGroup::group("taskboard", authoring_cfg.work_tasks_enabled),
-        RecurCodeMcpToolGroup::group("browser", browser_cfg.enabled),
+        RcMcpToolGroup::group("delegation", delegation_cfg.enabled),
+        RcMcpToolGroup::group("feedback", sources.feedback.is_enabled().await),
+        RcMcpToolGroup::group("ask", sources.question.is_enabled().await),
+        RcMcpToolGroup::group("sessions", sources.session_info.is_enabled().await),
+        RcMcpToolGroup::group("automations", authoring_cfg.automations_enabled),
+        RcMcpToolGroup::group("taskboard", authoring_cfg.work_tasks_enabled),
+        RcMcpToolGroup::group("browser", browser_cfg.enabled),
         // `browser_eval` reports what the runtime would actually hand an
         // agent, which is the pair ANDed: a stored `true` under a group that
         // is off is not a switch anyone can act on, and showing it on would
         // say an agent may run code when none can.
-        RecurCodeMcpToolGroup::within(
+        RcMcpToolGroup::within(
             "browser_eval",
             "browser",
             browser_cfg.enabled && browser_cfg.eval,
         ),
-        RecurCodeMcpToolGroup::group("computer", sources.computer.is_enabled().await),
+        RcMcpToolGroup::group("computer", sources.computer.is_enabled().await),
     ];
     // Only the groups proper. A dependent switch cannot be on with its group
     // off, so counting them changes nothing today — but "is anything live"
@@ -202,17 +202,17 @@ pub async fn rc_mcp_service_status_core(
         .any(|g| g.requires.is_none() && g.enabled);
 
     let state = if !listening {
-        RecurCodeMcpServiceState::Stopped
+        RcMcpServiceState::Stopped
     } else if binary_path.is_none() {
-        RecurCodeMcpServiceState::Unavailable
+        RcMcpServiceState::Unavailable
     } else if !any_group_enabled {
-        RecurCodeMcpServiceState::Disabled
+        RcMcpServiceState::Disabled
     } else {
-        RecurCodeMcpServiceState::Running
+        RcMcpServiceState::Running
     };
 
     let token_stats = sources.tokens.stats().await;
-    RecurCodeMcpServiceStatus {
+    RcMcpServiceStatus {
         state,
         listening,
         socket_path,
@@ -229,10 +229,10 @@ pub async fn rc_mcp_service_status_core(
 }
 
 /// The configs a tool-group toggle writes through. Deliberately not
-/// [`RecurCodeMcpStatusSources`]: a write needs neither the token registry (a
+/// [`RcMcpStatusSources`]: a write needs neither the token registry (a
 /// read-only census) nor, conversely, can it do without the database and the
 /// event emitter that the read path never touches.
-pub struct RecurCodeMcpToolGroupTargets<'a> {
+pub struct RcMcpToolGroupTargets<'a> {
     pub broker: &'a DelegationBroker,
     pub feedback: &'a FeedbackRuntimeConfig,
     pub question: &'a QuestionRuntimeConfig,
@@ -260,7 +260,7 @@ pub struct RecurCodeMcpToolGroupTargets<'a> {
 /// writer is already narrow.
 pub async fn set_rc_mcp_tool_group_core(
     conn: &DatabaseConnection,
-    targets: RecurCodeMcpToolGroupTargets<'_>,
+    targets: RcMcpToolGroupTargets<'_>,
     emitter: &EventEmitter,
     key: &str,
     enabled: bool,
@@ -383,10 +383,10 @@ pub async fn get_rc_mcp_service_status(
     #[cfg(feature = "tauri-runtime")] authoring: tauri::State<'_, ChatAuthoringRuntimeConfig>,
     #[cfg(feature = "tauri-runtime")] browser: tauri::State<'_, BrowserToolsRuntimeConfig>,
     #[cfg(feature = "tauri-runtime")] computer: tauri::State<'_, ComputerToolsRuntimeConfig>,
-) -> Result<RecurCodeMcpServiceStatus, AppCommandError> {
+) -> Result<RcMcpServiceStatus, AppCommandError> {
     #[cfg(feature = "tauri-runtime")]
     {
-        Ok(rc_mcp_service_status_core(RecurCodeMcpStatusSources {
+        Ok(rc_mcp_service_status_core(RcMcpStatusSources {
             broker: broker.inner(),
             tokens: tokens.inner(),
             feedback: feedback.inner(),
@@ -412,7 +412,7 @@ pub async fn start_rc_mcp_service() -> Result<(), AppCommandError> {
 
 // Seven runtime configs plus the db, the app handle and the two payload fields.
 // Tauri injects managed state positionally, so these cannot be bundled the way
-// `RecurCodeMcpToolGroupTargets` bundles them for the `_core` helper below.
+// `RcMcpToolGroupTargets` bundles them for the `_core` helper below.
 #[allow(clippy::too_many_arguments)]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
 pub async fn set_rc_mcp_tool_group(
@@ -435,7 +435,7 @@ pub async fn set_rc_mcp_tool_group(
         let emitter = EventEmitter::Tauri(app);
         set_rc_mcp_tool_group_core(
             &db.conn,
-            RecurCodeMcpToolGroupTargets {
+            RcMcpToolGroupTargets {
                 broker: broker.inner(),
                 feedback: feedback.inner(),
                 question: question.inner(),
@@ -506,8 +506,8 @@ mod tests {
             }
         }
 
-        fn sources(&self) -> RecurCodeMcpStatusSources<'_> {
-            RecurCodeMcpStatusSources {
+        fn sources(&self) -> RcMcpStatusSources<'_> {
+            RcMcpStatusSources {
                 broker: &self.broker,
                 tokens: &self.tokens,
                 feedback: &self.feedback,
@@ -519,7 +519,7 @@ mod tests {
             }
         }
 
-        async fn status(&self) -> RecurCodeMcpServiceStatus {
+        async fn status(&self) -> RcMcpServiceStatus {
             rc_mcp_service_status_core(self.sources()).await
         }
 
@@ -531,7 +531,7 @@ mod tests {
         ) -> Result<(), AppCommandError> {
             set_rc_mcp_tool_group_core(
                 conn,
-                RecurCodeMcpToolGroupTargets {
+                RcMcpToolGroupTargets {
                     broker: &self.broker,
                     feedback: &self.feedback,
                     question: &self.question,
@@ -555,7 +555,7 @@ mod tests {
     async fn reports_stopped_and_unstartable_without_an_installed_handle() {
         let f = Fixture::new();
         let status = f.status().await;
-        assert_eq!(status.state, RecurCodeMcpServiceState::Stopped);
+        assert_eq!(status.state, RcMcpServiceState::Stopped);
         assert!(!status.listening);
         assert!(!status.can_start);
         assert!(start_rc_mcp_service_core().await.is_err());
@@ -573,7 +573,7 @@ mod tests {
             })
             .await;
         f.feedback.set(FeedbackConfig { enabled: true }).await;
-        assert_eq!(f.status().await.state, RecurCodeMcpServiceState::Stopped);
+        assert_eq!(f.status().await.state, RcMcpServiceState::Stopped);
     }
 
     #[tokio::test]
@@ -617,7 +617,7 @@ mod tests {
     #[tokio::test]
     async fn browser_eval_is_reported_under_the_group_it_belongs_to() {
         let f = Fixture::new();
-        let row = |status: &RecurCodeMcpServiceStatus, key: &str| {
+        let row = |status: &RcMcpServiceStatus, key: &str| {
             status
                 .tool_groups
                 .iter()
@@ -651,7 +651,7 @@ mod tests {
         let status = f.status().await;
         assert!(!row(&status, "browser_eval").enabled);
         // And a dependent switch does not by itself make the service "live".
-        assert_eq!(status.state, RecurCodeMcpServiceState::Stopped);
+        assert_eq!(status.state, RcMcpServiceState::Stopped);
         assert!(status
             .tool_groups
             .iter()

@@ -75,7 +75,7 @@ export function refOfEmbeddedReferenceUri(uri: string): string | null {
  * `label` is the human-readable text (a sent resource's name, or a markdown
  * link's text); it falls back to the uri basename or `#id` when empty.
  */
-export function parseRecurCodeReferenceUri(
+export function parseRcReferenceUri(
   uri: string,
   label: string
 ): ReferenceAttrs | null {

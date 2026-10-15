@@ -8,7 +8,7 @@ import {
   cursorAuthState,
   cursorLoginCommand,
   cursorLoginIsHeadless,
-  cursorLoginRunsOnRecurCodeHost,
+  cursorLoginRunsOnRcHost,
   inferCursorMode,
   isCursorForceEnabled,
 } from "./cursor-config-panel"
@@ -148,12 +148,12 @@ describe("cursorLoginCommand", () => {
   })
 })
 
-describe("cursorLoginRunsOnRecurCodeHost", () => {
+describe("cursorLoginRunsOnRcHost", () => {
   it("is false only for a window whose backend is this machine", () => {
-    expect(cursorLoginRunsOnRecurCodeHost(true, false)).toBe(false)
+    expect(cursorLoginRunsOnRcHost(true, false)).toBe(false)
     // A web page and a remote-desktop window both talk to a RecurCode server.
-    expect(cursorLoginRunsOnRecurCodeHost(false, false)).toBe(true)
-    expect(cursorLoginRunsOnRecurCodeHost(true, true)).toBe(true)
+    expect(cursorLoginRunsOnRcHost(false, false)).toBe(true)
+    expect(cursorLoginRunsOnRcHost(true, true)).toBe(true)
   })
 })
 
@@ -178,7 +178,7 @@ describe("cursorLoginIsHeadless", () => {
     ).toBe(false)
     // ...but it is still another machine, so the wording must not claim a
     // browser opens here. Suppressing both was the bug this pair splits.
-    expect(cursorLoginRunsOnRecurCodeHost(false, false)).toBe(true)
+    expect(cursorLoginRunsOnRcHost(false, false)).toBe(true)
   })
 })
 

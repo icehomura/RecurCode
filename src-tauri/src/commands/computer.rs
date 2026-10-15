@@ -124,7 +124,7 @@ fn now_ms() -> i64 {
 /// to run would not take it back.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RecurCodeTccStatus {
+pub struct RcTccStatus {
     pub accessibility: bool,
     pub screen_recording: bool,
     /// Whether RecurCode is its own responsible process. When it is not (a
@@ -133,7 +133,7 @@ pub struct RecurCodeTccStatus {
     pub self_responsible: bool,
 }
 
-impl RecurCodeTccStatus {
+impl RcTccStatus {
     /// RecurCode itself has been granted a permission that every agent's shell
     /// inherits.
     pub fn is_leaking(&self) -> bool {
@@ -142,10 +142,10 @@ impl RecurCodeTccStatus {
 }
 
 #[cfg(target_os = "macos")]
-fn rc_tcc() -> Option<RecurCodeTccStatus> {
+fn rc_tcc() -> Option<RcTccStatus> {
     use crate::computer::tcc;
     let me = std::process::id();
-    Some(RecurCodeTccStatus {
+    Some(RcTccStatus {
         accessibility: tcc::accessibility_granted(),
         screen_recording: tcc::screen_recording_granted(),
         self_responsible: tcc::responsible_pid(me) == Some(me),
@@ -153,7 +153,7 @@ fn rc_tcc() -> Option<RecurCodeTccStatus> {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn rc_tcc() -> Option<RecurCodeTccStatus> {
+fn rc_tcc() -> Option<RcTccStatus> {
     None
 }
 
@@ -2319,7 +2319,7 @@ pub struct ComputerStatus {
     pub permissions: Option<PermissionReport>,
     /// RecurCode's own TCC standing (macOS only).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub RecurCode: Option<RecurCodeTccStatus>,
+    pub RecurCode: Option<RcTccStatus>,
     pub shared: Vec<SharedWindow>,
     /// Whether the share picker offers the entire screen: macOS and
     /// Windows, with its switch on.
@@ -2872,7 +2872,7 @@ mod tests {
     /// terminal's grants, which the agents already have.
     #[test]
     fn only_a_self_responsible_rc_leaks() {
-        let status = |a, s, own| RecurCodeTccStatus {
+        let status = |a, s, own| RcTccStatus {
             accessibility: a,
             screen_recording: s,
             self_responsible: own,

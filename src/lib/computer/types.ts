@@ -46,7 +46,7 @@ export interface BackendStatus {
 }
 
 /** RecurCode's own TCC standing (macOS only). */
-export interface RecurCodeTccStatus {
+export interface RcTccStatus {
   accessibility: boolean
   screenRecording: boolean
   /** When false, the two flags are the launching terminal's. */
@@ -100,7 +100,7 @@ export interface ComputerStatus {
   verifiedPlatform: boolean
   backend: BackendStatus
   permissions?: PermissionReport
-  RecurCode?: RecurCodeTccStatus
+  RecurCode?: RcTccStatus
   shared: SharedWindow[]
   /** Whether the share picker offers the entire screen: macOS and Windows,
    *  with its switch on in Settings. */

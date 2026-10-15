@@ -7,9 +7,9 @@ import type {
   Transport,
   UnsubscribeFn,
 } from "./types"
-import { buildRecurCodeWebSocketProtocols } from "./ws-auth"
+import { buildRcWebSocketProtocols } from "./ws-auth"
 import { parseJsonOrThrow } from "../json-parse-error"
-import { getRecurCodeToken } from "./web-auth"
+import { getRcToken } from "./web-auth"
 
 // 60s covers the worst-case ACP probe path: some agents (Gemini in
 // particular) burn 8–10s on the Initialize handshake before session/new
@@ -53,7 +53,7 @@ interface WebEvent {
   payload: unknown
 }
 
-const getToken = getRecurCodeToken
+const getToken = getRcToken
 
 export class WebTransport implements Transport {
   private ws: WebSocket | null = null
@@ -367,7 +367,7 @@ export class WebTransport implements Transport {
     this.teardownWs()
 
     const wsUrl = this.baseUrl.replace(/^http/, "ws") + "/ws/events"
-    this.ws = new WebSocket(wsUrl, buildRecurCodeWebSocketProtocols(token))
+    this.ws = new WebSocket(wsUrl, buildRcWebSocketProtocols(token))
 
     this.ws.onopen = () => {
       this.wsOpen = true

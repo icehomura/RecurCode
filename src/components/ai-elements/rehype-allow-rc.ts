@@ -60,8 +60,8 @@ export function rehypePluginsAllowingRecurCode(
         ...schema?.attributes,
         span: [
           ...(schema?.attributes?.span ?? []),
-          "dataRecurCodeLocalImage",
-          "dataRecurCodeImageLinked",
+          "dataRcLocalImage",
+          "dataRcImageLinked",
           "data-rc-local-image",
           "data-rc-image-linked",
         ],

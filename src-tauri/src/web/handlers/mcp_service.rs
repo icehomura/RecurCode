@@ -14,14 +14,14 @@ use crate::app_error::AppCommandError;
 use crate::app_state::AppState;
 use crate::commands::mcp_service::{
     rc_mcp_service_status_core, set_rc_mcp_tool_group_core, start_rc_mcp_service_core,
-    RecurCodeMcpServiceStatus, RecurCodeMcpStatusSources, RecurCodeMcpToolGroupTargets,
+    RcMcpServiceStatus, RcMcpStatusSources, RcMcpToolGroupTargets,
 };
 
 pub async fn get_rc_mcp_service_status(
     Extension(state): Extension<Arc<AppState>>,
-) -> Result<Json<RecurCodeMcpServiceStatus>, AppCommandError> {
+) -> Result<Json<RcMcpServiceStatus>, AppCommandError> {
     Ok(Json(
-        rc_mcp_service_status_core(RecurCodeMcpStatusSources {
+        rc_mcp_service_status_core(RcMcpStatusSources {
             broker: &state.delegation_broker,
             tokens: &state.delegation_tokens,
             feedback: &state.feedback_config,
@@ -41,18 +41,18 @@ pub async fn start_rc_mcp_service() -> Result<Json<()>, AppCommandError> {
 }
 
 #[derive(Deserialize)]
-pub struct SetRecurCodeMcpToolGroupParams {
+pub struct SetRcMcpToolGroupParams {
     pub key: String,
     pub enabled: bool,
 }
 
 pub async fn set_rc_mcp_tool_group(
     Extension(state): Extension<Arc<AppState>>,
-    Json(params): Json<SetRecurCodeMcpToolGroupParams>,
+    Json(params): Json<SetRcMcpToolGroupParams>,
 ) -> Result<Json<()>, AppCommandError> {
     set_rc_mcp_tool_group_core(
         &state.db.conn,
-        RecurCodeMcpToolGroupTargets {
+        RcMcpToolGroupTargets {
             broker: &state.delegation_broker,
             feedback: &state.feedback_config,
             question: &state.question_config,

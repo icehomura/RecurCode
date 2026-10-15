@@ -2,7 +2,7 @@ import type { PromptInputBlock } from "@/lib/types"
 import { randomUUID } from "@/lib/utils"
 
 import type { InputAttachment } from "../message-input-attachments"
-import { parseRecurCodeReferenceUri as parseReferenceUri } from "./reference-uri"
+import { parseRcReferenceUri as parseReferenceUri } from "./reference-uri"
 import type { ReferenceAttrs } from "./types"
 
 /**
