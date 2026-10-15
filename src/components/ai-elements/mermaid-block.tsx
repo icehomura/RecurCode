@@ -143,7 +143,7 @@ function useRenderedDiagram(
     if (!active || !ready || !mermaid) return
     let cancelled = false
     renderSeq += 1
-    const id = `recur-code-mermaid-${renderSeq}`
+    const id = `rc-mermaid-${renderSeq}`
     void (async () => {
       try {
         const { svg } = await mermaid.getMermaid(config).render(id, source)

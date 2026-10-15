@@ -398,7 +398,7 @@ type Action =
     }
   | {
       // An async sub-agent settled: flip its launch card in-memory by rewriting
-      // the launching tool_result's `[[recur-code-background-task]]` marker. If the
+      // the launching tool_result's `[[rc-background-task]]` marker. If the
       // launching turn hasn't promoted into `localTurns` yet (settle precedes
       // turn completion under #870), queue it for `COMPLETE_TURN` to apply.
       type: "RESOLVE_BACKGROUND_TASK"
@@ -1872,7 +1872,7 @@ function steeredContentKey(
 }
 
 /**
- * Rewrite the launching tool call's `[[recur-code-background-task]]` marker in a turn
+ * Rewrite the launching tool call's `[[rc-background-task]]` marker in a turn
  * list so `AgentToolCallPart` flips from "running in background" to its
  * completed/result form — the same marker shape the disk parser
  * (`apply_background_lifecycle`) produces, so live and cold-open render

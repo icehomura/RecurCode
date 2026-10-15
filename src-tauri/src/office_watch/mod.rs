@@ -1023,7 +1023,7 @@ mod tests {
     /// of its own would outlast the frontend's request deadline.
     #[tokio::test]
     async fn a_start_queued_behind_another_answers_within_its_budget() {
-        let dir = std::env::temp_dir().join(format!("recur-code-ow-queued-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("rc-ow-queued-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let docx = dir.join("queued.docx");
         std::fs::write(&docx, b"x").unwrap();
@@ -1056,7 +1056,7 @@ mod tests {
     #[cfg(unix)]
     #[tokio::test]
     async fn a_queued_start_shares_the_watch_the_other_start_registered() {
-        let dir = std::env::temp_dir().join(format!("recur-code-ow-shared-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("rc-ow-shared-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let docx = dir.join("shared.docx");
         std::fs::write(&docx, b"x").unwrap();
@@ -1142,7 +1142,7 @@ mod tests {
             .map(|_| park_sleeper())
             .collect();
 
-        let dir = std::env::temp_dir().join(format!("recur-code-ow-cap-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("rc-ow-cap-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(dir.join("one-more.xlsx"), b"x").unwrap();
         let result = start_within(
@@ -1357,7 +1357,7 @@ mod tests {
     #[test]
     fn resolve_office_target_confines_and_filters() {
         let dir = std::env::temp_dir().join(format!(
-            "recur-code-ow-confine-{}-{}",
+            "rc-ow-confine-{}-{}",
             std::process::id(),
             line!()
         ));
@@ -1386,7 +1386,7 @@ mod tests {
     #[cfg(unix)]
     #[tokio::test]
     async fn ref_count_sharing_and_teardown() {
-        let dir = std::env::temp_dir().join(format!("recur-code-ow-ref-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("rc-ow-ref-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let docx = dir.join("deck.pptx");
         std::fs::write(&docx, b"x").unwrap();

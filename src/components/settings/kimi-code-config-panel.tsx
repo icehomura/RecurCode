@@ -67,7 +67,7 @@ export function kimiMaxContextForModel(modelId: string): number | null {
 }
 
 /**
- * Kimi credential mode. `apikey` writes a recur-code-managed config.toml provider/model
+ * Kimi credential mode. `apikey` writes a rc-managed config.toml provider/model
  * block AND seeds a synthetic gate token, so the API key actually authenticates
  * `kimi acp` — whose session gate only checks for a stored token and rejects an
  * API key on its own. `login` clears the managed block and removes our synthetic
@@ -219,7 +219,7 @@ export function parseKimiManagedConfig(
 }
 
 /**
- * Initial panel mode: the recur-code-managed API-key block wins; otherwise, when a
+ * Initial panel mode: the rc-managed API-key block wins; otherwise, when a
  * real (non-synthetic) OAuth login is already present, show login; else default
  * to the API-key form.
  */
@@ -423,7 +423,7 @@ export function kimiOverridingEnvKeys(env: Record<string, string>): string[] {
 }
 
 /** Human-readable one-line summary of what is actually on disk, or null when
- * no recur-code-managed block exists. Built from the projection (never the draft) so
+ * no rc-managed block exists. Built from the projection (never the draft) so
  * it always answers "what did my last save write?". */
 export function kimiConfigSummary(config: KimiManagedConfig): string | null {
   if (!config.hasManagedBlock) return null
@@ -454,7 +454,7 @@ type ProbeResult = { baseUrl: string; apiKey: string } & (
  * AND a synthetic gate token under `credentials/` (so the session opens). The
  * panel keeps exactly one source authoritative (enforced server-side by
  * `acpUpdateKimiCodeConfig`):
- *   • apikey — write the recur-code-managed config.toml block (any of the six
+ *   • apikey — write the rc-managed config.toml block (any of the six
  *     interface types) + seed the gate token. The working path for a plain key.
  *   • login — clear the managed block + remove our synthetic token, so a real
  *     OAuth login (`kimi login`, needs a Kimi subscription) governs.

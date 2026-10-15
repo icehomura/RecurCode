@@ -1147,7 +1147,7 @@ pub fn document_configuration(mtm: MainThreadMarker) -> Retained<WKWebViewConfig
 // port of the same number is not.
 
 /// Identifier of the list in the app's content-rule-list store.
-const LOOPBACK_RULES_ID: &str = "recur-code-remote-egress-loopback";
+const LOOPBACK_RULES_ID: &str = "rc-remote-egress-loopback";
 
 /// Everything addressed to this machine by a literal name, blocked: every
 /// resource type (no `resource-type`), so documents, frames, subresources and

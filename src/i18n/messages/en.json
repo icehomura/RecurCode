@@ -1320,7 +1320,7 @@
       "authModeLabel": "Authentication method",
       "authModeApiKey": "API key",
       "authModeLogin": "Kimi account login (subscription)",
-      "authModeApiKeyHint": "Writes a recur-code-managed provider into config.toml and seeds the gate token so sessions can open.",
+      "authModeApiKeyHint": "Writes a rc-managed provider into config.toml and seeds the gate token so sessions can open.",
       "loginHint": "Run `kimi login` in a terminal to sign in with a Kimi subscription account — on Kimi 0.39.0+ add `--region global` for a kimi.ai account, since the default signs in to kimi.com. RecurCode stores nothing and reuses Kimi's own login. Saving here removes RecurCode's API-key gate token.",
       "credentialTitle": "Credential",
       "interfaceTypeLabel": "Provider type",
@@ -2306,7 +2306,7 @@
         "showPet": "Show pet"
       },
       "mcp": {
-        "title": "recur-code-mcp service",
+        "title": "rc-mcp service",
         "state": {
           "running": "Running",
           "stopped": "Not running",
@@ -2318,7 +2318,7 @@
           "running": "Agents launched here can use RecurCode's own tools.",
           "stopped": "The broker socket is not answering.",
           "disabled": "Every tool group is off — nothing is injected.",
-          "unavailable": "The recur-code-mcp binary is not on disk.",
+          "unavailable": "The rc-mcp binary is not on disk.",
           "unknown": "The status could not be read."
         },
         "socketPath": "Address",
@@ -4477,7 +4477,7 @@
     },
     "confirm": {
       "disableTitle": "Disable these links?",
-      "disableBody": "This removes {count} recur-code-managed skill link(s). Skills occupying a custom directory are left untouched. You can re-enable them anytime.",
+      "disableBody": "This removes {count} rc-managed skill link(s). Skills occupying a custom directory are left untouched. You can re-enable them anytime.",
       "cancel": "Cancel",
       "confirm": "Disable"
     },
@@ -5348,7 +5348,7 @@
     "computer": {
       "label": "See and use your desktop's windows",
       "short": "List apps and windows; read the ones you share, act on the ones you allow.",
-      "hint": "Lets an agent list the applications and windows on your desktop, read the windows you share with it — a screenshot, its contents, whether it shows what it expects — and click, type and press keys in the ones you share for acting. Nothing is readable until you share a window from the Computer use panel in the status bar, and nothing can be acted on unless you also let agents act on it; sharing ends when the window closes, after a while unused, or when you stop it, and Stop agents in that panel halts every agent at once. Input goes to the window in the background; for an action that will not go in the background, an agent may bring the window to the front, which you can switch off in Computer use settings. Desktop app only; on macOS it needs permissions granted to recur-code-computer-helper. Preview."
+      "hint": "Lets an agent list the applications and windows on your desktop, read the windows you share with it — a screenshot, its contents, whether it shows what it expects — and click, type and press keys in the ones you share for acting. Nothing is readable until you share a window from the Computer use panel in the status bar, and nothing can be acted on unless you also let agents act on it; sharing ends when the window closes, after a while unused, or when you stop it, and Stop agents in that panel halts every agent at once. Input goes to the window in the background; for an action that will not go in the background, an agent may bring the window to the front, which you can switch off in Computer use settings. Desktop app only; on macOS it needs permissions granted to rc-computer-helper. Preview."
     },
     "automations": {
       "label": "Create automations",
@@ -5547,9 +5547,9 @@
       "screenRecording": "Screen Recording",
       "granted": "Granted",
       "request": "Grant…",
-      "why": "Turn on recur-code-computer-helper in System Settings — not RecurCode. Screen Recording lets it see windows; Accessibility lets it read and act on them.",
-      "devRebuild": "Each rebuild of the helper voids its old grant: remove the old recur-code-computer-helper from the list first, then grant again.",
-      "notListed": "If recur-code-computer-helper isn't in the list, drag it in from the Finder:",
+      "why": "Turn on rc-computer-helper in System Settings — not RecurCode. Screen Recording lets it see windows; Accessibility lets it read and act on them.",
+      "devRebuild": "Each rebuild of the helper voids its old grant: remove the old rc-computer-helper from the list first, then grant again.",
+      "notListed": "If rc-computer-helper isn't in the list, drag it in from the Finder:",
       "reveal": "Show in Finder"
     },
     "shared": {
@@ -5602,7 +5602,7 @@
       "loading": "Loading windows…",
       "refresh": "Refresh",
       "empty": "No windows found. If you expected some, check the permissions in the Computer use panel.",
-      "noScreenRecording": "recur-code-computer-helper doesn't have Screen Recording yet: window titles and pictures can't be shown, and agents can't read windows.",
+      "noScreenRecording": "rc-computer-helper doesn't have Screen Recording yet: window titles and pictures can't be shown, and agents can't read windows.",
       "unnamedApp": "Unknown app",
       "untitled": "Untitled window",
       "minimized": "Minimized",
@@ -5667,7 +5667,7 @@
       },
       "permissions": {
         "title": "Permissions",
-        "description": "macOS asks for these for recur-code-computer-helper. Grant one in System Settings and come back: this updates by itself.",
+        "description": "macOS asks for these for rc-computer-helper. Grant one in System Settings and come back: this updates by itself.",
         "off": "Switch computer use on to check and grant permissions.",
         "accessibilityHint": "Read windows' contents and act on them.",
         "screenRecordingHint": "Take screenshots and read window titles."
@@ -5748,7 +5748,7 @@
         "label": "Offer the entire screen",
         "hint": "With this on, the share picker offers the entire screen: agents see one picture of all of it and can click anywhere on it, and every window you can share goes with it, along with the desktop's own shortcuts. RecurCode's windows and the never-share list stay painted over. Turning this off ends the screen's sharing."
       },
-      "boundary": "On macOS the permissions go to recur-code-computer-helper, which only RecurCode can use, so agents' shells can't. Windows and Linux have no such separation: there these settings decide what agents get through RecurCode, not what programs on your computer can do.",
+      "boundary": "On macOS the permissions go to rc-computer-helper, which only RecurCode can use, so agents' shells can't. Windows and Linux have no such separation: there these settings decide what agents get through RecurCode, not what programs on your computer can do.",
       "save": "Save",
       "saving": "Saving…",
       "saved": "Computer use settings saved",
@@ -6131,7 +6131,7 @@
     "settingsDeleteWorktreeHint": "Pre-selects the option in the merge dialog; you can still change it there.",
     "settingsWorktreeRoot": "Worktree location",
     "settingsWorktreeRootHint": "Directory new task worktrees are created in — one per task. Leave it empty to keep them next to the project folder; \"~\" is your home directory, and a relative path resolves against the project folder.",
-    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/rc-worktrees",
     "settingsWorktreeRootBrowse": "Choose the worktree directory",
     "settingsPreflight": "Preflight command",
     "settingsPreflightHint": "Runs in the worktree when a task reaches review.",
@@ -6949,7 +6949,7 @@
       "errorRemoteUnreachable": "The remote host can't reach this address",
       "errorRemoteUnreachableHint": "Seen from {host}, the name doesn't resolve or there is no route to it.",
       "errorRemoteNotAllowed": "The remote server doesn't open this address for the browser",
-      "errorRemoteNotAllowedHint": "The recur-code-server on {host} only lets its browser tunnel reach private addresses (RC_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "The rc-server on {host} only lets its browser tunnel reach private addresses (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "The remote host took too long to connect",
       "errorRemoteTimeoutHint": "{host} got no answer from this address in time. The server there may be busy or behind a firewall.",
       "errorTunnelDown": "The connection to the remote host is down",
@@ -7180,9 +7180,9 @@
     "remote": {
       "error": {
         "unavailable": "Opening the remote host's addresses in the built-in browser needs macOS 14 or later.",
-        "unsupported": "The remote recur-code-server is too old to carry browser traffic. Update it to open its addresses here.",
-        "disabled": "The remote recur-code-server has its browser tunnel switched off (RC_BROWSER_TUNNEL).",
-        "unreachable": "Couldn't reach the remote recur-code-server's browser tunnel ({reason}).",
+        "unsupported": "The remote rc-server is too old to carry browser traffic. Update it to open its addresses here.",
+        "disabled": "The remote rc-server has its browser tunnel switched off (RC_BROWSER_TUNNEL).",
+        "unreachable": "Couldn't reach the remote rc-server's browser tunnel ({reason}).",
         "bypassed": "This computer's browser engine sends some addresses around the tunnel, so the remote host's pages stay closed rather than load from this computer.",
         "probeFailed": "The built-in browser couldn't confirm that it reaches the remote host through the tunnel. Try again in a moment."
       }

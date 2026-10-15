@@ -185,11 +185,11 @@ describe("the record / restore steps around harden", () => {
     const node = renderAnchor({
       href: "/abs/a.md",
       dataRecurCodeRelativeHref: "../x",
-      "data-recur-code-relative-href": "../x",
+      "data-rc-relative-href": "../x",
     })
     expect(node.properties).toMatchObject({ href: "/abs/a.md" })
     expect(node.properties).not.toHaveProperty("dataRecurCodeRelativeHref")
-    expect(node.properties).not.toHaveProperty("data-recur-code-relative-href")
+    expect(node.properties).not.toHaveProperty("data-rc-relative-href")
   })
 })
 

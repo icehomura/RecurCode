@@ -936,12 +936,12 @@ mod tests {
     async fn apply_links_does_not_deadlock() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-recur-code-science-batch-absent-aaa".into(),
+                expert_id: "zzz-rc-science-batch-absent-aaa".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },
             LinkOp {
-                expert_id: "zzz-recur-code-science-batch-absent-bbb".into(),
+                expert_id: "zzz-rc-science-batch-absent-bbb".into(),
                 agent_type: AgentType::Codex,
                 enable: false,
             },
@@ -958,7 +958,7 @@ mod tests {
     async fn apply_links_collects_per_op_results_without_aborting() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-recur-code-science-batch-absent".into(),
+                expert_id: "zzz-rc-science-batch-absent".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },

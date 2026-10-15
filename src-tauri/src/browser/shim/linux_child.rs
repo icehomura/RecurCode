@@ -14,7 +14,7 @@ use crate::browser::channel::{self, MessageSink};
 use crate::browser::surface::{PointerFailure, PointerGesture};
 use crate::browser::types::Bounds;
 
-const OVERLAY_NAME: &str = "recur-code-browser-overlay";
+const OVERLAY_NAME: &str = "rc-browser-overlay";
 
 /// Get the browser layer of this workspace, creating it on first use. Main
 /// thread only. GTK owns the layer, so destroying the owner releases it too.

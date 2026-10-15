@@ -118,7 +118,7 @@ fn cap_of(grant: &BridgeGrant) -> &str {
 /// Named by hostname the cookie is the target port's, and host-only: the
 /// browser never sends it to another target's name at all.
 fn cookie_for(grant: &BridgeGrant) -> String {
-    format!("recur-code-bridge-{}={}", grant.target_port, cap_of(grant))
+    format!("rc-bridge-{}={}", grant.target_port, cap_of(grant))
 }
 
 /// The authority the browser would use: the grant's hostname on the port it
@@ -380,10 +380,10 @@ async fn only_this_targets_own_page_may_ask() {
     // The cookie is the capability; nothing else stands in for it.
     for cookie in [
         None,
-        Some(format!("recur-code-bridge-{}=wrong", grant.target_port)),
+        Some(format!("rc-bridge-{}=wrong", grant.target_port)),
         // Another target's cookie, which a browser would not even send to
         // this host-only name.
-        Some(format!("recur-code-bridge-{}={}", upstream + 1, cap_of(&grant))),
+        Some(format!("rc-bridge-{}={}", upstream + 1, cap_of(&grant))),
     ] {
         let response = send(cookie.clone(), Some("same-origin"), None).await.unwrap();
         assert_eq!(response.status(), StatusCode::FORBIDDEN, "{cookie:?}");

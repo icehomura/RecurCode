@@ -167,7 +167,7 @@ enum Ownership {
 
 /// Path of the per-DB engine lock: the DB filename plus a `.lock` suffix, so it
 /// contends exactly when the `automation_run` table is shared — a debug desktop's
-/// isolated `recur-code-dev.db` never blocks a release `RecurCode.db`, and vice versa.
+/// isolated `rc-dev.db` never blocks a release `RecurCode.db`, and vice versa.
 fn engine_lock_path(data_dir: &Path) -> PathBuf {
     data_dir.join(format!("{}.lock", crate::db::database_file_name()))
 }

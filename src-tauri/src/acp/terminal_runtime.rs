@@ -1517,7 +1517,7 @@ mod tests {
 
         let session_id = SessionId::new("missing-cwd".to_string());
         let mut request = CreateTerminalRequest::new(session_id, "pwd".to_string());
-        request.cwd = Some(PathBuf::from("/recur-code-nonexistent-cwd/does/not/exist"));
+        request.cwd = Some(PathBuf::from("/rc-nonexistent-cwd/does/not/exist"));
 
         let result = runtime.create_terminal(request).await;
         assert!(

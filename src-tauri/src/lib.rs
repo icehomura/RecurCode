@@ -75,7 +75,7 @@ pub fn sweep_acp_binary_trash() {
 ///
 /// Deletes only directories whose recorded owner is positively confirmed dead
 /// (or is this process and not live — see `acp::scratch_dir`), and never leaves
-/// RecurCode's own `recur-code-acp/` subtree, so a peer RecurCode instance's work and any
+/// RecurCode's own `rc-acp/` subtree, so a peer RecurCode instance's work and any
 /// other application's temp files are both out of reach by construction.
 pub fn sweep_acp_scratch_dirs() {
     crate::acp::scratch_dir::sweep_foreign_orphans();
@@ -522,7 +522,7 @@ mod tauri_app {
         };
 
         // The data directory next, for the same reason, and before the logging
-        // init resolves the log directory from it — the order `recur-code-server`
+        // init resolves the log directory from it — the order `rc-server`
         // keeps. When `setup` exported it, the logs of a launch from the Start
         // menu or the Dock went to `~/.recurcode/logs`, while an instance RecurCode
         // restarted inherited the variable and wrote beside the database (see
@@ -659,7 +659,7 @@ mod tauri_app {
             .manage(workspace_windows::WorkspaceWindowSession::new())
             .manage(web::WebServerState::new())
             // Remote-workspace IPC proxy. Routes HTTP / WS for windows
-            // opened against a remote recur-code-server through Rust so we
+            // opened against a remote rc-server through Rust so we
             // bypass webview mixed-content blocking and can centrally
             // manage per-window subscriptions.
             .manage(std::sync::Arc::new(

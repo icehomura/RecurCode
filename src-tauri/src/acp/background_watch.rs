@@ -1,6 +1,6 @@
 //! Transcript-tail watcher: surfaces Claude Code's OUT-OF-TURN activity.
 //!
-//! Claude Code produces activity outside any recur-code-driven prompt turn:
+//! Claude Code produces activity outside any rc-driven prompt turn:
 //! `<task-notification>` completions of async sub-agents (`Agent` launched in
 //! the background) and background shell tasks, the agent's continued work
 //! after such a notification (which can run for many minutes), and cron//loop
@@ -27,7 +27,7 @@
 //!   dies with it.
 //!
 //! * **Rendering** — new transcript records that do NOT belong to a
-//!   recur-code-sent prompt turn are assembled into turns with the SAME Stage-A/
+//!   rc-sent prompt turn are assembled into turns with the SAME Stage-A/
 //!   Stage-B code the detail parser uses ([`ClaudeRecordAccumulator`] +
 //!   [`group_into_turns`]) and emitted as `AcpEvent::BackgroundActivity`
 //!   upserts for the frontend's overlay slice. Foreground turns are excluded
@@ -608,7 +608,7 @@ struct TaskEntry {
 }
 
 /// The current out-of-turn episode: a contiguous run of transcript records
-/// not belonging to any recur-code-sent prompt turn, assembled into turns via the
+/// not belonging to any rc-sent prompt turn, assembled into turns via the
 /// detail parser's own Stage A/B.
 struct Episode {
     /// Byte offset of the episode's initiating record — the stable base of
@@ -627,7 +627,7 @@ struct Episode {
 }
 
 enum Mode {
-    /// Records belong to a recur-code-sent prompt turn — the wire renders them.
+    /// Records belong to a rc-sent prompt turn — the wire renders them.
     Foreground,
     /// Records are out-of-turn — the overlay renders them.
     Background,
@@ -674,7 +674,7 @@ pub(crate) struct WatchState {
     /// `Prompting` state observed at the previous tick — the edge detector for
     /// `current_turn_launched_ids` above.
     was_prompting: bool,
-    /// A recur-code-sent prompt has been matched in the transcript and the model has
+    /// A rc-sent prompt has been matched in the transcript and the model has
     /// not answered it yet. Within that window the CLI writes the rest of the
     /// SUBMISSION — a slash command's `<local-command-stdout>`, the `isMeta`
     /// instruction `/goal` injects for the model, image metadata — and
@@ -1503,7 +1503,7 @@ impl WatchState {
         // starts one. Matched against the ledger — a prompt RecurCode sent that
         // Claude Code folded into a turn it started on its own, or a steer — it
         // hands the rest of the turn to the wire, so an open episode closes as
-        // for any recur-code-sent prompt. Unmatched, it stays with whatever turn is
+        // for any rc-sent prompt. Unmatched, it stays with whatever turn is
         // running, the overlay's or the wire's. The steer arm records its
         // fingerprint only once the adapter answers `injected`, so the CLI can
         // write the attachment before the ledger has it; taken for an
@@ -1524,7 +1524,7 @@ impl WatchState {
         if let Some(initiator) = turn_initiator_text(value) {
             let initiator_text = initiator.as_str();
             if ledger.consume_matching(&initiator) {
-                // A recur-code-sent prompt: the wire renders this turn. Close any
+                // A rc-sent prompt: the wire renders this turn. Close any
                 // open episode first (flush its final state) and go silent.
                 tracing::debug!("[bg-watch] foreground turn matched ledger");
                 self.collect_changed_turns(cwd, changed_turns);
@@ -2487,7 +2487,7 @@ mod tests {
         let event = tick_prompting(&mut ws, &ledger);
         assert!(
             event.is_none() || unpack(event.unwrap()).0.is_empty(),
-            "the recur-code-sent prompt classifies foreground"
+            "the rc-sent prompt classifies foreground"
         );
 
         // Mid-turn steer: the connection is STILL prompting, and the arm
@@ -2658,7 +2658,7 @@ mod tests {
     /// A folded message the ledger does not hold continues whatever turn is
     /// running. The steer arm records a steer only once the adapter answers
     /// `injected`, so the CLI can write the attachment first: inside a
-    /// recur-code-sent turn the rest of that turn stays the wire's instead of being
+    /// rc-sent turn the rest of that turn stays the wire's instead of being
     /// drawn in the overlay too. Inside an overlay episode it is part of the
     /// episode, drawn as the user turn it is.
     #[test]
@@ -3022,7 +3022,7 @@ mod tests {
         assert!(settled.is_empty());
         assert!(
             turns.is_empty(),
-            "the recur-code-sent prompt classifies foreground — the wire renders it"
+            "the rc-sent prompt classifies foreground — the wire renders it"
         );
 
         // Its fingerprint was consumed, so a same-text out-of-turn refire

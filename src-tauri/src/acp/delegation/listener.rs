@@ -1,4 +1,4 @@
-//! Main-process side of the `recur-code-mcp` round-trip: accept UDS / named-pipe
+//! Main-process side of the `rc-mcp` round-trip: accept UDS / named-pipe
 //! connections from companion processes, validate the per-launch token,
 //! resolve the parent's current conversation, and hand off to the broker.
 //!
@@ -113,7 +113,7 @@ impl TokenRegistry {
 
     /// How many companions are currently reachable, and across how many
     /// distinct parent ACP connections. One token is minted per companion
-    /// launch, so `companions` counts injected `recur-code-mcp` processes; the two
+    /// launch, so `companions` counts injected `rc-mcp` processes; the two
     /// numbers differ when a connection was re-injected without its old token
     /// having been revoked yet. Read-only — used by the service-status
     /// indicator, never by the wire path.
@@ -253,7 +253,7 @@ impl DelegationListener {
     /// disturbing an incumbent socket that is still serving this path.
     ///
     /// The staged path is measured too rather than assumed shorter. It usually
-    /// is — `.stg-<pid>-<8 hex>` is 8 bytes under `recur-code-delegation-<pid>.sock`
+    /// is — `.stg-<pid>-<8 hex>` is 8 bytes under `rc-delegation-<pid>.sock`
     /// — but that holds only for names at least as long as the staged one, and
     /// a caller passing a SHORT name in a deep directory would otherwise clear
     /// this check and then fail the real `bind` on the staged path instead.
@@ -335,7 +335,7 @@ impl DelegationListener {
     /// already serialized by `DelegationService`'s state lock.
     ///
     /// The whole name is deliberately SHORTER than a real socket name
-    /// (`recur-code-delegation-<pid>.sock`): `sun_path` caps a unix socket address
+    /// (`rc-delegation-<pid>.sock`): `sun_path` caps a unix socket address
     /// at 104 bytes on macOS, and a staged path longer than the real one could
     /// fail to bind where the real path would have succeeded — turning a safety
     /// measure into a startup failure. Replacing the file name rather than
@@ -1577,14 +1577,14 @@ fn fits_sun_path(path: &Path) -> bool {
 /// The cost of staying out of it: nothing reclaims this directory either, so a
 /// process that dies without unlinking leaves one dead `.sock` inode behind
 /// until the OS temp reaper gets to it. That is not a regression — the primary
-/// `$TMPDIR/recur-code-delegation-<pid>.sock` has always had exactly the same
+/// `$TMPDIR/rc-delegation-<pid>.sock` has always had exactly the same
 /// property, and a stale entry is inert (pid-scoped, never consulted, replaced
 /// by `rename` if the pid is ever recycled). Worth knowing before anyone adds a
 /// sweep: it would need to cover BOTH locations or it would just move the leak.
 #[cfg(unix)]
 fn short_socket_dir() -> PathBuf {
     PathBuf::from(format!(
-        "/tmp/recur-code-{}",
+        "/tmp/rc-{}",
         // Always succeeds; `geteuid` has no failure mode.
         unsafe { libc::geteuid() }
     ))
@@ -1601,18 +1601,18 @@ fn short_socket_dir() -> PathBuf {
 /// Without the fallback that produced a socket nobody could dial and no error
 /// anywhere — see [`DelegationListener::bind`].
 ///
-/// Windows: a named pipe address `\\.\pipe\recur-code-delegation-<pid>`. Windows
+/// Windows: a named pipe address `\\.\pipe\rc-delegation-<pid>`. Windows
 /// named pipes live in their own kernel namespace and ignore `temp_dir`; the
 /// argument is kept for signature parity across platforms.
 #[cfg(unix)]
 pub fn default_socket_path(temp_dir: &Path) -> PathBuf {
-    let name = format!("recur-code-delegation-{}.sock", std::process::id());
+    let name = format!("rc-delegation-{}.sock", std::process::id());
     let preferred = temp_dir.join(&name);
     if fits_sun_path(&preferred) {
         return preferred;
     }
     // No third candidate, because there is no third case to handle: this is
-    // `/tmp/recur-code-` + at most 10 digits of euid + `/recur-code-delegation-` + at
+    // `/tmp/rc-` + at most 10 digits of euid + `/rc-delegation-` + at
     // most 10 digits of pid + `.sock` — 54 bytes at its absolute widest, or
     // half the smallest `sun_path` any of these platforms has.
     let short = short_socket_dir().join(&name);
@@ -1629,7 +1629,7 @@ pub fn default_socket_path(temp_dir: &Path) -> PathBuf {
 
 #[cfg(windows)]
 pub fn default_socket_path(_temp_dir: &Path) -> PathBuf {
-    PathBuf::from(format!(r"\\.\pipe\recur-code-delegation-{}", std::process::id()))
+    PathBuf::from(format!(r"\\.\pipe\rc-delegation-{}", std::process::id()))
 }
 
 #[cfg(test)]
@@ -3663,14 +3663,14 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn an_over_long_temp_dir_falls_back_to_the_short_socket_dir() {
-        let name = format!("recur-code-delegation-{}.sock", std::process::id());
+        let name = format!("rc-delegation-{}.sock", std::process::id());
         // A macOS `/var/folders/…/T` with RecurCode's own per-session nesting under
         // it — the shape that actually produces this — padded so the composed
         // path lands exactly ONE byte past what `sun_path` can hold. Sized from
         // the cap rather than hard-coded, so it keeps straddling the boundary
         // if either side of it moves.
         let prefix = "/var/folders/hl/";
-        let suffix = "/T/recur-code-acp/12345-deadbeef";
+        let suffix = "/T/rc-acp/12345-deadbeef";
         let pad = SUN_PATH_CAP - 1 - name.len() - prefix.len() - suffix.len();
         let ambient = PathBuf::from(format!("{prefix}{}{suffix}", "z".repeat(pad)));
         assert_eq!(ambient.as_os_str().len() + 1 + name.len(), SUN_PATH_CAP);
@@ -3689,7 +3689,7 @@ mod tests {
 
     /// The STAGED path is measured too, not assumed shorter than the real one.
     ///
-    /// `.stg-<pid>-<8 hex>` is shorter than `recur-code-delegation-<pid>.sock`, which
+    /// `.stg-<pid>-<8 hex>` is shorter than `rc-delegation-<pid>.sock`, which
     /// is why production never noticed, but it is longer than a short name — so
     /// a short name in a deep directory fits `sun_path` while the path `bind`
     /// actually hands the kernel does not. Refusing both together is what makes
@@ -3740,7 +3740,7 @@ mod tests {
     #[tokio::test]
     async fn the_chosen_socket_path_can_actually_be_bound_and_dialed() {
         let ambient = PathBuf::from(format!(
-            "/var/folders/hl/{}/T/recur-code-acp/12345-deadbeef",
+            "/var/folders/hl/{}/T/rc-acp/12345-deadbeef",
             "z".repeat(60)
         ));
         let path = default_socket_path(&ambient);

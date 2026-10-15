@@ -168,7 +168,7 @@ fn port_of(grant: &BridgeGrant) -> u16 {
 }
 
 fn cookie_for(grant: &BridgeGrant) -> String {
-    format!("recur-code-bridge-{}={}", port_of(grant), cap_of(grant))
+    format!("rc-bridge-{}={}", port_of(grant), cap_of(grant))
 }
 
 fn base(grant: &BridgeGrant) -> String {
@@ -284,7 +284,7 @@ async fn requests_need_this_listeners_cookie() {
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
     let response = client()
         .get(&url)
-        .header(header::COOKIE, format!("recur-code-bridge-{}=wrong", port_of(&grant)))
+        .header(header::COOKIE, format!("rc-bridge-{}=wrong", port_of(&grant)))
         .send()
         .await
         .unwrap();
@@ -293,7 +293,7 @@ async fn requests_need_this_listeners_cookie() {
         .get(&url)
         .header(
             header::COOKIE,
-            format!("recur-code-bridge-{}={}", port_of(&grant) + 1, cap_of(&grant)),
+            format!("rc-bridge-{}={}", port_of(&grant) + 1, cap_of(&grant)),
         )
         .send()
         .await
@@ -571,7 +571,7 @@ async fn tabs_share_a_listener_per_target_port() {
         .get(format!("{}/hello", base(&other)))
         .header(
             header::COOKIE,
-            format!("recur-code-bridge-{}={}", port_of(&other), cap_of(&first)),
+            format!("rc-bridge-{}={}", port_of(&other), cap_of(&first)),
         )
         .send()
         .await

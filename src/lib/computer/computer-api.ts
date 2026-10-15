@@ -3,7 +3,7 @@
 // Two kinds: the settings record, which every runtime serves (it is one
 // setting in one database), and everything about the screen itself — status,
 // permissions, the window list, sharing — which exists where computer use is
-// served: the desktop app, for the machine it runs on, and a recur-code-server its
+// served: the desktop app, for the machine it runs on, and a rc-server its
 // operator has let share the screen it runs on (`RC_COMPUTER_USE`), for
 // its web clients. Whether this window has it is `computerAvailable`.
 
@@ -195,7 +195,7 @@ export async function computerOpenPermissionSettings(
   })
 }
 
-/** Show recur-code-computer-helper in the Finder, to drag into System Settings. */
+/** Show rc-computer-helper in the Finder, to drag into System Settings. */
 export async function computerRevealHelper(): Promise<void> {
   return getTransport().call("computer_reveal_helper", {})
 }

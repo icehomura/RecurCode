@@ -47,7 +47,7 @@ fn cookie_for(grant: &BridgeGrant) -> String {
         .entry_path
         .strip_prefix(browser_bridge::ENTER_PREFIX)
         .unwrap();
-    format!("recur-code-bridge-{}={cap}", port_of(grant))
+    format!("rc-bridge-{}={cap}", port_of(grant))
 }
 
 fn base(grant: &BridgeGrant) -> String {

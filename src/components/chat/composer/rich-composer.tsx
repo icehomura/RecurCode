@@ -387,7 +387,7 @@ export const RichComposer = forwardRef<RichComposerHandle, RichComposerProps>(
           // still the contenteditable and a tap there focuses it natively. Its
           // automatic minimum size keeps it from being squeezed under its own
           // text once the composer is at max height and scrolling.
-          class: "recur-code-composer-content grow",
+          class: "rc-composer-content grow",
           role: "textbox",
           "aria-multiline": "true",
           ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
@@ -683,7 +683,7 @@ export const RichComposer = forwardRef<RichComposerHandle, RichComposerProps>(
     return (
       <div
         ref={rootRef}
-        className={cn("recur-code-composer flex min-h-0 flex-col", className)}
+        className={cn("rc-composer flex min-h-0 flex-col", className)}
         style={style}
         data-disabled={disabled || undefined}
       >
@@ -700,14 +700,14 @@ export const RichComposer = forwardRef<RichComposerHandle, RichComposerProps>(
             max height.
 
             The column here plus `grow` on the editable node itself (see the
-            `recur-code-composer-content` class) also makes the contenteditable
+            `rc-composer-content` class) also makes the contenteditable
             cover the whole editable area, so a tap on the blank space under a
             short draft lands on the editor natively instead of going through
             the chrome's mousedown fallback — which touch has no reliable
             equivalent for. */}
         <EditorContent
           editor={editor}
-          className="recur-code-composer-scroll flex min-h-0 grow flex-col overflow-y-auto px-3 py-2 text-base md:text-sm"
+          className="rc-composer-scroll flex min-h-0 grow flex-col overflow-y-auto px-3 py-2 text-base md:text-sm"
         />
         {referenceSearch && mentionState && (
           <SuggestionPopup

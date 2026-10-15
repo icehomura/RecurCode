@@ -43,7 +43,7 @@ export function buildQoderEnv(
   return env
 }
 
-/** The copy-pasteable login command. A recur-code-managed `qoder` lives in the
+/** The copy-pasteable login command. A rc-managed `qoder` lives in the
  * cache rather than on PATH, so a bare `qoder login` would fail — use the
  * resolved absolute path, quoted when it contains whitespace. */
 export function qoderLoginCommand(binaryPath?: string | null): string {

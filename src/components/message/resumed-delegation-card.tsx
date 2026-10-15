@@ -41,7 +41,7 @@ import { useId, useMemo, useState, type ReactNode } from "react"
 import { ChevronDown, ChevronRight, RotateCcw } from "lucide-react"
 import { useTranslations } from "next-intl"
 
-import { parseRecurCodeMcpToolCall } from "@/lib/recur-code-mcp-tool"
+import { parseRecurCodeMcpToolCall } from "@/lib/rc-mcp-tool"
 import { isRefusedResume } from "@/lib/delegation-card"
 import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 import { DelegationCardRow } from "@/components/message/delegation-card-row"

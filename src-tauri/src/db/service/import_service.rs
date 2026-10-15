@@ -528,7 +528,7 @@ mod tests {
         ConversationSummary {
             id: id.to_string(),
             agent_type: AgentType::ClaudeCode,
-            folder_path: Some("/tmp/recur-code-import".to_string()),
+            folder_path: Some("/tmp/rc-import".to_string()),
             folder_name: None,
             title: title.map(|t| t.to_string()),
             started_at: Utc::now(),
@@ -590,7 +590,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_refreshes_a_changed_title() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import").await;
+        let folder = seed_folder(&db, "/tmp/rc-import").await;
         let at = AgentType::ClaudeCode;
 
         let first = import_one_skip(&db.conn, folder, &at, &summary("ext-1", Some("first prompt")))
@@ -624,7 +624,7 @@ mod tests {
         };
 
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-usage").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-usage").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, folder, &at, &summary("ext-usage", Some("t")))
@@ -674,7 +674,7 @@ mod tests {
     #[tokio::test]
     async fn import_inserts_a_pending_review_conversation() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-status").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-status").await;
         let at = AgentType::ClaudeCode;
 
         assert_eq!(
@@ -698,7 +698,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_skips_an_unchanged_title() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-same").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-same").await;
         let at = AgentType::ClaudeCode;
         let s = summary("ext-1", Some("same title"));
 
@@ -717,7 +717,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_never_clobbers_a_manual_rename() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-lock").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-lock").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, folder, &at, &summary("ext-1", Some("first prompt")))
@@ -746,7 +746,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_with_no_title_keeps_the_existing_one() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-empty").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-empty").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, folder, &at, &summary("ext-1", Some("kept title")))
@@ -777,7 +777,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_skips_a_soft_deleted_conversation() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-deleted").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, folder, &at, &summary("ext-1", Some("original")))
@@ -806,7 +806,7 @@ mod tests {
     #[tokio::test]
     async fn restore_brings_a_soft_deleted_conversation_back_in_place() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-restore").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-restore").await;
         let at = AgentType::ClaudeCode;
 
         let first_end = Utc::now() - Duration::hours(5);
@@ -863,7 +863,7 @@ mod tests {
     #[tokio::test]
     async fn restore_is_idempotent_and_leaves_a_live_row_alone() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-restore-twice").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-restore-twice").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, folder, &at, &summary("ext-1", Some("kept")))
@@ -893,8 +893,8 @@ mod tests {
     #[tokio::test]
     async fn restore_lands_the_conversation_in_the_import_target_folder() {
         let db = fresh_in_memory_db().await;
-        let old_folder = seed_folder(&db, "/tmp/recur-code-restore-old").await;
-        let target = seed_folder(&db, "/tmp/recur-code-restore-target").await;
+        let old_folder = seed_folder(&db, "/tmp/rc-restore-old").await;
+        let target = seed_folder(&db, "/tmp/rc-restore-target").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, old_folder, &at, &summary("ext-1", Some("t")))
@@ -919,7 +919,7 @@ mod tests {
     #[tokio::test]
     async fn restore_never_touches_a_delegation_child() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-restore-child").await;
+        let folder = seed_folder(&db, "/tmp/rc-restore-child").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(&db.conn, folder, &at, &summary("parent-ext", Some("p")))
@@ -969,7 +969,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_adopts_newer_transcript_activity() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-activity").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-activity").await;
         let at = AgentType::ClaudeCode;
 
         let first_end = Utc::now() - Duration::hours(3);
@@ -1013,7 +1013,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_never_moves_updated_at_backwards() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-monotonic").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-monotonic").await;
         let at = AgentType::ClaudeCode;
 
         let end = Utc::now() - Duration::hours(1);
@@ -1051,7 +1051,7 @@ mod tests {
     #[tokio::test]
     async fn activity_refresh_preserves_pin_status_and_locked_title() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-preserve").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-preserve").await;
         let at = AgentType::ClaudeCode;
 
         import_one_skip(
@@ -1107,7 +1107,7 @@ mod tests {
     #[tokio::test]
     async fn sync_imported_sessions_refreshes_in_place_and_never_inserts() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-sync-scan").await;
+        let folder = seed_folder(&db, "/tmp/rc-sync-scan").await;
         let at = AgentType::ClaudeCode;
 
         let end = Utc::now() - Duration::hours(2);
@@ -1159,7 +1159,7 @@ mod tests {
     #[tokio::test]
     async fn sync_imported_sessions_skips_deleted_rows() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-sync-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-sync-deleted").await;
         let at = AgentType::ClaudeCode;
 
         let end = Utc::now() - Duration::hours(2);
@@ -1198,7 +1198,7 @@ mod tests {
     #[tokio::test]
     async fn reimport_skips_a_delegation_child() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-import-child").await;
+        let folder = seed_folder(&db, "/tmp/rc-import-child").await;
         let at = AgentType::ClaudeCode;
         let at_str = serde_json::to_value(at)
             .expect("ser")

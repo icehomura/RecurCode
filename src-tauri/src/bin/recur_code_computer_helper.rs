@@ -1,4 +1,4 @@
-//! `recur-code-computer-helper`: the executor behind RecurCode's `computer_*` tools.
+//! `rc-computer-helper`: the executor behind RecurCode's `computer_*` tools.
 //!
 //! Everything it does lives in `recur_code_lib::computer::helper`; this file holds
 //! only the one thing that must not be linked into RecurCode itself — the calls
@@ -27,7 +27,7 @@ fn main() {
 fn request_permission(name: Option<&str>) -> i32 {
     let Some(permission) = name.and_then(OsPermission::from_arg) else {
         eprintln!(
-            "usage: recur-code-computer-helper {REQUEST_PERMISSION_ARG} accessibility|screen-recording"
+            "usage: rc-computer-helper {REQUEST_PERMISSION_ARG} accessibility|screen-recording"
         );
         return EXIT_FAILED;
     };

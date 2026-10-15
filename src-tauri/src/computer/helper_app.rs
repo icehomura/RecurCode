@@ -1,7 +1,7 @@
 //! The helper app as RecurCode runs it on macOS: a copy outside RecurCode's bundle.
 //!
 //! RecurCode ships the helper as an app of its own inside its bundle
-//! (`Contents/Helpers/recur-code-computer-helper.app`), and for Accessibility that
+//! (`Contents/Helpers/rc-computer-helper.app`), and for Accessibility that
 //! is enough: macOS charges a process to the app it is the main executable
 //! of. Screen Recording it charges to the *outermost* app around the
 //! executable that the same team signed — RecurCode — so a helper run from inside
@@ -266,12 +266,12 @@ mod tests {
     use super::*;
     use std::os::unix::fs::MetadataExt;
 
-    const APP: &str = "recur-code-computer-helper.app";
+    const APP: &str = "rc-computer-helper.app";
 
     /// A small app bundle, as the release ships the helper.
     fn shipped(root: &Path) -> PathBuf {
         let app = root.join("RecurCode.app/Contents/Helpers").join(APP);
-        let exe = app.join("Contents/MacOS/recur-code-computer-helper");
+        let exe = app.join("Contents/MacOS/rc-computer-helper");
         fs::create_dir_all(exe.parent().unwrap()).unwrap();
         fs::create_dir_all(app.join("Contents/Resources")).unwrap();
         fs::create_dir_all(app.join("Contents/_CodeSignature")).unwrap();
@@ -284,7 +284,7 @@ mod tests {
     }
 
     fn exe_of(app: &Path) -> PathBuf {
-        app.join("Contents/MacOS/recur-code-computer-helper")
+        app.join("Contents/MacOS/rc-computer-helper")
     }
 
     /// The first launch makes the copy, beside nothing of RecurCode's, and the

@@ -280,7 +280,7 @@ const PAGE = `<!doctype html><html><head><title>Probe</title>
   })
 </script></body></html>`
 
-const dir = mkdtempSync(join(tmpdir(), "recur-code-agent-probe-"))
+const dir = mkdtempSync(join(tmpdir(), "rc-agent-probe-"))
 const pageFile = join(dir, "probe.html")
 writeFileSync(pageFile, PAGE)
 
@@ -1522,7 +1522,7 @@ try {
 
     await run('__recur_codePicker.start("p1")')
     const overlay = await send("Runtime.evaluate", {
-      expression: `(() => { const el = document.querySelector("[data-recur-code-picker]");
+      expression: `(() => { const el = document.querySelector("[data-rc-picker]");
                             return JSON.stringify([!!el, el ? el.shadowRoot : null]) })()`,
       returnByValue: true,
     })
@@ -1604,11 +1604,11 @@ try {
     // only thing that can swallow the second half of a double-click over a
     // frame — and then it goes. The highlight itself is hidden immediately,
     // inside a shadow root this side cannot look into.
-    const stillUp = await run('!!document.querySelector("[data-recur-code-picker]")')
+    const stillUp = await run('!!document.querySelector("[data-rc-picker]")')
     await sleep(800)
     check(
       "the overlay stays for the drain once something is picked, then goes",
-      [stillUp, await run('!!document.querySelector("[data-recur-code-picker]")')],
+      [stillUp, await run('!!document.querySelector("[data-rc-picker]")')],
       [true, false]
     )
 
@@ -1625,7 +1625,7 @@ try {
       "a click the page dispatched itself does not choose",
       [
         JSON.parse(await run("JSON.stringify(__picks)")).length - 1,
-        await run('!!document.querySelector("[data-recur-code-picker]")'),
+        await run('!!document.querySelector("[data-rc-picker]")'),
       ],
       [0, true]
     )
@@ -1833,7 +1833,7 @@ try {
     await sleep(120)
     const covered = JSON.parse(
       await run(`JSON.stringify((() => {
-        const h = document.querySelector("[data-recur-code-picker]");
+        const h = document.querySelector("[data-rc-picker]");
         const r = h.getBoundingClientRect();
         return [Math.round(r.left), Math.round(r.top),
                 Math.abs(r.width - window.innerWidth) < 2,
@@ -2052,7 +2052,7 @@ try {
     await sleep(60)
     await send("Runtime.evaluate", {
       // The page's own world, reaching for our node.
-      expression: `(() => { const h = document.querySelector("[data-recur-code-picker]");
+      expression: `(() => { const h = document.querySelector("[data-rc-picker]");
                             h.style.cssText = "position:fixed;inset:0;pointer-events:auto;z-index:2147483647";
                             return true })()`,
       returnByValue: true,
@@ -2185,7 +2185,7 @@ try {
       [
         last?.cancelled,
         last?.id,
-        await run('!!document.querySelector("[data-recur-code-picker]")'),
+        await run('!!document.querySelector("[data-rc-picker]")'),
       ],
       [true, "p2", false]
     )
@@ -2195,7 +2195,7 @@ try {
     // itself still passes — and a rect says nothing about being rendered.
     await run('__recur_codePicker.start("moved")')
     await run(
-      'document.getElementById("trap").appendChild(document.querySelector("[data-recur-code-picker]"))'
+      'document.getElementById("trap").appendChild(document.querySelector("[data-rc-picker]"))'
     )
     // Two guard ticks: one to notice, and the overlay is back on the first.
     await sleep(900)
@@ -2232,7 +2232,7 @@ try {
                     return b ? b.textContent : "no frame document" })()`
         ),
         await run(
-          '(document.querySelector("[data-recur-code-picker]") || {}).parentElement?.tagName ?? "none"'
+          '(document.querySelector("[data-rc-picker]") || {}).parentElement?.tagName ?? "none"'
         ),
       ],
       // Picked the frame, left its button alone, and the overlay is back on
@@ -2247,7 +2247,7 @@ try {
     const beforeInert = JSON.parse(await run("JSON.stringify(__picks)"))
     await run('__recur_codePicker.start("inert")')
     await run(
-      'document.querySelector("[data-recur-code-picker]").setAttribute("inert", "")'
+      'document.querySelector("[data-rc-picker]").setAttribute("inert", "")'
     )
     await sleep(500)
     for (const [type, button, buttons] of [
@@ -2292,7 +2292,7 @@ try {
     await run('__recur_codePicker.start("inertfight")')
     await send("Runtime.evaluate", {
       expression: `(() => {
-        const el = document.querySelector("[data-recur-code-picker]")
+        const el = document.querySelector("[data-rc-picker]")
         globalThis.__fight = new MutationObserver(() => {
           if (!el.hasAttribute("inert")) el.setAttribute("inert", "")
         })
@@ -2413,7 +2413,7 @@ try {
     // …and the page strips the attribute that lets the overlay in there at
     // all. It is in the page's DOM, so the page can; the guard puts it back.
     await run(
-      'document.querySelector("[data-recur-code-picker]").removeAttribute("popover")'
+      'document.querySelector("[data-rc-picker]").removeAttribute("popover")'
     )
     await run('document.getElementById("pop").showPopover()')
     await sleep(500)
@@ -2505,7 +2505,7 @@ try {
       [
         JSON.parse(await run("JSON.stringify(__picks)")).length -
           beforeFakeHide.length,
-        await run('!!document.querySelector("[data-recur-code-picker]")'),
+        await run('!!document.querySelector("[data-rc-picker]")'),
       ],
       [0, true]
     )
@@ -2528,7 +2528,7 @@ try {
         blocked.length - beforeModal.length,
         blocked[blocked.length - 1]?.payload.cancelled,
         blocked[blocked.length - 1]?.payload.id,
-        await run('!!document.querySelector("[data-recur-code-picker]")'),
+        await run('!!document.querySelector("[data-rc-picker]")'),
       ],
       [1, true, "modal", false]
     )

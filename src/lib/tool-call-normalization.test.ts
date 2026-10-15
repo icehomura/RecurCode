@@ -119,7 +119,7 @@ describe("inferLiveToolName meta.claudeCode.toolName override", () => {
 
   it("keeps input-shape priority for calls without delegation meta", () => {
     // A generic "MCP: tool" call WITHOUT the broker meta must stay generic —
-    // the delegation resolution is scoped to the recur-code-minted marker.
+    // the delegation resolution is scoped to the rc-minted marker.
     expect(
       inferLiveToolName({
         title: "MCP: tool",
@@ -268,12 +268,12 @@ describe("inferLiveToolName meta.claudeCode.toolName override", () => {
     // detail). meta must win.
     expect(
       inferLiveToolName({
-        title: "mcp__recur-code-delegate__get_delegation_status",
+        title: "mcp__rc-delegate__get_delegation_status",
         kind: "other",
         rawInput: JSON.stringify({ task_ids: ["t1"], wait_ms: 1000 }),
         meta: {
           claudeCode: {
-            toolName: "mcp__recur-code-delegate__get_delegation_status",
+            toolName: "mcp__rc-delegate__get_delegation_status",
           },
         },
       })
@@ -281,22 +281,22 @@ describe("inferLiveToolName meta.claudeCode.toolName override", () => {
 
     expect(
       inferLiveToolName({
-        title: "mcp__recur-code-delegate__cancel_delegation",
+        title: "mcp__rc-delegate__cancel_delegation",
         kind: "other",
         rawInput: JSON.stringify({ task_id: "t1" }),
         meta: {
-          claudeCode: { toolName: "mcp__recur-code-delegate__cancel_delegation" },
+          claudeCode: { toolName: "mcp__rc-delegate__cancel_delegation" },
         },
       })
     ).toBe("cancel_delegation")
 
     expect(
       inferLiveToolName({
-        title: "mcp__recur-code-delegate__delegate_to_agent",
+        title: "mcp__rc-delegate__delegate_to_agent",
         kind: "other",
         rawInput: JSON.stringify({ agent_type: "codex", task: "do it" }),
         meta: {
-          claudeCode: { toolName: "mcp__recur-code-delegate__delegate_to_agent" },
+          claudeCode: { toolName: "mcp__rc-delegate__delegate_to_agent" },
         },
       })
     ).toBe("delegate_to_agent")
@@ -323,7 +323,7 @@ describe("inferLiveToolName meta.claudeCode.toolName override", () => {
     // the title-companion priority must win.
     expect(
       inferLiveToolName({
-        title: "recur-code-mcp__cancel_delegation",
+        title: "rc-mcp__cancel_delegation",
         kind: "other",
         rawInput: JSON.stringify({ task_id: "t1" }),
         meta: { "x.ai/tool": { name: "use_tool" } },
@@ -332,7 +332,7 @@ describe("inferLiveToolName meta.claudeCode.toolName override", () => {
     // Siblings stay correct too.
     expect(
       inferLiveToolName({
-        title: "recur-code-mcp__get_delegation_status",
+        title: "rc-mcp__get_delegation_status",
         kind: "other",
         rawInput: JSON.stringify({ task_ids: ["t1"] }),
         meta: { "x.ai/tool": { name: "use_tool" } },
@@ -340,7 +340,7 @@ describe("inferLiveToolName meta.claudeCode.toolName override", () => {
     ).toBe("get_delegation_status")
     expect(
       inferLiveToolName({
-        title: "recur-code-mcp__delegate_to_agent",
+        title: "rc-mcp__delegate_to_agent",
         kind: "other",
         rawInput: JSON.stringify({ agent_type: "codex", task: "go" }),
         meta: { "x.ai/tool": { name: "use_tool" } },
@@ -499,13 +499,13 @@ describe("normalizeToolName collapses delegate_to_agent across hosts", () => {
   // canonical name so the renderer routes them into DelegatedSubThread.
   it.each([
     "delegate_to_agent",
-    "mcp__recur-code-mcp__delegate_to_agent",
-    "mcp__recur-code-delegate__delegate_to_agent",
+    "mcp__rc-mcp__delegate_to_agent",
+    "mcp__rc-delegate__delegate_to_agent",
     "mcp__recur_code__delegate_to_agent",
-    "recur-code-mcp/delegate_to_agent",
-    "recur-code-delegate/delegate_to_agent",
-    "recur-code-delegate.delegate_to_agent",
-    "recur-code-delegate:delegate_to_agent",
+    "rc-mcp/delegate_to_agent",
+    "rc-delegate/delegate_to_agent",
+    "rc-delegate.delegate_to_agent",
+    "rc-delegate:delegate_to_agent",
     "recur_code_delegate__delegate_to_agent",
   ])("%s -> delegate_to_agent", (input) => {
     expect(normalizeToolName(input)).toBe("delegate_to_agent")
@@ -521,26 +521,26 @@ describe("normalizeToolName collapses delegate_to_agent across hosts", () => {
 describe("normalizeToolName collapses delegation companion tools across hosts", () => {
   it.each([
     "get_delegation_status",
-    "mcp__recur-code-mcp__get_delegation_status",
-    "mcp__recur-code-delegate__get_delegation_status",
+    "mcp__rc-mcp__get_delegation_status",
+    "mcp__rc-delegate__get_delegation_status",
     "mcp__recur_code__get_delegation_status",
-    "recur-code-mcp/get_delegation_status",
-    "recur-code-delegate/get_delegation_status",
-    "recur-code-delegate.get_delegation_status",
-    "recur-code-delegate:get_delegation_status",
+    "rc-mcp/get_delegation_status",
+    "rc-delegate/get_delegation_status",
+    "rc-delegate.get_delegation_status",
+    "rc-delegate:get_delegation_status",
   ])("%s -> get_delegation_status", (input) => {
     expect(normalizeToolName(input)).toBe("get_delegation_status")
   })
 
   it.each([
     "cancel_delegation",
-    "mcp__recur-code-mcp__cancel_delegation",
-    "mcp__recur-code-delegate__cancel_delegation",
+    "mcp__rc-mcp__cancel_delegation",
+    "mcp__rc-delegate__cancel_delegation",
     "mcp__recur_code__cancel_delegation",
-    "recur-code-mcp/cancel_delegation",
-    "recur-code-delegate/cancel_delegation",
-    "recur-code-delegate.cancel_delegation",
-    "recur-code-delegate:cancel_delegation",
+    "rc-mcp/cancel_delegation",
+    "rc-delegate/cancel_delegation",
+    "rc-delegate.cancel_delegation",
+    "rc-delegate:cancel_delegation",
   ])("%s -> cancel_delegation", (input) => {
     expect(normalizeToolName(input)).toBe("cancel_delegation")
   })
@@ -560,10 +560,10 @@ describe("normalizeToolName collapses ask_user_question across hosts", () => {
     "question",
     "ask_user_question",
     "askuserquestion",
-    "mcp__recur-code-mcp__ask_user_question",
-    "recur-code-mcp/ask_user_question",
-    "recur-code-mcp.ask_user_question",
-    "recur-code-mcp:ask_user_question",
+    "mcp__rc-mcp__ask_user_question",
+    "rc-mcp/ask_user_question",
+    "rc-mcp.ask_user_question",
+    "rc-mcp:ask_user_question",
   ])("%s -> question", (input) => {
     expect(normalizeToolName(input)).toBe("question")
   })
@@ -576,11 +576,11 @@ describe("normalizeToolName collapses ask_user_question across hosts", () => {
 describe("normalizeToolName collapses check_user_feedback across hosts", () => {
   it.each([
     "check_user_feedback",
-    "mcp__recur-code-mcp__check_user_feedback",
+    "mcp__rc-mcp__check_user_feedback",
     "mcp__recur_code__check_user_feedback",
-    "recur-code-mcp/check_user_feedback",
-    "recur-code-mcp.check_user_feedback",
-    "recur-code-mcp:check_user_feedback",
+    "rc-mcp/check_user_feedback",
+    "rc-mcp.check_user_feedback",
+    "rc-mcp:check_user_feedback",
   ])("%s -> check_user_feedback", (input) => {
     expect(normalizeToolName(input)).toBe("check_user_feedback")
   })
@@ -769,14 +769,14 @@ describe("Antigravity MCP dispatch naming", () => {
     // (`tools.py::unwrap_mcp_tool_call`); `parsers/antigravity.rs` performs the
     // same rewrite so history and live resolve identically. Pinned here
     // because that naming is now load-bearing for the delegation cards.
-    expect(normalizeToolName("recur-code-mcp_delegate_to_agent")).toBe(
+    expect(normalizeToolName("rc-mcp_delegate_to_agent")).toBe(
       "delegate_to_agent"
     )
-    expect(normalizeToolName("recur-code-mcp_get_delegation_status")).toBe(
+    expect(normalizeToolName("rc-mcp_get_delegation_status")).toBe(
       "get_delegation_status"
     )
-    expect(normalizeToolName("recur-code-mcp_ask_user_question")).toBe("question")
-    expect(normalizeToolName("recur-code-mcp_task_progress")).toBe("task_progress")
+    expect(normalizeToolName("rc-mcp_ask_user_question")).toBe("question")
+    expect(normalizeToolName("rc-mcp_task_progress")).toBe("task_progress")
   })
 })
 
@@ -860,10 +860,10 @@ describe("inferLiveToolName cursor task and MCP shapes", () => {
     // the call as a terminal command.
     expect(
       inferLiveToolName({
-        title: "recur-code-mcp: delegate_to_agent",
+        title: "rc-mcp: delegate_to_agent",
         kind: "other",
         rawInput: JSON.stringify({
-          providerIdentifier: "recur-code-mcp",
+          providerIdentifier: "rc-mcp",
           toolName: "delegate_to_agent",
           args: { agent_type: "codex", task: "run build" },
         }),
@@ -1029,7 +1029,7 @@ describe("inferLiveToolName Grok identity via x.ai/tool.name", () => {
     // send every MCP call to the generic tool card instead.
     expect(
       inferLiveToolName({
-        title: "recur-code-mcp__delegate_to_agent",
+        title: "rc-mcp__delegate_to_agent",
         kind: "other",
         rawInput: JSON.stringify({ agent_type: "codex", task: "run build" }),
         meta: { "x.ai/tool": { name: "use_tool", kind: "use_tool" } },
@@ -1142,15 +1142,15 @@ describe("inferLiveToolName codex plan_review marker", () => {
 // (`"<tool> (<server> MCP Server)"`, built by `GN`'s default branch) and hangs
 // the authoritative SDK name off `_meta.qoder.toolName` (`AOn`). Before that
 // meta was read, only `delegate_to_agent` reached its card live — rescued by
-// the broker's own `RecurCode.delegation` marker — while every other recur-code-mcp
+// the broker's own `RecurCode.delegation` marker — while every other rc-mcp
 // companion kept the sentence as its "name" and fell through to the generic
 // tool shell. Shapes below are verbatim from a real qodercli 1.1.25 session.
 describe("inferLiveToolName resolves Qoder's authoritative _meta.qoder.toolName", () => {
   const qoderMcpCall = (tool: string, input: unknown) => ({
-    title: `${tool} (recur-code-mcp MCP Server)`,
+    title: `${tool} (rc-mcp MCP Server)`,
     kind: "other",
     rawInput: JSON.stringify(input),
-    meta: { qoder: { toolName: `mcp__recur-code-mcp__${tool}` } },
+    meta: { qoder: { toolName: `mcp__rc-mcp__${tool}` } },
   })
 
   it.each([
@@ -1171,17 +1171,17 @@ describe("inferLiveToolName resolves Qoder's authoritative _meta.qoder.toolName"
 
   it("resolves the frame captured verbatim from qodercli 1.1.25", () => {
     // Recorded off a live `qoder --acp` turn against a stdio MCP server named
-    // `recur-code-mcp` — copied byte-for-byte from the session/update payload:
-    //   {"title":"get_delegation_status (recur-code-mcp MCP Server)","kind":"other",
-    //    "_meta":{"qoder":{"toolName":"mcp__recur-code-mcp__get_delegation_status"}},
+    // `rc-mcp` — copied byte-for-byte from the session/update payload:
+    //   {"title":"get_delegation_status (rc-mcp MCP Server)","kind":"other",
+    //    "_meta":{"qoder":{"toolName":"mcp__rc-mcp__get_delegation_status"}},
     //    "rawInput":{"task_ids":["081139e7"]}}
     expect(
       inferLiveToolName({
-        title: "get_delegation_status (recur-code-mcp MCP Server)",
+        title: "get_delegation_status (rc-mcp MCP Server)",
         kind: "other",
         rawInput: JSON.stringify({ task_ids: ["081139e7"] }),
         meta: {
-          qoder: { toolName: "mcp__recur-code-mcp__get_delegation_status" },
+          qoder: { toolName: "mcp__rc-mcp__get_delegation_status" },
         },
       })
     ).toBe("get_delegation_status")
@@ -1191,7 +1191,7 @@ describe("inferLiveToolName resolves Qoder's authoritative _meta.qoder.toolName"
     // Guard the ordering: the MCP sentence is not collapsible by any alias or
     // suffix rule, so the assertions above prove the meta did the work.
     expect(
-      normalizeToolName("get_delegation_status (recur-code-mcp MCP Server)")
+      normalizeToolName("get_delegation_status (rc-mcp MCP Server)")
     ).not.toBe("get_delegation_status")
     expect(
       inferLiveToolName({ ...qoderMcpCall("task_progress", {}), meta: null })
@@ -1203,7 +1203,7 @@ describe("inferLiveToolName resolves Qoder's authoritative _meta.qoder.toolName"
     // resolution MUST sit ahead of it — same guarantee claude-agent-acp gets.
     expect(
       inferLiveToolName({
-        title: "cancel_delegation (recur-code-mcp MCP Server)",
+        title: "cancel_delegation (rc-mcp MCP Server)",
         kind: "other",
         rawInput: JSON.stringify({ task_id: "t1" }),
         meta: null,
@@ -1316,11 +1316,11 @@ describe("toolCallMovedToBackground", () => {
   })
 })
 
-// The historical path reads the raw `mcp__recur-code-mcp__<tool>` name straight out
+// The historical path reads the raw `mcp__rc-mcp__<tool>` name straight out
 // of the transcript, so every host prefix/separator must collapse to the same
 // canonical name the live path now produces — otherwise a reload swaps a card
 // back to the generic tool shell.
-describe("normalizeToolName collapses the recur-code-mcp workbench companions", () => {
+describe("normalizeToolName collapses the rc-mcp workbench companions", () => {
   const TOOLS = [
     "get_session_info",
     "task_progress",
@@ -1332,11 +1332,11 @@ describe("normalizeToolName collapses the recur-code-mcp workbench companions", 
   it.each(TOOLS)("collapses every host spelling of %s", (tool) => {
     for (const spelling of [
       tool,
-      `mcp__recur-code-mcp__${tool}`,
+      `mcp__rc-mcp__${tool}`,
       `mcp__recur_code__${tool}`,
-      `recur-code-mcp/${tool}`,
-      `recur-code-mcp.${tool}`,
-      `recur-code-mcp:${tool}`,
+      `rc-mcp/${tool}`,
+      `rc-mcp.${tool}`,
+      `rc-mcp:${tool}`,
     ]) {
       expect(normalizeToolName(spelling)).toBe(tool)
     }
@@ -1426,12 +1426,12 @@ describe("inferLiveToolName meta.opencode.toolName override", () => {
     // OpenCode names an MCP tool `<server>_<tool>`; the suffix rules collapse it
     // to the canonical companion name the delegation cards dispatch on.
     expect(
-      call("recur-code-mcp_get_delegation_status", "status", "other", {
+      call("rc-mcp_get_delegation_status", "status", "other", {
         task_ids: ["t1"],
       })
     ).toBe("get_delegation_status")
     expect(
-      call("recur-code-mcp_ask_user_question", "asked", "other", { questions: [] })
+      call("rc-mcp_ask_user_question", "asked", "other", { questions: [] })
     ).toBe("question")
   })
 

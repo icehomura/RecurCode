@@ -372,7 +372,7 @@ impl ScratchIndex {
         static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let git_dir = git_dir(wt_path).await?;
-        let path = git_dir.join(format!("recur-code-diff-index-{}-{seq}", std::process::id()));
+        let path = git_dir.join(format!("rc-diff-index-{}-{seq}", std::process::id()));
         let _ = std::fs::remove_file(&path);
         let scratch = Self { path };
         // The copy keeps `assume-unchanged` entries as they are, deliberately.
@@ -901,7 +901,7 @@ mod tests {
             .expect("read .git")
             .filter_map(|e| e.ok())
             .map(|e| e.file_name().to_string_lossy().into_owned())
-            .filter(|n| n.starts_with("recur-code-diff-index"))
+            .filter(|n| n.starts_with("rc-diff-index"))
             .collect();
         assert!(leftovers.is_empty(), "scratch index left behind: {leftovers:?}");
     }

@@ -658,7 +658,7 @@ pub fn doc_set_mode_core(
 /// Load a document guest's page again so the policy in force travels with
 /// it. Nothing committed yet (the first load still in flight, or refused):
 /// navigate to the document instead — a reload has nothing to reload, and
-/// the general retry path would refuse a `recur-code-doc:` address.
+/// the general retry path would refuse a `rc-doc:` address.
 fn reload_document(
     app: &AppHandle,
     registry: &BrowserRegistry,
@@ -4084,7 +4084,7 @@ pub async fn browser_agent_grant(
 /// Read a shared page on an agent's behalf.
 ///
 /// A command rather than only a `_core` function because the smoke puppet
-/// drives commands, and because the tool surface in `recur-code-mcp` reaches the
+/// drives commands, and because the tool surface in `rc-mcp` reaches the
 /// backend the same way the frontend does. It is not a way around the grant:
 /// the check is inside `agent_snapshot_core`, so every caller gets it.
 #[tauri::command]

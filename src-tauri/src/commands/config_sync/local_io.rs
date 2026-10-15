@@ -374,7 +374,7 @@ mod tests {
         seed_message(&source.conn, "Exported").await;
 
         let dir = tempfile::tempdir().expect("tempdir");
-        let dest = dir.path().join("nested").join("recur-code-config.json");
+        let dest = dir.path().join("nested").join("rc-config.json");
         let summary = export_to_file_core(&source.conn, "9.9.9", &dest)
             .await
             .expect("export");
@@ -637,7 +637,7 @@ mod tests {
         seed_role(&source.conn, "Reviewer").await;
 
         let dir = tempfile::tempdir().expect("tempdir");
-        let path = dir.path().join("recur-code-config.json");
+        let path = dir.path().join("rc-config.json");
         let summary = export_to_file_core(&source.conn, "9.9.9", &path)
             .await
             .expect("export");

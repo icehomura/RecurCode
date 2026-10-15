@@ -699,7 +699,7 @@ pub enum AcpEvent {
     UsageUpdate { used: u64, size: u64 },
     /// Out-of-turn activity surfaced from the agent's own session transcript
     /// by the background watcher (`acp::background_watch`; Claude-only today).
-    /// Covers everything that happens OUTSIDE a recur-code-driven prompt turn:
+    /// Covers everything that happens OUTSIDE a rc-driven prompt turn:
     /// async sub-agent / background-shell `<task-notification>` completions,
     /// the agent's continued work after them, and cron//loop autonomous turns
     /// (which never produce ACP wire events at all — see issue #270). The
@@ -857,7 +857,7 @@ pub enum AcpEvent {
 /// `<tool-use-id>`/`<result>` tags. They let the frontend flip the LAUNCH card
 /// (`AgentToolCallPart`) from "running in background" to its terminal state
 /// entirely in-memory — rewriting the launching tool call's own
-/// `[[recur-code-background-task]]` marker — WITHOUT a `refetchDetail`. That refetch
+/// `[[rc-background-task]]` marker — WITHOUT a `refetchDetail`. That refetch
 /// path used to be the only card-flip trigger, but it re-parses the still-open
 /// transcript mid-`#870`-hold and both double-renders the held turn and races
 /// the file's own last write.
@@ -1503,7 +1503,7 @@ pub struct ConversationConnectionInfo {
 #[derive(Debug, Clone, Serialize)]
 pub struct AcpAgentInfo {
     pub agent_type: crate::models::agent::AgentType,
-    /// Whether this agent has a recur-code-known skill store — every built-in, and
+    /// Whether this agent has a rc-known skill store — every built-in, and
     /// custom agents that declared the shared `.agents/skills` store. Gates
     /// the skills matrices frontend-side.
     pub skills_capable: bool,
@@ -1542,7 +1542,7 @@ pub struct AcpAgentInfo {
     pub env: BTreeMap<String, String>,
     /// The RESOLVED `RC_ACP_HOST_TOOLS` verdict for this agent — whether the
     /// next launch hands the `fs/*` + `terminal/*` channels (and, with them,
-    /// recur-code-mcp's delegation tools) back to the agent.
+    /// rc-mcp's delegation tools) back to the agent.
     ///
     /// Resolved by [`crate::acp::host_tools_policy::HostToolsPolicy::from_env`],
     /// the same function the launch uses, so it accounts for BOTH layers: the
@@ -1742,7 +1742,7 @@ pub struct CodexSandboxStructuredConfig {
 /// docs.x.ai/build/settings/reference); `None` means the key is absent.
 ///
 /// The *stock* per-session model is NOT surfaced here — it is chosen from the
-/// composer's model selector. But a recur-code-managed **custom (BYO endpoint) model**
+/// composer's model selector. But a rc-managed **custom (BYO endpoint) model**
 /// IS: RecurCode writes a `[model.<id>]` block and points `[models].default` at it,
 /// then reads it back through `custom_*` below. The managed block is anchored as
 /// "the `[model.<id>]` whose id equals `[models].default`", giving clean
@@ -1756,7 +1756,7 @@ pub struct GrokSettings {
     /// markers (`ask`/`always-approve`) are migrated to `default`/`bypassPermissions`
     /// on read (see `migrate_grok_permission_mode`).
     pub permission_mode: Option<String>,
-    /// The recur-code-managed custom model id: the `[model.<id>]` block whose id
+    /// The rc-managed custom model id: the `[model.<id>]` block whose id
     /// equals `[models].default`. `None` when there is no such managed block.
     pub custom_model_id: Option<String>,
     /// `[model.<id>].base_url` — the custom endpoint. `None` ⇒ Grok's official
@@ -1782,7 +1782,7 @@ pub struct GrokSettings {
 ///
 /// The custom-model group is driven by `custom_model_id`: a non-empty id writes
 /// (or renames to) `[model.<id>]` + `[models].default = "<id>"`; an empty/`None`
-/// id removes the recur-code-managed block and its default. Within an active model,
+/// id removes the rc-managed block and its default. Within an active model,
 /// each empty sub-field omits its key (e.g. empty `custom_base_url` ⇒ Grok falls
 /// back to the official endpoint).
 #[derive(Debug, Clone, Default, Deserialize)]

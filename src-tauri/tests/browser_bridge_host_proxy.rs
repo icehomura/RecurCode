@@ -17,7 +17,7 @@ use recur_code_lib::web::browser_bridge::{self, BridgeConfig, BridgeGrant, HostP
 const PUBLIC: &str = "RecurCode.test";
 /// What the proxy puts in `Host` when it forwards: its own upstream address,
 /// which names no bridge target.
-const INTERNAL: &str = "recur-code-internal";
+const INTERNAL: &str = "rc-internal";
 
 fn configure_once() {
     static ONCE: OnceLock<()> = OnceLock::new();
@@ -74,7 +74,7 @@ fn cookie_for(grant: &BridgeGrant) -> String {
         .entry_path
         .strip_prefix(browser_bridge::ENTER_PREFIX)
         .unwrap();
-    format!("recur-code-bridge-{}={cap}", grant.target_port)
+    format!("rc-bridge-{}={cap}", grant.target_port)
 }
 
 #[tokio::test]

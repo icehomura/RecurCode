@@ -1758,7 +1758,7 @@ mod tests {
     async fn callback_folder_selection_updates_sender_context() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-callback-folder").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-callback-folder").await;
 
         let message = handle_callback(
             &db.conn,
@@ -1803,21 +1803,21 @@ mod tests {
     async fn folder_picker_button_label_separates_index_and_name() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        seed_folder(&db, "/tmp/recur-code-picker-label").await;
+        seed_folder(&db, "/tmp/rc-picker-label").await;
 
         let message = handle_folder_picker(&db.conn, channel_id, "sender-1", Lang::En, "/").await;
         let SessionCommandMessage::Interactive(message) = message else {
             panic!("folder picker should return interactive message");
         };
 
-        assert_eq!(message.buttons[0].label, "1. recur-code-picker-label");
+        assert_eq!(message.buttons[0].label, "1. rc-picker-label");
     }
 
     #[tokio::test]
     async fn sessions_in_general_topic_do_not_mark_sender_context_session_current() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-general").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-general").await;
         let legacy_conv = seed_conversation(&db, folder_id, AgentType::Codex).await;
         let _other_conv = seed_conversation(&db, folder_id, AgentType::OpenCode).await;
         sender_context_service::update_folder(&db.conn, channel_id, "sender-1", Some(folder_id))
@@ -1850,7 +1850,7 @@ mod tests {
     async fn sessions_in_forum_topic_mark_bound_conversation_not_sender_context() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-bound").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-bound").await;
         let legacy_conv = seed_conversation(&db, folder_id, AgentType::Codex).await;
         let topic_conv = seed_conversation(&db, folder_id, AgentType::OpenCode).await;
         sender_context_service::update_folder(&db.conn, channel_id, "sender-1", Some(folder_id))
@@ -1889,7 +1889,7 @@ mod tests {
     async fn resume_rejects_active_topic_even_for_same_conversation() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-resume-active").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-resume-active").await;
         let conv_id = seed_conversation(&db, folder_id, AgentType::Codex).await;
         let target = ChannelMessageTarget::telegram_forum_topic(channel_id, "-100123", "2");
         let bridge = Arc::new(Mutex::new(SessionBridge::new()));
@@ -1924,7 +1924,7 @@ mod tests {
             &bridge,
             Lang::En,
             "/",
-            std::path::Path::new("/tmp/recur-code-topic-resume-data"),
+            std::path::Path::new("/tmp/rc-topic-resume-data"),
         )
         .await;
 
@@ -1936,7 +1936,7 @@ mod tests {
     async fn permission_response_clears_stale_topic_binding_connection() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-stale-permission").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-stale-permission").await;
         let conv_id = seed_conversation(&db, folder_id, AgentType::Codex).await;
         let target = ChannelMessageTarget::telegram_forum_topic(channel_id, "-100123", "2");
         let binding = thread_binding_service::upsert_for_target(
@@ -1978,7 +1978,7 @@ mod tests {
     async fn task_uses_agent_settings_before_spawning() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-disabled-agent").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-disabled-agent").await;
         sender_context_service::update_folder(&db.conn, channel_id, "sender-1", Some(folder_id))
             .await
             .expect("folder context");
@@ -2026,7 +2026,7 @@ mod tests {
             &bridge,
             Lang::En,
             "/",
-            std::path::Path::new("/tmp/recur-code-topic-disabled-agent-data"),
+            std::path::Path::new("/tmp/rc-topic-disabled-agent-data"),
         )
         .await;
 
@@ -2037,14 +2037,14 @@ mod tests {
     #[tokio::test]
     async fn linked_chat_prompt_enqueues_initial_task_prompt() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-linked-prompt").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-linked-prompt").await;
         let conv_id = seed_conversation(&db, folder_id, AgentType::OpenCode).await;
         let conn_mgr = ConnectionManager::new();
         let mut rx = conn_mgr
             .insert_test_connection_live(
                 "conn-linked",
                 AgentType::OpenCode,
-                Some(std::path::PathBuf::from("/tmp/recur-code-topic-linked-prompt")),
+                Some(std::path::PathBuf::from("/tmp/rc-topic-linked-prompt")),
                 EventEmitter::Noop,
             )
             .await;
@@ -2074,7 +2074,7 @@ mod tests {
     async fn topic_followup_uses_active_bound_session() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-topic-followup-active").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-topic-followup-active").await;
         let conv_id = seed_conversation(&db, folder_id, AgentType::OpenCode).await;
         let target = ChannelMessageTarget::telegram_forum_topic(channel_id, "-100123", "2");
         thread_binding_service::upsert_for_target(
@@ -2093,7 +2093,7 @@ mod tests {
             .insert_test_connection_live(
                 "conn-followup",
                 AgentType::OpenCode,
-                Some(std::path::PathBuf::from("/tmp/recur-code-topic-followup-active")),
+                Some(std::path::PathBuf::from("/tmp/rc-topic-followup-active")),
                 EventEmitter::Noop,
             )
             .await;
@@ -2126,7 +2126,7 @@ mod tests {
             conn_mgr: &conn_mgr,
             emitter: &EventEmitter::Noop,
             bridge: &bridge,
-            data_dir: std::path::Path::new("/tmp/recur-code-topic-followup-data"),
+            data_dir: std::path::Path::new("/tmp/rc-topic-followup-data"),
             lang: Lang::En,
             prefix: "/",
         })

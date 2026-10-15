@@ -37,13 +37,13 @@ cargo test --features test-utils
 cargo clippy --all-targets --features test-utils -- -D warnings
 
 # 服务器模式
-cargo check --no-default-features --features server-bin --bin recur-code-server
-cargo test --no-default-features --features server-bin --bin recur-code-server --lib
-cargo clippy --no-default-features --features server-bin --bin recur-code-server --lib -- -D warnings
+cargo check --no-default-features --features server-bin --bin rc-server
+cargo test --no-default-features --features server-bin --bin rc-server --lib
+cargo clippy --no-default-features --features server-bin --bin rc-server --lib -- -D warnings
 
-# recur-code-mcp 协作伴生进程（多智能体委托）
-cargo check --no-default-features --features mcp-bin --bin recur-code-mcp
-cargo clippy --no-default-features --features mcp-bin --bin recur-code-mcp -- -D warnings
+# rc-mcp 协作伴生进程（多智能体委托）
+cargo check --no-default-features --features mcp-bin --bin rc-mcp
+cargo clippy --no-default-features --features mcp-bin --bin rc-mcp -- -D warnings
 
 # 解析器快照评审（输出变化时）
 cargo insta review
@@ -57,10 +57,10 @@ INSTA_UPDATE=auto cargo test --features test-utils     # 自动写新 .snap
 项目通过 Cargo feature flags 支持三种二进制：
 
 - **`RecurCode`**（`tauri-runtime`，默认）：完整桌面应用，包含 Tauri 窗口管理、系统通知、自动更新等
-- **`recur-code-server`**（`--no-default-features --features server-bin`）：独立服务器模式，仅编译 Axum HTTP API + WebSocket
-- **`recur-code-mcp`**（`--no-default-features --features mcp-bin`）：per-launch stdio MCP 伴生进程，被注入到代理 CLI 的 MCP 配置中，向 LLM 暴露**异步**子智能体委托工具。
+- **`rc-server`**（`--no-default-features --features server-bin`）：独立服务器模式，仅编译 Axum HTTP API + WebSocket
+- **`rc-mcp`**（`--no-default-features --features mcp-bin`）：per-launch stdio MCP 伴生进程，被注入到代理 CLI 的 MCP 配置中，向 LLM 暴露**异步**子智能体委托工具。
 
-后两个（以及 `recur-code-computer-helper` 的 `computer-helper`）各要一个默认不开的 feature：Tauri CLI 会把所有 feature 已开的二进制目标打进桌面安装包，不开就不进包。
+后两个（以及 `rc-computer-helper` 的 `computer-helper`）各要一个默认不开的 feature：Tauri CLI 会把所有 feature 已开的二进制目标打进桌面安装包，不开就不进包。
 
 ### 共享核心
 

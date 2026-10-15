@@ -113,7 +113,7 @@ describe("parseAskQuestionInput", () => {
     // CodexToolCallMapper.ts::createMcpToolCallUpdate. The questions live under
     // `arguments`, not the top level.
     const input = JSON.stringify({
-      server: "recur-code-mcp",
+      server: "rc-mcp",
       tool: "ask_user_question",
       arguments: {
         questions: [
@@ -322,7 +322,7 @@ describe("parseAskQuestionOutcome", () => {
   it("parses codex request_user_input's object-keyed answers", () => {
     // Verbatim function_call_output shape from ~/.codex/sessions: answers are
     // keyed by the question id, each carrying its own `answers` array — NOT the
-    // recur-code-mcp `{answers:[{…,selected}]}` envelope. Without this the card shows
+    // rc-mcp `{answers:[{…,selected}]}` envelope. Without this the card shows
     // "no selection" (the reported bug).
     const output = JSON.stringify({
       answers: { drink_preference: { answers: ["咖啡（推荐）"] } },
@@ -799,7 +799,7 @@ describe("parseAskQuestionOutcome", () => {
     })
   })
 
-  // recur-code-mcp mirrors its "do not ask again to confirm" instruction into the
+  // rc-mcp mirrors its "do not ask again to confirm" instruction into the
   // structured envelope as `hint` (issue #861) and appends it to the text.
   // Neither may change what the card reads.
   const PROCEED_INSTRUCTION =

@@ -1764,7 +1764,7 @@
     "customAgentSkillsDirLabel": "専用スキルディレクトリ",
     "customAgentSkillsDirHint": "このエージェントがスキルを読み込むディレクトリの絶対パスです。共有ストアと併用も単独利用も可能です。~ はホームディレクトリに展開され、リンクしたスキルはまずここに配置されます。",
     "customAgentMcpLabel": "MCP サポート",
-    "customAgentMcpHint": "セッション開始時に RecurCode 内蔵の recur-code-mcp コンパニオンをこのエージェントへ渡します。委任・リアルタイムフィードバック・タスクツールはこの経路を使います。MCP サーバーを受け付けず接続に失敗するエージェントではオフにしてください。設定は次回の接続から有効になります。",
+    "customAgentMcpHint": "セッション開始時に RecurCode 内蔵の rc-mcp コンパニオンをこのエージェントへ渡します。委任・リアルタイムフィードバック・タスクツールはこの経路を使います。MCP サーバーを受け付けず接続に失敗するエージェントではオフにしてください。設定は次回の接続から有効になります。",
     "customAgentIconNotAnImage": "画像ファイルを選んでください。",
     "customAgentIconTooLarge": "アイコンは {limit} KB 未満にしてください。",
     "customAgentIconReadFailed": "その画像を読み込めませんでした。",
@@ -2305,7 +2305,7 @@
         "showPet": "ペットを表示"
       },
       "mcp": {
-        "title": "recur-code-mcp サービス",
+        "title": "rc-mcp サービス",
         "state": {
           "running": "実行中",
           "stopped": "停止中",
@@ -2317,7 +2317,7 @@
           "running": "ここから起動したエージェントは RecurCode のツールを使えます。",
           "stopped": "Broker ソケットが応答していません。",
           "disabled": "すべてのツールグループが無効です。",
-          "unavailable": "recur-code-mcp の実行ファイルが見つかりません。",
+          "unavailable": "rc-mcp の実行ファイルが見つかりません。",
           "unknown": "状態を読み取れませんでした。"
         },
         "socketPath": "アドレス",
@@ -5265,7 +5265,7 @@
     "computer": {
       "label": "デスクトップのウィンドウを見て操作する",
       "short": "アプリとウィンドウを一覧し、共有したウィンドウを読み取り、許可したウィンドウを操作します。",
-      "hint": "エージェントがデスクトップ上のアプリとウィンドウを一覧し、あなたが共有したウィンドウを読み取り——スクリーンショット、内容、期待した状態になっているか——操作を許可したウィンドウでクリック、入力、キー操作ができるようにします。ステータスバーの「コンピューター操作」パネルでウィンドウを共有するまで、どのウィンドウも読めず、操作も許可しない限りどのウィンドウも操作されません。共有はウィンドウが閉じたとき、しばらく使われなかったとき、またはあなたが停止したときに終わり、パネルの「エージェントを停止」ですべてのエージェントを即座に止められます。入力はバックグラウンドでウィンドウに届きます。バックグラウンドでは届かない操作では、エージェントがウィンドウを前面に出すことがあります（コンピューター操作の設定でオフにできます）。デスクトップアプリのみ。macOS では recur-code-computer-helper への権限付与が必要です。プレビュー。"
+      "hint": "エージェントがデスクトップ上のアプリとウィンドウを一覧し、あなたが共有したウィンドウを読み取り——スクリーンショット、内容、期待した状態になっているか——操作を許可したウィンドウでクリック、入力、キー操作ができるようにします。ステータスバーの「コンピューター操作」パネルでウィンドウを共有するまで、どのウィンドウも読めず、操作も許可しない限りどのウィンドウも操作されません。共有はウィンドウが閉じたとき、しばらく使われなかったとき、またはあなたが停止したときに終わり、パネルの「エージェントを停止」ですべてのエージェントを即座に止められます。入力はバックグラウンドでウィンドウに届きます。バックグラウンドでは届かない操作では、エージェントがウィンドウを前面に出すことがあります（コンピューター操作の設定でオフにできます）。デスクトップアプリのみ。macOS では rc-computer-helper への権限付与が必要です。プレビュー。"
     },
     "automations": {
       "label": "自動化を作成",
@@ -5464,9 +5464,9 @@
       "screenRecording": "画面収録",
       "granted": "許可済み",
       "request": "許可する…",
-      "why": "システム設定で recur-code-computer-helper をオンにしてください（RecurCode ではありません）。画面収録はウィンドウの表示内容を見るため、アクセシビリティはウィンドウの読み取りと操作のために使います。",
-      "devRebuild": "helper を再ビルドするたびに以前の許可は無効になります。先にリストから古い recur-code-computer-helper を削除してから、もう一度許可してください。",
-      "notListed": "リストに recur-code-computer-helper がない場合は、Finder からドラッグして追加してください：",
+      "why": "システム設定で rc-computer-helper をオンにしてください（RecurCode ではありません）。画面収録はウィンドウの表示内容を見るため、アクセシビリティはウィンドウの読み取りと操作のために使います。",
+      "devRebuild": "helper を再ビルドするたびに以前の許可は無効になります。先にリストから古い rc-computer-helper を削除してから、もう一度許可してください。",
+      "notListed": "リストに rc-computer-helper がない場合は、Finder からドラッグして追加してください：",
       "reveal": "Finder で表示"
     },
     "shared": {
@@ -5519,7 +5519,7 @@
       "loading": "ウィンドウを読み込み中…",
       "refresh": "更新",
       "empty": "ウィンドウが見つかりません。あるはずなら、コンピューター操作パネルで権限を確認してください。",
-      "noScreenRecording": "recur-code-computer-helper にまだ「画面収録」の権限がありません。ウィンドウのタイトルと画像を表示できず、エージェントもウィンドウを読み取れません。",
+      "noScreenRecording": "rc-computer-helper にまだ「画面収録」の権限がありません。ウィンドウのタイトルと画像を表示できず、エージェントもウィンドウを読み取れません。",
       "unnamedApp": "不明なアプリ",
       "untitled": "無題のウィンドウ",
       "minimized": "最小化",
@@ -5584,7 +5584,7 @@
       },
       "permissions": {
         "title": "権限",
-        "description": "macOS では recur-code-computer-helper への許可が必要です。システム設定で許可してここに戻ると、表示は自動で更新されます。",
+        "description": "macOS では rc-computer-helper への許可が必要です。システム設定で許可してここに戻ると、表示は自動で更新されます。",
         "off": "コンピューター操作をオンにすると、ここで権限を確認・許可できます。",
         "accessibilityHint": "ウィンドウの内容を読み取り、操作します。",
         "screenRecordingHint": "スクリーンショットを撮り、ウィンドウタイトルを読み取ります。"
@@ -5665,7 +5665,7 @@
         "label": "画面全体の共有を許可",
         "hint": "オンにすると、共有ピッカーに「画面全体」が表示されます。エージェントは画面全体を1枚の画像として見て、どこでもクリックでき、共有できるすべてのウィンドウとデスクトップ自体のショートカットも一緒に共有されます。RecurCode のウィンドウと共有禁止リストのアプリは常に塗りつぶされます。オフにすると画面全体の共有は終了します。"
       },
-      "boundary": "macOS では権限は recur-code-computer-helper に与えられ、RecurCode だけが使えるため、エージェントのシェルは使えません。Windows と Linux にはこの分離がありません。そこでは、これらの設定は RecurCode を通じてエージェントに何を渡すかを決めるもので、コンピューター上のプログラムにできることを決めるものではありません。",
+      "boundary": "macOS では権限は rc-computer-helper に与えられ、RecurCode だけが使えるため、エージェントのシェルは使えません。Windows と Linux にはこの分離がありません。そこでは、これらの設定は RecurCode を通じてエージェントに何を渡すかを決めるもので、コンピューター上のプログラムにできることを決めるものではありません。",
       "save": "保存",
       "saving": "保存中…",
       "saved": "コンピューター操作の設定を保存しました",
@@ -6048,7 +6048,7 @@
     "settingsDeleteWorktreeHint": "マージ画面で既定でオンになります。その場で変更もできます。",
     "settingsWorktreeRoot": "Worktree の作成先",
     "settingsWorktreeRootHint": "新しいタスクの worktree をこのディレクトリ配下にタスクごとに作成します。空欄ならプロジェクトフォルダーと同じ階層に作成されます。「~」はホームディレクトリ、相対パスはプロジェクトフォルダー基準です。",
-    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/rc-worktrees",
     "settingsWorktreeRootBrowse": "worktree のディレクトリを選択",
     "settingsPreflight": "プリフライトコマンド",
     "settingsPreflightHint": "タスクがレビューに達したときワークツリーで実行。",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "リモートホストからこのアドレスに到達できません",
       "errorRemoteUnreachableHint": "{host} から見て、この名前は解決できないか、そこへの経路がありません。",
       "errorRemoteNotAllowed": "リモートサーバーはこのアドレスをブラウザーに開放していません",
-      "errorRemoteNotAllowedHint": "{host} の recur-code-server は、ブラウザートンネルからプライベートアドレスへの接続だけを許可しています（RC_BROWSER_TUNNEL=private）。",
+      "errorRemoteNotAllowedHint": "{host} の rc-server は、ブラウザートンネルからプライベートアドレスへの接続だけを許可しています（RC_BROWSER_TUNNEL=private）。",
       "errorRemoteTimeout": "リモートホストの接続がタイムアウトしました",
       "errorRemoteTimeoutHint": "{host} はこのアドレスから時間内に応答を得られませんでした。そちらのサーバーが混んでいるか、ファイアウォールの内側にある可能性があります。",
       "errorTunnelDown": "リモートホストとの接続が切れています",
@@ -7097,9 +7097,9 @@
     "remote": {
       "error": {
         "unavailable": "リモートホストのアドレスを内蔵ブラウザで開くには macOS 14 以降が必要です。",
-        "unsupported": "リモートの recur-code-server が古く、ブラウザーの通信を中継できません。ここでアドレスを開くには更新してください。",
-        "disabled": "リモートの recur-code-server でブラウザートンネルがオフになっています（RC_BROWSER_TUNNEL）。",
-        "unreachable": "リモートの recur-code-server のブラウザートンネルに接続できませんでした（{reason}）。",
+        "unsupported": "リモートの rc-server が古く、ブラウザーの通信を中継できません。ここでアドレスを開くには更新してください。",
+        "disabled": "リモートの rc-server でブラウザートンネルがオフになっています（RC_BROWSER_TUNNEL）。",
+        "unreachable": "リモートの rc-server のブラウザートンネルに接続できませんでした（{reason}）。",
         "bypassed": "このコンピューターのブラウザーエンジンは一部のアドレスをトンネルを通さずに送るため、このコンピューターから読み込まないよう、リモートホストのページは開きません。",
         "probeFailed": "内蔵ブラウザーがトンネル経由でリモートホストに届くことを確認できませんでした。しばらくしてからもう一度お試しください。"
       }

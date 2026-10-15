@@ -1,18 +1,18 @@
 "use client"
 
 /**
- * Inline card for the recur-code-mcp *workbench* companion tools — `get_session_info`,
+ * Inline card for the rc-mcp *workbench* companion tools — `get_session_info`,
  * `task_progress`, `task_complete`, `create_automation`, `create_work_task` and
  * `resume_delegation`.
  *
  * One collapsed line framed around what the agent was actually doing ("读取会话
  * #2122", "进度：tests passing", "任务完成 · 成功"), with a status badge and an
  * inline expansion for the result text. Deliberately the same shape and visual
- * language as `DelegationStatusCard` / `DelegationStatusRow` so every recur-code-mcp
+ * language as `DelegationStatusCard` / `DelegationStatusRow` so every rc-mcp
  * companion reads as one family in the transcript instead of these five landing
  * on the generic tool shell as a raw `{"message": "…"}` argument dump.
  *
- * Parsing lives in `@/lib/recur-code-mcp-tool` — it handles the per-host argument
+ * Parsing lives in `@/lib/rc-mcp-tool` — it handles the per-host argument
  * wrapping and result envelopes, so this component is presentation-only.
  */
 
@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils"
 import {
   parseRecurCodeMcpToolCall,
   type RecurCodeMcpWorkbenchTool,
-} from "@/lib/recur-code-mcp-tool"
+} from "@/lib/rc-mcp-tool"
 import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 import { MessageResponse } from "@/components/ai-elements/message"
 import { Shimmer } from "@/components/ai-elements/shimmer"
@@ -157,7 +157,7 @@ export function RecurCodeMcpToolCard({
 
   return (
     <div
-      data-testid="recur-code-mcp-tool-card"
+      data-testid="rc-mcp-tool-card"
       data-tool={tool}
       className={cn(
         "overflow-hidden rounded-lg border text-xs ws-msg-card",

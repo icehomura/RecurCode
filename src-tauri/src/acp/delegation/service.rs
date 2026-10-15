@@ -1,4 +1,4 @@
-//! Lifecycle handle for the recur-code-mcp broker socket — the half of the
+//! Lifecycle handle for the rc-mcp broker socket — the half of the
 //! companion round-trip that lives inside RecurCode's own process.
 //!
 //! Both runtimes bind the socket once at boot and then forget about it: the
@@ -438,9 +438,9 @@ mod tests {
     /// ambient `$TMPDIR` happens to be.
     ///
     /// `tempfile::tempdir()` honours `$TMPDIR`, and these tests then add
-    /// `/.tmpXXXXXX/recur-code-delegation-*.sock` on top — about 38 bytes. That is
+    /// `/.tmpXXXXXX/rc-delegation-*.sock` on top — about 38 bytes. That is
     /// fine against the ~20-byte default and fatal against RecurCode's own
-    /// per-session `TMPDIR`, which is 72 bytes (`/var/folders/…/T/recur-code-acp/
+    /// per-session `TMPDIR`, which is 72 bytes (`/var/folders/…/T/rc-acp/
     /// <pid>-<hex>`): the composed path reaches 110 and `sun_path` caps at 104
     /// on macOS. The whole suite went red inside a RecurCode session and green
     /// outside it, for reasons having nothing to do with the code under test.
@@ -472,7 +472,7 @@ mod tests {
     /// pass.
     #[cfg(unix)]
     fn over_long_socket_path(holder: &Path) -> PathBuf {
-        const NAME: &str = "recur-code-delegation-unreachable.sock";
+        const NAME: &str = "rc-delegation-unreachable.sock";
         let cap = crate::acp::scratch_dir::SUN_PATH_CAP;
         // holder + '/' + pad + '/' + NAME == cap, i.e. one past the cap - 1
         // bytes a path may actually occupy.
@@ -533,7 +533,7 @@ mod tests {
     #[tokio::test]
     async fn start_binds_probeable_socket_and_survives_a_restart() {
         let dir = socket_dir();
-        let socket = dir.path().join("recur-code-delegation-test.sock");
+        let socket = dir.path().join("rc-delegation-test.sock");
         let service = make_service(socket.clone());
 
         service.start().await.unwrap();
@@ -557,7 +557,7 @@ mod tests {
     #[tokio::test]
     async fn ensure_running_is_a_noop_while_the_socket_answers() {
         let dir = socket_dir();
-        let service = make_service(dir.path().join("recur-code-delegation-noop.sock"));
+        let service = make_service(dir.path().join("rc-delegation-noop.sock"));
 
         service.start().await.unwrap();
         let before = service.snapshot().await.started_at;
@@ -580,7 +580,7 @@ mod tests {
         let dir = socket_dir();
         let nest = dir.path().join("nest");
         std::fs::create_dir(&nest).unwrap();
-        let socket = nest.join("recur-code-delegation-keep.sock");
+        let socket = nest.join("rc-delegation-keep.sock");
         let service = make_service(socket.clone());
 
         service.start().await.unwrap();
@@ -632,7 +632,7 @@ mod tests {
         use std::os::unix::fs::MetadataExt;
 
         let dir = socket_dir();
-        let socket = dir.path().join("recur-code-delegation-swap.sock");
+        let socket = dir.path().join("rc-delegation-swap.sock");
         let service = make_service(socket.clone());
 
         service.start().await.unwrap();
@@ -673,7 +673,7 @@ mod tests {
     #[tokio::test]
     async fn concurrent_ensure_running_calls_settle_on_one_acceptor() {
         let dir = socket_dir();
-        let service = make_service(dir.path().join("recur-code-delegation-race.sock"));
+        let service = make_service(dir.path().join("rc-delegation-race.sock"));
 
         let results = futures::future::join_all(
             (0..4).map(|_| {

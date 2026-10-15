@@ -165,7 +165,7 @@ async fn a_port_nobody_listens_on_is_refused_in_socks_terms() {
     assert_eq!(code, 0x05, "connection refused");
 }
 
-// An older recur-code-server has no tunnel; a server that switched it off says so;
+// An older rc-server has no tunnel; a server that switched it off says so;
 // a wrong token is neither. The tabs tell these apart.
 #[tokio::test]
 async fn what_the_server_is_decides_the_status() {
@@ -228,21 +228,21 @@ async fn the_probe_tells_a_proxied_page_from_one_that_went_around_the_proxy() {
 
     let (mut page, code) = socks_connect(egress.socks_addr(), "remote.localhost", port).await;
     assert_eq!(code, 0);
-    page.write_all(b"GET /recur-code-egress-probe/n1 HTTP/1.1\r\nHost: remote.localhost\r\n\r\n")
+    page.write_all(b"GET /rc-egress-probe/n1 HTTP/1.1\r\nHost: remote.localhost\r\n\r\n")
         .await
         .unwrap();
     let mut body = Vec::new();
     page.read_to_end(&mut body).await.unwrap();
     let body = String::from_utf8(body).unwrap();
     assert!(body.starts_with("HTTP/1.1 200"), "{body}");
-    assert!(body.contains("'/recur-code-egress-probe/n1'"), "{body}");
+    assert!(body.contains("'/rc-egress-probe/n1'"), "{body}");
     assert!(body.contains("+ '/direct'"), "the page addresses loopback literals: {body}");
     assert!(body.contains("new WebSocket("), "the page opens its WebSocket: {body}");
 
     let (mut ws, code) = socks_connect(egress.socks_addr(), "remote.localhost", port).await;
     assert_eq!(code, 0);
     ws.write_all(
-        b"GET /recur-code-egress-probe/n1/ws HTTP/1.1\r\nHost: remote.localhost\r\n\
+        b"GET /rc-egress-probe/n1/ws HTTP/1.1\r\nHost: remote.localhost\r\n\
           Upgrade: websocket\r\nConnection: Upgrade\r\n\
           Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
     )
@@ -258,7 +258,7 @@ async fn the_probe_tells_a_proxied_page_from_one_that_went_around_the_proxy() {
     // Around the proxy: plain HTTP straight to the port.
     let mut direct = TcpStream::connect(egress.socks_addr()).await.unwrap();
     direct
-        .write_all(b"GET /recur-code-egress-probe/n2 HTTP/1.1\r\nHost: localhost\r\n\r\n")
+        .write_all(b"GET /rc-egress-probe/n2 HTTP/1.1\r\nHost: localhost\r\n\r\n")
         .await
         .unwrap();
     let mut answer = Vec::new();

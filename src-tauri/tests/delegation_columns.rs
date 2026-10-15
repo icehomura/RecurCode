@@ -10,7 +10,7 @@ use sea_orm::{ActiveModelTrait, EntityTrait, NotSet, Set};
 #[tokio::test]
 async fn delegation_columns_round_trip() {
     let db = fresh_in_memory_db().await;
-    let folder_id = seed_folder(&db, "/tmp/recur-code-delegation-test").await;
+    let folder_id = seed_folder(&db, "/tmp/rc-delegation-test").await;
 
     let agent_type_str = serde_json::to_value(AgentType::ClaudeCode)
         .unwrap()
@@ -58,7 +58,7 @@ async fn delegation_columns_round_trip() {
 #[tokio::test]
 async fn delegation_columns_default_to_null_on_existing_create() {
     let db = fresh_in_memory_db().await;
-    let folder_id = seed_folder(&db, "/tmp/recur-code-delegation-null").await;
+    let folder_id = seed_folder(&db, "/tmp/rc-delegation-null").await;
     // The existing create helper does not set the new columns; verify they default to None.
     let conv_id =
         recur_code_lib::db::test_helpers::seed_conversation(&db, folder_id, AgentType::ClaudeCode).await;

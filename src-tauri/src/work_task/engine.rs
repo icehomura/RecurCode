@@ -3282,7 +3282,7 @@ impl TaskEngine {
         }
     }
 
-    // ── recur-code-mcp task reporting tools ──────────────────────────────────────
+    // ── rc-mcp task reporting tools ──────────────────────────────────────
 
     /// `task_progress`: attribute the report through the connection index and
     /// append an `agent_progress` event (the card/timeline milestone).
@@ -7263,7 +7263,7 @@ fn round1(percent: f64) -> f64 {
 /// Marker file (in the worktree's PRIVATE git dir, so it can never show up in
 /// `git status` or be committed) recording that the folder's init command
 /// completed successfully in this worktree.
-const SETUP_MARKER: &str = "recur-code-task-init-ok";
+const SETUP_MARKER: &str = "rc-task-init-ok";
 
 async fn setup_marker_present(wt_path: &str) -> bool {
     match task_git::git_dir(wt_path).await {
@@ -7478,7 +7478,7 @@ fn expand_home(path: &str, home: Option<&Path>) -> PathBuf {
     }
 }
 
-/// recur-code-mcp `task_progress` / `task_complete` access handed to the delegation
+/// rc-mcp `task_progress` / `task_complete` access handed to the delegation
 /// listener at boot. Resolves the process-global engine at CALL time — the
 /// listener is constructed before the engine, and a process that never wins the
 /// engine lock cleanly rejects every report.

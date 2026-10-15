@@ -1,4 +1,4 @@
-//! History parser for agents that have **no recur-code-side store parser**: custom
+//! History parser for agents that have **no rc-side store parser**: custom
 //! ACP agents.
 //!
 //! Every other parser in this module reverse-engineers one agent's private
@@ -1675,7 +1675,7 @@ mod tests {
         );
     }
 
-    /// A `delegate_to_agent` call from the recur-code-mcp companion must replay
+    /// A `delegate_to_agent` call from the rc-mcp companion must replay
     /// under its wire name. The frontend's tool-kind classifier
     /// (`isAgentLikeToolName`) recognizes `delegate_to_agent` across host
     /// naming conventions and renders the delegation card from it — the same
@@ -1690,7 +1690,7 @@ mod tests {
                 serde_json::json!({
                     "sessionUpdate": "tool_call",
                     "toolCallId": "call-9",
-                    "title": "mcp__recur-code-mcp__delegate_to_agent",
+                    "title": "mcp__rc-mcp__delegate_to_agent",
                     "kind": "other",
                     "status": "pending",
                     "rawInput": { "agent_type": "custom:goose", "task": "review the diff" }
@@ -1716,7 +1716,7 @@ mod tests {
                 input_preview,
                 ..
             } => {
-                assert_eq!(tool_name, "mcp__recur-code-mcp__delegate_to_agent");
+                assert_eq!(tool_name, "mcp__rc-mcp__delegate_to_agent");
                 let input = input_preview.as_deref().unwrap();
                 assert!(input.contains("custom:goose"));
                 assert!(input.contains("review the diff"));
@@ -2258,7 +2258,7 @@ mod tests {
 
     fn temp_root() -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "recur-code-acp-native-test-{}-{:?}",
+            "rc-acp-native-test-{}-{:?}",
             std::process::id(),
             std::thread::current().id()
         ));

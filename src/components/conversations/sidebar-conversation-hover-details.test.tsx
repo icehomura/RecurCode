@@ -262,10 +262,10 @@ describe("SidebarConversationHoverDetails", () => {
 
   it("shows the original path when the source worktree was removed", () => {
     seed()
-    renderBubble(conv({ origin_cwd: "/Users/dev/projects/recur-code-feature-x" }))
+    renderBubble(conv({ origin_cwd: "/Users/dev/projects/rc-feature-x" }))
 
     expect(fieldValue("Source worktree removed")).toBe(
-      "/Users/dev/projects/recur-code-feature-x"
+      "/Users/dev/projects/rc-feature-x"
     )
   })
 

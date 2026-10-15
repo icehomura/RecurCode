@@ -65,14 +65,14 @@ pub(crate) const SKILL_ID: &str = "ui-render";
 const SKILL_MD: &str = include_str!("../../genui/ui-render/SKILL.md");
 
 /// Written into the central copy before anything else: says RecurCode made it.
-pub(crate) const MARKER_FILE: &str = ".recur-code-managed";
+pub(crate) const MARKER_FILE: &str = ".rc-managed";
 const MARKER_TEXT: &str = "RecurCode installs this skill (Settings > Skill Packs > UI) and \
 rewrites it when it changes. Edits made here are lost.\n";
 
 /// What RecurCode 0.35.0 called the skill. Its central copy carries the same
 /// marker, plus a list of every link made from it, one path per line.
 const LEGACY_SKILL_ID: &str = "json-render";
-const LEGACY_LINKS_FILE: &str = ".recur-code-links";
+const LEGACY_LINKS_FILE: &str = ".rc-links";
 /// The 0.35.0 switch that linked `json-render` into every agent RecurCode
 /// started. Read once more, to move its links over; nothing writes it now.
 const LEGACY_SWITCH_KEY: &str = "generative_ui.enabled";
@@ -520,7 +520,7 @@ fn write_recorded_links(old: &Path, links: &[PathBuf]) -> io::Result<()> {
         .iter()
         .map(|link| format!("{}\n", link.display()))
         .collect();
-    let partial = old.join(".recur-code-links.partial");
+    let partial = old.join(".rc-links.partial");
     fs::write(&partial, list)?;
     fs::rename(&partial, old.join(LEGACY_LINKS_FILE)).inspect_err(|_| {
         let _ = fs::remove_file(&partial);

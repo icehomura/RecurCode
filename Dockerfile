@@ -9,16 +9,16 @@ COPY public/ ./public/
 COPY next.config.ts tsconfig.json postcss.config.mjs components.json ./
 RUN pnpm build
 
-# Stage 2: Build Rust server binary + recur-code-mcp companion
+# Stage 2: Build Rust server binary + rc-mcp companion
 FROM rust:slim-bookworm AS backend
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/src-tauri
 COPY src-tauri/ ./
-# recur-code-mcp is the stdio MCP companion the runtime injects per session
-# (see acp/delegation/companion.rs). It must ship next to recur-code-server so
+# rc-mcp is the stdio MCP companion the runtime injects per session
+# (see acp/delegation/companion.rs). It must ship next to rc-server so
 # `locate_recur_code_mcp_binary()` finds it via the exe-sibling lookup.
-RUN cargo build --release --bin recur-code-server --no-default-features --features server-bin \
- && cargo build --release --bin recur-code-mcp --no-default-features --features mcp-bin
+RUN cargo build --release --bin rc-server --no-default-features --features server-bin \
+ && cargo build --release --bin rc-mcp --no-default-features --features mcp-bin
 
 # Stage 3: Runtime
 FROM node:24-bookworm-slim
@@ -40,8 +40,8 @@ RUN apt-get update && apt-get install -y \
 # server/Docker mode. The version (72) is pinned to Debian bookworm; bump it to match
 # if the base image moves to a newer Debian release (e.g. trixie ships libicu76).
 
-COPY --from=backend /app/src-tauri/target/release/recur-code-server /usr/local/bin/recur-code-server
-COPY --from=backend /app/src-tauri/target/release/recur-code-mcp /usr/local/bin/recur-code-mcp
+COPY --from=backend /app/src-tauri/target/release/rc-server /usr/local/bin/rc-server
+COPY --from=backend /app/src-tauri/target/release/rc-mcp /usr/local/bin/rc-mcp
 COPY --from=frontend /app/out /app/web
 
 ENV RC_STATIC_DIR=/app/web
@@ -64,4 +64,4 @@ VOLUME /data
 
 # Run under the built-in supervisor (PID 1) so an in-place upgrade can swap
 # the binary and have the worker relaunched without stopping the container.
-CMD ["recur-code-server", "--supervise"]
+CMD ["rc-server", "--supervise"]

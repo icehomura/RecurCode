@@ -525,7 +525,7 @@ describe("BrowserToolbar and the agent activity record", () => {
 })
 
 // ---------------------------------------------------------------------------
-// A window bound to a remote recur-code-server
+// A window bound to a remote rc-server
 // ---------------------------------------------------------------------------
 
 describe("BrowserToolbar in a remote workspace window", () => {

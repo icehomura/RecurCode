@@ -2014,7 +2014,7 @@ fn load_macos_tray_template_icon() -> Result<tauri::image::Image<'static>, Strin
 pub const TRAY_MENU_ID_PREFIX: &str = "tray:";
 pub const TRAY_MENU_ID_SHOW: &str = "tray:show";
 pub const TRAY_MENU_ID_QUIT: &str = "tray:quit";
-pub const TRAY_ICON_ID: &str = "recur-code-tray";
+pub const TRAY_ICON_ID: &str = "rc-tray";
 
 /// True after `install_tray_icon` returns `Ok`. The hide-on-close path
 /// in `lib.rs` consults this so we don't strand the user on systems
@@ -2712,8 +2712,8 @@ mod settings_route_tests {
     /// to a real route. `general` is the one that looks redundant and is not:
     /// the fallback below it is Appearance, so a caller wanting the General
     /// page must be able to name it and land there. `collaboration` is where
-    /// the recur-code-mcp tool switches live in full, and it is what the status-bar
-    /// recur-code-mcp popover links to; `computer-use` is what the Computer use
+    /// the rc-mcp tool switches live in full, and it is what the status-bar
+    /// rc-mcp popover links to; `computer-use` is what the Computer use
     /// popover links to.
     #[test]
     fn every_named_settings_section_resolves_to_its_own_route() {

@@ -1086,7 +1086,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-test-{nanos}"));
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-test-{nanos}"));
         let chats_dir = base.join("tmp").join("RecurCode").join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
         fs::write(
@@ -1169,7 +1169,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-topic-{nanos}"));
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-topic-{nanos}"));
         let chats_dir = base.join("tmp").join("RecurCode").join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
         fs::write(
@@ -1211,7 +1211,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-ctx-{nanos}"));
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-ctx-{nanos}"));
         let chats_dir = base.join("tmp").join("RecurCode").join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
         fs::write(
@@ -1248,11 +1248,11 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-jsonl-test-{nanos}"));
-        let chats_dir = base.join("tmp").join("recur-code-jsonl").join("chats");
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-jsonl-test-{nanos}"));
+        let chats_dir = base.join("tmp").join("rc-jsonl").join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
         fs::write(
-            base.join("tmp").join("recur-code-jsonl").join(".project_root"),
+            base.join("tmp").join("rc-jsonl").join(".project_root"),
             "/Users/test/workspace/jsonl-demo",
         )
         .expect("write project root");
@@ -1321,7 +1321,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-completed-{nanos}"));
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-completed-{nanos}"));
         let chats_dir = base.join("tmp").join("RecurCode").join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
 
@@ -1382,7 +1382,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-{tag}-{nanos}"));
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-{tag}-{nanos}"));
         let chats_dir = base.join("tmp").join(alias).join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
         fs::write(
@@ -1699,7 +1699,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time ok")
             .as_nanos();
-        let base: PathBuf = env::temp_dir().join(format!("recur-code-gemini-dirs-{nanos}"));
+        let base: PathBuf = env::temp_dir().join(format!("rc-gemini-dirs-{nanos}"));
         let chats_dir = base.join("tmp").join("unmapped-alias").join("chats");
         fs::create_dir_all(&chats_dir).expect("create chat dir");
         // Deliberately NO `.project_root` and no `projects.json`.

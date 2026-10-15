@@ -49,9 +49,9 @@
 const POLICY = "v1"
 const BUILD = new URL(self.location.href).searchParams.get("v") || "unversioned"
 const VERSION = `${POLICY}-${BUILD}`
-const ASSETS_PREFIX = `recur-code-assets-${POLICY}-`
+const ASSETS_PREFIX = `rc-assets-${POLICY}-`
 const ASSETS_CACHE = `${ASSETS_PREFIX}${BUILD}`
-const SHELL_CACHE = `recur-code-shell-${VERSION}`
+const SHELL_CACHE = `rc-shell-${VERSION}`
 const SHELL_PATH = "/index.html"
 
 // Stored at install, before this worker can answer anything. The root shell
@@ -94,7 +94,7 @@ self.addEventListener("activate", (event) => {
     (async () => {
       const older = (await caches.keys()).filter(
         (name) =>
-          name.startsWith("recur-code-") &&
+          name.startsWith("rc-") &&
           name !== ASSETS_CACHE &&
           name !== SHELL_CACHE
       )

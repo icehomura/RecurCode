@@ -40,7 +40,7 @@ describe("defaultExportFileName", () => {
   it("is filesystem-safe and sorts chronologically", () => {
     const name = defaultExportFileName(new Date("2026-05-04T11:32:07.456Z"))
     expect(name).toBe(
-      `recur-code-config-2026-05-04-11-32-07.${CONFIG_EXPORT_EXTENSION}`
+      `rc-config-2026-05-04-11-32-07.${CONFIG_EXPORT_EXTENSION}`
     )
     // Windows rejects ':' in file names — the timestamp must not smuggle one in.
     expect(name).not.toMatch(/[:]/)
@@ -89,7 +89,7 @@ describe("local file transfer picks its runtime", () => {
     )
     // The browser owns the destination, so the reported "path" is the offered
     // file name rather than anything on a disk.
-    expect(summary?.path).toMatch(/^recur-code-config-.*\.json$/)
+    expect(summary?.path).toMatch(/^rc-config-.*\.json$/)
   })
 
   it("uses the native save dialog on a local desktop window", async () => {

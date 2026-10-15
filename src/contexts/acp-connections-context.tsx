@@ -324,7 +324,7 @@ export interface ConnectionState {
    */
   steeredMessageIds: string[]
   pendingQuestion: PendingQuestion | null
-  /** Awaiting-answer multiple-choice `ask_user_question` (the recur-code-mcp blocking
+  /** Awaiting-answer multiple-choice `ask_user_question` (the rc-mcp blocking
    *  tool). Set from a `question_request` event or a snapshot's
    *  `pending_question`; cleared on `question_resolved` or turn end. Distinct
    *  from the free-text `pendingQuestion` above. */
@@ -5029,7 +5029,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
             }
             // 4. flip each async sub-agent's launch card to its terminal
             //    (completed + result) state IN-MEMORY, by rewriting the
-            //    launching tool call's `[[recur-code-background-task]]` marker from
+            //    launching tool call's `[[rc-background-task]]` marker from
             //    the settle payload's own `tool_use_id`/`status`/`result`. This
             //    deliberately replaces the `refetchDetail` this used to do: that
             //    refetch re-parsed the still-open transcript mid-#870-hold,

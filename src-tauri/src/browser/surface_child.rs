@@ -833,7 +833,7 @@ fn build_child(
     }
 }
 
-/// The `recur-code-doc:` handler of one document guest. Registered on the guest's
+/// The `rc-doc:` handler of one document guest. Registered on the guest's
 /// builder alone, bound to its grant, and checked against the webview it is
 /// called for; the file work happens off the main thread (the engine calls
 /// here on it), and a request that ends dynamic mode reports the new state.

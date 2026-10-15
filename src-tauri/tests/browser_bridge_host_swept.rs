@@ -74,7 +74,7 @@ fn cookie_for(grant: &BridgeGrant) -> String {
         .entry_path
         .strip_prefix(browser_bridge::ENTER_PREFIX)
         .unwrap();
-    format!("recur-code-bridge-{}={cap}", grant.target_port)
+    format!("rc-bridge-{}={cap}", grant.target_port)
 }
 
 /// A name the bridge handed out stays the bridge's after its target idles

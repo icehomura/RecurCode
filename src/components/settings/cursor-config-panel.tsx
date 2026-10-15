@@ -62,12 +62,12 @@ import { cn } from "@/lib/utils"
 const CURSOR_API_KEY_ENV = "CURSOR_API_KEY"
 const CURSOR_API_BASE_URL_ENV = "CURSOR_API_BASE_URL"
 const CURSOR_MODEL_ENV = "CURSOR_MODEL"
-/** recur-code-side launch knob: "1" inserts the CLI's root `--force` flag (Run
+/** rc-side launch knob: "1" inserts the CLI's root `--force` flag (Run
  * Everything) before the `acp` subcommand, "0" leaves it off. The CLI reads no
  * such env var. Off is written explicitly rather than by deleting the key —
  * see [`buildCursorEnv`]. */
 const CURSOR_FORCE_ENV = "CURSOR_FORCE"
-/** recur-code-side knob recording the chosen authentication method. Read by the
+/** rc-side knob recording the chosen authentication method. Read by the
  * launch path (`apply_cursor_env_policy`): in `subscription` mode it clears any
  * inherited CURSOR_API_KEY/BASE_URL so the CLI uses the browser-login
  * credential. The CLI itself ignores this var. */

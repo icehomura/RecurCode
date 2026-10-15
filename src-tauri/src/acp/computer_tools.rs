@@ -3,7 +3,7 @@
 //! `computer_verify`, and the actions `computer_click`, `computer_drag`,
 //! `computer_scroll`, `computer_type`, `computer_press_key`,
 //! `computer_hold_key`, `computer_set_value`, `computer_restore`,
-//! `computer_invoke_menu`) carried by recur-code-mcp.
+//! `computer_invoke_menu`) carried by rc-mcp.
 //!
 //! The same split as the browser tools: nothing here decides whether a window
 //! may be read. That is `crate::computer::agent` and the target table, and it
@@ -272,7 +272,7 @@ pub fn blocked_note(target_id: &str, why: &str) -> String {
 
 pub fn permission_missing_note(permission: &str) -> String {
     format!(
-        "recur-code-computer-helper has not been granted {permission} by macOS. Ask the user to grant \
+        "rc-computer-helper has not been granted {permission} by macOS. Ask the user to grant \
          it: in RecurCode's status bar they open Computer use and follow the permission guide \
          (System Settings → Privacy & Security → {permission}). Only they can, and retrying will \
          not help until they have."
@@ -924,7 +924,7 @@ impl ComputerToolsRuntimeConfig {
     }
 
     /// Note that this process serves computer use — a computer service has
-    /// started: always in the desktop app, and in recur-code-server where the
+    /// started: always in the desktop app, and in rc-server where the
     /// person who runs it lets it share the screen it runs on. Until then
     /// the tools are offered to no agent, whatever the switch says.
     pub fn mark_served(&self) {

@@ -69,10 +69,10 @@ impl std::fmt::Display for BackendError {
         match self {
             BackendError::Unavailable(why) => write!(f, "computer use is unavailable: {why}"),
             BackendError::PermissionMissing(OsPermission::Accessibility) => {
-                f.write_str("recur-code-computer-helper has not been granted Accessibility")
+                f.write_str("rc-computer-helper has not been granted Accessibility")
             }
             BackendError::PermissionMissing(OsPermission::ScreenRecording) => {
-                f.write_str("recur-code-computer-helper has not been granted Screen Recording")
+                f.write_str("rc-computer-helper has not been granted Screen Recording")
             }
             BackendError::NoSuchWindow => f.write_str("the window is gone"),
             BackendError::Rejected(why) => write!(f, "the driver was rejected: {why}"),

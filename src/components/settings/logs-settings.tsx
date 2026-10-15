@@ -741,7 +741,7 @@ export function LogsSettings() {
                         }
                         onBlur={queueSave}
                         placeholder="recur_code_lib::acp"
-                        list="recur-code-log-targets"
+                        list="rc-log-targets"
                         disabled={envLocked}
                         className={`h-8 flex-1 text-xs ${
                           invalid ? "border-red-500/60" : ""
@@ -782,7 +782,7 @@ export function LogsSettings() {
                     </div>
                   )
                 })}
-                <datalist id="recur-code-log-targets">
+                <datalist id="rc-log-targets">
                   {CURATED_TARGETS.map((tgt) => (
                     <option key={tgt} value={tgt} />
                   ))}

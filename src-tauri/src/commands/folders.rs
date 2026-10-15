@@ -697,8 +697,8 @@ pub async fn open_folder_core(
 /// than erroring.
 ///
 /// Also defaults the folder's display alias to the checked-out branch (see
-/// [`seed_worktree_alias`]) — a worktree's directory name (`recur-code-task-49`,
-/// `recur-code-automation-3-run-8`) says far less about it than the branch does, and
+/// [`seed_worktree_alias`]) — a worktree's directory name (`rc-task-49`,
+/// `rc-automation-3-run-8`) says far less about it than the branch does, and
 /// this is the one place every worktree registration passes through: the branch
 /// dropdown's "new worktree", switch-to-branch landing on an unregistered
 /// checkout, the automation engine's per-run worktree, and the work-task
@@ -4357,7 +4357,7 @@ fn atomic_write_text(path: &Path, bytes: &[u8]) -> Result<(), AppCommandError> {
     }
 
     let temp_path = parent.join(format!(
-        ".recur-code-edit-{}.{}.tmp",
+        ".rc-edit-{}.{}.tmp",
         std::process::id(),
         uuid::Uuid::new_v4().simple()
     ));
@@ -7282,17 +7282,17 @@ mod tests {
     #[tokio::test]
     async fn add_folder_to_history_core_derives_name_from_path() {
         let db = fresh_in_memory_db().await;
-        let entry = add_folder_to_history_core(&db, "/tmp/recur-code-test-project".into())
+        let entry = add_folder_to_history_core(&db, "/tmp/rc-test-project".into())
             .await
             .expect("add folder");
-        assert_eq!(entry.name, "recur-code-test-project");
-        assert_eq!(entry.path, "/tmp/recur-code-test-project");
+        assert_eq!(entry.name, "rc-test-project");
+        assert_eq!(entry.path, "/tmp/rc-test-project");
     }
 
     #[tokio::test]
     async fn add_folder_to_history_core_upserts_on_duplicate_path() {
         let db = fresh_in_memory_db().await;
-        let path = "/tmp/recur-code-dup-test".to_string();
+        let path = "/tmp/rc-dup-test".to_string();
         let first = add_folder_to_history_core(&db, path.clone())
             .await
             .expect("add 1st");
@@ -7312,7 +7312,7 @@ mod tests {
     #[tokio::test]
     async fn remove_folder_from_history_core_soft_deletes() {
         let db = fresh_in_memory_db().await;
-        let path = "/tmp/recur-code-remove-test".to_string();
+        let path = "/tmp/rc-remove-test".to_string();
         add_folder_to_history_core(&db, path.clone())
             .await
             .expect("add");
@@ -7349,7 +7349,7 @@ mod tests {
     #[tokio::test]
     async fn ensure_folder_for_path_creates_a_closed_row() {
         let db = fresh_in_memory_db().await;
-        let entry = folder_service::ensure_folder_for_path(&db.conn, "/tmp/recur-code-pr666")
+        let entry = folder_service::ensure_folder_for_path(&db.conn, "/tmp/rc-pr666")
             .await
             .expect("ensure folder");
 
@@ -7378,11 +7378,11 @@ mod tests {
     #[tokio::test]
     async fn ensure_folder_for_path_leaves_an_open_folder_untouched() {
         let db = fresh_in_memory_db().await;
-        let opened = open_folder_core(&db, "/tmp/recur-code-ensure-open".into())
+        let opened = open_folder_core(&db, "/tmp/rc-ensure-open".into())
             .await
             .expect("open folder");
 
-        let entry = folder_service::ensure_folder_for_path(&db.conn, "/tmp/recur-code-ensure-open")
+        let entry = folder_service::ensure_folder_for_path(&db.conn, "/tmp/rc-ensure-open")
             .await
             .expect("ensure folder");
 
@@ -7404,14 +7404,14 @@ mod tests {
     #[tokio::test]
     async fn ensure_folder_for_path_does_not_reopen_a_closed_folder() {
         let db = fresh_in_memory_db().await;
-        let opened = open_folder_core(&db, "/tmp/recur-code-ensure-closed".into())
+        let opened = open_folder_core(&db, "/tmp/rc-ensure-closed".into())
             .await
             .expect("open folder");
         folder_service::set_folder_open(&db.conn, opened.id, false)
             .await
             .expect("close folder");
 
-        folder_service::ensure_folder_for_path(&db.conn, "/tmp/recur-code-ensure-closed")
+        folder_service::ensure_folder_for_path(&db.conn, "/tmp/rc-ensure-closed")
             .await
             .expect("ensure folder");
 
@@ -7428,10 +7428,10 @@ mod tests {
     #[tokio::test]
     async fn ensure_folder_for_path_revives_a_soft_deleted_row_but_leaves_it_closed() {
         let db = fresh_in_memory_db().await;
-        let opened = open_folder_core(&db, "/tmp/recur-code-ensure-deleted".into())
+        let opened = open_folder_core(&db, "/tmp/rc-ensure-deleted".into())
             .await
             .expect("open folder");
-        remove_folder_from_history_core(&db, "/tmp/recur-code-ensure-deleted".into())
+        remove_folder_from_history_core(&db, "/tmp/rc-ensure-deleted".into())
             .await
             .expect("soft delete");
         assert!(
@@ -7442,7 +7442,7 @@ mod tests {
             "precondition: a soft-deleted row is invisible to cwd resolution"
         );
 
-        let entry = folder_service::ensure_folder_for_path(&db.conn, "/tmp/recur-code-ensure-deleted")
+        let entry = folder_service::ensure_folder_for_path(&db.conn, "/tmp/rc-ensure-deleted")
             .await
             .expect("ensure folder");
 
@@ -7464,12 +7464,12 @@ mod tests {
     #[tokio::test]
     async fn open_worktree_folder_core_records_parent_as_root() {
         let db = fresh_in_memory_db().await;
-        let root = open_folder_core(&db, "/tmp/recur-code-wt-root".into())
+        let root = open_folder_core(&db, "/tmp/rc-wt-root".into())
             .await
             .expect("open root");
         assert_eq!(root.parent_id, None, "root folder has no parent");
 
-        let wt = open_worktree_folder_core(&db, "/tmp/recur-code-wt-a".into(), root.id)
+        let wt = open_worktree_folder_core(&db, "/tmp/rc-wt-a".into(), root.id)
             .await
             .expect("open worktree");
         assert_eq!(
@@ -7482,15 +7482,15 @@ mod tests {
     #[tokio::test]
     async fn open_worktree_folder_core_flattens_nested_worktrees() {
         let db = fresh_in_memory_db().await;
-        let root = open_folder_core(&db, "/tmp/recur-code-wt-flat-root".into())
+        let root = open_folder_core(&db, "/tmp/rc-wt-flat-root".into())
             .await
             .expect("open root");
-        let child = open_worktree_folder_core(&db, "/tmp/recur-code-wt-flat-1".into(), root.id)
+        let child = open_worktree_folder_core(&db, "/tmp/rc-wt-flat-1".into(), root.id)
             .await
             .expect("open child worktree");
         // A worktree created *from* the child must still point at the root, not
         // the intermediate child.
-        let grandchild = open_worktree_folder_core(&db, "/tmp/recur-code-wt-flat-2".into(), child.id)
+        let grandchild = open_worktree_folder_core(&db, "/tmp/rc-wt-flat-2".into(), child.id)
             .await
             .expect("open grandchild worktree");
         assert_eq!(child.parent_id, Some(root.id));
@@ -7504,7 +7504,7 @@ mod tests {
     #[tokio::test]
     async fn open_worktree_folder_core_unknown_source_is_root() {
         let db = fresh_in_memory_db().await;
-        let wt = open_worktree_folder_core(&db, "/tmp/recur-code-wt-orphan".into(), 0)
+        let wt = open_worktree_folder_core(&db, "/tmp/rc-wt-orphan".into(), 0)
             .await
             .expect("open worktree with no source");
         assert_eq!(
@@ -8125,15 +8125,15 @@ branch refs/heads/main";
     #[tokio::test]
     async fn open_folder_core_preserves_existing_worktree_parent() {
         let db = fresh_in_memory_db().await;
-        let root = open_folder_core(&db, "/tmp/recur-code-wt-preserve-root".into())
+        let root = open_folder_core(&db, "/tmp/rc-wt-preserve-root".into())
             .await
             .expect("open root");
-        let wt = open_worktree_folder_core(&db, "/tmp/recur-code-wt-preserve".into(), root.id)
+        let wt = open_worktree_folder_core(&db, "/tmp/rc-wt-preserve".into(), root.id)
             .await
             .expect("open worktree");
         assert_eq!(wt.parent_id, Some(root.id));
         // A plain reopen of the same path must not clear the recorded parent.
-        let reopened = open_folder_core(&db, "/tmp/recur-code-wt-preserve".into())
+        let reopened = open_folder_core(&db, "/tmp/rc-wt-preserve".into())
             .await
             .expect("reopen plain");
         assert_eq!(
@@ -8146,10 +8146,10 @@ branch refs/heads/main";
     #[tokio::test]
     async fn open_worktree_folder_core_unknown_source_demotes_existing_to_root() {
         let db = fresh_in_memory_db().await;
-        let root = open_folder_core(&db, "/tmp/recur-code-wt-demote-root".into())
+        let root = open_folder_core(&db, "/tmp/rc-wt-demote-root".into())
             .await
             .expect("open root");
-        let path = "/tmp/recur-code-wt-demote".to_string();
+        let path = "/tmp/rc-wt-demote".to_string();
         let wt = open_worktree_folder_core(&db, path.clone(), root.id)
             .await
             .expect("open worktree");
@@ -8168,7 +8168,7 @@ branch refs/heads/main";
     #[tokio::test]
     async fn update_folder_color_core_roundtrips() {
         let db = fresh_in_memory_db().await;
-        let entry = add_folder_to_history_core(&db, "/tmp/recur-code-color-test".into())
+        let entry = add_folder_to_history_core(&db, "/tmp/rc-color-test".into())
             .await
             .expect("add");
         let updated = update_folder_color_core(&db, entry.id, "#ff8800".into())
@@ -8185,7 +8185,7 @@ branch refs/heads/main";
         use std::sync::Arc;
 
         let db = fresh_in_memory_db().await;
-        let entry = add_folder_to_history_core(&db, "/tmp/recur-code-agent-test".into())
+        let entry = add_folder_to_history_core(&db, "/tmp/rc-agent-test".into())
             .await
             .expect("add");
         let broadcaster = Arc::new(WebEventBroadcaster::new());

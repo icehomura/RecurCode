@@ -88,7 +88,7 @@ function tabState(tabId: string): BrowserTabState {
     channel: "degraded",
     channelError: null,
     url: "",
-    requestedUrl: "recur-code-doc://doc/report.html",
+    requestedUrl: "rc-doc://doc/report.html",
     title: "",
     favicon: null,
     loading: true,
@@ -113,7 +113,7 @@ function docState(
     mode: "safe",
     root: "/tmp/site",
     entry: "/tmp/site/report.html",
-    url: "recur-code-doc://doc/report.html",
+    url: "rc-doc://doc/report.html",
     reset: null,
     ...overrides,
   }
@@ -305,7 +305,7 @@ describe("DocGuestPreview", () => {
     act(() =>
       setBrowserTabNotice(key, {
         kind: "navigation-blocked",
-        url: "recur-code-doc://doc/big.zip",
+        url: "rc-doc://doc/big.zip",
         reason: "download",
       })
     )

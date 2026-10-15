@@ -1764,7 +1764,7 @@
     "customAgentSkillsDirLabel": "專屬技能目錄",
     "customAgentSkillsDirHint": "該智慧體自身載入技能的目錄絕對路徑 —— 可與共享目錄並存，也可單獨使用。~ 會展開為主目錄；連結技能時優先放入此目錄。",
     "customAgentMcpLabel": "MCP 支援",
-    "customAgentMcpHint": "工作階段建立時向該智慧體注入 RecurCode 內建的 recur-code-mcp 伴生行程 —— 委派、即時回饋與任務工具都依賴它。若該智慧體不支援 MCP、連線時報錯，請關閉此項；設定會在下次連線時生效。",
+    "customAgentMcpHint": "工作階段建立時向該智慧體注入 RecurCode 內建的 rc-mcp 伴生行程 —— 委派、即時回饋與任務工具都依賴它。若該智慧體不支援 MCP、連線時報錯，請關閉此項；設定會在下次連線時生效。",
     "customAgentIconNotAnImage": "請選擇圖片檔案。",
     "customAgentIconTooLarge": "圖示需小於 {limit} KB。",
     "customAgentIconReadFailed": "無法讀取該圖片。",
@@ -2305,7 +2305,7 @@
         "showPet": "顯示寵物"
       },
       "mcp": {
-        "title": "recur-code-mcp 服務",
+        "title": "rc-mcp 服務",
         "state": {
           "running": "執行中",
           "stopped": "未執行",
@@ -2317,7 +2317,7 @@
           "running": "從這裡啟動的代理可使用 RecurCode 內建的工具。",
           "stopped": "Broker 通訊端沒有回應，伴生程序連不回 RecurCode。",
           "disabled": "所有工具群組都已關閉，不會注入伴生程序。",
-          "unavailable": "磁碟上找不到 recur-code-mcp 執行檔。",
+          "unavailable": "磁碟上找不到 rc-mcp 執行檔。",
           "unknown": "無法讀取狀態。"
         },
         "socketPath": "位址",
@@ -5265,7 +5265,7 @@
     "computer": {
       "label": "查看和操作桌面視窗",
       "short": "列出應用程式和視窗，讀取你分享的視窗，操作你允許的視窗。",
-      "hint": "讓智慧體列出桌面上的應用程式和視窗，讀取你分享給它的視窗——截圖、視窗內容，以及是否已出現預期的狀態——並在你允許操作的視窗裡點擊、輸入和按鍵。在你從狀態列的「電腦操作」面板分享某個視窗之前，任何視窗都不可讀；除非你還允許操作，否則任何視窗都不能被操作。視窗關閉、閒置一段時間或你停止分享時，分享即結束；面板中的「停止智慧體」會立即停下所有智慧體。輸入在背景送達視窗；遇到背景收不到輸入的應用程式，智慧體可以把視窗切到前景完成操作，可在電腦操作設定中關閉。僅限桌面版；在 macOS 上需要為 recur-code-computer-helper 授予權限。預覽功能。"
+      "hint": "讓智慧體列出桌面上的應用程式和視窗，讀取你分享給它的視窗——截圖、視窗內容，以及是否已出現預期的狀態——並在你允許操作的視窗裡點擊、輸入和按鍵。在你從狀態列的「電腦操作」面板分享某個視窗之前，任何視窗都不可讀；除非你還允許操作，否則任何視窗都不能被操作。視窗關閉、閒置一段時間或你停止分享時，分享即結束；面板中的「停止智慧體」會立即停下所有智慧體。輸入在背景送達視窗；遇到背景收不到輸入的應用程式，智慧體可以把視窗切到前景完成操作，可在電腦操作設定中關閉。僅限桌面版；在 macOS 上需要為 rc-computer-helper 授予權限。預覽功能。"
     },
     "automations": {
       "label": "建立自動化",
@@ -5464,9 +5464,9 @@
       "screenRecording": "螢幕錄製",
       "granted": "已授權",
       "request": "前往授權",
-      "why": "請在系統設定中開啟 recur-code-computer-helper 的開關（不是 RecurCode）。「螢幕錄製」用於檢視視窗畫面，「輔助使用」用於讀取和操作視窗。",
-      "devRebuild": "每次重新編譯 helper，舊授權都會失效：請先從清單中刪除舊的 recur-code-computer-helper，再重新授權。",
-      "notListed": "如果清單中沒有 recur-code-computer-helper，可以從 Finder 把它拖進去：",
+      "why": "請在系統設定中開啟 rc-computer-helper 的開關（不是 RecurCode）。「螢幕錄製」用於檢視視窗畫面，「輔助使用」用於讀取和操作視窗。",
+      "devRebuild": "每次重新編譯 helper，舊授權都會失效：請先從清單中刪除舊的 rc-computer-helper，再重新授權。",
+      "notListed": "如果清單中沒有 rc-computer-helper，可以從 Finder 把它拖進去：",
       "reveal": "在 Finder 中顯示"
     },
     "shared": {
@@ -5519,7 +5519,7 @@
       "loading": "正在載入視窗…",
       "refresh": "重新整理",
       "empty": "沒有找到視窗。如果應該有，請檢查「電腦操作」面板中的權限。",
-      "noScreenRecording": "recur-code-computer-helper 還沒有「螢幕錄製」權限：看不到視窗標題和畫面，智慧體也讀不了視窗。",
+      "noScreenRecording": "rc-computer-helper 還沒有「螢幕錄製」權限：看不到視窗標題和畫面，智慧體也讀不了視窗。",
       "unnamedApp": "未知應用程式",
       "untitled": "無標題視窗",
       "minimized": "已最小化",
@@ -5584,7 +5584,7 @@
       },
       "permissions": {
         "title": "系統權限",
-        "description": "macOS 需要為 recur-code-computer-helper 授權。在系統設定中授權後回到這裡，狀態會自動更新。",
+        "description": "macOS 需要為 rc-computer-helper 授權。在系統設定中授權後回到這裡，狀態會自動更新。",
         "off": "開啟電腦操作後，可以在這裡查看和授予權限。",
         "accessibilityHint": "讀取視窗內容並操作視窗。",
         "screenRecordingHint": "截圖和讀取視窗標題。"
@@ -5665,7 +5665,7 @@
         "label": "允許分享整個螢幕",
         "hint": "開啟後，分享選擇器中會出現「整個螢幕」：智慧體能看到整個螢幕的畫面並在任意位置點擊，所有可分享的視窗也隨之分享，連同桌面本身的快速鍵。RecurCode 自己的視窗和永不分享名單中的應用程式始終會被遮蓋。關閉此項會結束整個螢幕的分享。"
       },
-      "boundary": "在 macOS 上，權限授予 recur-code-computer-helper，只有 RecurCode 能使用，智慧體的命令列用不了。Windows 和 Linux 沒有這層隔離：這裡的設定決定的是智慧體透過 RecurCode 能拿到什麼，而不是電腦上的程式能做什麼。",
+      "boundary": "在 macOS 上，權限授予 rc-computer-helper，只有 RecurCode 能使用，智慧體的命令列用不了。Windows 和 Linux 沒有這層隔離：這裡的設定決定的是智慧體透過 RecurCode 能拿到什麼，而不是電腦上的程式能做什麼。",
       "save": "儲存",
       "saving": "儲存中…",
       "saved": "電腦操作設定已儲存",
@@ -6048,7 +6048,7 @@
     "settingsDeleteWorktreeHint": "合併對話框裡預設勾選，仍可臨時更改。",
     "settingsWorktreeRoot": "Worktree 位置",
     "settingsWorktreeRootHint": "新任務的 worktree 會建立在該目錄下，每個任務一個。留空則建立在專案資料夾的同層目錄；「~」表示家目錄，相對路徑相對於專案資料夾。",
-    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/rc-worktrees",
     "settingsWorktreeRootBrowse": "選擇 worktree 目錄",
     "settingsPreflight": "預檢命令",
     "settingsPreflightHint": "任務進入待驗收時在 worktree 中執行。",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "遠端主機無法連到這個位址",
       "errorRemoteUnreachableHint": "從 {host} 看，這個名稱無法解析，或者沒有到達它的路由。",
       "errorRemoteNotAllowed": "遠端伺服器不允許瀏覽器連到這個位址",
-      "errorRemoteNotAllowedHint": "{host} 上的 recur-code-server 只允許瀏覽器通道連到私人網路位址（RC_BROWSER_TUNNEL=private）。",
+      "errorRemoteNotAllowedHint": "{host} 上的 rc-server 只允許瀏覽器通道連到私人網路位址（RC_BROWSER_TUNNEL=private）。",
       "errorRemoteTimeout": "遠端主機連線逾時",
       "errorRemoteTimeoutHint": "{host} 沒有在時限內得到這個位址的回應。那邊的服務可能很忙，或被防火牆擋住了。",
       "errorTunnelDown": "與遠端主機的連線已中斷",
@@ -7097,9 +7097,9 @@
     "remote": {
       "error": {
         "unavailable": "在內建瀏覽器中開啟遠端主機的位址需要 macOS 14 或更新版本。",
-        "unsupported": "遠端的 recur-code-server 版本過舊，無法轉送瀏覽器流量。更新它之後才能在這裡開啟它的位址。",
-        "disabled": "遠端的 recur-code-server 關閉了瀏覽器通道（RC_BROWSER_TUNNEL）。",
-        "unreachable": "無法連線到遠端 recur-code-server 的瀏覽器通道（{reason}）。",
+        "unsupported": "遠端的 rc-server 版本過舊，無法轉送瀏覽器流量。更新它之後才能在這裡開啟它的位址。",
+        "disabled": "遠端的 rc-server 關閉了瀏覽器通道（RC_BROWSER_TUNNEL）。",
+        "unreachable": "無法連線到遠端 rc-server 的瀏覽器通道（{reason}）。",
         "bypassed": "這台電腦的瀏覽器引擎會讓部分位址繞過通道，為避免從這台電腦載入，遠端主機的頁面不會開啟。",
         "probeFailed": "內建瀏覽器無法確認它能透過通道連到遠端主機。請稍後再試。"
       }

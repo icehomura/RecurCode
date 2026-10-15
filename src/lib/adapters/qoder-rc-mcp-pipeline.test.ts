@@ -4,8 +4,8 @@
  * and arrive at the renderer under the canonical name its card dispatches on.
  *
  * `tool-call-normalization.test.ts` pins the identity resolution and
- * `recur-code-mcp-tool-card.test.tsx` pins the rendering, but the passes BETWEEN them
- * are where a recur-code-mcp call would silently disappear: `dropEmptyInFlightToolCalls`
+ * `rc-mcp-tool-card.test.tsx` pins the rendering, but the passes BETWEEN them
+ * are where a rc-mcp call would silently disappear: `dropEmptyInFlightToolCalls`
  * can delete an arg-less in-flight call, and `groupConsecutiveToolCalls` folds a
  * run of tool calls into a single "调用 N 个工具" tally — either one and the card
  * never renders no matter how correct the name is. Both are gated on
@@ -13,11 +13,11 @@
  * predicate.
  *
  * Frames below are the real thing. Captured with a throwaway stdio MCP server
- * named `recur-code-mcp` wired into `session/new`, driving one live turn:
+ * named `rc-mcp` wired into `session/new`, driving one live turn:
  *
- *   TOOL_CALL        {"title":"get_delegation_status (recur-code-mcp MCP Server)",
+ *   TOOL_CALL        {"title":"get_delegation_status (rc-mcp MCP Server)",
  *                     "kind":"other","status":"pending",
- *                     "_meta":{"qoder":{"toolName":"mcp__recur-code-mcp__get_delegation_status"}}}
+ *                     "_meta":{"qoder":{"toolName":"mcp__rc-mcp__get_delegation_status"}}}
  *   TOOL_CALL_UPDATE {"status":"completed"}          ← no `_meta` at all
  *
  * That second frame is why the reducer's `meta: action.meta ?? block.info.meta`
@@ -75,10 +75,10 @@ const QODER_FRAMES: ReadonlyArray<{
 /** Exactly what Qoder's `AOn` puts on the wire for an MCP call. */
 function qoderFrame(tool: string, rawInput: unknown) {
   return {
-    title: `${tool} (recur-code-mcp MCP Server)`,
+    title: `${tool} (rc-mcp MCP Server)`,
     kind: "other",
     rawInput: JSON.stringify(rawInput),
-    meta: { qoder: { toolName: `mcp__recur-code-mcp__${tool}` } },
+    meta: { qoder: { toolName: `mcp__rc-mcp__${tool}` } },
   }
 }
 
@@ -127,7 +127,7 @@ describe("Qoder live frames reach their card through every adapter pass", () => 
     expect(dropEmptyInFlightToolCalls([part])).toEqual([part])
   })
 
-  it("does not let a run of recur-code-mcp calls collapse into one tool-group", () => {
+  it("does not let a run of rc-mcp calls collapse into one tool-group", () => {
     // A real delegation turn is a burst of polls; if they folded, the user would
     // see "调用 5 个工具" instead of five cards.
     const parts: AdaptedContentPart[] = QODER_FRAMES.map(({ tool, rawInput }) =>

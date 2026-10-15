@@ -715,11 +715,11 @@ mod tests {
             "RecurCode".to_string(),
             "--credential-helper".to_string(),
             "--data-dir".to_string(),
-            "/tmp/recur-code-data".to_string(),
+            "/tmp/rc-data".to_string(),
         ];
         assert_eq!(
             parse_data_dir_arg(args),
-            Some(std::path::PathBuf::from("/tmp/recur-code-data"))
+            Some(std::path::PathBuf::from("/tmp/rc-data"))
         );
     }
 
@@ -727,12 +727,12 @@ mod tests {
     fn test_parse_data_dir_arg_equals_form() {
         let args = vec![
             "RecurCode".to_string(),
-            "--data-dir=/tmp/recur-code-data".to_string(),
+            "--data-dir=/tmp/rc-data".to_string(),
             "--credential-helper".to_string(),
         ];
         assert_eq!(
             parse_data_dir_arg(args),
-            Some(std::path::PathBuf::from("/tmp/recur-code-data"))
+            Some(std::path::PathBuf::from("/tmp/rc-data"))
         );
     }
 
@@ -752,9 +752,9 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn test_helper_script_embeds_data_dir() {
-        let tmp = std::env::temp_dir().join(format!("recur-code-cred-test-{}", uuid::Uuid::new_v4()));
+        let tmp = std::env::temp_dir().join(format!("rc-cred-test-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&tmp).expect("create tmp dir");
-        let binary = std::path::PathBuf::from("/usr/local/bin/recur-code-server");
+        let binary = std::path::PathBuf::from("/usr/local/bin/rc-server");
 
         let script_path = create_credential_helper_script(&tmp, &binary)
             .expect("script generation should succeed");
@@ -763,7 +763,7 @@ mod tests {
         // Must invoke the embedded binary with both flags so server-mode
         // deployments don't fall back to the hardcoded `app.recurcode` path.
         // Paths are sh-single-quoted so spaces / `$` / backticks survive.
-        assert!(content.contains("/usr/local/bin/recur-code-server"));
+        assert!(content.contains("/usr/local/bin/rc-server"));
         assert!(content.contains("--credential-helper"));
         assert!(
             content.contains(&format!("--data-dir '{}'", tmp.display())),
@@ -838,7 +838,7 @@ mod tests {
         // repo working dir. The script must always reference an absolute
         // path so it resolves identically regardless of git's CWD.
         let _guard = STATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        let unique = format!("recur-code-rel-test-{}", uuid::Uuid::new_v4());
+        let unique = format!("rc-rel-test-{}", uuid::Uuid::new_v4());
         let tmp_root = std::env::temp_dir().join(&unique);
         std::fs::create_dir_all(&tmp_root).expect("create tmp root");
         let prev_cwd = std::env::current_dir().expect("cwd");
@@ -846,7 +846,7 @@ mod tests {
 
         let rel = std::path::PathBuf::from("data");
         std::fs::create_dir_all(&rel).expect("create rel dir");
-        let binary = std::path::PathBuf::from("./recur-code-server");
+        let binary = std::path::PathBuf::from("./rc-server");
 
         let script_path = create_credential_helper_script(&rel, &binary)
             .expect("script generation should succeed");
@@ -866,7 +866,7 @@ mod tests {
             "relative data-dir leaked into script:\n{content}"
         );
         assert!(
-            !content.contains("'./recur-code-server'"),
+            !content.contains("'./rc-server'"),
             "relative binary path leaked into script:\n{content}"
         );
         // Positive check: an absolute path segment for the data dir must be
@@ -917,7 +917,7 @@ mod tests {
         // Regression: a path with a `'` previously closed the sh quoted
         // string and could allow command substitution. With proper escaping
         // the literal apostrophe survives as data, never as syntax.
-        let tmp = std::env::temp_dir().join(format!("recur-code-apos-test-{}", uuid::Uuid::new_v4()));
+        let tmp = std::env::temp_dir().join(format!("rc-apos-test-{}", uuid::Uuid::new_v4()));
         let with_apos = tmp.join("o'brien");
         std::fs::create_dir_all(&with_apos).expect("create tmp dir");
         let binary = std::path::PathBuf::from("/bin/echo");
@@ -957,7 +957,7 @@ mod tests {
         let _guard = STATE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
         let data_dir =
-            std::env::temp_dir().join(format!("recur-code-helper-e2e-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("rc-helper-e2e-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&data_dir).expect("create data dir");
 
         let username = "octocat";

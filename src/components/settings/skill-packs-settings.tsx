@@ -38,7 +38,7 @@ const TRIGGER_ACTIVE =
 /**
  * Unified "Skill Packs" settings hub — a shared generic header + a fixed
  * top-right toolbar over a tabbed switcher for the three curated,
- * recur-code-managed skill bundles (Experts, Science, Office), the generative-UI
+ * rc-managed skill bundles (Experts, Science, Office), the generative-UI
  * skill that teaches agents the chat's cards (UI), and the user's own skills
  * (Custom). Each tab renders the existing per-pack body verbatim.
  */

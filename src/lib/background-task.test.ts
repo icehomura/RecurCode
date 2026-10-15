@@ -765,7 +765,7 @@ describe("isBackgroundTaskToolCall", () => {
     expect(
       isBackgroundTaskToolCall(
         poll({
-          toolName: "mcp__recur-code-mcp__get_delegation_status",
+          toolName: "mcp__rc-mcp__get_delegation_status",
           input: JSON.stringify({ task_ids: ["a"] }),
           output: JSON.stringify({
             tasks: [{ task_id: "a", status: "running" }],
@@ -776,7 +776,7 @@ describe("isBackgroundTaskToolCall", () => {
     expect(
       isBackgroundTaskToolCall(
         poll({
-          toolName: "mcp__recur-code-mcp__cancel_delegation",
+          toolName: "mcp__rc-mcp__cancel_delegation",
           input: JSON.stringify({ task_id: "a" }),
           output: "Canceled task a",
         })

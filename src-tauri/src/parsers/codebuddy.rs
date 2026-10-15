@@ -852,7 +852,7 @@ fn tool_is_error(value: &Value) -> bool {
 /// CodeBuddy's OWN renderer skips exactly these records when it replays a
 /// session (`"message" === type && "user" === role && (isMeta ||
 /// !InputItemUtils.isRealUserMessageItem(item))` → `continue`), so rendering
-/// them as user turns was a recur-code-only artifact: it split one exchange into two
+/// them as user turns was a rc-only artifact: it split one exchange into two
 /// prompts and dropped the raw notification XML — plus the model-facing guidance
 /// prose that follows the closing tag — into a chat bubble. The payload is not
 /// lost: `capture_task_notification` folds it onto the launching Agent card.
@@ -1264,7 +1264,7 @@ mod tests {
 
     #[test]
     fn parses_item_format_text_session() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-text-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-text-{}", uuid::Uuid::new_v4()));
         let sid = "sess-text";
         write_session(
             &root,
@@ -1340,7 +1340,7 @@ mod tests {
     /// then the answer. Both requests must count.
     #[test]
     fn usage_written_on_a_function_call_counts() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-fc-usage-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-fc-usage-{}", uuid::Uuid::new_v4()));
         let sid = "sess-fc-usage";
         write_session(
             &root,
@@ -1418,7 +1418,7 @@ mod tests {
 
         // Through the parser, as the session's usage.
         let root =
-            std::env::temp_dir().join(format!("recur-code-cb-responses-{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("rc-cb-responses-{}", uuid::Uuid::new_v4()));
         let sid = "sess-responses";
         write_session(
             &root,
@@ -1459,7 +1459,7 @@ mod tests {
     /// user turn and no message count.
     #[test]
     fn task_list_reminders_are_not_prompts() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-reminder-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-reminder-{}", uuid::Uuid::new_v4()));
         let sid = "sess-reminder";
         let reminder = "<system-reminder>\nThe TodoWrite tool hasn't been used recently. If you're working on tasks that would benefit from tracking progress, consider using the TodoWrite tool to track progress. Make sure that you NEVER mention this reminder to the user\n\n</system-reminder>";
         write_session(
@@ -1504,7 +1504,7 @@ mod tests {
     /// they agree on `expected` — a divergence makes the auto-title backfill
     /// oscillate between them.
     fn assert_title(tag: &str, records: &[Value], expected: Option<&str>) {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-{tag}-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-{tag}-{}", uuid::Uuid::new_v4()));
         let sid = "sess-title";
         write_session(&root, "Users-demo-app", sid, records);
 
@@ -1589,7 +1589,7 @@ mod tests {
 
     #[test]
     fn parses_tool_calls_with_error_detection() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-tool-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-tool-{}", uuid::Uuid::new_v4()));
         let sid = "sess-tool";
         write_session(
             &root,
@@ -1664,7 +1664,7 @@ mod tests {
 
     #[test]
     fn empty_session_file_is_handled() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-empty-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-empty-{}", uuid::Uuid::new_v4()));
         let dir = root.join("Users-demo-app");
         std::fs::create_dir_all(&dir).expect("create dir");
         std::fs::File::create(dir.join("empty.jsonl")).expect("create empty");
@@ -1682,7 +1682,7 @@ mod tests {
 
     #[test]
     fn metadata_only_session_is_not_listed() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-meta-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-meta-{}", uuid::Uuid::new_v4()));
         let sid = "sess-meta";
         write_session(
             &root,
@@ -1705,7 +1705,7 @@ mod tests {
 
     #[test]
     fn model_falls_back_to_model_id_when_request_model_name_blank() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-model-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-model-{}", uuid::Uuid::new_v4()));
         let sid = "sess-model";
         write_session(
             &root,
@@ -1735,7 +1735,7 @@ mod tests {
 
     #[test]
     fn read_tool_output_is_structurized() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-read-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-read-{}", uuid::Uuid::new_v4()));
         let sid = "sess-read";
         write_session(
             &root,
@@ -1781,7 +1781,7 @@ mod tests {
 
     #[test]
     fn subagent_task_is_rewritten_to_agent() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-agent-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-agent-{}", uuid::Uuid::new_v4()));
         let sid = "sess-agent";
         write_session(
             &root,
@@ -1917,7 +1917,7 @@ mod tests {
 
     #[test]
     fn subagent_tool_calls_loaded_into_agent_stats() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-substats-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-substats-{}", uuid::Uuid::new_v4()));
         let sid = "sess-substats";
         write_session(
             &root,
@@ -2098,7 +2098,7 @@ mod tests {
         })
     }
 
-    /// `[[recur-code-background-task]]{…}` payload of the tool result with this id.
+    /// `[[rc-background-task]]{…}` payload of the tool result with this id.
     fn lifecycle_marker(detail: &ConversationDetail, tool_use_id: &str) -> Value {
         let raw = detail
             .turns
@@ -2146,7 +2146,7 @@ mod tests {
         // model-facing guidance prose into the chat. CodeBuddy's own renderer
         // skips these records; RecurCode folds the payload onto the launch card
         // instead.
-        let root = std::env::temp_dir().join(format!("recur-code-cb-meta-user-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-meta-user-{}", uuid::Uuid::new_v4()));
         let sid = "sess-bg";
         let mut records = async_launch_records();
         records.push(task_notification_record(
@@ -2224,7 +2224,7 @@ mod tests {
         // No `<task-notification>` yet (the worker is still running, or the CLI
         // died): `status: null` renders as "launched, result pending" — never as
         // a zombie "running". Mirrors `claude.rs`.
-        let root = std::env::temp_dir().join(format!("recur-code-cb-unsettled-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-unsettled-{}", uuid::Uuid::new_v4()));
         let sid = "sess-bg";
         write_session(&root, "Users-demo-app", sid, &async_launch_records());
 
@@ -2240,7 +2240,7 @@ mod tests {
 
     #[test]
     fn a_failed_worker_notification_keeps_its_status() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-bgfail-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-bgfail-{}", uuid::Uuid::new_v4()));
         let sid = "sess-bg";
         let mut records = async_launch_records();
         // A resumed worker re-notifies under the SAME id — last wins.
@@ -2273,7 +2273,7 @@ mod tests {
         // BLOCKING delegation finishes), but the detached worker still writes
         // `<session>/subagents/<taskId>.jsonl`. Without the spawn-renderer
         // fallback every backgrounded worker's nested tool calls were dropped.
-        let root = std::env::temp_dir().join(format!("recur-code-cb-asyncsub-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-asyncsub-{}", uuid::Uuid::new_v4()));
         let sid = "sess-bg";
         write_session(&root, "Users-demo-app", sid, &async_launch_records());
         write_subagent(
@@ -2318,7 +2318,7 @@ mod tests {
         // load are gated on the PAIRED CALL being an `Agent`, not on the
         // renderer's presence — so a stray spawn renderer on a Bash result can
         // neither rewrite its output nor pull in a transcript.
-        let root = std::env::temp_dir().join(format!("recur-code-cb-bgiso-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-bgiso-{}", uuid::Uuid::new_v4()));
         let sid = "sess-bg";
         let mut records = async_launch_records();
         records.push(
@@ -2378,7 +2378,7 @@ mod tests {
 
     #[test]
     fn deferred_mcp_tool_is_unwrapped() {
-        let root = std::env::temp_dir().join(format!("recur-code-cb-defer-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-defer-{}", uuid::Uuid::new_v4()));
         let sid = "sess-defer";
         write_session(
             &root,
@@ -2391,7 +2391,7 @@ mod tests {
                 // name + params are packed under arguments.{toolName,params}.
                 json!({"type":"function_call","timestamp":1782193811200i64,"cwd":"/Users/demo/app","sessionId":sid,
                        "name":"DeferExecuteTool","callId":"d1",
-                       "arguments":"{\"params\":{\"agent_type\":\"codex\",\"task\":\"build\",\"working_dir\":\"/Users/demo/app\"},\"toolName\":\"mcp__recur-code-mcp__delegate_to_agent\"}"}),
+                       "arguments":"{\"params\":{\"agent_type\":\"codex\",\"task\":\"build\",\"working_dir\":\"/Users/demo/app\"},\"toolName\":\"mcp__rc-mcp__delegate_to_agent\"}"}),
                 // The result carries the real MCP report under providerData.toolResult.mcpMeta.
                 json!({"type":"function_call_result","timestamp":1782193811400i64,"cwd":"/Users/demo/app","sessionId":sid,
                        "name":"DeferExecuteTool","callId":"d1","status":"completed",
@@ -2400,10 +2400,10 @@ mod tests {
                          "mcpMeta":{"structuredContent":{"agent_type":"codex","child_conversation_id":15,"status":"running","task_id":"e5c9","message":"ok"}}}}}),
                 json!({"type":"function_call","timestamp":1782193811600i64,"cwd":"/Users/demo/app","sessionId":sid,
                        "name":"DeferExecuteTool","callId":"d2",
-                       "arguments":"{\"params\":{\"task_ids\":[\"e5c9\"],\"wait_ms\":60000},\"toolName\":\"mcp__recur-code-mcp__get_delegation_status\"}"}),
+                       "arguments":"{\"params\":{\"task_ids\":[\"e5c9\"],\"wait_ms\":60000},\"toolName\":\"mcp__rc-mcp__get_delegation_status\"}"}),
                 json!({"type":"function_call","timestamp":1782193811700i64,"cwd":"/Users/demo/app","sessionId":sid,
                        "name":"DeferExecuteTool","callId":"d3",
-                       "arguments":"{\"params\":{\"task_id\":\"e5c9\"},\"toolName\":\"mcp__recur-code-mcp__cancel_delegation\"}"}),
+                       "arguments":"{\"params\":{\"task_id\":\"e5c9\"},\"toolName\":\"mcp__rc-mcp__cancel_delegation\"}"}),
                 // A plain (non-deferred) tool must keep its name and text output.
                 json!({"type":"function_call","timestamp":1782193811800i64,"cwd":"/Users/demo/app","sessionId":sid,
                        "name":"Bash","callId":"b1","arguments":"{\"command\": \"ls\"}"}),
@@ -2449,9 +2449,9 @@ mod tests {
         };
         // Each DeferExecuteTool resolves to its inner MCP tool name; normalizeToolName
         // (frontend) then collapses the `mcp__…__` prefix to the canonical card name.
-        assert_eq!(name_of("d1"), "mcp__recur-code-mcp__delegate_to_agent");
-        assert_eq!(name_of("d2"), "mcp__recur-code-mcp__get_delegation_status");
-        assert_eq!(name_of("d3"), "mcp__recur-code-mcp__cancel_delegation");
+        assert_eq!(name_of("d1"), "mcp__rc-mcp__delegate_to_agent");
+        assert_eq!(name_of("d2"), "mcp__rc-mcp__get_delegation_status");
+        assert_eq!(name_of("d3"), "mcp__rc-mcp__cancel_delegation");
         // Plain tool untouched.
         assert_eq!(name_of("b1"), "Bash");
 
@@ -2495,7 +2495,7 @@ mod tests {
         // inside the recursively-scanned projects tree. It must feed ONLY the
         // Agent result's agent_stats — never surface as a top-level conversation,
         // nor be openable by its own id via get_conversation.
-        let root = std::env::temp_dir().join(format!("recur-code-cb-sublist-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-sublist-{}", uuid::Uuid::new_v4()));
         let sid = "sess-list";
         write_session(
             &root,
@@ -2577,7 +2577,7 @@ mod tests {
         // (`<projects>/subagents/<sessionId>.jsonl`, 2 components) must still be
         // listed/opened — the nested sub-agent transcript shape is one level
         // deeper (`<project>/<session>/subagents/<agent>.jsonl`, 4 components).
-        let root = std::env::temp_dir().join(format!("recur-code-cb-subdir-{}", uuid::Uuid::new_v4()));
+        let root = std::env::temp_dir().join(format!("rc-cb-subdir-{}", uuid::Uuid::new_v4()));
         let sid = "sess-in-subagents-dir";
         write_session(
             &root,

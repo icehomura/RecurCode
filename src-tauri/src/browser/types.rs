@@ -15,7 +15,7 @@ pub enum SurfaceKind {
 }
 
 /// What a tab shows: a web page, or a local HTML document served through the
-/// `recur-code-doc:` guest (see `doc_guest`).
+/// `rc-doc:` guest (see `doc_guest`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 pub enum TabKind {
@@ -165,7 +165,7 @@ pub struct BrowserCapabilities {
     /// The administrator's policy in force (rules shown read-only, and
     /// whether the browser is enabled at all).
     pub policy: crate::browser::policy::BrowserPolicyStatus,
-    /// Local HTML files can be shown through the `recur-code-doc:` document guest
+    /// Local HTML files can be shown through the `rc-doc:` document guest
     /// (an embedded surface with a handler for that scheme).
     pub doc_guest: bool,
     /// More than the default browser profile can exist (macOS 14+, Windows,
@@ -181,7 +181,7 @@ pub struct BrowserCapabilities {
     /// the host does not hold that window's webview.
     pub owned_window_controls: bool,
     /// A remote-workspace window's tabs can reach the remote host through
-    /// its recur-code-server (`browser::remote`): a profile of their own to proxy
+    /// its rc-server (`browser::remote`): a profile of their own to proxy
     /// (macOS 14+), and on macOS the embedded surface. Whether a given remote
     /// server carries the traffic is only known when a tab asks.
     pub remote_egress: bool,

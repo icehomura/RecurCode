@@ -205,7 +205,7 @@ export function useComposerAttachments({
   const desktopMode = isDesktop()
   // Cached for the window's lifetime: `getActiveRemoteConnectionId()` is
   // configured once when a remote-workspace window is created and never
-  // mutates afterwards. A desktop window bound to a remote recur-code-server
+  // mutates afterwards. A desktop window bound to a remote rc-server
   // has to behave like the web client for attachments — local OS paths
   // would be ENOENT on the remote agent. Only the truly local desktop
   // shows the native Paperclip picker.

@@ -1,9 +1,9 @@
-//! HTTP handlers for the recur-code-mcp service status indicator — the web-mode
+//! HTTP handlers for the rc-mcp service status indicator — the web-mode
 //! mirror of the Tauri commands in `commands::mcp_service`.
 //!
 //! Both transports call the same `_core` helpers, so the probe, the state
 //! ladder and the rebind behave identically whether the workspace is running
-//! in the desktop shell or against a remote `recur-code-server`.
+//! in the desktop shell or against a remote `rc-server`.
 
 use std::sync::Arc;
 

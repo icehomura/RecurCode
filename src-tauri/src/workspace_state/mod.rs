@@ -389,7 +389,7 @@ fn is_recur_code_edit_temp_path(path: &Path) -> bool {
     path.file_name()
         .map(|name| {
             let name = name.to_string_lossy();
-            name.starts_with(".recur-code-edit-") && name.ends_with(".tmp")
+            name.starts_with(".rc-edit-") && name.ends_with(".tmp")
         })
         .unwrap_or(false)
 }

@@ -503,7 +503,7 @@ mod tests {
     async fn callback_data_dispatches_without_command_prefix() {
         let db = fresh_in_memory_db().await;
         let channel_id = seed_chat_channel(&db).await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-dispatch-callback").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-dispatch-callback").await;
         let target = ChannelMessageTarget::telegram_general(channel_id, "-100123");
         let bridge = Arc::new(Mutex::new(SessionBridge::new()));
 
@@ -515,7 +515,7 @@ mod tests {
             &ConnectionManager::new(),
             &EventEmitter::Noop,
             &bridge,
-            std::path::Path::new("/tmp/recur-code-dispatch-data"),
+            std::path::Path::new("/tmp/rc-dispatch-data"),
             channel_id,
             "sender-1",
             &target,
@@ -546,7 +546,7 @@ mod tests {
             &ConnectionManager::new(),
             &EventEmitter::Noop,
             &bridge,
-            std::path::Path::new("/tmp/recur-code-dispatch-data"),
+            std::path::Path::new("/tmp/rc-dispatch-data"),
             channel_id,
             "sender-1",
             &target,

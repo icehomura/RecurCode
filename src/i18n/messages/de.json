@@ -136,7 +136,7 @@
       },
       "css": {
         "dialogTitle": "Eigenes CSS",
-        "dialogDescription": "Gilt für alle recur-code-Fenster. Änderungen werden live vorschauend angezeigt; zum Speichern auf Anwenden klicken.",
+        "dialogDescription": "Gilt für alle rc-Fenster. Änderungen werden live vorschauend angezeigt; zum Speichern auf Anwenden klicken.",
         "size": "{used} KB / {max} KB",
         "ruleCount": "{count} Regeln",
         "errorTooLarge": "Zu groß zum Speichern. Bitte unter das Limit kürzen.",
@@ -270,7 +270,7 @@
     "languageSaveSuccess": "Spracheinstellungen wurden gespeichert",
     "languageSaveFailed": "Spracheinstellungen konnten nicht gespeichert werden: {message}",
     "dataTitle": "Daten & Synchronisierung",
-    "dataDescription": "Die Konfigurationssynchronisierung überträgt deine Einstellungen zwischen Geräten; die Sicherung packt alle recur-code-Daten dieses Geräts zusammen.",
+    "dataDescription": "Die Konfigurationssynchronisierung überträgt deine Einstellungen zwischen Geräten; die Sicherung packt alle rc-Daten dieses Geräts zusammen.",
     "updateTitle": "App-Update",
     "versionTitle": "Softwareupdate",
     "updateDescription": "Prüft die konfigurierte Release-Quelle auf neue Versionen und installiert sie bei Verfügbarkeit direkt.",
@@ -882,7 +882,7 @@
       "authUnverifiedHint": "cursor-agent hat noch eine Anmeldung gespeichert, konnte sie aber gerade nicht bei Cursor verwenden – meist ist die Sitzung abgelaufen. Sitzungen schlagen mit „Authentication required“ fehl, bis du dich erneut anmeldest; die CLI kann eine Browser-Anmeldung nicht selbst erneuern.",
       "authUnverifiedHintApiKey": "cursor-agent hat einen API-Schlüssel gespeichert, Cursor hat ihn aber gerade abgelehnt — meist ist er widerrufen, abgelaufen oder vertippt. Sitzungen schlagen mit \"Authentication required\" fehl, bis du unten einen funktionierenden Schlüssel speicherst.",
       "loginHint": "Führe dies im Terminal aus, um dich mit deinem Cursor-Konto anzumelden (ein Browserfenster öffnet sich), und klicke danach auf Aktualisieren:",
-      "loginHintRemote": "Führe dies auf dem recur-code-Host aus, auf dem cursor-agent installiert ist, nicht auf diesem Rechner, und klicke danach auf Aktualisieren. Dieser Host hat meist keinen Browser zum Öffnen, führe ihn also mit NO_OPEN_BROWSER=1 aus — dann gibt er stattdessen eine Anmelde-URL aus, die du in deinem eigenen Browser öffnest. Für einen unbeaufsichtigten Server stelle die Methode oben auf API-Schlüssel um.",
+      "loginHintRemote": "Führe dies auf dem rc-Host aus, auf dem cursor-agent installiert ist, nicht auf diesem Rechner, und klicke danach auf Aktualisieren. Dieser Host hat meist keinen Browser zum Öffnen, führe ihn also mit NO_OPEN_BROWSER=1 aus — dann gibt er stattdessen eine Anmelde-URL aus, die du in deinem eigenen Browser öffnest. Für einen unbeaufsichtigten Server stelle die Methode oben auf API-Schlüssel um.",
       "apiKeyLabel": "Cursor-API-Schlüssel",
       "apiKeyPlaceholder": "Schlüssel von cursor.com/dashboard",
       "apiKeyHint": "CURSOR_API_KEY – ein Cursor-Dashboard-Kontoschlüssel, Alternative zur Browser-Anmeldung für Headless-/Servermaschinen. Kein Drittanbieter- oder OpenAI-Schlüssel.",
@@ -994,7 +994,7 @@
         "failed": "Abmelden fehlgeschlagen"
       },
       "tempReclaimTitle": "Übrig gebliebener temporärer Speicher",
-      "tempReclaimHint": "Ältere recur-code-Versionen konnten das temporäre Verzeichnis nicht aufräumen, das dieser Agent bei jedem Start entpackt. Hiermit wird der temporäre Systemordner nach diesen Überresten durchsucht. Dieser Ordner wird mit anderen Anwendungen geteilt, daher wird nichts gelöscht, bevor du bestätigst, und alles noch Verwendete wird übersprungen.",
+      "tempReclaimHint": "Ältere rc-Versionen konnten das temporäre Verzeichnis nicht aufräumen, das dieser Agent bei jedem Start entpackt. Hiermit wird der temporäre Systemordner nach diesen Überresten durchsucht. Dieser Ordner wird mit anderen Anwendungen geteilt, daher wird nichts gelöscht, bevor du bestätigst, und alles noch Verwendete wird übersprungen.",
       "tempReclaimScan": "Suchen",
       "tempReclaimDelete": "Überreste löschen",
       "tempReclaimNone": "Nichts zurückzugewinnen.",
@@ -1044,7 +1044,7 @@
       "approvalPolicy_untrusted": "Nicht vertrauenswürdig – nur bekannt sichere Lesebefehle laufen ohne Nachfrage",
       "approvalPolicy_never": "Nie – keinerlei Freigabeabfragen",
       "approvalPolicy_granular": "Granular – pro Abfragetyp festlegen",
-      "approvalPolicyUntrustedAcpWarning": "Für „untrusted“ gibt es unter den drei Freigabe-Voreinstellungen des ACP-Adapters keine Entsprechung, daher fallen recur-code-Sitzungen auf „auf Anfrage“ zurück: Das Modell entscheidet dann selbst, wann es fragt, und Befehle, die die Sandbox ohnehin erlaubt, fragen nicht mehr nach. Schränke stattdessen unten den Sandbox-Modus ein.",
+      "approvalPolicyUntrustedAcpWarning": "Für „untrusted“ gibt es unter den drei Freigabe-Voreinstellungen des ACP-Adapters keine Entsprechung, daher fallen rc-Sitzungen auf „auf Anfrage“ zurück: Das Modell entscheidet dann selbst, wann es fragt, und Befehle, die die Sandbox ohnehin erlaubt, fragen nicht mehr nach. Schränke stattdessen unten den Sandbox-Modus ein.",
       "granularHint": "Aus bedeutet, dass Anfragen dieser Art automatisch abgelehnt statt angezeigt werden.",
       "granular_sandbox_approval": "Rechteerweiterung für Shell-Befehle",
       "granular_rules": "Abfragen aus Execpolicy-Regeln",
@@ -1056,7 +1056,7 @@
       "sandboxMode_read-only": "Nur lesen",
       "sandboxMode_workspace-write": "Workspace-Schreibzugriff",
       "sandboxMode_danger-full-access": "Vollzugriff (keine Sandbox)",
-      "sandboxModeReadOnlyAcpWarning": "codex-acp 1.7–1.13 liefern keine schreibgeschützte Sandbox: Mit diesen Adapterversionen läuft eine recur-code-Sitzung unabhängig von dieser Einstellung mit Schreibrecht im Arbeitsbereich, wobei jede Rechteausweitung weiterhin zu dir zur Freigabe kommt. codex-acp 2.0 hat sie wiederhergestellt – aktualisiere den Adapter, falls ein älterer installiert ist. codex-CLI- und IDE-Sitzungen beachten „schreibgeschützt“ immer.",
+      "sandboxModeReadOnlyAcpWarning": "codex-acp 1.7–1.13 liefern keine schreibgeschützte Sandbox: Mit diesen Adapterversionen läuft eine rc-Sitzung unabhängig von dieser Einstellung mit Schreibrecht im Arbeitsbereich, wobei jede Rechteausweitung weiterhin zu dir zur Freigabe kommt. codex-acp 2.0 hat sie wiederhergestellt – aktualisiere den Adapter, falls ein älterer installiert ist. codex-CLI- und IDE-Sitzungen beachten „schreibgeschützt“ immer.",
       "sandboxModeHint": "Unter Windows wird Workspace-Schreibzugriff auf Nur-Lesen herabgestuft, sofern die experimentelle Windows-Sandbox von codex nicht aktiviert ist.",
       "sandboxModeSeedsPresetHint": "RecurCode bildet dies auch auf die Start-Freigabe-Voreinstellung der Sitzung ab, wirkt sich also – anders als die Freigaberichtlinie – auf gewöhnliche Anfragen aus. Schreibgeschützt startet in „Read-only“. Mit der Freigaberichtlinie never startet Vollzugriff in „Full access“ und Schreibrecht im Arbeitsbereich in „Auto review“, wo ein Modell die Rechteausweitungen vorsichtet und nur weiterleitet, was es für unsicher hält. Mit jeder anderen Freigaberichtlinie starten Schreibrecht im Arbeitsbereich und Vollzugriff ab codex-acp 2.0 in „Workspace access“, das dir jede Rechteausweitung vorlegt, bei älteren Adaptern in „Auto review“. Ohne Einstellung bleibt die Adaptervorgabe „Auto review“. Die Voreinstellung im Eingabefeld hat immer Vorrang.",
       "writableRootsLabel": "Zusätzliche beschreibbare Ordner",
@@ -1857,7 +1857,7 @@
   },
   "CollaborationSettings": {
     "sectionTitle": "Zusammenarbeit",
-    "sectionDescription": "Wie Agenten zusammenarbeiten und auf welche recur-code-eigenen Werkzeuge sie innerhalb einer Unterhaltung zugreifen dürfen."
+    "sectionDescription": "Wie Agenten zusammenarbeiten und auf welche rc-eigenen Werkzeuge sie innerhalb einer Unterhaltung zugreifen dürfen."
   },
   "LoginPage": {
     "documentTitle": "Anmelden - RecurCode",
@@ -2305,7 +2305,7 @@
         "showPet": "Pet anzeigen"
       },
       "mcp": {
-        "title": "recur-code-mcp-Dienst",
+        "title": "rc-mcp-Dienst",
         "state": {
           "running": "Läuft",
           "stopped": "Läuft nicht",
@@ -2317,7 +2317,7 @@
           "running": "Hier gestartete Agenten können RecurCodes Tools nutzen.",
           "stopped": "Der Broker-Socket antwortet nicht.",
           "disabled": "Alle Tool-Gruppen sind ausgeschaltet.",
-          "unavailable": "Die recur-code-mcp-Binärdatei fehlt auf der Festplatte.",
+          "unavailable": "Die rc-mcp-Binärdatei fehlt auf der Festplatte.",
           "unknown": "Der Status konnte nicht gelesen werden."
         },
         "socketPath": "Adresse",
@@ -3962,7 +3962,7 @@
         "grantDescription": "pi lädt die .pi-Dateien dieses Repositorys. Sieh dir an, was das erlaubt.",
         "grantInheritedDescription": "Einem übergeordneten Ordner wird vertraut, daher lädt pi die .pi-Dateien dieses Repositorys. Sieh dir an, was das erlaubt.",
         "grantDialogTitle": "Den pi-Ressourcen dieses Projekts wird vertraut",
-        "grantDialogDescription": "pi darf die .pi-Dateien dieses Repositorys laden. Frühere recur-code-Versionen haben das beim Öffnen eines Ordners automatisch erteilt, du wurdest also womöglich nie gefragt.",
+        "grantDialogDescription": "pi darf die .pi-Dateien dieses Repositorys laden. Frühere rc-Versionen haben das beim Öffnen eines Ordners automatisch erteilt, du wurdest also womöglich nie gefragt.",
         "grantExecutionWarning": "Erweiterungen sind Code. Das Repository führt sie beim Start von pi mit deinen Rechten aus, bevor du eine Nachricht sendest.",
         "inheritedFrom": "Vertraut über",
         "revoke": "Vertrauen widerrufen",
@@ -4486,7 +4486,7 @@
     "searchPlaceholder": "Experten nach Name, ID oder Beschreibung suchen",
     "enableForAgents": "Für Agents aktivieren",
     "noAgents": "Keine ACP-Agents erkannt.",
-    "copyModeWarning": "Kopiert (nicht verknüpft). Nach recur-code-Updates erneut aktivieren, um die neueste Version zu erhalten.",
+    "copyModeWarning": "Kopiert (nicht verknüpft). Nach rc-Updates erneut aktivieren, um die neueste Version zu erhalten.",
     "previewTitle": "SKILL.md-Vorschau",
     "categories": {
       "discovery": "Entdeckung & Design",
@@ -4969,7 +4969,7 @@
       "restore": "Wiederherstellung"
     },
     "export": {
-      "description": "Packt die recur-code-Daten dieses Geräts – Datenbank und hochgeladene Dateien – in ein Archiv.",
+      "description": "Packt die rc-Daten dieses Geräts – Datenbank und hochgeladene Dateien – in ein Archiv.",
       "includeExternal": "Gesprächsinhalte einschließen",
       "includeExternalHint": "Archiviert auch die CLI-Transkripte (Claude, Codex, Gemini, …). Erhöht die Größe.",
       "passphrase": "Passphrase (optional)",
@@ -4992,7 +4992,7 @@
       }
     },
     "restore": {
-      "description": "Ersetzt die recur-code-Daten dieses Geräts durch den Inhalt einer Sicherung.",
+      "description": "Ersetzt die rc-Daten dieses Geräts durch den Inhalt einer Sicherung.",
       "selectFile": "Sicherungsdatei auswählen",
       "passphrasePrompt": "Diese Sicherung ist verschlüsselt. Gib ihre Passphrase ein.",
       "unlock": "Entsperren",
@@ -5005,7 +5005,7 @@
         "appVersion": "App-Version: {value}",
         "incompatibleHint": "Diese Sicherung wurde mit einer neueren Version von RecurCode erstellt und kann nicht wiederhergestellt werden."
       },
-      "replaceWarning": "Beim Wiederherstellen werden alle aktuellen recur-code-Daten (Datenbank und Uploads) ersetzt. Deine aktuellen Daten werden zuvor als Snapshot gesichert.",
+      "replaceWarning": "Beim Wiederherstellen werden alle aktuellen rc-Daten (Datenbank und Uploads) ersetzt. Deine aktuellen Daten werden zuvor als Snapshot gesichert.",
       "keyringNote": "GitHub-/Chat-Tokens der Desktop-App liegen im Schlüsselbund des Betriebssystems und sind nicht enthalten; gib sie nach dem Wiederherstellen erneut ein.",
       "button": "Wiederherstellen",
       "staging": "Wiederherstellung wird vorbereitet…",
@@ -5014,7 +5014,7 @@
       "restartTimeout": "Der Server kam nicht rechtzeitig zurück. Lade die Seite neu, sobald er läuft.",
       "externalSideLocation": "Gesprächstranskripte wurden nach {path} wiederhergestellt",
       "confirmTitle": "Alle Daten ersetzen?",
-      "confirmBody": "Dadurch werden deine aktuelle recur-code-Datenbank und Uploads durch die Sicherung ersetzt und anschließend neu gestartet. Deine aktuellen Daten werden zuvor als Snapshot gesichert.",
+      "confirmBody": "Dadurch werden deine aktuelle rc-Datenbank und Uploads durch die Sicherung ersetzt und anschließend neu gestartet. Deine aktuellen Daten werden zuvor als Snapshot gesichert.",
       "cancel": "Abbrechen",
       "confirmAction": "Ersetzen & neu starten",
       "external": {
@@ -5164,7 +5164,7 @@
       "error": {
         "badPassphrase": "Falsche Passphrase oder beschädigte Sicherung.",
         "corrupted": "Das Sicherungsarchiv ist beschädigt.",
-        "unknownFormat": "Diese Datei ist keine erkannte recur-code-Sicherung.",
+        "unknownFormat": "Diese Datei ist keine erkannte rc-Sicherung.",
         "newerVersion": "Diese Sicherung wurde mit RecurCode {backupVersion} erstellt, neuer als diese Version ({appVersion}).",
         "alreadyPending": "Es ist bereits eine Wiederherstellung vorbereitet. Starte neu, um sie anzuwenden, bevor du eine weitere vorbereitest."
       }
@@ -5176,9 +5176,9 @@
   },
   "configSync": {
     "error": {
-      "newerSchema": "Dieser Snapshot stammt aus einer neueren recur-code-Version (Format {snapshotVersion}); diese Version unterstützt höchstens Format {appVersion}.",
+      "newerSchema": "Dieser Snapshot stammt aus einer neueren rc-Version (Format {snapshotVersion}); diese Version unterstützt höchstens Format {appVersion}.",
       "checksum": "Der Snapshot passt nicht zu seiner Prüfsumme und ist möglicherweise unvollständig.",
-      "invalidSnapshot": "Diese Datei ist kein gültiger recur-code-Konfigurations-Snapshot.",
+      "invalidSnapshot": "Diese Datei ist kein gültiger rc-Konfigurations-Snapshot.",
       "noRemoteSnapshot": "Auf dem Server liegt noch kein Konfigurations-Snapshot.",
       "notConfigured": "Richte den WebDAV-Server ein, bevor du synchronisierst.",
       "unauthorized": "Der WebDAV-Server hat Benutzername oder Passwort abgelehnt.",
@@ -5265,7 +5265,7 @@
     "computer": {
       "label": "Fenster des Desktops sehen und bedienen",
       "short": "Apps und Fenster auflisten; freigegebene lesen, erlaubte bedienen.",
-      "hint": "Lässt einen Agenten die Anwendungen und Fenster auf deinem Desktop auflisten, die Fenster lesen, die du für ihn freigibst – ein Bildschirmfoto, den Inhalt, ob es zeigt, was erwartet wird –, und in denen klicken, tippen und Tasten drücken, die du zum Handeln freigibst. Nichts ist lesbar, bis du im Bereich „Computernutzung“ in der Statusleiste ein Fenster freigibst, und in keinem Fenster wird gehandelt, wenn du das nicht auch erlaubst; die Freigabe endet, wenn das Fenster geschlossen wird, nach einer Weile ohne Nutzung oder wenn du sie beendest, und „Agenten anhalten“ in diesem Bereich hält alle auf einmal an. Eingaben erreichen das Fenster im Hintergrund; für eine Aktion, die im Hintergrund nicht ankommt, darf ein Agent das Fenster nach vorn holen – das lässt sich in den Einstellungen zur Computernutzung abschalten. Nur in der Desktop-App; unter macOS sind Berechtigungen für recur-code-computer-helper nötig. Vorschau."
+      "hint": "Lässt einen Agenten die Anwendungen und Fenster auf deinem Desktop auflisten, die Fenster lesen, die du für ihn freigibst – ein Bildschirmfoto, den Inhalt, ob es zeigt, was erwartet wird –, und in denen klicken, tippen und Tasten drücken, die du zum Handeln freigibst. Nichts ist lesbar, bis du im Bereich „Computernutzung“ in der Statusleiste ein Fenster freigibst, und in keinem Fenster wird gehandelt, wenn du das nicht auch erlaubst; die Freigabe endet, wenn das Fenster geschlossen wird, nach einer Weile ohne Nutzung oder wenn du sie beendest, und „Agenten anhalten“ in diesem Bereich hält alle auf einmal an. Eingaben erreichen das Fenster im Hintergrund; für eine Aktion, die im Hintergrund nicht ankommt, darf ein Agent das Fenster nach vorn holen – das lässt sich in den Einstellungen zur Computernutzung abschalten. Nur in der Desktop-App; unter macOS sind Berechtigungen für rc-computer-helper nötig. Vorschau."
     },
     "automations": {
       "label": "Automatisierungen erstellen",
@@ -5339,7 +5339,7 @@
   "BrowserSettings": {
     "title": "Integrierter Browser",
     "description": "Webseiten aus Unterhaltungen, Werkzeugergebnissen und dem Terminal können als Tabs neben deinen Dateien erscheinen, ohne die App zu verlassen.",
-    "descriptionWeb": "In einer Browsersitzung öffnen sich Webseiten in dem Browser, den du bereits benutzt. Die Ausnahme ist ein Server, der auf dem recur-code-Host läuft: er wird hierher in einen Tab weitergeleitet. Dies sind die Einstellungen, die dort noch etwas entscheiden.",
+    "descriptionWeb": "In einer Browsersitzung öffnen sich Webseiten in dem Browser, den du bereits benutzt. Die Ausnahme ist ein Server, der auf dem rc-Host läuft: er wird hierher in einen Tab weitergeleitet. Dies sind die Einstellungen, die dort noch etwas entscheiden.",
     "defaultTargetTitle": "Wo Links geöffnet werden",
     "defaultTargetHint": "Je Quelle einstellbar. ⌘/Strg+Klick auf einen Link verwendet einmalig die andere Variante.",
     "sourceTranscript": "Unterhaltungsnachrichten",
@@ -5464,9 +5464,9 @@
       "screenRecording": "Bildschirmaufnahme",
       "granted": "Erteilt",
       "request": "Erteilen…",
-      "why": "Aktiviere recur-code-computer-helper in den Systemeinstellungen – nicht RecurCode. Bildschirmaufnahme lässt ihn Fenster sehen, Bedienungshilfen lassen ihn sie lesen und darin handeln.",
-      "devRebuild": "Jeder Neubau des Helfers macht seine alte Berechtigung ungültig: Entferne zuerst den alten recur-code-computer-helper aus der Liste und erteile sie dann erneut.",
-      "notListed": "Fehlt recur-code-computer-helper in der Liste, zieh ihn aus dem Finder hinein:",
+      "why": "Aktiviere rc-computer-helper in den Systemeinstellungen – nicht RecurCode. Bildschirmaufnahme lässt ihn Fenster sehen, Bedienungshilfen lassen ihn sie lesen und darin handeln.",
+      "devRebuild": "Jeder Neubau des Helfers macht seine alte Berechtigung ungültig: Entferne zuerst den alten rc-computer-helper aus der Liste und erteile sie dann erneut.",
+      "notListed": "Fehlt rc-computer-helper in der Liste, zieh ihn aus dem Finder hinein:",
       "reveal": "Im Finder zeigen"
     },
     "shared": {
@@ -5519,7 +5519,7 @@
       "loading": "Fenster werden geladen …",
       "refresh": "Aktualisieren",
       "empty": "Keine Fenster gefunden. Wenn es welche geben sollte, prüfe die Berechtigungen im Bereich Computernutzung.",
-      "noScreenRecording": "recur-code-computer-helper hat noch keine Bildschirmaufnahme: Fenstertitel und -bilder können nicht angezeigt werden, und Agenten können keine Fenster lesen.",
+      "noScreenRecording": "rc-computer-helper hat noch keine Bildschirmaufnahme: Fenstertitel und -bilder können nicht angezeigt werden, und Agenten können keine Fenster lesen.",
       "unnamedApp": "Unbekannte App",
       "untitled": "Fenster ohne Titel",
       "minimized": "Minimiert",
@@ -5551,7 +5551,7 @@
       "skipped": "{count, plural, one {# Fenster konnte nicht freigegeben werden; es wurde vielleicht geschlossen.} other {# Fenster konnten nicht freigegeben werden; sie wurden vielleicht geschlossen.}}",
       "unshareable": "{count, plural, one {# Fenster lässt sich nicht freigeben} other {# Fenster lassen sich nicht freigeben}}",
       "noneShareable": "Keines dieser Fenster lässt sich freigeben.",
-      "recurCodeWhy": "Fenster von RecurCode werden nie freigegeben: Ein Agent, der RecurCode bedienen könnte, könnte seine eigenen Anfragen genehmigen oder sich weitere Fenster freigeben. Dasselbe gilt für andere recur-code-Instanzen."
+      "recurCodeWhy": "Fenster von RecurCode werden nie freigegeben: Ein Agent, der RecurCode bedienen könnte, könnte seine eigenen Anfragen genehmigen oder sich weitere Fenster freigeben. Dasselbe gilt für andere rc-Instanzen."
     },
     "settings": {
       "pageTitle": "Computernutzung",
@@ -5584,7 +5584,7 @@
       },
       "permissions": {
         "title": "Berechtigungen",
-        "description": "macOS verlangt sie für recur-code-computer-helper. Erteile sie in den Systemeinstellungen und kehre zurück – die Anzeige aktualisiert sich von selbst.",
+        "description": "macOS verlangt sie für rc-computer-helper. Erteile sie in den Systemeinstellungen und kehre zurück – die Anzeige aktualisiert sich von selbst.",
         "off": "Schalte die Computernutzung ein, um Berechtigungen zu prüfen und zu erteilen.",
         "accessibilityHint": "Fensterinhalte lesen und darin handeln.",
         "screenRecordingHint": "Bildschirmfotos machen und Fenstertitel lesen."
@@ -5665,7 +5665,7 @@
         "label": "Ganzen Bildschirm anbieten",
         "hint": "Ist dies aktiv, bietet die Freigabeauswahl den ganzen Bildschirm an: Agenten sehen ein Bild des gesamten Bildschirms und können überall darauf klicken, und alle Fenster, die du freigeben kannst, gehen mit, ebenso die Tastenkürzel des Desktops selbst. RecurCodes Fenster und die Sperrliste bleiben übermalt. Ausschalten beendet die Freigabe des Bildschirms."
       },
-      "boundary": "Unter macOS gehen die Berechtigungen an recur-code-computer-helper, den nur RecurCode nutzen kann – die Shells der Agenten können es nicht. Windows und Linux haben keine solche Trennung: Dort legen diese Einstellungen fest, was Agenten über RecurCode bekommen, nicht was Programme auf deinem Rechner tun können.",
+      "boundary": "Unter macOS gehen die Berechtigungen an rc-computer-helper, den nur RecurCode nutzen kann – die Shells der Agenten können es nicht. Windows und Linux haben keine solche Trennung: Dort legen diese Einstellungen fest, was Agenten über RecurCode bekommen, nicht was Programme auf deinem Rechner tun können.",
       "save": "Speichern",
       "saving": "Wird gespeichert …",
       "saved": "Einstellungen zur Computernutzung gespeichert",
@@ -6048,7 +6048,7 @@
     "settingsDeleteWorktreeHint": "Aktiviert die Option im Merge-Dialog vor; dort lässt sie sich weiterhin ändern.",
     "settingsWorktreeRoot": "Worktree-Verzeichnis",
     "settingsWorktreeRootHint": "Verzeichnis, in dem neue Aufgaben-Worktrees angelegt werden – eines pro Aufgabe. Leer lassen, um sie neben dem Projektordner anzulegen; „~“ ist dein Home-Verzeichnis, ein relativer Pfad gilt relativ zum Projektordner.",
-    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/rc-worktrees",
     "settingsWorktreeRootBrowse": "Worktree-Verzeichnis auswählen",
     "settingsPreflight": "Preflight-Befehl",
     "settingsPreflightHint": "Läuft im Worktree, sobald eine Aufgabe das Review erreicht.",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "Der entfernte Host erreicht diese Adresse nicht",
       "errorRemoteUnreachableHint": "Von {host} aus lässt sich der Name nicht auflösen oder es gibt keinen Weg dorthin.",
       "errorRemoteNotAllowed": "Der entfernte Server gibt diese Adresse für den Browser nicht frei",
-      "errorRemoteNotAllowedHint": "Der recur-code-server auf {host} lässt seinen Browser-Tunnel nur private Adressen erreichen (RC_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "Der rc-server auf {host} lässt seinen Browser-Tunnel nur private Adressen erreichen (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "Der entfernte Host hat zu lange für die Verbindung gebraucht",
       "errorRemoteTimeoutHint": "{host} hat von dieser Adresse nicht rechtzeitig eine Antwort bekommen. Der Server dort ist vielleicht ausgelastet oder hinter einer Firewall.",
       "errorTunnelDown": "Die Verbindung zum entfernten Host ist unterbrochen",
@@ -6889,8 +6889,8 @@
       "copyAddress": "Adresse kopieren",
       "copied": "Adresse kopiert",
       "unreachableTitle": "Der Bridge-Port ist nicht erreichbar",
-      "unreachableHint": "Der recur-code-Server stellt diese Seite unter {origin} bereit, aber dein Browser erreicht sie nicht. Gib diesen Port frei (siehe RC_BRIDGE_PORTS) oder setze RC_BRIDGE_PUBLIC_HOST; wird RecurCode über HTTPS ausgeliefert, brauchen auch die Bridge-Ports HTTPS.",
-      "unreachableHostHint": "Der recur-code-Server hat diese Seite unter {origin} bereitgestellt, aber dein Browser erreicht sie nicht. Dieser Hostname muss auf den recur-code-Server auflösen und den davorliegenden Proxy passieren – ein Wildcard-DNS-Eintrag und ein Wildcard-vhost (siehe RC_BRIDGE_HOST_PATTERN).",
+      "unreachableHint": "Der rc-Server stellt diese Seite unter {origin} bereit, aber dein Browser erreicht sie nicht. Gib diesen Port frei (siehe RC_BRIDGE_PORTS) oder setze RC_BRIDGE_PUBLIC_HOST; wird RecurCode über HTTPS ausgeliefert, brauchen auch die Bridge-Ports HTTPS.",
+      "unreachableHostHint": "Der rc-Server hat diese Seite unter {origin} bereitgestellt, aber dein Browser erreicht sie nicht. Dieser Hostname muss auf den rc-Server auflösen und den davorliegenden Proxy passieren – ein Wildcard-DNS-Eintrag und ein Wildcard-vhost (siehe RC_BRIDGE_HOST_PATTERN).",
       "errorTitle": "Diese Seite kann hier nicht angezeigt werden"
     },
     "remote": {
@@ -7097,9 +7097,9 @@
     "remote": {
       "error": {
         "unavailable": "Um Adressen des entfernten Hosts im integrierten Browser zu öffnen, ist macOS 14 oder neuer nötig.",
-        "unsupported": "Der entfernte recur-code-server ist zu alt, um Browser-Verkehr weiterzuleiten. Aktualisiere ihn, um seine Adressen hier zu öffnen.",
-        "disabled": "Beim entfernten recur-code-server ist der Browser-Tunnel ausgeschaltet (RC_BROWSER_TUNNEL).",
-        "unreachable": "Der Browser-Tunnel des entfernten recur-code-servers war nicht erreichbar ({reason}).",
+        "unsupported": "Der entfernte rc-server ist zu alt, um Browser-Verkehr weiterzuleiten. Aktualisiere ihn, um seine Adressen hier zu öffnen.",
+        "disabled": "Beim entfernten rc-server ist der Browser-Tunnel ausgeschaltet (RC_BROWSER_TUNNEL).",
+        "unreachable": "Der Browser-Tunnel des entfernten rc-servers war nicht erreichbar ({reason}).",
         "bypassed": "Die Browser-Engine dieses Computers schickt manche Adressen am Tunnel vorbei, daher bleiben die Seiten des entfernten Hosts geschlossen, statt von diesem Computer geladen zu werden.",
         "probeFailed": "Der integrierte Browser konnte nicht bestätigen, dass er den entfernten Host über den Tunnel erreicht. Versuche es gleich noch einmal."
       }

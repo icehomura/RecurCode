@@ -115,7 +115,7 @@ function createAddToChatPill(
   // lives on an inner <span> Monaco never touches; the button keeps only the
   // pill chrome and shrink-wraps it (Monaco positions the button absolutely).
   dom.className =
-    "recur-code-add-to-chat-pill rounded-md border border-border bg-popover px-2 py-0.5 text-xs font-medium text-popover-foreground shadow-md cursor-pointer select-none hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+    "rc-add-to-chat-pill rounded-md border border-border bg-popover px-2 py-0.5 text-xs font-medium text-popover-foreground shadow-md cursor-pointer select-none hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
   // Hand-written SVG (lucide "message-square-plus"): raw DOM can't host a React
   // lucide component. `currentColor` + the blue text class echoes the file badge;
   // the `lucide` class gives it the same stroke weight as the React-rendered
@@ -123,9 +123,9 @@ function createAddToChatPill(
   dom.innerHTML =
     '<span class="inline-flex items-center gap-1">' +
     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="lucide text-blue-600 dark:text-blue-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M9 10h6"/><path d="M12 7v6"/></svg>' +
-    '<span class="recur-code-add-to-chat-label"></span>' +
+    '<span class="rc-add-to-chat-label"></span>' +
     "</span>"
-  const labelSpan = dom.querySelector(".recur-code-add-to-chat-label")
+  const labelSpan = dom.querySelector(".rc-add-to-chat-label")
   if (labelSpan) labelSpan.textContent = getLabel()
   dom.addEventListener("click", (event) => {
     event.preventDefault()
@@ -1267,7 +1267,7 @@ export function FileWorkspacePanel() {
         options: {
           isWholeLine: true,
           linesDecorationsClassName:
-            "recur-code-dirty-diff-glyph recur-code-dirty-diff-added",
+            "rc-dirty-diff-glyph rc-dirty-diff-added",
         },
       }))
     const modifiedDecorations = modified
@@ -1277,7 +1277,7 @@ export function FileWorkspacePanel() {
         options: {
           isWholeLine: true,
           linesDecorationsClassName:
-            "recur-code-dirty-diff-glyph recur-code-dirty-diff-modified",
+            "rc-dirty-diff-glyph rc-dirty-diff-modified",
         },
       }))
     const deletedDecorations = deleted
@@ -1292,7 +1292,7 @@ export function FileWorkspacePanel() {
         options: {
           isWholeLine: false,
           linesDecorationsClassName:
-            "recur-code-dirty-diff-glyph recur-code-dirty-diff-deleted",
+            "rc-dirty-diff-glyph rc-dirty-diff-deleted",
         },
       }))
     const decorations = [

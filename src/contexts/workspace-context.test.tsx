@@ -85,7 +85,7 @@ const foldersMock = vi.hoisted(() => {
   }
 })
 
-// A window bound to a remote recur-code-server, when a test says so.
+// A window bound to a remote rc-server, when a test says so.
 const remoteMock = vi.hoisted(() => ({
   remote: false,
   serverBaseUrl: "https://dev.example.com",

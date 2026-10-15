@@ -167,11 +167,11 @@ export const CONFIG_SYNC_STATUS_EVENT = "config-sync://status"
 
 export const CONFIG_EXPORT_EXTENSION = "recurcodecfg.json"
 
-/** `recur-code-config-2026-05-04-11-32-07.recurcodecfg.json` — sortable, and obvious
+/** `rc-config-2026-05-04-11-32-07.recurcodecfg.json` — sortable, and obvious
  *  in a downloads folder six months later. */
 export function defaultExportFileName(now: Date = new Date()): string {
   const stamp = now.toISOString().slice(0, 19).replace(/[:T]/g, "-")
-  return `recur-code-config-${stamp}.${CONFIG_EXPORT_EXTENSION}`
+  return `rc-config-${stamp}.${CONFIG_EXPORT_EXTENSION}`
 }
 
 /** Where an import's bytes are coming from. A local desktop window names a

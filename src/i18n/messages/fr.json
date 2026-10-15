@@ -2305,7 +2305,7 @@
         "showPet": "Afficher la mascotte"
       },
       "mcp": {
-        "title": "Service recur-code-mcp",
+        "title": "Service rc-mcp",
         "state": {
           "running": "En cours",
           "stopped": "Arrêté",
@@ -2317,7 +2317,7 @@
           "running": "Les agents lancés ici peuvent utiliser les outils de RecurCode.",
           "stopped": "Le socket du broker ne répond pas.",
           "disabled": "Tous les groupes d'outils sont désactivés.",
-          "unavailable": "Le binaire recur-code-mcp est introuvable.",
+          "unavailable": "Le binaire rc-mcp est introuvable.",
           "unknown": "Impossible de lire l'état."
         },
         "socketPath": "Adresse",
@@ -5265,7 +5265,7 @@
     "computer": {
       "label": "Voir et utiliser les fenêtres du bureau",
       "short": "Lister les apps et fenêtres ; lire celles que vous partagez, agir sur celles que vous autorisez.",
-      "hint": "Permet à un agent de lister les applications et fenêtres de votre bureau, de lire les fenêtres que vous lui partagez — une capture, son contenu, si elle affiche ce qui est attendu — et de cliquer, taper et appuyer sur des touches dans celles que vous partagez pour agir. Rien n'est lisible tant que vous ne partagez pas une fenêtre depuis le panneau Utilisation de l'ordinateur de la barre d'état, et on ne peut agir sur aucune sans votre accord en plus ; le partage prend fin quand la fenêtre se ferme, après un moment sans utilisation ou quand vous l'arrêtez, et Arrêter les agents dans ce panneau les arrête tous d'un coup. Les saisies arrivent à la fenêtre en arrière-plan ; pour une action qui ne passe pas en arrière-plan, un agent peut mettre la fenêtre au premier plan, ce que vous pouvez désactiver dans les réglages d'Utilisation de l'ordinateur. Application de bureau uniquement ; sous macOS, des autorisations doivent être accordées à recur-code-computer-helper. Aperçu."
+      "hint": "Permet à un agent de lister les applications et fenêtres de votre bureau, de lire les fenêtres que vous lui partagez — une capture, son contenu, si elle affiche ce qui est attendu — et de cliquer, taper et appuyer sur des touches dans celles que vous partagez pour agir. Rien n'est lisible tant que vous ne partagez pas une fenêtre depuis le panneau Utilisation de l'ordinateur de la barre d'état, et on ne peut agir sur aucune sans votre accord en plus ; le partage prend fin quand la fenêtre se ferme, après un moment sans utilisation ou quand vous l'arrêtez, et Arrêter les agents dans ce panneau les arrête tous d'un coup. Les saisies arrivent à la fenêtre en arrière-plan ; pour une action qui ne passe pas en arrière-plan, un agent peut mettre la fenêtre au premier plan, ce que vous pouvez désactiver dans les réglages d'Utilisation de l'ordinateur. Application de bureau uniquement ; sous macOS, des autorisations doivent être accordées à rc-computer-helper. Aperçu."
     },
     "automations": {
       "label": "Créer des automatisations",
@@ -5464,9 +5464,9 @@
       "screenRecording": "Enregistrement de l'écran",
       "granted": "Accordé",
       "request": "Autoriser…",
-      "why": "Activez recur-code-computer-helper dans Réglages Système, et non RecurCode. L'Enregistrement de l'écran lui permet de voir les fenêtres ; l'Accessibilité, de les lire et d'agir dessus.",
-      "devRebuild": "Chaque recompilation de l'assistant annule son autorisation précédente : retirez d'abord l'ancien recur-code-computer-helper de la liste, puis autorisez-le à nouveau.",
-      "notListed": "Si recur-code-computer-helper n'apparaît pas dans la liste, faites-le glisser depuis le Finder :",
+      "why": "Activez rc-computer-helper dans Réglages Système, et non RecurCode. L'Enregistrement de l'écran lui permet de voir les fenêtres ; l'Accessibilité, de les lire et d'agir dessus.",
+      "devRebuild": "Chaque recompilation de l'assistant annule son autorisation précédente : retirez d'abord l'ancien rc-computer-helper de la liste, puis autorisez-le à nouveau.",
+      "notListed": "Si rc-computer-helper n'apparaît pas dans la liste, faites-le glisser depuis le Finder :",
       "reveal": "Afficher dans le Finder"
     },
     "shared": {
@@ -5519,7 +5519,7 @@
       "loading": "Chargement des fenêtres…",
       "refresh": "Actualiser",
       "empty": "Aucune fenêtre trouvée. S'il devrait y en avoir, vérifiez les autorisations dans le panneau Utilisation de l'ordinateur.",
-      "noScreenRecording": "recur-code-computer-helper n'a pas encore l'Enregistrement de l'écran : les titres et les images des fenêtres ne peuvent pas s'afficher, et les agents ne peuvent pas lire les fenêtres.",
+      "noScreenRecording": "rc-computer-helper n'a pas encore l'Enregistrement de l'écran : les titres et les images des fenêtres ne peuvent pas s'afficher, et les agents ne peuvent pas lire les fenêtres.",
       "unnamedApp": "App inconnue",
       "untitled": "Fenêtre sans titre",
       "minimized": "Réduite",
@@ -5584,7 +5584,7 @@
       },
       "permissions": {
         "title": "Autorisations",
-        "description": "macOS les demande pour recur-code-computer-helper. Accordez-en une dans Réglages Système puis revenez : l'affichage se met à jour tout seul.",
+        "description": "macOS les demande pour rc-computer-helper. Accordez-en une dans Réglages Système puis revenez : l'affichage se met à jour tout seul.",
         "off": "Activez l'utilisation de l'ordinateur pour vérifier et accorder les autorisations.",
         "accessibilityHint": "Lire le contenu des fenêtres et agir dessus.",
         "screenRecordingHint": "Faire des captures et lire les titres des fenêtres."
@@ -5665,7 +5665,7 @@
         "label": "Proposer l'écran entier",
         "hint": "Avec cette option, le sélecteur de partage propose l'écran entier : les agents en voient une seule image et peuvent cliquer n'importe où, et toutes les fenêtres que vous pouvez partager l'accompagnent, ainsi que les raccourcis propres au bureau. Les fenêtres de RecurCode et la liste des exclusions restent masquées. La désactiver met fin au partage de l'écran."
       },
-      "boundary": "Sous macOS, les autorisations vont à recur-code-computer-helper, que seul RecurCode peut utiliser : le shell des agents ne le peut pas. Windows et Linux n'ont pas cette séparation : là, ces réglages décident de ce que les agents obtiennent via RecurCode, pas de ce que les programmes de votre ordinateur peuvent faire.",
+      "boundary": "Sous macOS, les autorisations vont à rc-computer-helper, que seul RecurCode peut utiliser : le shell des agents ne le peut pas. Windows et Linux n'ont pas cette séparation : là, ces réglages décident de ce que les agents obtiennent via RecurCode, pas de ce que les programmes de votre ordinateur peuvent faire.",
       "save": "Enregistrer",
       "saving": "Enregistrement…",
       "saved": "Réglages d'utilisation de l'ordinateur enregistrés",
@@ -6048,7 +6048,7 @@
     "settingsDeleteWorktreeHint": "Coche l’option par défaut dans la boîte de dialogue de fusion ; elle reste modifiable.",
     "settingsWorktreeRoot": "Emplacement du worktree",
     "settingsWorktreeRootHint": "Répertoire dans lequel les worktrees des nouvelles tâches sont créés, un par tâche. Laissez vide pour les créer à côté du dossier du projet ; « ~ » désigne votre dossier personnel et un chemin relatif est résolu depuis le dossier du projet.",
-    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/rc-worktrees",
     "settingsWorktreeRootBrowse": "Choisir le répertoire des worktrees",
     "settingsPreflight": "Commande de pré-vérification",
     "settingsPreflightHint": "S'exécute dans le worktree quand une tâche passe en revue.",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "L'hôte distant ne peut pas joindre cette adresse",
       "errorRemoteUnreachableHint": "Vu depuis {host}, le nom ne se résout pas ou aucune route n'y mène.",
       "errorRemoteNotAllowed": "Le serveur distant n'ouvre pas cette adresse au navigateur",
-      "errorRemoteNotAllowedHint": "Le recur-code-server de {host} ne laisse son tunnel du navigateur joindre que des adresses privées (RC_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "Le rc-server de {host} ne laisse son tunnel du navigateur joindre que des adresses privées (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "L'hôte distant a mis trop de temps à se connecter",
       "errorRemoteTimeoutHint": "{host} n'a pas obtenu de réponse de cette adresse à temps. Le serveur est peut-être occupé ou derrière un pare-feu.",
       "errorTunnelDown": "La connexion à l'hôte distant est coupée",
@@ -7097,9 +7097,9 @@
     "remote": {
       "error": {
         "unavailable": "Ouvrir les adresses de l'hôte distant dans le navigateur intégré nécessite macOS 14 ou une version ultérieure.",
-        "unsupported": "Le recur-code-server distant est trop ancien pour relayer le trafic du navigateur. Mettez-le à jour pour ouvrir ses adresses ici.",
-        "disabled": "Le tunnel du navigateur est désactivé sur le recur-code-server distant (RC_BROWSER_TUNNEL).",
-        "unreachable": "Impossible de joindre le tunnel du navigateur du recur-code-server distant ({reason}).",
+        "unsupported": "Le rc-server distant est trop ancien pour relayer le trafic du navigateur. Mettez-le à jour pour ouvrir ses adresses ici.",
+        "disabled": "Le tunnel du navigateur est désactivé sur le rc-server distant (RC_BROWSER_TUNNEL).",
+        "unreachable": "Impossible de joindre le tunnel du navigateur du rc-server distant ({reason}).",
         "bypassed": "Le moteur du navigateur de cet ordinateur envoie certaines adresses en dehors du tunnel ; les pages de l'hôte distant restent donc fermées plutôt que d'être chargées depuis cet ordinateur.",
         "probeFailed": "Le navigateur intégré n'a pas pu confirmer qu'il atteint l'hôte distant par le tunnel. Réessayez dans un instant."
       }

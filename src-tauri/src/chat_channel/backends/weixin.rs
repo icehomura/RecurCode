@@ -306,7 +306,7 @@ impl WeixinBackend {
             "msg": {
                 "from_user_id": "",
                 "to_user_id": to_user_id,
-                "client_id": format!("recur-code-{}", uuid::Uuid::new_v4()),
+                "client_id": format!("rc-{}", uuid::Uuid::new_v4()),
                 "message_type": 2,
                 "message_state": 2,
                 "context_token": context_token,

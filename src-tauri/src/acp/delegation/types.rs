@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::AgentType;
 
-/// Per-agent defaults applied when recur-code-mcp spawns a subagent on behalf of a
+/// Per-agent defaults applied when rc-mcp spawns a subagent on behalf of a
 /// `delegate_to_agent` call. Mirrors the two knobs `ConnectionManager::spawn_agent`
 /// already accepts:
 ///   * `mode_id` → forwarded as `preferred_mode_id`
@@ -40,7 +40,7 @@ impl AgentDelegationDefaults {
 
 /// Everything the broker needs to dispatch a single delegation call.
 ///
-/// `parent_connection_id` is the recur-code-internal ACP connection UUID for the
+/// `parent_connection_id` is the rc-internal ACP connection UUID for the
 /// parent session (NOT the agent-assigned ACP session id). The broker uses it
 /// to inherit the parent's EventEmitter/working_dir and to scope
 /// `cancel_by_parent`.

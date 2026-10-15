@@ -129,7 +129,7 @@ pub fn build_router(
             "/set_computer_tools_preferences",
             post(handlers::computer_tools::set_computer_tools_preferences),
         )
-        // Computer use itself: answered only by a recur-code-server let share the
+        // Computer use itself: answered only by a rc-server let share the
         // screen it runs on (see `handlers::computer`).
         .route(
             "/computer_available",

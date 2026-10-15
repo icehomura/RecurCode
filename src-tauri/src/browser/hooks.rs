@@ -719,7 +719,7 @@ mod tests {
         let guest = BrowserTabState {
             kind: TabKind::Document,
             opener_tab_id: Some("opener".into()),
-            ..state("recur-code-doc://x/index.html", "")
+            ..state("rc-doc://x/index.html", "")
         };
         assert!(!page_may_close_itself(&guest));
     }

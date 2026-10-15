@@ -190,7 +190,7 @@ const REGISTRY_ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json"
  */
 export function toThemeRegistryItem(
   theme: CustomTheme,
-  name = "recur-code-custom-theme"
+  name = "rc-custom-theme"
 ): string {
   return JSON.stringify(
     {
@@ -393,7 +393,7 @@ export function sanitizeCustomCss(input: string): CustomCssCheck {
 // ─── DOM 应用 ───
 
 /** 注入用户 CSS 的 `<style>` 元素 id。始终位于 `<head>` 末尾。 */
-export const CUSTOM_CSS_ELEMENT_ID = "recur-code-custom-css"
+export const CUSTOM_CSS_ELEMENT_ID = "rc-custom-css"
 
 /** 安全外观逃生参数：`?safeStyle=1` 时跳过一切自定义样式。 */
 export const SAFE_STYLE_QUERY_PARAM = "safeStyle"

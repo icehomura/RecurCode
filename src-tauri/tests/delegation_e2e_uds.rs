@@ -39,9 +39,9 @@ use tokio::sync::oneshot;
 /// `$TMPDIR` happens to be.
 ///
 /// `tempfile::tempdir()` honours `$TMPDIR`, and these tests then add
-/// `/.tmpXXXXXX/recur-code-e2e-*.sock` on top. That is fine against the ~20-byte
+/// `/.tmpXXXXXX/rc-e2e-*.sock` on top. That is fine against the ~20-byte
 /// default and fatal against RecurCode's own per-session `TMPDIR`, which is 72
-/// bytes: `recur-code-e2e-batch.sock` composed to exactly 104 there, and `sun_path`
+/// bytes: `rc-e2e-batch.sock` composed to exactly 104 there, and `sun_path`
 /// caps at 104 on macOS. Three of these tests went red inside a RecurCode session
 /// and green outside it, for reasons having nothing to do with the code under
 /// test.
@@ -233,7 +233,7 @@ async fn end_to_end_uds_happy_path() {
 
     // Freshly-named directory per test — no clashes across test bins.
     let dir = socket_dir();
-    let socket = dir.path().join("recur-code-e2e.sock");
+    let socket = dir.path().join("rc-e2e.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -353,7 +353,7 @@ async fn end_to_end_uds_batch_status() {
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("recur-code-e2e-batch.sock");
+    let socket = dir.path().join("rc-e2e-batch.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -445,7 +445,7 @@ async fn end_to_end_uds_invalid_token_rejected() {
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("recur-code-e2e-reject.sock");
+    let socket = dir.path().join("rc-e2e-reject.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -516,7 +516,7 @@ async fn end_to_end_uds_ask_question_round_trip() {
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("recur-code-e2e-ask.sock");
+    let socket = dir.path().join("rc-e2e-ask.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;
@@ -661,7 +661,7 @@ async fn end_to_end_uds_ask_revoked_after_register_declines() {
     );
 
     let dir = socket_dir();
-    let socket = dir.path().join("recur-code-e2e-ask-revoked.sock");
+    let socket = dir.path().join("rc-e2e-ask-revoked.sock");
     let socket_for_listener = socket.clone();
     let listener_task = tokio::spawn(async move {
         let _ = listener.run(socket_for_listener).await;

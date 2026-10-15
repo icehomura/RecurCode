@@ -79,7 +79,7 @@ const STATIC_DOCUMENT_HEIGHT = 480
 const COLLAPSED_MAX_HEIGHT = 640
 /** Backstop for "Show all": past this the frame scrolls instead of growing. */
 const MAX_FRAME_HEIGHT = 12000
-const SIZE_MESSAGE_TYPE = "recur-code-visualize:size"
+const SIZE_MESSAGE_TYPE = "rc-visualize:size"
 
 const RESOURCE_SOURCES = [
   "blob:",

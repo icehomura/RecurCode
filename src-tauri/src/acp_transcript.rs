@@ -1302,7 +1302,7 @@ mod tests {
 
     fn temp_root() -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "recur-code-acp-transcript-test-{}-{:?}",
+            "rc-acp-transcript-test-{}-{:?}",
             std::process::id(),
             std::thread::current().id()
         ));

@@ -19,7 +19,7 @@
 //!   the viewport, so painting one there would put our colour behind somebody
 //!   else's page — and a white receipt written into a dark-themed popup would
 //!   come out with a dark margin around it.
-//! - a document guest (`recur-code-doc:`) shows a file, never the blank page.
+//! - a document guest (`rc-doc:`) shows a file, never the blank page.
 
 use std::sync::RwLock;
 

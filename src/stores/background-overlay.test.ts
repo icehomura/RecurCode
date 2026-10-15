@@ -287,7 +287,7 @@ describe("refetchDetail DB-id resolution", () => {
       detail({
         summary: { ...detail().summary, id: 42 },
         transcript_watermark: 35582,
-        turns: [turn("turn-0", "[[recur-code-background-task]] terminal state")],
+        turns: [turn("turn-0", "[[rc-background-task]] terminal state")],
       })
     )
     actions().refetchDetail(VIRTUAL, { preserveLive: false })
@@ -324,7 +324,7 @@ describe("RESOLVE_BACKGROUND_TASK (in-memory launch-card flip)", () => {
   // An async sub-agent launch card: an assistant turn holding the launching
   // `Agent` tool_use plus its ack tool_result (raw wire text). This is what
   // `AgentToolCallPart` renders as "running in background" until its
-  // `output_preview` becomes a `[[recur-code-background-task]]` marker.
+  // `output_preview` becomes a `[[rc-background-task]]` marker.
   function launchCardTurn(
     id: string,
     toolUseId: string,

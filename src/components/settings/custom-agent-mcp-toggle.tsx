@@ -3,7 +3,7 @@
 /**
  * MCP declaration card on a custom agent's settings page.
  *
- * RecurCode injects its built-in recur-code-mcp companion into `session/new`'s
+ * RecurCode injects its built-in rc-mcp companion into `session/new`'s
  * `mcpServers` — that is what backs delegation, live feedback and the task
  * tools. Most ACP agents accept it, but some reject any entry in that field
  * and fail session creation outright, so the agent cannot be connected to at

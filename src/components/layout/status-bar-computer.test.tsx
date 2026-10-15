@@ -292,7 +292,7 @@ describe("StatusBarComputer", () => {
     mount()
     fireEvent.click(await screen.findByRole("button", { name: "Computer use" }))
     await screen.findByText(
-      /remove the old recur-code-computer-helper from the list/
+      /remove the old rc-computer-helper from the list/
     )
     // Said once, as a tag on the status line.
     expect(screen.getByTitle(/doesn't check/)).toHaveTextContent(

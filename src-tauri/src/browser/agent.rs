@@ -337,10 +337,10 @@ pub enum NotGrantable {
     /// navigation could be compared against, so a grant made now could never
     /// be revoked for leaving.
     NoOrigin,
-    /// A document guest (`recur-code-doc:`). It shows a local file — usually one
+    /// A document guest (`rc-doc:`). It shows a local file — usually one
     /// the agent wrote — under an origin that is minted per document and
-    /// spelled differently on every platform (`recur-code-doc://doc-<token>/…`
-    /// under WebKit, `http://recur-code-doc.doc-<token>/…` under WebView2), so
+    /// spelled differently on every platform (`rc-doc://doc-<token>/…`
+    /// under WebKit, `http://rc-doc.doc-<token>/…` under WebView2), so
     /// there is no stable origin to bind to. There is also no need: the file
     /// is on disk, where the agent reads it directly and without a browser
     /// in between.
@@ -1017,7 +1017,7 @@ mod tests {
         assert_eq!(blank.level, GrantLevel::None);
 
         assert_eq!(
-            summarize_tab(&tab(Some("https://recur-code-doc.localhost"), TabKind::Document)),
+            summarize_tab(&tab(Some("https://rc-doc.localhost"), TabKind::Document)),
             None
         );
     }
@@ -1039,11 +1039,11 @@ mod tests {
         // A document guest is refused even though its origin looks like one
         // on this platform, because on the next platform it does not.
         assert_eq!(
-            grantable_origin(&tab(Some("https://recur-code-doc.localhost"), TabKind::Document)),
+            grantable_origin(&tab(Some("https://rc-doc.localhost"), TabKind::Document)),
             Err(NotGrantable::DocumentGuest)
         );
         assert_eq!(
-            grantable_origin(&tab(Some("recur-code-doc://abc"), TabKind::Page)),
+            grantable_origin(&tab(Some("rc-doc://abc"), TabKind::Page)),
             Err(NotGrantable::NoOrigin)
         );
     }
@@ -1101,7 +1101,7 @@ mod tests {
         );
         assert!(blank.agent_grant.is_none());
 
-        let mut guest = tab(Some("https://recur-code-doc.localhost"), TabKind::Document);
+        let mut guest = tab(Some("https://rc-doc.localhost"), TabKind::Document);
         assert_eq!(
             apply_grant(&mut guest, GrantLevel::Control, 1, None),
             Err(NotGrantable::DocumentGuest)

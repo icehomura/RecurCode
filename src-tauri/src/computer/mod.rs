@@ -20,7 +20,7 @@
 //!   Accessibility, event posting or screen capture. The two read-only
 //!   preflight queries in [`tcc`] are the only exception, and they exist so
 //!   RecurCode can notice that it *has* been granted one by mistake.
-//! * **The executor is `recur-code-computer-helper`**, a separately signed binary
+//! * **The executor is `rc-computer-helper`**, a separately signed binary
 //!   that RecurCode launches as its own responsible process and that refuses to
 //!   serve anything but a code-signature-verified RecurCode ([`helper`]). On
 //!   macOS it is an app of its own, run from a copy outside RecurCode's bundle:
@@ -91,7 +91,7 @@ pub mod spawn;
 pub mod tcc;
 
 // RecurCode's side of the helper and the events it raises: the desktop app's,
-// and recur-code-server's where the person who runs it lets it share the screen
+// and rc-server's where the person who runs it lets it share the screen
 // it runs on (`RC_COMPUTER_USE`).
 pub mod driver_admin;
 pub mod events;

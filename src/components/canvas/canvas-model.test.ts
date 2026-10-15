@@ -1005,7 +1005,7 @@ describe("deriveFlowGraph — the folder a card names in its footer", () => {
   })
 
   it("names the parent repo for a conversation living in a worktree", () => {
-    // The worktree's own directory name is `recur-code-fix-abc`; what pairs with the
+    // The worktree's own directory name is `rc-fix-abc`; what pairs with the
     // branch chip beside it is the repo, exactly as the composer row reads.
     const region = node(1, { kind: "folder", folder_id: 4 })
     const { nodes } = deriveFlowGraph({
@@ -1013,7 +1013,7 @@ describe("deriveFlowGraph — the folder a card names in its footer", () => {
       conversations: [conv(10, { folder_id: 4 })],
       allFolders: [
         folder(3, { name: "RecurCode" }),
-        folder(4, { name: "recur-code-fix-abc", parent_id: 3 }),
+        folder(4, { name: "rc-fix-abc", parent_id: 3 }),
       ],
       ...NO_DRAG,
     })

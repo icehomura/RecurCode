@@ -1,4 +1,4 @@
-//! `recur-code-computer-helper`: the process that holds the OS permissions for
+//! `rc-computer-helper`: the process that holds the OS permissions for
 //! computer use, and runs the driver as its child.
 //!
 //! On macOS the helper is launched by RecurCode as its own TCC responsible

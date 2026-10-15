@@ -113,7 +113,7 @@ pub const ENTER_PREFIX: &str = "/__recur_code_bridge/enter/";
 /// Unauthenticated reachability probe the workbench calls before showing
 /// the frame, so an unmapped port is reported instead of a blank frame.
 pub const PING_PATH: &str = "/__recur_code_bridge/ping";
-const COOKIE_PREFIX: &str = "recur-code-bridge-";
+const COOKIE_PREFIX: &str = "rc-bridge-";
 /// The workbench's own cookies (locale preferences) live on the same host
 /// and are not the dev server's business either.
 const WORKBENCH_COOKIE_PREFIX: &str = "RecurCode.";
@@ -1648,15 +1648,15 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.append(
             header::COOKIE,
-            HeaderValue::from_static("a=1; recur-code-bridge-3081=cap-one; b=2"),
+            HeaderValue::from_static("a=1; rc-bridge-3081=cap-one; b=2"),
         );
         headers.append(
             header::COOKIE,
-            HeaderValue::from_static("recur-code-bridge-3082=cap-two; RecurCode.locale=zh-CN"),
+            HeaderValue::from_static("rc-bridge-3082=cap-two; RecurCode.locale=zh-CN"),
         );
-        assert_eq!(cookie_value(&headers, "recur-code-bridge-3081").as_deref(), Some("cap-one"));
-        assert_eq!(cookie_value(&headers, "recur-code-bridge-3082").as_deref(), Some("cap-two"));
-        assert_eq!(cookie_value(&headers, "recur-code-bridge-3083"), None);
+        assert_eq!(cookie_value(&headers, "rc-bridge-3081").as_deref(), Some("cap-one"));
+        assert_eq!(cookie_value(&headers, "rc-bridge-3082").as_deref(), Some("cap-two"));
+        assert_eq!(cookie_value(&headers, "rc-bridge-3083"), None);
         assert_eq!(foreign_cookies(&headers), "a=1; b=2");
         assert_eq!(foreign_cookies(&HeaderMap::new()), "");
     }
@@ -1669,7 +1669,7 @@ mod tests {
             header::REFERER,
             HeaderValue::from_static("http://RecurCode.example:3081/app/page?tab=2"),
         );
-        headers.insert(header::COOKIE, HeaderValue::from_static("recur-code-bridge-3081=c; sid=9"));
+        headers.insert(header::COOKIE, HeaderValue::from_static("rc-bridge-3081=c; sid=9"));
         let rewritten = rewritten_request_headers(&headers, 3000);
         let get = |name: HeaderName| {
             rewritten
@@ -2006,10 +2006,10 @@ mod tests {
             shutdown: Mutex::new(None),
             task: Mutex::new(None),
         };
-        assert_eq!(listener(Some(3081)).cookie_name(), "recur-code-bridge-3081");
+        assert_eq!(listener(Some(3081)).cookie_name(), "rc-bridge-3081");
         // Addressed by hostname there is no bridge port; the target port is
         // what the hostname says, and the cookie is host-only anyway.
-        assert_eq!(listener(None).cookie_name(), "recur-code-bridge-3000");
+        assert_eq!(listener(None).cookie_name(), "rc-bridge-3000");
     }
 
     #[test]

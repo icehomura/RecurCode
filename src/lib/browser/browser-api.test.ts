@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   remote: vi.fn<Call>(() => Promise.reject(new Error("501"))),
 }))
 
-// A window bound to a remote recur-code-server: `getTransport()` talks to that
+// A window bound to a remote rc-server: `getTransport()` talks to that
 // host, `getShellTransport()` to this app's own backend.
 vi.mock("@/lib/transport", () => ({
   getShellTransport: () => ({ call: mocks.shell }),

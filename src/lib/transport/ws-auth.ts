@@ -1,5 +1,5 @@
-export const RC_WS_PROTOCOL = "recur-code-events"
-const RC_WS_TOKEN_PROTOCOL_PREFIX = "recur-code-token."
+export const RC_WS_PROTOCOL = "rc-events"
+const RC_WS_TOKEN_PROTOCOL_PREFIX = "rc-token."
 
 function base64UrlEncode(value: string): string {
   const bytes = new TextEncoder().encode(value)

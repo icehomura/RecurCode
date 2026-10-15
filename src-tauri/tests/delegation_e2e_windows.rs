@@ -127,7 +127,7 @@ impl recur_code_lib::acp::chat_authoring::ChatAuthoringAccess for NoAuthoring {
 
 fn unique_pipe(tag: &str) -> String {
     format!(
-        r"\\.\pipe\recur-code-e2e-{}-{}-{}",
+        r"\\.\pipe\rc-e2e-{}-{}-{}",
         tag,
         std::process::id(),
         std::time::SystemTime::now()

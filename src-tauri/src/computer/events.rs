@@ -7,7 +7,7 @@
 //! connected to the desktop's web service is somewhere else: there, sharing
 //! a window is the desktop window's own action, and so is watching it.
 //!
-//! recur-code-server has no window of its own. Where the person who runs it has
+//! rc-server has no window of its own. Where the person who runs it has
 //! let it share the screen it runs on (`RC_COMPUTER_USE`), its web
 //! clients — each holding the server's token — are the only panel there is,
 //! and they are told.
@@ -53,7 +53,7 @@ pub enum ComputerEvents {
     /// service (see the module note).
     #[cfg(feature = "tauri-runtime")]
     Desktop(tauri::AppHandle),
-    /// recur-code-server's web clients: the only panel there is in server mode.
+    /// rc-server's web clients: the only panel there is in server mode.
     Web(Arc<WebEventBroadcaster>),
 }
 

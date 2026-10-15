@@ -689,7 +689,7 @@ fn write_atomically(path: &Path, content: &str) -> Result<(), AcpError> {
     // file another is still filling, and the first `rename` then publishes a
     // half-written bundle over Cursor's chunk.
     let tmp = parent.join(format!(
-        ".recur-code-acp-retry-patch-{}-{}.tmp",
+        ".rc-acp-retry-patch-{}-{}.tmp",
         std::process::id(),
         TEMP_SEQ.fetch_add(1, Ordering::Relaxed)
     ));

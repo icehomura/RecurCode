@@ -730,7 +730,7 @@ export async function acpUpdateHermesConfig(params: {
 
 /**
  * Persist a Kimi Code config update, keeping exactly one source authoritative.
- * `mode` "apikey" writes the recur-code-managed ~/.kimi-code/config.toml provider/model
+ * `mode` "apikey" writes the rc-managed ~/.kimi-code/config.toml provider/model
  * block AND seeds a synthetic gate token so the API key authenticates `kimi acp`
  * (its session gate only checks for a stored token); "login" clears the managed
  * block + removes our synthetic token so a real OAuth login governs; "raw" writes
@@ -1311,7 +1311,7 @@ export interface CustomAgentInfo {
   versionProbe: string | null
   /**
    * User declaration that the agent accepts MCP servers on the ACP wire —
-   * for a custom agent, RecurCode's built-in recur-code-mcp companion. Off means the
+   * for a custom agent, RecurCode's built-in rc-mcp companion. Off means the
    * connection is made without it, for agents that fail `session/new` when
    * any server is sent.
    */
@@ -3507,7 +3507,7 @@ export async function createShadcnProject(params: {
 }
 
 /**
- * Detect, per recur-code-supported agent, whether the HyperFrames skills are already
+ * Detect, per rc-supported agent, whether the HyperFrames skills are already
  * installed globally. Cheap filesystem check, so no long timeout is needed.
  */
 export async function detectHyperframesSkills(): Promise<
@@ -4380,7 +4380,7 @@ export async function uploadAttachment(
 }
 
 // Upload a file picked from the desktop machine's filesystem to the remote
-// recur-code-server bound to the current window. The Tauri-native drag-drop event
+// rc-server bound to the current window. The Tauri-native drag-drop event
 // hands us OS paths (not `File` objects), so we read the bytes via Rust,
 // then reuse the same `remote_upload_attachment` channel. Only callable from
 // a window that has a remote workspace attached; non-remote callers should
@@ -5371,7 +5371,7 @@ export interface DelegationSettings {
   /** Per-parent byte budget (in MB) for the broker's in-memory cache of
    * completed sub-agent result text. `0` = unlimited. */
   completed_cache_max_mb: number
-  /** Optional per-agent overrides applied when recur-code-mcp spawns a subagent.
+  /** Optional per-agent overrides applied when rc-mcp spawns a subagent.
    * Keyed by `agent_type`. Missing entries mean "use agent defaults." */
   agent_defaults?: Partial<Record<AgentType, AgentDelegationDefaults>>
 }
@@ -5386,7 +5386,7 @@ export async function setDelegationSettings(
   return getTransport().call("set_delegation_settings", { settings })
 }
 
-// ─── recur-code-mcp service status ──────────────────────────────────────────
+// ─── rc-mcp service status ──────────────────────────────────────────
 
 /** Headline verdict from Rust `RecurCodeMcpServiceState`. Ordered by which problem
  * to solve first: only `stopped` is repairable from this process. */
@@ -5413,7 +5413,7 @@ export interface RecurCodeMcpServiceStatus {
   /** Whether the broker socket answered a liveness ping just now. */
   listening: boolean
   socket_path: string
-  /** Resolved `recur-code-mcp` path; `null` when the lookup came up empty. */
+  /** Resolved `rc-mcp` path; `null` when the lookup came up empty. */
   binary_path: string | null
   tool_groups: RecurCodeMcpToolGroup[]
   companion_count: number
@@ -5614,7 +5614,7 @@ export async function setChatAuthoringSettings(
 /** Live probe — opens a transient ACP connection to `agent_type`, reads what
  * it advertises (modes / config_options), and tears down. Used by the
  * delegation-settings UI so the option set on screen matches exactly what
- * recur-code-mcp will receive when a subagent is spawned for delegation.
+ * rc-mcp will receive when a subagent is spawned for delegation.
  *
  * Does NOT touch chat-side `selectorsCache` or `localStorage` preferences. */
 export async function describeAgentOptions(
@@ -5677,7 +5677,7 @@ export interface BackupManifest {
   runtime: string
   includesExternalTranscripts: boolean
   includesSecrets: boolean
-  /** Which recur-code-owned sections this archive claims to manage. */
+  /** Which rc-owned sections this archive claims to manage. */
   managedSections?: string[] | null
   /** Stores that could not be snapshotted cleanly. */
   degradedSqlite?: DegradedSqlite[]
@@ -5783,7 +5783,7 @@ export async function exportBackupDesktop(
   const ext = encrypted ? "recurcodebak" : "recurcode.zip"
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")
   const destPath = await save({
-    defaultPath: `recur-code-backup-${stamp}.${ext}`,
+    defaultPath: `rc-backup-${stamp}.${ext}`,
     filters: [{ name: "RecurCode backup", extensions: [ext] }],
   })
   if (!destPath) return null

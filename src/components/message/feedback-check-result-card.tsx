@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * In-stream capsule for the recur-code-mcp `check_user_feedback` tool — the agent's
+ * In-stream capsule for the rc-mcp `check_user_feedback` tool — the agent's
  * mid-turn poll for live-steering notes the user sent while it worked.
  *
  * Only checks that actually received feedback reach this card; the routine

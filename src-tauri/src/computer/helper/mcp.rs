@@ -300,7 +300,7 @@ impl McpClient {
                 json!({
                     "protocolVersion": MCP_PROTOCOL_VERSION,
                     "capabilities": {},
-                    "clientInfo": { "name": "recur-code-computer-helper", "version": env!("CARGO_PKG_VERSION") },
+                    "clientInfo": { "name": "rc-computer-helper", "version": env!("CARGO_PKG_VERSION") },
                 }),
                 timeout,
             )

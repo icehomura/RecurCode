@@ -24,8 +24,8 @@ function makeStatus(
   return {
     state: "running",
     listening: true,
-    socket_path: "/tmp/recur-code-delegation-4242.sock",
-    binary_path: "/Applications/RecurCode.app/Contents/MacOS/recur-code-mcp",
+    socket_path: "/tmp/rc-delegation-4242.sock",
+    binary_path: "/Applications/RecurCode.app/Contents/MacOS/rc-mcp",
     tool_groups: [
       { key: "delegation", enabled: true },
       { key: "feedback", enabled: true },
@@ -112,11 +112,11 @@ describe("StatusBarMcp", () => {
     await mount()
     await openPopover()
 
-    const glyph = screen.getByTitle(/recur-code-delegation-4242\.sock/)
+    const glyph = screen.getByTitle(/rc-delegation-4242\.sock/)
     expect(glyph).toHaveAttribute(
       "title",
       expect.stringContaining(
-        "/Applications/RecurCode.app/Contents/MacOS/recur-code-mcp"
+        "/Applications/RecurCode.app/Contents/MacOS/rc-mcp"
       )
     )
   })
@@ -291,7 +291,7 @@ describe("StatusBarMcp", () => {
     await openPopover()
 
     expect(
-      screen.getByText("The recur-code-mcp binary is not on disk.")
+      screen.getByText("The rc-mcp binary is not on disk.")
     ).toBeInTheDocument()
     expect(
       screen.queryByRole("button", { name: /Start service/ })

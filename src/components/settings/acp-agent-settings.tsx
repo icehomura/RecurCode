@@ -718,7 +718,7 @@ const GROK_DEFAULT_API_BACKEND = "responses"
  * and `importantEnvKeysByAgent`). */
 const GROK_API_KEY_ENV = "XAI_API_KEY"
 
-/** recur-code-side knob recording the chosen authentication method. Read by the
+/** rc-side knob recording the chosen authentication method. Read by the
  * launch path (`apply_grok_env_policy`): in `subscription` mode it clears any
  * inherited XAI_API_KEY so the CLI uses the `grok login` browser credential.
  * The Grok binary itself ignores this var. Mirrors Cursor's CURSOR_AUTH_MODE. */
@@ -740,7 +740,7 @@ export type GrokAuthMethod = "subscription" | "api_key" | "custom"
 /** Resolve the persisted Grok authentication method, tolerant of legacy rows:
  * an explicit `GROK_AUTH_MODE` wins; otherwise a configured custom model implies
  * `custom`, a saved XAI_API_KEY implies `api_key`, and an empty env means the
- * user relies on `grok login`. `hasCustomModel` reflects whether a recur-code-managed
+ * user relies on `grok login`. `hasCustomModel` reflects whether a rc-managed
  * `[model.<id>]` is set (it lives in config.toml, not env). Mirrors
  * `inferCursorMode`. */
 export function inferGrokMode(
@@ -3217,7 +3217,7 @@ export function buildGrokStructuredConfig(draft: {
   grokAutoCompactThreshold: string
 }): GrokStructuredConfig {
   // The custom-model group applies only in the `custom` auth method; the
-  // subscription / api_key methods omit the recur-code-managed [model.<id>] block
+  // subscription / api_key methods omit the rc-managed [model.<id>] block
   // (an empty id → the backend removes it). Permission mode, reasoning effort
   // and compaction below stay independent of the auth method.
   const modelId =
@@ -6383,7 +6383,7 @@ export function AcpAgentSettings() {
         nextConfigTomlText = updateTomlRootStringKey(
           nextConfigTomlText,
           "model_catalog_json",
-          codexHasConfig ? "recur-code-model-catalog.json" : ""
+          codexHasConfig ? "rc-model-catalog.json" : ""
         )
         const synced = extractCodexImportantValues(
           nextAuthJsonText,
@@ -7599,7 +7599,7 @@ export function AcpAgentSettings() {
         toml = updateTomlRootStringKey(
           toml,
           "model_catalog_json",
-          hasCatalog ? "recur-code-model-catalog.json" : ""
+          hasCatalog ? "rc-model-catalog.json" : ""
         )
         return {
           ...current,
@@ -11343,7 +11343,7 @@ supports_websockets = true`}
                     {/* Custom model (BYO endpoint) → [model.<id>] + [models].default.
                         Only shown (and saved) in the `custom` auth method: a model
                         id registers a custom Grok model as the default; the other
-                        methods omit the recur-code-managed block. */}
+                        methods omit the rc-managed block. */}
                     {selectedDraft.grokAuthMode === "custom" ? (
                       <div className="space-y-2.5 rounded-md border p-2.5">
                         <div>

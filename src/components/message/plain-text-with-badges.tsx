@@ -86,7 +86,7 @@ function renderBlock(block: QuoteBlock, key: number) {
  *
  * The ONE exception is a line-leading `>`, which renders as a quote rule instead
  * of a literal marker ({@link parseQuoteBlocks}) — the transcript's half of the
- * quote action, and the same treatment the composer's `.recur-code-quote-marker`
+ * quote action, and the same treatment the composer's `.rc-quote-marker`
  * decoration gives the draft, so a quote looks the same before and after
  * sending. Markdown rendering is NOT otherwise widened: only `>` is structural.
  *

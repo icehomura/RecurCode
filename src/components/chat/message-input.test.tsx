@@ -285,8 +285,8 @@ describe("MessageInput (RichComposer integration)", () => {
     const card = container.querySelector('[class~="@container"]') as HTMLElement
     expect(card).not.toBeNull()
     // The same box paints the text I-beam across its blank chrome (see the
-    // `.recur-code-composer-chrome` rule in globals.css).
-    expect(card.className).toContain("recur-code-composer-chrome")
+    // `.rc-composer-chrome` rule in globals.css).
+    expect(card.className).toContain("rc-composer-chrome")
     expect(firePointer(card, "pointerdown", "mouse")).toBe(false)
   })
 
@@ -936,7 +936,7 @@ describe("MessageInput file-tree drag-and-drop", () => {
     kind: "file" | "dir"
   }) {
     const store = new Map<string, string>([
-      ["application/x-recur-code-tree-entry", JSON.stringify(payload)],
+      ["application/x-rc-tree-entry", JSON.stringify(payload)],
       ["text/plain", payload.absPath],
     ])
     return {
@@ -2552,13 +2552,13 @@ describe("MessageInput composer box sizing (#746)", () => {
       expect(container.querySelector('[role="textbox"]')).not.toBeNull()
     )
 
-    const chrome = container.querySelector(".recur-code-composer-chrome")
+    const chrome = container.querySelector(".rc-composer-chrome")
     expect(chrome).not.toBeNull()
     const chromeClasses = chrome!.className.split(/\s+/)
     expect(chromeClasses).toContain("flex")
     expect(chromeClasses).toContain("flex-col")
 
-    const editorRoot = chrome!.querySelector(".recur-code-composer")
+    const editorRoot = chrome!.querySelector(".rc-composer")
     expect(editorRoot).not.toBeNull()
     const editorClasses = editorRoot!.className.split(/\s+/)
     // A zero basis (`flex-1`) only reaches its intended height by absorbing the
@@ -2579,8 +2579,8 @@ describe("MessageInput composer box sizing (#746)", () => {
         expect(container.querySelector('[role="textbox"]')).not.toBeNull()
       )
 
-      const chrome = container.querySelector(".recur-code-composer-chrome")!
-      const editorRoot = chrome.querySelector(".recur-code-composer")!
+      const chrome = container.querySelector(".rc-composer-chrome")!
+      const editorRoot = chrome.querySelector(".rc-composer")!
       expect(chrome.className.split(/\s+/)).toContain(
         composerBoxMinHeight(tall)
       )
@@ -2596,8 +2596,8 @@ describe("MessageInput composer box sizing (#746)", () => {
       expect(container.querySelector('[role="textbox"]')).not.toBeNull()
     )
 
-    const chrome = container.querySelector(".recur-code-composer-chrome")!
-    const editorRoot = chrome.querySelector(".recur-code-composer")!
+    const chrome = container.querySelector(".rc-composer-chrome")!
+    const editorRoot = chrome.querySelector(".rc-composer")!
     // The row holding the add menu / agent settings / stop button.
     const actionRow = chrome.querySelector(":scope > .shrink-0.items-end")
     expect(actionRow).not.toBeNull()
@@ -2638,7 +2638,7 @@ describe("MessageInput folder data arriving after mount", () => {
     const editor = handle.getEditor()!
     const editorDom = editor.view.dom
     act(() => handle.insertTextAtCursor("keep this draft"))
-    const chrome = container.querySelector(".recur-code-composer-chrome")!
+    const chrome = container.querySelector(".rc-composer-chrome")!
     const wrapper = chrome.parentElement!
     // jsdom has no layout engine, so it cannot reproduce the collapse; this
     // pins the class contract that avoids it. One class per negative

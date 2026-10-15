@@ -367,10 +367,10 @@ export function AutomationEditor({
         // below a short prompt, the config-bar gaps) focuses the editor at that
         // point — same affordance as the chat composer. Interactive controls,
         // badges and the editor surface exclude themselves via
-        // NON_CHROME_SELECTOR; `recur-code-composer-chrome` paints the text I-beam
+        // NON_CHROME_SELECTOR; `rc-composer-chrome` paints the text I-beam
         // over the dead space.
         {...chromeFocus}
-        className="recur-code-composer-chrome relative rounded-xl border border-input bg-background transition-colors focus-within:border-ring focus-within:ring-[3px] focus-within:ring-inset focus-within:ring-ring/50"
+        className="rc-composer-chrome relative rounded-xl border border-input bg-background transition-colors focus-within:border-ring focus-within:ring-[3px] focus-within:ring-inset focus-within:ring-ring/50"
       >
         <ComposerInvocationsPopup inv={invocations} />
         <RichComposer

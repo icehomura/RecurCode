@@ -76,7 +76,7 @@ fn visible_agent_reference_types(blocks: &[PromptInputBlock]) -> Vec<String> {
 }
 
 /// Append prompt-local routing for every agent the user visibly linked, when
-/// this connection actually received the recur-code-mcp companion's delegation
+/// this connection actually received the rc-mcp companion's delegation
 /// group.
 ///
 /// The prompt IS the input: a visible `[label](recurcode://agent/<type>)` link is
@@ -175,7 +175,7 @@ fn render_internal_agent_routes_body(frame: &InternalAgentRoutes) -> String {
         "{descriptor}\n\
 RecurCode composer routing metadata (authoritative): {routes}\n\
 When you delegate any of this work, route it through the `delegate_to_agent` \
-tool from the `recur-code-mcp` server with `agent_type` taken from the matching \
+tool from the `rc-mcp` server with `agent_type` taken from the matching \
 route: do not substitute your own native sub-agent, task, or spawn mechanism, \
 and do not route it through any other delegation tool.\n"
     )
@@ -281,7 +281,7 @@ fn find_separated_frame(input: &str, from: usize) -> Option<(usize, usize)> {
 /// the prompt verbatim — and one does not. Antigravity's ACP server joins the
 /// prompt's text blocks with a space and replaces each separator with one, so a
 /// routed turn lands in `conversations/<id>.db` as
-/// `…（使用recur-code-mcp工具）  {"kind":…delegation tool.\n ` — the same body, both
+/// `…（使用rc-mcp工具）  {"kind":…delegation tool.\n ` — the same body, both
 /// separators now spaces. The separated pass cannot see that, and the whole
 /// frame renders inside the user's bubble when the session is reopened.
 ///
@@ -582,7 +582,7 @@ mod tests {
 
     #[test]
     fn a_closed_delegation_gate_is_the_only_check_on_the_parent_agent() {
-        // A parent that never received recur-code-mcp (OpenClaw's supports_mcp=false,
+        // A parent that never received rc-mcp (OpenClaw's supports_mcp=false,
         // pi's wire exclusion) reaches this function with the gate closed. There
         // is no agent-type check here on purpose: the injection gate is the
         // single source of truth.
@@ -768,7 +768,7 @@ mod tests {
     /// Exactly what Antigravity's ACP server writes into its trajectory: the
     /// prompt's text blocks joined with a space, and each separator replaced by
     /// one. Verified against a real `conversations/<id>.db`, where a routed turn
-    /// reads `…（使用recur-code-mcp工具）  {"kind":…delegation tool.\n ` — note the
+    /// reads `…（使用rc-mcp工具）  {"kind":…delegation tool.\n ` — note the
     /// body's own newlines came through, which is why the scan can count them.
     fn as_antigravity_persists(blocks: &[PromptInputBlock]) -> String {
         blocks

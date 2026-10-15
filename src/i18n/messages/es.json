@@ -2305,7 +2305,7 @@
         "showPet": "Mostrar mascota"
       },
       "mcp": {
-        "title": "Servicio recur-code-mcp",
+        "title": "Servicio rc-mcp",
         "state": {
           "running": "En ejecución",
           "stopped": "Detenido",
@@ -2317,7 +2317,7 @@
           "running": "Los agentes de aquí pueden usar las herramientas de RecurCode.",
           "stopped": "El socket del broker no responde.",
           "disabled": "Todos los grupos de herramientas están desactivados.",
-          "unavailable": "No se encuentra el binario recur-code-mcp.",
+          "unavailable": "No se encuentra el binario rc-mcp.",
           "unknown": "No se pudo leer el estado."
         },
         "socketPath": "Dirección",
@@ -5265,7 +5265,7 @@
     "computer": {
       "label": "Ver y usar las ventanas del escritorio",
       "short": "Lista apps y ventanas; lee las que compartas y actúa en las que permitas.",
-      "hint": "Permite que un agente liste las aplicaciones y ventanas de tu escritorio, lea las ventanas que compartas con él —una captura, su contenido, si muestra lo que se espera— y haga clic, escriba y pulse teclas en las que compartas para actuar. Nada es legible hasta que compartas una ventana desde el panel Uso del ordenador de la barra de estado, y en ninguna se puede actuar salvo que también lo permitas; el uso compartido termina cuando la ventana se cierra, tras un rato sin uso o cuando lo detienes, y Detener agentes en ese panel los para a todos a la vez. La entrada llega a la ventana en segundo plano; para una acción que no llega en segundo plano, un agente puede traer la ventana al frente, algo que puedes desactivar en los ajustes de Uso del ordenador. Solo en la app de escritorio; en macOS requiere permisos concedidos a recur-code-computer-helper. Versión preliminar."
+      "hint": "Permite que un agente liste las aplicaciones y ventanas de tu escritorio, lea las ventanas que compartas con él —una captura, su contenido, si muestra lo que se espera— y haga clic, escriba y pulse teclas en las que compartas para actuar. Nada es legible hasta que compartas una ventana desde el panel Uso del ordenador de la barra de estado, y en ninguna se puede actuar salvo que también lo permitas; el uso compartido termina cuando la ventana se cierra, tras un rato sin uso o cuando lo detienes, y Detener agentes en ese panel los para a todos a la vez. La entrada llega a la ventana en segundo plano; para una acción que no llega en segundo plano, un agente puede traer la ventana al frente, algo que puedes desactivar en los ajustes de Uso del ordenador. Solo en la app de escritorio; en macOS requiere permisos concedidos a rc-computer-helper. Versión preliminar."
     },
     "automations": {
       "label": "Crear automatizaciones",
@@ -5464,9 +5464,9 @@
       "screenRecording": "Grabación de pantalla",
       "granted": "Concedido",
       "request": "Conceder…",
-      "why": "Activa recur-code-computer-helper en Ajustes del Sistema, no RecurCode. La Grabación de pantalla le permite ver las ventanas; la Accesibilidad, leerlas y actuar en ellas.",
-      "devRebuild": "Cada recompilación del ayudante anula su permiso anterior: quita primero el recur-code-computer-helper antiguo de la lista y vuelve a concederlo.",
-      "notListed": "Si recur-code-computer-helper no aparece en la lista, arrástralo desde el Finder:",
+      "why": "Activa rc-computer-helper en Ajustes del Sistema, no RecurCode. La Grabación de pantalla le permite ver las ventanas; la Accesibilidad, leerlas y actuar en ellas.",
+      "devRebuild": "Cada recompilación del ayudante anula su permiso anterior: quita primero el rc-computer-helper antiguo de la lista y vuelve a concederlo.",
+      "notListed": "Si rc-computer-helper no aparece en la lista, arrástralo desde el Finder:",
       "reveal": "Mostrar en el Finder"
     },
     "shared": {
@@ -5519,7 +5519,7 @@
       "loading": "Cargando ventanas…",
       "refresh": "Actualizar",
       "empty": "No se encontraron ventanas. Si debería haber alguna, revisa los permisos en el panel Uso del ordenador.",
-      "noScreenRecording": "recur-code-computer-helper todavía no tiene Grabación de pantalla: no se pueden mostrar los títulos ni las imágenes de las ventanas, y los agentes no pueden leerlas.",
+      "noScreenRecording": "rc-computer-helper todavía no tiene Grabación de pantalla: no se pueden mostrar los títulos ni las imágenes de las ventanas, y los agentes no pueden leerlas.",
       "unnamedApp": "App desconocida",
       "untitled": "Ventana sin título",
       "minimized": "Minimizada",
@@ -5584,7 +5584,7 @@
       },
       "permissions": {
         "title": "Permisos",
-        "description": "macOS los pide para recur-code-computer-helper. Concede uno en Ajustes del Sistema y vuelve: esto se actualiza solo.",
+        "description": "macOS los pide para rc-computer-helper. Concede uno en Ajustes del Sistema y vuelve: esto se actualiza solo.",
         "off": "Activa el uso del ordenador para comprobar y conceder permisos.",
         "accessibilityHint": "Leer el contenido de las ventanas y actuar en ellas.",
         "screenRecordingHint": "Hacer capturas y leer los títulos de las ventanas."
@@ -5665,7 +5665,7 @@
         "label": "Ofrecer toda la pantalla",
         "hint": "Con esto activado, el selector para compartir ofrece toda la pantalla: los agentes ven una sola imagen de toda ella y pueden hacer clic en cualquier parte, y con ella van todas las ventanas que puedes compartir y los atajos propios del escritorio. Las ventanas de RecurCode y la lista de no compartir siguen tapadas. Desactivarlo termina el uso compartido de la pantalla."
       },
-      "boundary": "En macOS los permisos se conceden a recur-code-computer-helper, que solo puede usar RecurCode, así que la shell de los agentes no puede. Windows y Linux no tienen esa separación: allí estos ajustes deciden lo que los agentes obtienen a través de RecurCode, no lo que pueden hacer los programas de tu equipo.",
+      "boundary": "En macOS los permisos se conceden a rc-computer-helper, que solo puede usar RecurCode, así que la shell de los agentes no puede. Windows y Linux no tienen esa separación: allí estos ajustes deciden lo que los agentes obtienen a través de RecurCode, no lo que pueden hacer los programas de tu equipo.",
       "save": "Guardar",
       "saving": "Guardando…",
       "saved": "Ajustes de uso del ordenador guardados",
@@ -6048,7 +6048,7 @@
     "settingsDeleteWorktreeHint": "Marca la opción por defecto en el diálogo de fusión; aún puedes cambiarla allí.",
     "settingsWorktreeRoot": "Ubicación del worktree",
     "settingsWorktreeRootHint": "Directorio donde se crean los worktrees de las tareas nuevas, uno por tarea. Déjalo vacío para crearlos junto a la carpeta del proyecto; «~» es tu carpeta personal y una ruta relativa se resuelve respecto a la carpeta del proyecto.",
-    "settingsWorktreeRootPlaceholder": "~/recur-code-worktrees",
+    "settingsWorktreeRootPlaceholder": "~/rc-worktrees",
     "settingsWorktreeRootBrowse": "Elegir el directorio de worktrees",
     "settingsPreflight": "Comando de verificación",
     "settingsPreflightHint": "Se ejecuta en el worktree cuando una tarea llega a revisión.",
@@ -6866,7 +6866,7 @@
       "errorRemoteUnreachable": "El host remoto no puede llegar a esta dirección",
       "errorRemoteUnreachableHint": "Desde {host}, el nombre no se resuelve o no hay ruta hasta él.",
       "errorRemoteNotAllowed": "El servidor remoto no abre esta dirección para el navegador",
-      "errorRemoteNotAllowedHint": "El recur-code-server de {host} solo deja que su túnel del navegador llegue a direcciones privadas (RC_BROWSER_TUNNEL=private).",
+      "errorRemoteNotAllowedHint": "El rc-server de {host} solo deja que su túnel del navegador llegue a direcciones privadas (RC_BROWSER_TUNNEL=private).",
       "errorRemoteTimeout": "El host remoto tardó demasiado en conectar",
       "errorRemoteTimeoutHint": "{host} no obtuvo respuesta de esta dirección a tiempo. Puede que el servidor esté ocupado o detrás de un cortafuegos.",
       "errorTunnelDown": "La conexión con el host remoto está caída",
@@ -7097,9 +7097,9 @@
     "remote": {
       "error": {
         "unavailable": "Para abrir las direcciones del host remoto en el navegador integrado se necesita macOS 14 o posterior.",
-        "unsupported": "El recur-code-server remoto es demasiado antiguo para transportar el tráfico del navegador. Actualízalo para abrir sus direcciones aquí.",
-        "disabled": "El recur-code-server remoto tiene desactivado su túnel del navegador (RC_BROWSER_TUNNEL).",
-        "unreachable": "No se pudo conectar con el túnel del navegador del recur-code-server remoto ({reason}).",
+        "unsupported": "El rc-server remoto es demasiado antiguo para transportar el tráfico del navegador. Actualízalo para abrir sus direcciones aquí.",
+        "disabled": "El rc-server remoto tiene desactivado su túnel del navegador (RC_BROWSER_TUNNEL).",
+        "unreachable": "No se pudo conectar con el túnel del navegador del rc-server remoto ({reason}).",
         "bypassed": "El motor del navegador de este equipo envía algunas direcciones por fuera del túnel, así que las páginas del host remoto no se abren para no cargarlas desde este equipo.",
         "probeFailed": "El navegador integrado no pudo confirmar que llega al host remoto a través del túnel. Vuelve a intentarlo en un momento."
       }

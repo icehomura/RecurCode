@@ -2,7 +2,7 @@
 //!
 //! Mid-turn an agent can ask the user one or more multiple-choice questions and
 //! BLOCK until the user answers — the `ask_user_question` MCP tool exposed by
-//! `recur-code-mcp`. Unlike live-feedback ([`crate::acp::feedback`]), which is a
+//! `rc-mcp`. Unlike live-feedback ([`crate::acp::feedback`]), which is a
 //! non-blocking pull the user pushes into, a question PAUSES the agent's tool
 //! call: the questions render as an interactive card above the conversation
 //! input box (driven by [`crate::acp::session_state::SessionState`], in-memory
@@ -83,7 +83,7 @@ pub struct QuestionSpec {
     /// The choices (0..=[`MAX_OPTIONS`]). Empty means free-text: the card
     /// renders only its always-present "Other" input (codex `request_user_input`
     /// and MCP-server elicitations both ask open questions this way; the
-    /// recur-code-mcp ask tool still requires [`MIN_OPTIONS`] at its own parse
+    /// rc-mcp ask tool still requires [`MIN_OPTIONS`] at its own parse
     /// layer).
     pub options: Vec<QuestionOption>,
     /// True when the answer is a secret (codex `request_user_input` marks API
@@ -339,7 +339,7 @@ pub fn validate_specs(specs: &[QuestionSpec]) -> Result<(), String> {
                 "questions[{qi}] `header` exceeds {MAX_HEADER_CHARS} characters"
             ));
         }
-        // Unlike `parse_questions` (the recur-code-mcp tool contract, which keeps
+        // Unlike `parse_questions` (the rc-mcp tool contract, which keeps
         // its [`MIN_OPTIONS`] floor), typed specs allow 0..=[`MAX_OPTIONS`]:
         // a question with no options is a legal free-text ask — the card
         // renders its always-present "Other" input alone (codex elicitation
@@ -459,7 +459,7 @@ pub(crate) fn synthesize_header(question: &str) -> String {
 
 /// Convert grok's native `_x.ai/ask_user_question` ext-request params into RecurCode
 /// [`QuestionSpec`]s, so grok's own questions render in the SAME interactive card
-/// as the `recur-code-mcp` ask tool (grok emits an ACP ext request and blocks on the
+/// as the `rc-mcp` ask tool (grok emits an ACP ext request and blocks on the
 /// reply; if RecurCode doesn't answer it, grok falls back to inert fire-and-forget
 /// rendering — see the connection handler). Grok's wire shape per question is
 /// `{question, options:[{label, description}], multiSelect}` — no `header`, which
@@ -581,7 +581,7 @@ pub struct PiSelectAsk {
 
 /// Recognize a `session/request_permission` that is really pi asking the user a
 /// multiple-choice question, and convert it into a [`QuestionSpec`] so it renders
-/// in the SAME interactive card as the recur-code-mcp ask tool.
+/// in the SAME interactive card as the rc-mcp ask tool.
 ///
 /// pi has no dedicated question channel: `ctx.ui.select` from an extension
 /// becomes an `extension_ui_request`, which pi-acp translates into a permission
@@ -681,12 +681,12 @@ pub fn pi_select_option_id(outcome: &QuestionOutcome, ask: &PiSelectAsk) -> Opti
 
 /// True when a host's name for a tool is RecurCode's OWN `ask_user_question`
 /// companion tool, in whatever spelling the host composed it
-/// (`mcp__recur-code-mcp__ask_user_question` from claude-agent-acp,
-/// `recur-code-mcp/ask_user_question`, `recur-code-mcp: ask_user_question`, …). Separators
+/// (`mcp__rc-mcp__ask_user_question` from claude-agent-acp,
+/// `rc-mcp/ask_user_question`, `rc-mcp: ask_user_question`, …). Separators
 /// are folded and case is ignored, so only the two identifying words matter.
 ///
 /// BOTH halves have to be present — the server name RecurCode itself injects
-/// (`recur-code-mcp`, see `acp::connection::inject_recur_code_mcp`) AND the tool name.
+/// (`rc-mcp`, see `acp::connection::inject_recur_code_mcp`) AND the tool name.
 /// The frontend can afford a bare `*ask_user_question` suffix rule because a
 /// wrong match there only picks a nicer card; this one unlocks an AUTO-APPROVAL
 /// of a blocked `session/request_permission`, and a third-party MCP server's
@@ -1229,7 +1229,7 @@ fn is_mcp_tool_call_approval(raw: &Value) -> bool {
 ///   * MCP tool-call approvals (`_meta.codex_approval_kind`) → [`ElicitationApproval`]
 ///     with the persist choices (`once`/`session`/`always`) + Decline — the
 ///     permission card, exactly like the pre-capability `request_permission`
-///     fallback. This includes approvals for recur-code-mcp's OWN tools in
+///     fallback. This includes approvals for rc-mcp's OWN tools in
 ///     consent-requiring permission modes, so declining them here would break
 ///     ask/delegation for codex outright.
 ///   * Forms with no renderable fields (message-only MCP confirms) →
@@ -1736,7 +1736,7 @@ pub fn grok_result_card_input(specs: &[QuestionSpec]) -> Value {
 }
 
 /// Build the `raw_output` (`{answers, declined}` envelope) for the in-stream
-/// `AskQuestionResultCard` — the recur-code-mcp `structuredContent` shape the frontend
+/// `AskQuestionResultCard` — the rc-mcp `structuredContent` shape the frontend
 /// already parses (`parseAskQuestionOutcome`). Emits `header:""` to match
 /// [`grok_result_card_input`] (see its docs). Companion to [`grok_result_card_input`].
 pub fn grok_result_card_output(outcome: &QuestionOutcome) -> Value {
@@ -1757,7 +1757,7 @@ pub fn grok_result_card_output(outcome: &QuestionOutcome) -> Value {
 
 /// The hot-swappable feature config read at MCP injection time. Kept tiny and
 /// separate from `FeedbackConfig` / `DelegationConfig` so the three features
-/// toggle independently — `recur-code-mcp` is injected when ANY is enabled, and each
+/// toggle independently — `rc-mcp` is injected when ANY is enabled, and each
 /// tool is listed only when its own feature is on.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct QuestionConfig {
@@ -3399,10 +3399,10 @@ mod tests {
         for spelling in [
             // claude-agent-acp: an MCP tool's permission card title IS the
             // raw tool name.
-            "mcp__recur-code-mcp__ask_user_question",
-            "recur-code-mcp/ask_user_question",
-            "recur-code-mcp: ask_user_question",
-            "mcp.recur-code-mcp.ask_user_question",
+            "mcp__rc-mcp__ask_user_question",
+            "rc-mcp/ask_user_question",
+            "rc-mcp: ask_user_question",
+            "mcp.rc-mcp.ask_user_question",
             // Hosts that title-case or pad it.
             "  MCP__RecurCode-MCP__Ask_User_Question  ",
         ] {
@@ -3421,14 +3421,14 @@ mod tests {
             "mcp__other-server__ask_user_question",
             "ask_user_question",
             // grok's NATIVE ask arrives on its own ext channel, never as a
-            // permission request — and it is not recur-code-mcp's tool either.
+            // permission request — and it is not rc-mcp's tool either.
             "_x.ai/ask_user_question",
             // RecurCode's other companion tools keep their approval gate.
-            "mcp__recur-code-mcp__delegate_to_agent",
-            "mcp__recur-code-mcp__check_user_feedback",
+            "mcp__rc-mcp__delegate_to_agent",
+            "mcp__rc-mcp__check_user_feedback",
             // Right server, right words, wrong tool — the match is anchored at
             // the END so a longer name cannot borrow it.
-            "mcp__recur-code-mcp__ask_user_question_twice",
+            "mcp__rc-mcp__ask_user_question_twice",
             "",
         ] {
             assert!(

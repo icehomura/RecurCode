@@ -1,4 +1,4 @@
-//! Companion-side MCP protocol — the bits that live inside the `recur-code-mcp`
+//! Companion-side MCP protocol — the bits that live inside the `rc-mcp`
 //! binary but are factored out into the library so they can be unit-tested
 //! without spawning the binary.
 //!
@@ -91,7 +91,7 @@ async fn send_broker_cancel(socket_path: &str, req: &BrokerCancelRequest) {
     let _ = tokio::time::timeout(BROKER_CANCEL_BUDGET, client_cancel(socket_path, req)).await;
 }
 
-/// Static MCP tool schema. Lives next to this module so recur-code-mcp ships
+/// Static MCP tool schema. Lives next to this module so rc-mcp ships
 /// a single embedded copy — no runtime file IO, no version skew with the
 /// broker's [`super::types::DelegationRequest`].
 pub const TOOL_SCHEMA_JSON: &str = include_str!("tool_schema.json");
@@ -147,7 +147,7 @@ pub fn err(id: Value, code: i64, message: impl Into<String>) -> JsonRpcResponse 
     }
 }
 
-/// Which tool groups this companion exposes. One `recur-code-mcp` process can carry
+/// Which tool groups this companion exposes. One `rc-mcp` process can carry
 /// the delegation tools, the feedback tool, or both — gated independently so
 /// each feature can be toggled in settings without the other. Passed in via the
 /// `--features` arg at launch; a tool whose group is off is hidden from
@@ -483,7 +483,7 @@ pub async fn dispatch_line(
             json!({
                 "protocolVersion": "2024-11-05",
                 "serverInfo": {
-                    "name": "recur-code-mcp",
+                    "name": "rc-mcp",
                     "version": env!("CARGO_PKG_VERSION"),
                 },
                 "capabilities": { "tools": {} },
@@ -1520,7 +1520,7 @@ const FEEDBACK_POLL_WINDOW: Duration = Duration::from_secs(60);
 /// Process-local count of back-to-back empty feedback pulls. A delivery that
 /// carries notes resets it, and an empty pull more than [`FEEDBACK_POLL_WINDOW`]
 /// after the previous empty one starts a new run. Each agent launch is its own
-/// `recur-code-mcp`, so the count does not cross agents.
+/// `rc-mcp`, so the count does not cross agents.
 #[derive(Default)]
 struct FeedbackPollGuard {
     state: std::sync::Mutex<FeedbackPollState>,
@@ -2198,7 +2198,7 @@ pub fn browser_capture_request(
 /// The length check is here as well as on the RecurCode side, so an oversized
 /// snippet comes back as an argument error the model can act on rather than
 /// travelling the broker to be refused. Validating in both places is the point
-/// — the recur-code-side one is the gate, this one is the message.
+/// — the rc-side one is the gate, this one is the message.
 pub fn browser_eval_request(
     arguments: &Value,
 ) -> Result<(String, crate::browser::eval::EvalRequest), String> {
@@ -4105,7 +4105,7 @@ mod tests {
     fn ctx_with(features: CompanionFeatures) -> CompanionContext {
         CompanionContext {
             parent_connection_id: "p1".into(),
-            socket_path: "/tmp/recur-code-mcp-companion-test-nope.sock".into(),
+            socket_path: "/tmp/rc-mcp-companion-test-nope.sock".into(),
             token: "tok".into(),
             features,
             custom_agents: Vec::new(),
@@ -4135,7 +4135,7 @@ mod tests {
         let resp = unwrap_respond(dispatch_for_test(line).await);
         let result = resp.result.unwrap();
         assert_eq!(result["protocolVersion"], "2024-11-05");
-        assert_eq!(result["serverInfo"]["name"], "recur-code-mcp");
+        assert_eq!(result["serverInfo"]["name"], "rc-mcp");
     }
 
     #[tokio::test]

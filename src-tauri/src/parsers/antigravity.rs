@@ -1813,10 +1813,10 @@ mod tests {
     fn mcp_dispatch_unwrap_names_the_tool_and_peels_the_arguments() {
         let (name, input) = unwrap_mcp_dispatch(&dispatch(
             MCP_DISPATCH_TOOL_NAME,
-            r#"{"Arguments":{"task_ids":["a"]},"ServerName":"recur-code-mcp","ToolName":"get_delegation_status","toolAction":"Checking"}"#,
+            r#"{"Arguments":{"task_ids":["a"]},"ServerName":"rc-mcp","ToolName":"get_delegation_status","toolAction":"Checking"}"#,
         ))
         .expect("an MCP envelope");
-        assert_eq!(name, "recur-code-mcp_get_delegation_status");
+        assert_eq!(name, "rc-mcp_get_delegation_status");
         assert_eq!(
             input,
             r#"{"arguments":{"task_ids":["a"]},"prompt":"Checking"}"#

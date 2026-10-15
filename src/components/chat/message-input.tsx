@@ -2190,7 +2190,7 @@ export function MessageInput({
               {...chromeFocus}
               onContextMenuCapture={handleComposerContextMenu}
               className={cn(
-                // `recur-code-composer-chrome` paints the text I-beam across the box's
+                // `rc-composer-chrome` paints the text I-beam across the box's
                 // blank areas (padding, the dead space below a short message, the
                 // action-bar gaps) so the whole input reads as clickable-to-type;
                 // interactive controls re-assert their own cursor (see globals.css).
@@ -2199,7 +2199,7 @@ export function MessageInput({
                 // vanishes over a workspace background image); it adapts per theme
                 // (dark ink in light mode, light ink in dark) and stays legible.
                 // Focus still swaps to `border-ring` below.
-                "recur-code-composer-chrome @container relative flex flex-col rounded-xl border border-foreground/20 bg-transparent transition-colors",
+                "rc-composer-chrome @container relative flex flex-col rounded-xl border border-foreground/20 bg-transparent transition-colors",
                 boxMinHeight,
                 // Standard focus ring — always shown when the composer is
                 // focused (the plain default input style). `bg-background
@@ -2220,7 +2220,7 @@ export function MessageInput({
                 // flow (globals.css) so the default focus ring above takes over.
                 // A lone/non-tiled session (showActiveFlow=false) and inactive
                 // tiles show the plain default border.
-                showActiveFlow && "recur-code-composer-flow",
+                showActiveFlow && "rc-composer-flow",
                 !folderBranchPickerAttached &&
                   showDragActive &&
                   "ring-1 ring-primary/40",

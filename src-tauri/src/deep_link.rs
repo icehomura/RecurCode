@@ -228,7 +228,7 @@ pub const PENDING_EVENT: &str = "workspace://deep-link-pending";
 /// the frontend gets to, which is all a focus operation can mean anyway.
 static PENDING_FOCUS: std::sync::Mutex<Option<FocusTarget>> = std::sync::Mutex::new(None);
 
-/// Only the desktop URL handler parks targets; `recur-code-server` compiles the
+/// Only the desktop URL handler parks targets; `rc-server` compiles the
 /// parser and the lookup but has no OS scheme to feed them.
 #[cfg(any(feature = "tauri-runtime", test))]
 fn set_pending_focus(target: FocusTarget) {
@@ -451,7 +451,7 @@ mod tests {
     #[tokio::test]
     async fn resolves_numeric_and_external_ids() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-deep-link").await;
+        let folder = seed_folder(&db, "/tmp/rc-deep-link").await;
         let id = seed_conversation(&db, folder, AgentType::Grok).await;
 
         let by_pk = resolve_deep_link(
@@ -508,7 +508,7 @@ mod tests {
     #[tokio::test]
     async fn numeric_ref_falls_back_to_external_id() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-deep-link-numeric").await;
+        let folder = seed_folder(&db, "/tmp/rc-deep-link-numeric").await;
         let id = seed_conversation(&db, folder, AgentType::Codex).await;
 
         // An external id that can never collide with a live PK.
@@ -572,7 +572,7 @@ mod tests {
     #[tokio::test]
     async fn startup_path_resolves_first_session_url_else_plain_workspace() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-deep-link-startup").await;
+        let folder = seed_folder(&db, "/tmp/rc-deep-link-startup").await;
         let id = seed_conversation(&db, folder, AgentType::Grok).await;
 
         assert_eq!(startup_workspace_path(&db, &[]).await, "workspace");
@@ -601,7 +601,7 @@ mod tests {
     #[tokio::test]
     async fn workspace_query_fills_agent_and_rejects_mismatch() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-deep-link-ws").await;
+        let folder = seed_folder(&db, "/tmp/rc-deep-link-ws").await;
         let id = seed_conversation(&db, folder, AgentType::Grok).await;
 
         let filled = resolve_deep_link(

@@ -1129,12 +1129,12 @@ mod tests {
         // than a wedged CI run.
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-recur-code-batch-test-absent-aaa".into(),
+                expert_id: "zzz-rc-batch-test-absent-aaa".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },
             LinkOp {
-                expert_id: "zzz-recur-code-batch-test-absent-bbb".into(),
+                expert_id: "zzz-rc-batch-test-absent-bbb".into(),
                 agent_type: AgentType::Codex,
                 enable: false,
             },
@@ -1152,7 +1152,7 @@ mod tests {
     async fn apply_links_collects_per_op_results_without_aborting() {
         let ops = vec![
             LinkOp {
-                expert_id: "zzz-recur-code-batch-test-absent".into(),
+                expert_id: "zzz-rc-batch-test-absent".into(),
                 agent_type: AgentType::ClaudeCode,
                 enable: false,
             },

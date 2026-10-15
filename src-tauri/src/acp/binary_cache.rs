@@ -14,7 +14,7 @@ use crate::models::agent::AgentType;
 /// resolution) and would otherwise collide on the rename target.
 static TRASH_COUNTER: AtomicU64 = AtomicU64::new(0);
 
-/// Root for recur-code-managed agent binaries.
+/// Root for rc-managed agent binaries.
 ///
 /// Resolution order mirrors `paths.rs`:
 /// 1. `$RC_HOME/acp-binaries`
@@ -63,7 +63,7 @@ pub(crate) fn uv_tool_dir() -> Result<PathBuf, AcpError> {
         .join(registry::current_platform()))
 }
 
-/// Locate a recur-code-managed uv tool binary (`uv` or `uvx`) if it has already
+/// Locate a rc-managed uv tool binary (`uv` or `uvx`) if it has already
 /// been downloaded into the cache. Returns `None` when not present, so
 /// callers fall back to PATH / common install locations.
 pub fn find_cached_uv_tool(tool: &str) -> Option<PathBuf> {

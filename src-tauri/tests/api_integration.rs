@@ -130,7 +130,7 @@ async fn open_folder_then_list_open_folders_shows_it() {
     let open_resp = server
         .post("/api/open_folder")
         .add_header("authorization", format!("Bearer {TEST_TOKEN}"))
-        .json(&json!({"path": "/tmp/recur-code-test-folder"}))
+        .json(&json!({"path": "/tmp/rc-test-folder"}))
         .await;
     assert_eq!(
         open_resp.status_code(),
@@ -280,7 +280,7 @@ async fn json_api_is_gzip_compressed_when_client_accepts() {
     // a fat body on a developer machine.
     recur_code_lib::db::service::folder_service::add_folder(
         &state.db.conn,
-        "/tmp/recur-code-compression-test-folder-with-a-reasonably-long-path",
+        "/tmp/rc-compression-test-folder-with-a-reasonably-long-path",
     )
     .await
     .expect("seed folder");
@@ -364,7 +364,7 @@ async fn get_folder_conversation_accepts_turn_window_params() {
     let (server, state, _data, _static) = build_test_server_with_state().await;
     let folder_id = recur_code_lib::db::service::folder_service::add_folder(
         &state.db.conn,
-        "/tmp/recur-code-window-param-test",
+        "/tmp/rc-window-param-test",
     )
     .await
     .expect("seed folder")
@@ -446,7 +446,7 @@ async fn get_folder_conversation_accepts_turn_window_params() {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// recur-code-mcp service status
+// rc-mcp service status
 // ────────────────────────────────────────────────────────────────────────────
 
 /// The status endpoint has to answer even in a runtime that never bound a
@@ -540,7 +540,7 @@ async fn deepseek_model_catalog_requires_a_token() {
 // ────────────────────────────────────────────────────────────────────────────
 // Computer use
 //
-// Served only by a recur-code-server its operator let share the screen it runs on
+// Served only by a rc-server its operator let share the screen it runs on
 // (`RC_COMPUTER_USE`): everywhere else every call is refused, and
 // `computer_available` says so up front. Nothing here reaches a helper — no
 // screen is read in a test.

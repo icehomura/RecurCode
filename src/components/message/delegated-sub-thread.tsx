@@ -4,7 +4,7 @@
  * Inline header for a delegated child sub-session under the parent's
  * `delegate_to_agent` ToolCallBlock. Renders as a self-contained card —
  * never falls through the generic tool-call shell — so users see "Agent
- * delegating: task" instead of "mcp__recur-code-delegate__delegate_to_agent: codex".
+ * delegating: task" instead of "mcp__rc-delegate__delegate_to_agent: codex".
  *
  * The card is intentionally a status + navigation affordance ONLY: it does not
  * render the child's output inline and does not expand. The child's result is

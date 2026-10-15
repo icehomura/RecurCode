@@ -1078,7 +1078,7 @@ mod tests {
         // `info/exclude` patterns resolve against the work tree top level, so a
         // workspace folder nested inside the repo must carry its prefix —
         // otherwise the rule would hide an unrelated `<repo>/api`.
-        let top = std::env::temp_dir().join("recur-code-exclude-test-repo");
+        let top = std::env::temp_dir().join("rc-exclude-test-repo");
         let nested = top.join("packages/app");
         std::fs::create_dir_all(&nested).expect("mkdir");
 

@@ -8,7 +8,7 @@ fn main() {
     }
 }
 
-/// A fingerprint of the sources `recur-code-computer-helper` is built from,
+/// A fingerprint of the sources `rc-computer-helper` is built from,
 /// compiled into it and into RecurCode alike (`RC_COMPUTER_SOURCE`). A
 /// development RecurCode refuses a helper whose fingerprint is not its own:
 /// `pnpm tauri dev` builds the helper once, as it starts (not at all under
@@ -57,8 +57,8 @@ fn fingerprint_helper_sources() {
 }
 
 /// Tauri's bundler validates that every `bundle.externalBin` path resolves
-/// to an existing file at build.rs time. The real sidecars — `recur-code-mcp` and
-/// `recur-code-computer-helper` — are produced by `pnpm tauri:prepare-sidecars`
+/// to an existing file at build.rs time. The real sidecars — `rc-mcp` and
+/// `rc-computer-helper` — are produced by `pnpm tauri:prepare-sidecars`
 /// (invoked from `beforeBuildCommand` / `beforeDevCommand` and the CI release
 /// matrix) — but plain `cargo check --features tauri-runtime` doesn't go
 /// through that path, so without a backstop every contributor would hit
@@ -90,7 +90,7 @@ fn ensure_sidecar_placeholder() {
     };
     let dir = PathBuf::from("binaries");
 
-    for name in ["recur-code-mcp", "recur-code-computer-helper"] {
+    for name in ["rc-mcp", "rc-computer-helper"] {
         let path = dir.join(format!("{name}-{triple}{ext}"));
 
         println!("cargo:rerun-if-changed={}", path.display());
@@ -137,17 +137,17 @@ fn place_helper_for_development() {
     if !triple.contains("apple-darwin") {
         return;
     }
-    let staged = PathBuf::from(format!("binaries/recur-code-computer-helper-{triple}"));
+    let staged = PathBuf::from(format!("binaries/rc-computer-helper-{triple}"));
     // `target/[<triple>/]<profile>/build/<pkg>-<hash>/out`, as tauri-build
     // finds the same directory: there is no other way to it from here.
     let out_dir = PathBuf::from(std::env::var_os("OUT_DIR").unwrap_or_default());
     let Some(profile_dir) = out_dir.ancestors().nth(3) else {
         return;
     };
-    let placed = profile_dir.join("recur-code-computer-helper");
+    let placed = profile_dir.join("rc-computer-helper");
     // Through a new file renamed into place: a helper still running from the
     // old one keeps its own, where writing over it would kill it.
-    let incoming = profile_dir.join("recur-code-computer-helper.incoming");
+    let incoming = profile_dir.join("rc-computer-helper.incoming");
     if let Err(e) =
         std::fs::copy(&staged, &incoming).and_then(|_| std::fs::rename(&incoming, &placed))
     {

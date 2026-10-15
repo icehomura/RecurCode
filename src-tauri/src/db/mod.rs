@@ -23,7 +23,7 @@ pub struct AppDatabase {
 
 pub(crate) fn database_file_name() -> &'static str {
     if cfg!(all(debug_assertions, feature = "tauri-runtime")) {
-        "recur-code-dev.db"
+        "rc-dev.db"
     } else {
         "RecurCode.db"
     }

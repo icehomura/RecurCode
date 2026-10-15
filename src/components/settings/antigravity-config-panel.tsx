@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/select"
 import type { AcpAgentInfo, LeakedTempScan } from "@/lib/types"
 
-/** recur-code-side knob recording the chosen auth method. The agent reads NOTHING
+/** rc-side knob recording the chosen auth method. The agent reads NOTHING
  * from it — its auth intent comes from `auth.type` in
  * `<GEMINI_HOME>/antigravity-acp/settings.json` — so the launch path uses it
  * twice: to write that file, and to scrub the credential vars the other

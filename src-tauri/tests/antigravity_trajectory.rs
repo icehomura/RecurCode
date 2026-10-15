@@ -154,7 +154,7 @@ fn decodes_a_trajectory_encoded_by_googles_own_descriptors() {
             ..
         } => {
             assert_eq!(tool_use_id.as_deref(), Some("tc-003"));
-            assert_eq!(tool_name, "recur-code-mcp_delegate_to_agent");
+            assert_eq!(tool_name, "rc-mcp_delegate_to_agent");
             let input = input_preview.as_deref().expect("mcp input");
             // `{"arguments": {…}}` is the wrapper key every RecurCode card peels;
             // the raw `Arguments`/`ServerName`/`ToolName` envelope is a shape

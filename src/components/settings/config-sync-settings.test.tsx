@@ -153,7 +153,7 @@ describe("ConfigSyncSettings — availability", () => {
   /// Regression: the panel used to `return null` for anything but a local
   /// desktop window, because the commands were registered on the Tauri
   /// runtime only. They exist on the HTTP API now, and a browser pointed at a
-  /// recur-code-server has exactly the same configuration worth syncing.
+  /// rc-server has exactly the same configuration worth syncing.
   it("renders in a browser, where the commands now exist too", async () => {
     env.desktop = false
     renderPanel()
@@ -326,7 +326,7 @@ describe("ConfigSyncSettings — file import", () => {
       source: {
         kind: "content" as const,
         content: '{"schemaVersion":1,"domains":{}}',
-        label: "recur-code-config.json",
+        label: "rc-config.json",
       },
       preview: { manifest: manifest(), counts: { quickMessages: 1 } },
     }

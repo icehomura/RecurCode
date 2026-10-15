@@ -650,7 +650,7 @@ export const FEEDBACK_SETTINGS_CHANGED_EVENT = "feedback-settings://changed"
 /** Global side-channel announcing a create-from-chat switch move (payload is
  *  `ChatAuthoringSettings`). Load-bearing rather than cosmetic: these two flags
  *  share one record and have two editors — the settings form, which writes the
- *  pair, and the status-bar recur-code-mcp popover, which writes one key. Without
+ *  pair, and the status-bar rc-mcp popover, which writes one key. Without
  *  this broadcast an open settings form keeps a stale value for the switch it
  *  did not touch and reverts it on the next save. Mirrors the Rust
  *  `CHAT_AUTHORING_SETTINGS_CHANGED_EVENT`. */
@@ -661,7 +661,7 @@ export const CHAT_AUTHORING_SETTINGS_CHANGED_EVENT =
  *  `BrowserToolsSettings`). The same two-editor problem as
  *  [CHAT_AUTHORING_SETTINGS_CHANGED_EVENT], and for the same reason: the
  *  group and `browser_eval` are two keys of one record, the settings form
- *  writes the pair, and the status-bar recur-code-mcp popover — which now carries
+ *  writes the pair, and the status-bar rc-mcp popover — which now carries
  *  both rows — writes one key. Mirrors the Rust
  *  `BROWSER_TOOLS_SETTINGS_CHANGED_EVENT`. */
 export const BROWSER_TOOLS_SETTINGS_CHANGED_EVENT =
@@ -670,7 +670,7 @@ export const BROWSER_TOOLS_SETTINGS_CHANGED_EVENT =
 /** Global side-channel announcing a delegation-settings write (payload is
  *  `DelegationSettings`). Same two-editor problem as
  *  [CHAT_AUTHORING_SETTINGS_CHANGED_EVENT]: the settings form writes all four
- *  keys, the status-bar recur-code-mcp popover writes only `enabled`. Mirrors the
+ *  keys, the status-bar rc-mcp popover writes only `enabled`. Mirrors the
  *  Rust `DELEGATION_SETTINGS_CHANGED_EVENT`. */
 export const DELEGATION_SETTINGS_CHANGED_EVENT = "delegation-settings://changed"
 
@@ -2597,7 +2597,7 @@ export interface ToolCallImageWire {
  *
  * `tool_use_id`/`result` come from the same notification's `<tool-use-id>`/
  * `<result>` tags. The `background_activity` handler uses them to flip the
- * launch card in-memory (rewriting its `[[recur-code-background-task]]` marker via
+ * launch card in-memory (rewriting its `[[rc-background-task]]` marker via
  * `resolveBackgroundTask`) instead of a `refetchDetail` — which double-rendered
  * the #870-held turn and raced the transcript's last write. `tool_use_id` is
  * the launching tool call's id (`toolu_…`), NOT `task_id`. A background shell's
@@ -3458,7 +3458,7 @@ export interface ConversationConnectionInfo {
 export interface AcpAgentInfo {
   agent_type: AgentType
   /**
-   * Whether this agent has a recur-code-known skill store — every built-in, and
+   * Whether this agent has a rc-known skill store — every built-in, and
    * custom agents that declared the shared `.agents/skills` store. Gates the
    * skills matrices.
    */
@@ -3500,7 +3500,7 @@ export interface AcpAgentInfo {
   env: Record<string, string>
   /**
    * The RESOLVED `RC_ACP_HOST_TOOLS` verdict: whether the next launch hands
-   * the `fs/*` + `terminal/*` channels — and, with them, recur-code-mcp's delegation
+   * the `fs/*` + `terminal/*` channels — and, with them, rc-mcp's delegation
    * tools — back to the agent. Resolved by the same Rust function the launch
    * uses, so it covers BOTH the per-agent `env` above and RecurCode's own process
    * env; reading `env` here would miss the second.
@@ -3618,13 +3618,13 @@ export interface CodexSandboxStructuredConfig {
 
 /** Parsed keys from ~/.grok/config.toml. `null` means the key is absent.
  * Serialized snake_case to match AcpAgentInfo. The stock per-session model is
- * NOT here — it's chosen from the composer. But a recur-code-managed custom (BYO
+ * NOT here — it's chosen from the composer. But a rc-managed custom (BYO
  * endpoint) model IS: it's the `[model.<id>]` block whose id equals
  * [models].default, read back through the custom_* fields. */
 export interface GrokSettings {
   default_reasoning_effort: string | null
   permission_mode: string | null
-  /** The recur-code-managed custom model id ([model.<id>] == [models].default). */
+  /** The rc-managed custom model id ([model.<id>] == [models].default). */
   custom_model_id: string | null
   /** [model.<id>].base_url — null ⇒ Grok's official xAI endpoint. */
   custom_base_url: string | null
@@ -3655,7 +3655,7 @@ export interface GrokStructuredConfig {
 }
 
 /** Parsed keys from ~/.cursor/cli-config.json (shared with the Cursor CLI's
- * own /config UI). Only the recur-code-managed subset is projected; everything
+ * own /config UI). Only the rc-managed subset is projected; everything
  * else is preserved verbatim on write. */
 export interface CursorSettings {
   /** sandbox.mode — "enabled" | "disabled". */

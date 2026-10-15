@@ -1491,7 +1491,7 @@ mod tests {
     #[tokio::test]
     async fn list_all_excludes_children_by_default() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-list-children-default").await;
+        let folder = seed_folder(&db, "/tmp/rc-list-children-default").await;
         let (parent, _child) = seed_parent_with_child(&db.conn, folder).await;
 
         let rows = list_all(&db.conn, None, None, None, None, None, false)
@@ -1510,7 +1510,7 @@ mod tests {
     #[tokio::test]
     async fn list_all_includes_children_when_requested() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-list-children-on").await;
+        let folder = seed_folder(&db, "/tmp/rc-list-children-on").await;
         let (parent, child) = seed_parent_with_child(&db.conn, folder).await;
 
         let rows = list_all(&db.conn, None, None, None, None, None, true)
@@ -1526,7 +1526,7 @@ mod tests {
     #[tokio::test]
     async fn list_children_returns_only_matching_parent() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-list-children-only").await;
+        let folder = seed_folder(&db, "/tmp/rc-list-children-only").await;
         let (parent_a, child_a) = seed_parent_with_child(&db.conn, folder).await;
         let (_parent_b, _child_b) = seed_parent_with_child(&db.conn, folder).await;
 
@@ -1544,7 +1544,7 @@ mod tests {
     #[tokio::test]
     async fn list_children_orders_newest_first() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-list-children-order").await;
+        let folder = seed_folder(&db, "/tmp/rc-list-children-order").await;
         let parent = create(
             &db.conn,
             folder,
@@ -1598,7 +1598,7 @@ mod tests {
     #[tokio::test]
     async fn child_count_reflects_direct_children() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-child-count-direct").await;
+        let folder = seed_folder(&db, "/tmp/rc-child-count-direct").await;
         let (parent, child) = seed_parent_with_child(&db.conn, folder).await;
 
         // The root listing carries the parent's direct-child count so the
@@ -1618,7 +1618,7 @@ mod tests {
     #[tokio::test]
     async fn child_count_counts_grandchildren_for_nested_chevron() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-child-count-nested").await;
+        let folder = seed_folder(&db, "/tmp/rc-child-count-nested").await;
         let (parent, child) = seed_parent_with_child(&db.conn, folder).await;
 
         // Delegate a grandchild from the child so the child itself becomes
@@ -1649,7 +1649,7 @@ mod tests {
     #[tokio::test]
     async fn child_count_excludes_soft_deleted_children() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-child-count-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-child-count-deleted").await;
         let (parent, child) = seed_parent_with_child(&db.conn, folder).await;
 
         soft_delete(&db.conn, child)
@@ -1671,7 +1671,7 @@ mod tests {
     #[tokio::test]
     async fn seed_model_fills_an_empty_column_once_without_bumping_updated_at() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-seed-model").await;
+        let folder = seed_folder(&db, "/tmp/rc-seed-model").await;
         let conv = create(
             &db.conn,
             folder,
@@ -1733,7 +1733,7 @@ mod tests {
     #[tokio::test]
     async fn seed_model_skips_a_soft_deleted_row() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-seed-model-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-seed-model-deleted").await;
         let conv = create(
             &db.conn,
             folder,
@@ -1757,7 +1757,7 @@ mod tests {
     #[tokio::test]
     async fn update_pin_sets_and_clears_without_bumping_updated_at() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-update-pin").await;
+        let folder = seed_folder(&db, "/tmp/rc-update-pin").await;
         let conv = create(
             &db.conn,
             folder,
@@ -1806,7 +1806,7 @@ mod tests {
     #[tokio::test]
     async fn list_children_excludes_soft_deleted() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-list-children-soft-del").await;
+        let folder = seed_folder(&db, "/tmp/rc-list-children-soft-del").await;
         let (parent, child) = seed_parent_with_child(&db.conn, folder).await;
 
         soft_delete(&db.conn, child).await.expect("soft delete");
@@ -1821,7 +1821,7 @@ mod tests {
     #[tokio::test]
     async fn create_leaves_title_unlocked() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-unlocked").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-unlocked").await;
         let row = create(
             &db.conn,
             folder,
@@ -1841,7 +1841,7 @@ mod tests {
     #[tokio::test]
     async fn update_title_locks_the_title() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-lock").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-lock").await;
         let row = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("create");
@@ -1880,7 +1880,7 @@ mod tests {
         // own, wearing the identity the user recognises, or it disappears from
         // a sidebar that is built purely from DB rows.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-preserve").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-preserve").await;
         let row = create(
             &db.conn,
             folder,
@@ -1964,7 +1964,7 @@ mod tests {
         // on every restart, with each copy rendering a longer prefix of the
         // same history (S1, S1+S2, S1+S2+S3...), and double-count its tokens.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-continues").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-continues").await;
         let row = create(
             &db.conn,
             folder,
@@ -2033,7 +2033,7 @@ mod tests {
         //
         // The migrations run in `fresh_in_memory_db`, so the index is real.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-unique").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-unique").await;
         let row = create(&db.conn, folder, AgentType::Codex, None, None)
             .await
             .expect("create");
@@ -2072,7 +2072,7 @@ mod tests {
         // row's transcript while every event named this row.
         for repointing in [false, true] {
             let db = fresh_in_memory_db().await;
-            let folder = seed_folder(&db, "/tmp/recur-code-bind-conflict").await;
+            let folder = seed_folder(&db, "/tmp/rc-bind-conflict").await;
             let holder = create(&db.conn, folder, AgentType::Codex, None, None)
                 .await
                 .expect("holder");
@@ -2125,7 +2125,7 @@ mod tests {
         // matching `import_one` / `refresh_existing`, which skip such a row
         // instead of rewriting it.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-conflict-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-conflict-deleted").await;
         let holder = create(&db.conn, folder, AgentType::Codex, None, None)
             .await
             .expect("holder");
@@ -2161,7 +2161,7 @@ mod tests {
     #[tokio::test]
     async fn bind_external_id_is_a_plain_write_on_first_bind() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-first").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-first").await;
         let row = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("create");
@@ -2182,7 +2182,7 @@ mod tests {
         // A duplicate SessionStarted (replay, agent re-init, or simply both
         // subscribers handling the same event) must not fork the history.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-idem").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-idem").await;
         let row = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("create");
@@ -2203,7 +2203,7 @@ mod tests {
         // and (given the unique index) fail outright. Either race order must
         // land on exactly two rows.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-adopt").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-adopt").await;
         let row = create(&db.conn, folder, AgentType::Codex, None, None)
             .await
             .expect("create");
@@ -2242,7 +2242,7 @@ mod tests {
         // Settled states are carried as-is — they are user-visible and still
         // true of the history being preserved.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-status").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-status").await;
 
         for (original, expected) in [
             (
@@ -2288,7 +2288,7 @@ mod tests {
         // are deliberately NOT carried — duplicating them would point the
         // parent's tool-call view at two children for one call.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-delegate").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-delegate").await;
         let (parent_id, child_id) = seed_parent_with_child(&db.conn, folder).await;
         bind_external_id(&db.conn, child_id, "S1", &[])
             .await
@@ -2313,7 +2313,7 @@ mod tests {
         // happens to share the id string must not be mistaken for a home for
         // this agent's outgoing session.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-bind-agent-scope").await;
+        let folder = seed_folder(&db, "/tmp/rc-bind-agent-scope").await;
         let other_agent = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("other agent row");
@@ -2343,7 +2343,7 @@ mod tests {
         // `SessionStarted` that rebound the row while the parse was running
         // cannot be clobbered by the stale write that follows.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-alias").await;
+        let folder = seed_folder(&db, "/tmp/rc-alias").await;
         let row = create(&db.conn, folder, AgentType::Gemini, None, None)
             .await
             .expect("create");
@@ -2384,7 +2384,7 @@ mod tests {
         // NULL`, so it is a silent no-op: the deleted row keeps its old
         // external_id and is never half-resurrected.
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-extid-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-extid-deleted").await;
         let row = create(
             &db.conn,
             folder,
@@ -2452,7 +2452,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_auto_title_writes_when_unlocked_and_changed() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-auto").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-auto").await;
         let row = create(
             &db.conn,
             folder,
@@ -2479,7 +2479,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_auto_title_skips_when_unchanged_or_empty() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-auto-skip").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-auto-skip").await;
         let row = create(
             &db.conn,
             folder,
@@ -2507,7 +2507,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_auto_title_never_clobbers_a_locked_title() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-auto-locked").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-auto-locked").await;
         let row = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("create");
@@ -2527,7 +2527,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_auto_title_does_not_bump_updated_at() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-no-bump").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-no-bump").await;
         let row = create(
             &db.conn,
             folder,
@@ -2555,7 +2555,7 @@ mod tests {
     #[tokio::test]
     async fn seed_auto_title_if_empty_writes_only_when_untitled() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-seed").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-seed").await;
         let row = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("create");
@@ -2585,7 +2585,7 @@ mod tests {
     #[tokio::test]
     async fn seed_auto_title_if_empty_skips_locked_and_empty() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-seed-skip").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-seed-skip").await;
         let row = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("create");
@@ -2616,7 +2616,7 @@ mod tests {
     #[tokio::test]
     async fn auto_title_writes_skip_soft_deleted_rows() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-deleted").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-deleted").await;
 
         // Untitled + deleted: the first-prompt seed must not name it.
         let seeded = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
@@ -2664,7 +2664,7 @@ mod tests {
     #[tokio::test]
     async fn lock_title_freezes_the_seed_without_rewriting_or_bumping() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-title-lock-seed").await;
+        let folder = seed_folder(&db, "/tmp/rc-title-lock-seed").await;
         let row = create(
             &db.conn,
             folder,
@@ -2713,7 +2713,7 @@ mod tests {
     #[tokio::test]
     async fn retitle_if_unchanged_follows_the_owner_rename() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-retitle-follow").await;
+        let folder = seed_folder(&db, "/tmp/rc-retitle-follow").await;
         let row = create(
             &db.conn,
             folder,
@@ -2746,7 +2746,7 @@ mod tests {
     #[tokio::test]
     async fn retitle_if_unchanged_refuses_after_a_manual_rename() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-retitle-refuse").await;
+        let folder = seed_folder(&db, "/tmp/rc-retitle-refuse").await;
         let row = create(
             &db.conn,
             folder,
@@ -2771,7 +2771,7 @@ mod tests {
     #[tokio::test]
     async fn retitle_if_unchanged_skips_empty_and_identical() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-retitle-skip").await;
+        let folder = seed_folder(&db, "/tmp/rc-retitle-skip").await;
         let row = create(
             &db.conn,
             folder,
@@ -2801,7 +2801,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_titles_converges_without_bumping_updated_at() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-title").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-title").await;
         let row = create(
             &db.conn,
             folder,
@@ -2843,7 +2843,7 @@ mod tests {
         use sea_orm::{ConnectionTrait, DbBackend, Statement};
 
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-partial-failure").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-partial-failure").await;
         let successful = create(
             &db.conn,
             folder,
@@ -2912,7 +2912,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_title_candidate_rechecks_external_id_at_write_time() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-race").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-race").await;
         let row = create(
             &db.conn,
             folder,
@@ -2961,7 +2961,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_title_candidate_rechecks_original_title_at_write_time() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-title-race").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-title-race").await;
         let row = create(
             &db.conn,
             folder,
@@ -2999,7 +2999,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_title_candidate_rechecks_deleted_at_at_write_time() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-delete-race").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-delete-race").await;
         let row = create(
             &db.conn,
             folder,
@@ -3042,7 +3042,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_title_candidate_rechecks_title_lock_at_write_time() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-lock-race").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-lock-race").await;
         let row = create(
             &db.conn,
             folder,
@@ -3084,7 +3084,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_title_candidate_rechecks_folder_deletion_at_write_time() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-folder-race").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-folder-race").await;
         let row = create(
             &db.conn,
             folder,
@@ -3120,7 +3120,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_title_candidate_adopts_a_title_over_null() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-codex-index-null-title").await;
+        let folder = seed_folder(&db, "/tmp/rc-codex-index-null-title").await;
         let row = create(&db.conn, folder, AgentType::Codex, None, None)
             .await
             .expect("create");
@@ -3162,8 +3162,8 @@ mod tests {
     #[tokio::test]
     async fn refresh_codex_auto_titles_skips_rows_the_sidebar_list_hides() {
         let db = fresh_in_memory_db().await;
-        let live_folder = seed_folder(&db, "/tmp/recur-code-codex-index-visible").await;
-        let dead_folder = seed_folder(&db, "/tmp/recur-code-codex-index-hidden").await;
+        let live_folder = seed_folder(&db, "/tmp/rc-codex-index-visible").await;
+        let dead_folder = seed_folder(&db, "/tmp/rc-codex-index-hidden").await;
 
         let visible = create(
             &db.conn,
@@ -3250,7 +3250,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_external_activity_moves_forward_only() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-activity").await;
+        let folder = seed_folder(&db, "/tmp/rc-activity").await;
         let row = create(
             &db.conn,
             folder,
@@ -3298,7 +3298,7 @@ mod tests {
     #[tokio::test]
     async fn refresh_external_activity_skips_deleted_and_child_rows() {
         let db = fresh_in_memory_db().await;
-        let folder = seed_folder(&db, "/tmp/recur-code-activity-guards").await;
+        let folder = seed_folder(&db, "/tmp/rc-activity-guards").await;
         let parent = create(&db.conn, folder, AgentType::ClaudeCode, None, None)
             .await
             .expect("parent");

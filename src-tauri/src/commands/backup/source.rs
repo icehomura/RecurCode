@@ -34,7 +34,7 @@ use super::manifest::BackupPreview;
 
 /// Holds decrypted archives awaiting inspect/scan/stage. Wiped at startup by
 /// [`super::restore::cleanup_transient_dirs`].
-pub const PREPARED_DIR: &str = ".recur-code-restore-prepared";
+pub const PREPARED_DIR: &str = ".rc-restore-prepared";
 const META_FILE: &str = "meta.json";
 const PLAIN_ZIP: &str = "plain.zip";
 /// How long a prepared source may sit unused before it is reaped. Refreshed on

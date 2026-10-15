@@ -88,7 +88,7 @@ pub async fn backup_create_ticket(
     let manifest = result?;
 
     let download_name = format!(
-        "recur-code-backup-{}.{ext}",
+        "rc-backup-{}.{ext}",
         chrono::Utc::now().format("%Y%m%d-%H%M%S")
     );
     let ticket = state

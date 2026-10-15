@@ -1,15 +1,15 @@
 ; Tauri NSIS installer hooks.
 ;
-; recur-code-mcp.exe is the MCP stdio companion spawned by each agent CLI
+; rc-mcp.exe is the MCP stdio companion spawned by each agent CLI
 ; (claude / codex / opencode / ...), which is itself a grandchild of
 ; RecurCode.exe. Windows does not propagate parent death to descendants the
-; way Unix does, so stale recur-code-mcp.exe processes from a previous session
+; way Unix does, so stale rc-mcp.exe processes from a previous session
 ; can keep the binary file locked. The installer then fails to overwrite
 ; it with:
 ;
-;     Error opening file for writing: ...\RecurCode\recur-code-mcp.exe
+;     Error opening file for writing: ...\RecurCode\rc-mcp.exe
 ;
-; recur-code-computer-helper.exe, the computer-use helper, is RecurCode's own child
+; rc-computer-helper.exe, the computer-use helper, is RecurCode's own child
 ; and exits when RecurCode does — but not necessarily before the updater starts
 ; writing, and a running one holds its file just the same. `/T` takes the
 ; cua-driver it runs with it (the driver lives in the user's cache, not here,
@@ -17,7 +17,7 @@
 ;
 ; Stop the companion and helper processes running from $INSTDIR before the
 ; installer writes new binaries (or removes the existing ones on uninstall)
-; — only those: a recur-code-server installed in a folder of its own runs copies
+; — only those: a rc-server installed in a folder of its own runs copies
 ; under the same names, and they are not this installer's to stop.
 ; PowerShell finds them by path (CIM reports a process's path whatever this
 ; installer's bitness), and the folder reaches it in an environment
@@ -28,14 +28,14 @@
 ; result.
 
 !macro RC_STOP_SIDECARS
-  DetailPrint "Stopping recur-code-mcp and recur-code-computer-helper processes running from $INSTDIR..."
+  DetailPrint "Stopping rc-mcp and rc-computer-helper processes running from $INSTDIR..."
   System::Call 'kernel32::SetEnvironmentVariable(t "RC_INSTDIR", t "$INSTDIR")'
-  nsExec::Exec `"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$$ErrorActionPreference = 'Stop'; $$dir = $$env:RC_INSTDIR.TrimEnd('\') + '\'; Get-CimInstance Win32_Process | Where-Object { ($$_.Name -eq 'recur-code-mcp.exe' -or $$_.Name -eq 'recur-code-computer-helper.exe') -and $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$dir, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { & taskkill.exe /F /T /PID $$_.ProcessId | Out-Null }; exit 0"`
+  nsExec::Exec `"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$$ErrorActionPreference = 'Stop'; $$dir = $$env:RC_INSTDIR.TrimEnd('\') + '\'; Get-CimInstance Win32_Process | Where-Object { ($$_.Name -eq 'rc-mcp.exe' -or $$_.Name -eq 'rc-computer-helper.exe') -and $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$dir, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { & taskkill.exe /F /T /PID $$_.ProcessId | Out-Null }; exit 0"`
   Pop $0
   ${If} $0 != "0"
-    nsExec::Exec 'taskkill /F /T /IM recur-code-mcp.exe'
+    nsExec::Exec 'taskkill /F /T /IM rc-mcp.exe'
     Pop $0
-    nsExec::Exec 'taskkill /F /T /IM recur-code-computer-helper.exe'
+    nsExec::Exec 'taskkill /F /T /IM rc-computer-helper.exe'
     Pop $0
   ${EndIf}
   ; Small grace period so the OS releases file handles before the

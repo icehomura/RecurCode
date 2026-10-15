@@ -398,7 +398,7 @@ pub fn log_upload_quota_config_at_startup() {
 /// (unset, disabled, enabled, or invalid-but-strict-off) returns `Ok`.
 ///
 /// Callers choose the failure mode:
-///   * `recur-code-server` (single-purpose process) — call early in `main`
+///   * `rc-server` (single-purpose process) — call early in `main`
 ///     and `process::exit(2)` on `Err`.
 ///   * Desktop web-service start — call before `persist_web_service_config`
 ///     and surface `Err` as an `AppCommandError` so the toggle fails
@@ -424,7 +424,7 @@ pub fn validate_upload_quota_config() -> Result<(), UploadQuotaStrictError> {
 /// disk, not the counter — and a uniform reservation size keeps the
 /// CAS loop and the cleanup path symmetric.
 ///
-/// **Scope:** this counter is process-local. Multiple `recur-code-server`
+/// **Scope:** this counter is process-local. Multiple `rc-server`
 /// processes sharing the same `uploads_root` (horizontally-scaled
 /// deployments mounted on the same volume) will each maintain their
 /// own counter and can collectively exceed the cap. RecurCode is designed

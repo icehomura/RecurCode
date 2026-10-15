@@ -1689,7 +1689,7 @@ export function FileTreeTab() {
             const ignored =
               desc.kind === "dir"
                 ? matcher.ignores(`${relativePath}/`) ||
-                  matcher.ignores(`${relativePath}/.recur-code-ignore-probe`)
+                  matcher.ignores(`${relativePath}/.rc-ignore-probe`)
                 : matcher.ignores(relativePath)
             if (ignored) {
               nextIgnoredPaths.add(desc.path)

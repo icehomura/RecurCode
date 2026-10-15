@@ -40,7 +40,7 @@ fn system_tag_regex() -> &'static Regex {
 /// (`lib/background-agent.ts`) splits on it and renders a lifecycle card;
 /// anything else renders the preview verbatim, so the prefix must never occur
 /// in organic tool output.
-pub(crate) const BACKGROUND_TASK_MARKER: &str = "[[recur-code-background-task]]";
+pub(crate) const BACKGROUND_TASK_MARKER: &str = "[[rc-background-task]]";
 
 /// Cap for the folded `<result>` markdown carried on the lifecycle marker —
 /// generous for a sub-agent summary, bounded against a pathological one. Also
@@ -2639,7 +2639,7 @@ impl ClaudeRecordAccumulator {
     /// `<task-notification>`:
     ///
     /// ```text
-    /// [[recur-code-background-task]]{"task_id":…,"status":…,"summary":…,"result":…}
+    /// [[rc-background-task]]{"task_id":…,"status":…,"summary":…,"result":…}
     /// ```
     ///
     /// `status` is null while no notification was observed — the frontend
@@ -5297,7 +5297,7 @@ mod tests {
     #[test]
     fn parse_detail_sets_claude_context_window_stats() {
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-parser-{}.jsonl",
+            "rc-claude-parser-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5359,7 +5359,7 @@ mod tests {
     #[test]
     fn parse_prefers_ai_title_over_first_user_message() {
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-aititle-{}.jsonl",
+            "rc-claude-aititle-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5417,7 +5417,7 @@ mod tests {
     #[test]
     fn parse_falls_back_to_user_message_when_ai_title_empty() {
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-aititle-empty-{}.jsonl",
+            "rc-claude-aititle-empty-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5470,7 +5470,7 @@ mod tests {
         lines: &[serde_json::Value],
     ) -> (Option<String>, Option<String>) {
         let path =
-            std::env::temp_dir().join(format!("recur-code-claude-{tag}-{}.jsonl", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("rc-claude-{tag}-{}.jsonl", uuid::Uuid::new_v4()));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
         for line in lines {
             writeln!(file, "{line}").expect("write line");
@@ -5615,7 +5615,7 @@ mod tests {
         // The record carries a timestamp and a sessionId, so it must stay a
         // metadata line — never a visible turn or a counted message.
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-customtitle-turn-{}.jsonl",
+            "rc-claude-customtitle-turn-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5657,7 +5657,7 @@ mod tests {
         // finished, i.e. the assistant event timestamp itself (or the
         // turn_duration system event's timestamp ≈ same instant).
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-completed-{}.jsonl",
+            "rc-claude-completed-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5745,7 +5745,7 @@ mod tests {
     #[test]
     fn synthetic_assistant_excluded_from_detail() {
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-synthetic-{}.jsonl",
+            "rc-claude-synthetic-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -5865,7 +5865,7 @@ mod tests {
 
     fn parse_lines_into_detail(lines: &[String]) -> crate::models::ConversationDetail {
         let path = std::env::temp_dir().join(format!(
-            "recur-code-claude-usage-{}.jsonl",
+            "rc-claude-usage-{}.jsonl",
             uuid::Uuid::new_v4()
         ));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
@@ -6384,7 +6384,7 @@ mod tests {
         lines: &[String],
         subagents: &[(&str, Vec<String>)],
     ) -> crate::models::ConversationDetail {
-        let stem = std::env::temp_dir().join(format!("recur-code-claude-sub-{}", uuid::Uuid::new_v4()));
+        let stem = std::env::temp_dir().join(format!("rc-claude-sub-{}", uuid::Uuid::new_v4()));
         let path = stem.with_extension("jsonl");
         let mut file = fs::File::create(&path).expect("create session jsonl");
         for line in lines {
@@ -6666,7 +6666,7 @@ mod tests {
     #[test]
     fn slash_command_keeps_user_turn_between_assistant_turns() {
         let path =
-            std::env::temp_dir().join(format!("recur-code-claude-slash-{}.jsonl", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("rc-claude-slash-{}.jsonl", uuid::Uuid::new_v4()));
         let mut file = fs::File::create(&path).expect("create temp jsonl");
         // Client command /model: followed by stdout, no model turn -> stays hidden
         writeln!(

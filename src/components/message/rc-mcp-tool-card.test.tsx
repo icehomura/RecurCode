@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { NextIntlClientProvider } from "next-intl"
 import { describe, expect, it, vi } from "vitest"
 
-import { RecurCodeMcpToolCard } from "./recur-code-mcp-tool-card"
+import { RecurCodeMcpToolCard } from "./rc-mcp-tool-card"
 import enMessages from "@/i18n/messages/en.json"
 
 // MessageResponse (Streamdown) drags in the link-safety hook and async Shiki
@@ -136,7 +136,7 @@ describe("RecurCodeMcpToolCard", () => {
       <RecurCodeMcpToolCard
         tool="create_automation"
         input={JSON.stringify({
-          name: "mcp__recur-code-mcp__create_automation",
+          name: "mcp__rc-mcp__create_automation",
           arguments: { name: "nightly sweep", prompt: "sweep the logs" },
         })}
         state="output-available"

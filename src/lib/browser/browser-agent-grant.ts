@@ -21,7 +21,7 @@ import { getCurrentWindowLabel } from "./window-label"
  * when it refuses.
  *
  * A document guest cannot be shared, and its address does not say so: under
- * WebView2 it is served from `http://recur-code-doc.doc-<token>/…`, a perfectly
+ * WebView2 it is served from `http://rc-doc.doc-<token>/…`, a perfectly
  * ordinary-looking http origin. No surface renders the share control for one
  * today (they show a local file, and have a toolbar of their own), but a rule
  * that agrees with the backend on only one of its two clauses is a trap for

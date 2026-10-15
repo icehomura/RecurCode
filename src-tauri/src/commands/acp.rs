@@ -233,7 +233,7 @@ pub(crate) fn resolve_system_agent_binary(cmd: &str) -> Option<PathBuf> {
 /// The agent-aware form exists because a vendor installer can target a
 /// directory that is neither on PATH nor `~/.local/bin` — OpenCode's is
 /// `~/.opencode/bin` — and appending it to the shell rc does not help a desktop
-/// app launched from Finder or the Dock. Ordered last, so a recur-code-managed copy
+/// app launched from Finder or the Dock. Ordered last, so a rc-managed copy
 /// and anything genuinely on PATH still win.
 pub(crate) fn resolve_system_agent_binary_for(agent_type: AgentType, cmd: &str) -> Option<PathBuf> {
     if let Some(path) = resolve_system_agent_binary(cmd) {
@@ -4005,7 +4005,7 @@ fn is_absolute_config_path(value: &str) -> bool {
 /// Anything else is the user's OWN catalog — hand-written, or authored in the
 /// advanced config.toml editor — and RecurCode must never delete it. Resolved the
 /// way codex resolves the key, so an absolute path to RecurCode's own file counts
-/// as recur-code-owned too. Unresolvable/foreign values answer `false`, which is the
+/// as rc-owned too. Unresolvable/foreign values answer `false`, which is the
 /// safe direction (leave the key alone).
 fn is_recur_code_owned_catalog_ref(value: &str, codex_home: &Path) -> bool {
     let value = value.trim();
@@ -4404,7 +4404,7 @@ fn parse_grok_settings(raw_toml: &str) -> GrokSettings {
             .as_integer()
     };
 
-    // The recur-code-managed custom model = `[models].default`, but only when a
+    // The rc-managed custom model = `[models].default`, but only when a
     // matching `[model.<default>]` table exists — a hand-set stock default that
     // has no `[model.*]` block is left untracked (the panel shows it empty).
     let custom_model_id = get("models", "default").filter(|id| {
@@ -4449,7 +4449,7 @@ fn parse_grok_settings(raw_toml: &str) -> GrokSettings {
 }
 
 /// grok's real `--permission-mode` enum (docs.x.ai / verified against the
-/// 0.2.99 binary). RecurCode historically wrote a recur-code-invented
+/// 0.2.99 binary). RecurCode historically wrote a rc-invented
 /// `permission_mode = "always-approve"` / `"ask"` into `~/.grok/config.toml`,
 /// neither of which grok accepts — `grok --permission-mode always-approve`
 /// errors out. `migrate_grok_permission_mode` maps those legacy markers onto the
@@ -4702,7 +4702,7 @@ fn apply_grok_structured_config(
     Ok(doc.to_string())
 }
 
-/// Write / rename / remove the recur-code-managed custom Grok model. The managed block
+/// Write / rename / remove the rc-managed custom Grok model. The managed block
 /// is anchored as "the `[model.<id>]` whose id equals `[models].default`":
 ///  - a non-empty `custom_model_id` writes (or renames the previous managed block
 ///    to) `[model.<id>]` and points `[models].default` at it;
@@ -4968,7 +4968,7 @@ fn persist_opencode_auth_json(raw_auth: &str) -> Result<(), AcpError> {
 // (`kimi acp --login`), which requires a Kimi *subscription* account.
 //
 // To support plain API-key users, RecurCode therefore manages BOTH halves:
-//   1. `config.toml` — a recur-code-managed `[providers."RecurCode"]` + `[models."recur-code-managed"]`
+//   1. `config.toml` — a rc-managed `[providers."RecurCode"]` + `[models."rc-managed"]`
 //      + `default_model` block that ROUTES INFERENCE to the user's API key
 //      (any of the six native interface types: kimi / openai / openai_responses /
 //      anthropic / google-genai / vertexai).
@@ -4978,7 +4978,7 @@ fn persist_opencode_auth_json(raw_auth: &str) -> Result<(), AcpError> {
 //      token is never transmitted. It carries a `_recur_code_synthetic` marker so we
 //      only ever remove OUR token, never a real login the user performed.
 //
-// The recur-code-managed block is keyed by the fixed names `RecurCode` / `recur-code-managed`
+// The rc-managed block is keyed by the fixed names `RecurCode` / `rc-managed`
 // so it is recognizable and removable without disturbing any provider/model the
 // user added by hand. The raw config.toml editor is the comment/format escape
 // hatch. A stale `KIMI_MODEL_*` env override would silently win over config.toml,
@@ -4986,16 +4986,16 @@ fn persist_opencode_auth_json(raw_auth: &str) -> Result<(), AcpError> {
 // ---------------------------------------------------------------------------
 
 const KIMI_MANAGED_PROVIDER: &str = "RecurCode";
-const KIMI_MANAGED_MODEL_ALIAS: &str = "recur-code-managed";
+const KIMI_MANAGED_MODEL_ALIAS: &str = "rc-managed";
 const KIMI_MODEL_API_KEY_ENV: &str = "KIMI_MODEL_API_KEY";
 const KIMI_MODEL_BASE_URL_ENV: &str = "KIMI_MODEL_BASE_URL";
 const KIMI_MODEL_NAME_ENV: &str = "KIMI_MODEL_NAME";
 /// Sentinel `access_token` value (and `_recur_code_synthetic` marker) identifying the
 /// gate token RecurCode seeds, so we never clobber a real OAuth login.
-const KIMI_SYNTHETIC_TOKEN_ACCESS: &str = "recur-code-local-gate";
+const KIMI_SYNTHETIC_TOKEN_ACCESS: &str = "rc-local-gate";
 /// Fallback context window for the managed model. Kimi's config schema **requires**
 /// `[models.<alias>].max_context_size` to be a positive integer — omitting it makes
-/// kimi discard the whole model block ("Ignored invalid config … models.recur-code-managed"),
+/// kimi discard the whole model block ("Ignored invalid config … models.rc-managed"),
 /// which leaves `default_model` dangling and every prompt ends with no reply. So we
 /// always write one, defaulting to the kimi-k2 256K window when the user leaves it blank.
 ///
@@ -5044,7 +5044,7 @@ fn kimi_provider_key_env_var(interface_type: &str) -> Option<&'static str> {
     }
 }
 
-/// The resolved recur-code-managed provider/model block to write into config.toml.
+/// The resolved rc-managed provider/model block to write into config.toml.
 struct KimiManagedSpec {
     interface_type: String,
     base_url: Option<String>,
@@ -5082,8 +5082,8 @@ const KIMI_CAPABILITY_THINKING: &str = "thinking";
 /// Same, but kimi drops the `Off` row: the model cannot stop reasoning.
 const KIMI_CAPABILITY_ALWAYS_THINKING: &str = "always_thinking";
 
-/// Upsert (`Some`) or remove (`None`) the recur-code-managed `[providers.recurcode]` +
-/// `[models.recur-code-managed]` block in a parsed config.toml document, preserving
+/// Upsert (`Some`) or remove (`None`) the rc-managed `[providers.recurcode]` +
+/// `[models.rc-managed]` block in a parsed config.toml document, preserving
 /// every other section the user authored. Removal also resets `default_model`
 /// only when it points at our managed alias.
 fn apply_kimi_managed_block(
@@ -5227,7 +5227,7 @@ fn apply_kimi_managed_block(
 }
 
 /// Read-modify-write `config.toml`, upserting (`Some`) or clearing (`None`) the
-/// recur-code-managed block. A clear on a non-existent file is a no-op (never creates
+/// rc-managed block. A clear on a non-existent file is a no-op (never creates
 /// an empty file). Reuses the existing `toml` crate: data in other sections is
 /// preserved; comments/formatting are not (the raw editor covers that).
 fn mutate_kimi_config_toml(spec: Option<&KimiManagedSpec>) -> Result<(), AcpError> {
@@ -5349,7 +5349,7 @@ fn remove_kimi_synthetic_credential_if_ours() -> Result<(), AcpError> {
     remove_kimi_synthetic_credential_if_ours_at(&kimi_code_credentials_token_path())
 }
 
-/// Project the recur-code-managed config.toml block into a flat JSON object for the
+/// Project the rc-managed config.toml block into a flat JSON object for the
 /// settings panel, plus the raw file text for the advanced editor. Uses keys
 /// (`baseUrl` / `key` / `modelId`, never `apiBaseUrl` / `apiKey` / `model` /
 /// `env`) that do NOT match `AgentRuntimeConfig`, so `build_runtime_env_from_setting`
@@ -5517,7 +5517,7 @@ fn load_kimi_code_config_json() -> Option<String> {
 }
 
 /// Structured Kimi Code config update from the settings UI. `mode` is one of:
-/// `apikey` — write the recur-code-managed `config.toml` provider/model block AND seed
+/// `apikey` — write the rc-managed `config.toml` provider/model block AND seed
 /// the synthetic gate token, so the API key actually authenticates `kimi acp`;
 /// `login` — clear the managed block + remove our synthetic token so a real OAuth
 /// login governs; `raw` — write a verbatim config.toml then seed the gate token.
@@ -5685,7 +5685,7 @@ fn build_kimi_managed_spec(update: &KimiCodeConfigUpdate) -> Result<KimiManagedS
 /// Clear any `KIMI_MODEL_*` env override from the DB `env_json`, preserving every
 /// other env key and the agent's enabled/provider state. `kimi acp` reads that
 /// env family BEFORE config.toml, so a stale entry would silently override the
-/// recur-code-managed provider; every save clears it to keep config.toml authoritative.
+/// rc-managed provider; every save clears it to keep config.toml authoritative.
 /// Ensures the settings row exists first. No-op fast path when nothing to clear.
 async fn clear_kimi_model_env(db: &AppDatabase) -> Result<(), AcpError> {
     let default = agent_setting_service::AgentDefaultInput {
@@ -6779,7 +6779,7 @@ const PI_THINKING_LEVELS: [&str; 7] = ["off", "minimal", "low", "medium", "high"
 
 /// Read a JSON file into an owned object map, returning an empty map when the
 /// file is absent, unreadable, or does not parse to a JSON object. Pi's native
-/// files are small and recur-code-owned; corruption shouldn't abort a save (we
+/// files are small and rc-owned; corruption shouldn't abort a save (we
 /// re-author the managed keys and preserve whatever else parses).
 fn read_json_object_or_empty(path: &Path) -> serde_json::Map<String, serde_json::Value> {
     fs::read_to_string(path)
@@ -6935,7 +6935,7 @@ impl PiModelCatalog {
 /// an answer that refuses or cannot be read, `Some(Ok(models))` otherwise.
 fn parse_pi_model_capabilities(line: &str) -> Option<Result<Vec<PiModelCapability>, ()>> {
     let response: serde_json::Value = serde_json::from_str(line).ok()?;
-    if response.get("id")?.as_str()? != "recur-code-models"
+    if response.get("id")?.as_str()? != "rc-models"
         || response.get("type")?.as_str()? != "response"
         || response.get("command")?.as_str()? != "get_available_models"
     {
@@ -7058,7 +7058,7 @@ async fn query_pi_model_catalog(
     // cwd) cannot reach a `pi` someone planted in the shared temp dir. Kept
     // alive until the child is reaped below.
     let Ok(query_dir) = tempfile::Builder::new()
-        .prefix("recur-code-pi-catalog-")
+        .prefix("rc-pi-catalog-")
         .tempdir()
     else {
         return PiModelCatalog::unavailable(PiCatalogStatus::Failed);
@@ -7107,7 +7107,7 @@ async fn query_pi_model_catalog(
     let query = async {
         let mut stdin = child.stdin.take()?;
         stdin
-            .write_all(b"{\"id\":\"recur-code-models\",\"type\":\"get_available_models\"}\n")
+            .write_all(b"{\"id\":\"rc-models\",\"type\":\"get_available_models\"}\n")
             .await
             .ok()?;
         stdin.flush().await.ok()?;
@@ -8339,7 +8339,7 @@ pub(crate) fn ensure_hermes_home_secure(home: &Path) -> Result<(), AcpError> {
 /// A brand-new secret — a path whose resolved target does not exist yet, whether
 /// `path` itself is absent or a symlink to a missing target — is created
 /// owner-only (`0600` on Unix) so it is never world-readable under the process
-/// umask, the one real exposure for a first-time recur-code-driven setup. An EXISTING
+/// umask, the one real exposure for a first-time rc-driven setup. An EXISTING
 /// target is written through in place, which preserves everything that identifies
 /// it: its inode, mode, owner/group, POSIX ACL and xattrs, and any symlink (a
 /// dotfile-manager or secret-manager `~/.hermes/.env` keeps pointing at its real
@@ -10889,7 +10889,7 @@ fn cascade_update_agent_config(
             // deepseek-acp authenticates via `DEEPSEEK_API_KEY` (or
             // `~/.dsh/.credentials.yaml`, which RecurCode never writes), injected
             // as a runtime env var through the generic agent settings panel;
-            // it has no recur-code-managed config file and does not participate in
+            // it has no rc-managed config file and does not participate in
             // the model-provider credential cascade.
         }
         AgentType::Qoder => {
@@ -11365,7 +11365,7 @@ pub async fn acp_goal_control(
 /// read whatever `SessionConfigOptions` / `SessionModes` the agent advertises,
 /// and tear it down. The returned snapshot drives the delegation-settings UI
 /// so the user picks from the exact option set the agent will accept when
-/// recur-code-mcp later spawns a subagent.
+/// rc-mcp later spawns a subagent.
 ///
 /// Does NOT touch the chat-side `selectorsCache`, `localStorage` preferences,
 /// or any active connection state — see `ConnectionManager::probe_agent_options`
@@ -14413,7 +14413,7 @@ mod tests {
         // The declared probe's program doesn't exist, so the probe yields
         // nothing; the convention path must still read the real install.
         let version = system_probed_version_with(
-            Some("recur-code-missing-probe-cmd-e2e --version"),
+            Some("rc-missing-probe-cmd-e2e --version"),
             &bin,
             None,
         )
@@ -14432,7 +14432,7 @@ mod tests {
 
     #[test]
     fn parse_grok_settings_migrates_legacy_permission_values() {
-        // RecurCode's old recur-code-invented markers map onto grok's real enum so the
+        // RecurCode's old rc-invented markers map onto grok's real enum so the
         // dropdown, launch flag, and grok's TUI agree.
         let approve = parse_grok_settings("[ui]\npermission_mode = \"always-approve\"\n");
         assert_eq!(approve.permission_mode.as_deref(), Some("bypassPermissions"));
@@ -14915,11 +14915,11 @@ base_url = \"https://example.test/v1\"
 
     #[test]
     fn remove_codex_catalog_key_is_format_preserving_and_no_op_when_absent() {
-        let home = Path::new("/tmp/recur-code-test-codex-home");
-        let base = config_with_catalog_ref("recur-code-model-catalog.json");
+        let home = Path::new("/tmp/rc-test-codex-home");
+        let base = config_with_catalog_ref("rc-model-catalog.json");
         let next = remove_codex_catalog_key(&base, home)
             .unwrap()
-            .expect("recur-code-owned key was present");
+            .expect("rc-owned key was present");
         assert!(!next.contains("model_catalog_json"));
         // Comments and every unmanaged key survive verbatim.
         assert!(next.contains("# my codex config"));
@@ -14937,12 +14937,12 @@ base_url = \"https://example.test/v1\"
     /// silently orphan the user's models.
     #[test]
     fn remove_codex_catalog_key_preserves_user_owned_references() {
-        let home = Path::new("/tmp/recur-code-test-codex-home");
+        let home = Path::new("/tmp/rc-test-codex-home");
         for foreign in [
             "manual.json",
             "/abs/path/to/manual.json",
             "~/my-catalog.json",
-            "nested/recur-code-model-catalog.json",
+            "nested/rc-model-catalog.json",
             "  ",
         ] {
             let base = config_with_catalog_ref(foreign);
@@ -14951,7 +14951,7 @@ base_url = \"https://example.test/v1\"
                 "must not touch a user-owned reference: {foreign}"
             );
         }
-        // An absolute path naming RecurCode's own file IS recur-code-owned.
+        // An absolute path naming RecurCode's own file IS rc-owned.
         let abs = home
             .join(crate::acp::codex_model_catalog::CATALOG_REL)
             .to_string_lossy()
@@ -15386,7 +15386,7 @@ base_url = \"https://example.test/v1\"
     #[test]
     fn parse_grok_settings_untracks_default_without_model_block() {
         // `[models].default` naming a stock model (no `[model.*]` block) is not a
-        // recur-code-managed custom model — the panel must show the custom fields empty.
+        // rc-managed custom model — the panel must show the custom fields empty.
         let toml = "[model.foo]\nbase_url = \"x\"\n\n[models]\ndefault = \"grok-4.5\"\n";
         let s = parse_grok_settings(toml);
         assert!(s.custom_model_id.is_none());
@@ -15505,7 +15505,7 @@ base_url = \"https://example.test/v1\"
     #[test]
     fn apply_grok_custom_model_clear_leaves_handset_stock_default() {
         // Clearing the (empty) custom form must NOT delete a hand-set stock
-        // `[models].default` that was never recur-code-managed.
+        // `[models].default` that was never rc-managed.
         let base = "[models]\ndefault = \"grok-4.5\"\n";
         let merged =
             apply_grok_structured_config(base, &GrokStructuredConfig::default()).unwrap();
@@ -15837,7 +15837,7 @@ base_url = \"https://example.test/v1\"
             map.insert(canonical_key(&ws), serde_json::Value::Bool(verdict));
             write_json_object_pretty(&agent_dir.join("trust.json"), &map).unwrap();
         }
-        (ws, agent_dir, tmp.join("recur-code-home"))
+        (ws, agent_dir, tmp.join("rc-home"))
     }
 
     /// THE regression this whole change exists for on an upgraded install: pi
@@ -15870,7 +15870,7 @@ base_url = \"https://example.test/v1\"
         map.insert(canonical_key(&parent), serde_json::Value::Bool(true));
         write_json_object_pretty(&agent_dir.join("trust.json"), &map).unwrap();
 
-        let blocked = launch_block_for(&agent_dir, &tmp.path().join("recur-code-home"), &ws);
+        let blocked = launch_block_for(&agent_dir, &tmp.path().join("rc-home"), &ws);
 
         assert!(blocked.is_some());
         assert!(
@@ -15928,7 +15928,7 @@ base_url = \"https://example.test/v1\"
         write_json_object_pretty(&agent_dir.join("trust.json"), &map).unwrap();
 
         assert_eq!(
-            launch_block_for(&agent_dir, &tmp.path().join("recur-code-home"), &ws),
+            launch_block_for(&agent_dir, &tmp.path().join("rc-home"), &ws),
             None,
         );
     }
@@ -16178,14 +16178,14 @@ base_url = \"https://example.test/v1\"
 
     #[test]
     fn pi_rpc_projection_keeps_only_capabilities_and_rejects_wrong_responses() {
-        let line = r#"{"id":"recur-code-models","type":"response","command":"get_available_models","success":true,"data":{"models":[{"provider":"openai","id":"gpt-5.6-sol","reasoning":true,"thinkingLevelMap":{"max":"max"},"baseUrl":"https://secret.example","apiKey":"secret"}]}}"#;
+        let line = r#"{"id":"rc-models","type":"response","command":"get_available_models","success":true,"data":{"models":[{"provider":"openai","id":"gpt-5.6-sol","reasoning":true,"thinkingLevelMap":{"max":"max"},"baseUrl":"https://secret.example","apiKey":"secret"}]}}"#;
         let models = parse_pi_model_capabilities(line).unwrap().unwrap();
         assert_eq!(models.len(), 1);
         assert_eq!(models[0].thinking_level_map["max"], Some("max".into()));
         let projected = serde_json::to_string(&models).unwrap();
         assert!(!projected.contains("secret"));
         // Someone else's line: keep reading.
-        assert!(parse_pi_model_capabilities(&line.replace("recur-code-models", "other")).is_none());
+        assert!(parse_pi_model_capabilities(&line.replace("rc-models", "other")).is_none());
         // Our answer, refusing or unreadable: stop, and say it failed.
         assert_eq!(
             parse_pi_model_capabilities(&line.replace(r#""success":true"#, r#""success":false"#)),
@@ -16341,7 +16341,7 @@ base_url = \"https://example.test/v1\"
         assert_eq!(pi_child_home_from(&untouched, None), account);
         let removed = BTreeMap::from([(CHILD_HOME_KEY.to_string(), String::new())]);
         assert_eq!(
-            pi_child_home_from(&removed, Some(OsString::from("recur-code-home"))),
+            pi_child_home_from(&removed, Some(OsString::from("rc-home"))),
             account
         );
     }
@@ -16407,7 +16407,7 @@ base_url = \"https://example.test/v1\"
         let env = BTreeMap::from([("PI_CODING_AGENT_DIR".to_string(), ".pi-agent".to_string())]);
         let blocked = temp_env::with_var(
             "RC_HOME",
-            Some(tmp.path().join("recur-code-home").to_string_lossy().to_string()),
+            Some(tmp.path().join("rc-home").to_string_lossy().to_string()),
             || pi_project_trust_launch_block(&ws, &env),
         );
         assert!(
@@ -16452,9 +16452,9 @@ base_url = \"https://example.test/v1\"
             "pi",
             r#"read request
 case "$request $*" in
-  *recur-code-models*--offline*--no-session*--no-extensions*)
+  *rc-models*--offline*--no-session*--no-extensions*)
     if [ -n "$PI_CODING_AGENT_DIR" ]; then
-      printf '%s\n' '{"id":"recur-code-models","type":"response","command":"get_available_models","success":true,"data":{"models":[{"provider":"openai","id":"via-override","reasoning":true,"thinkingLevelMap":{"max":"max"}}]}}'
+      printf '%s\n' '{"id":"rc-models","type":"response","command":"get_available_models","success":true,"data":{"models":[{"provider":"openai","id":"via-override","reasoning":true,"thinkingLevelMap":{"max":"max"}}]}}'
     fi
     ;;
 esac
@@ -16502,7 +16502,7 @@ esac
             temp.path(),
             "refusing-pi",
             r#"read request
-printf '%s\n' '{"id":"recur-code-models","type":"response","command":"get_available_models","success":false,"error":"boom"}'
+printf '%s\n' '{"id":"rc-models","type":"response","command":"get_available_models","success":false,"error":"boom"}'
 "#,
         );
         assert_eq!(
@@ -16530,14 +16530,14 @@ printf '%s\n' '{"id":"recur-code-models","type":"response","command":"get_availa
     #[cfg(unix)]
     #[tokio::test]
     async fn pi_catalog_never_runs_a_pi_planted_in_the_shared_temp_dir() {
-        let entry = format!("recur-code-planted-{}", uuid::Uuid::new_v4());
+        let entry = format!("rc-planted-{}", uuid::Uuid::new_v4());
         let planted_dir = std::env::temp_dir().join(&entry);
         fs::create_dir(&planted_dir).unwrap();
         fake_pi(
             &planted_dir,
             "pi",
             r#"read request
-printf '%s\n' '{"id":"recur-code-models","type":"response","command":"get_available_models","success":true,"data":{"models":[]}}'
+printf '%s\n' '{"id":"rc-models","type":"response","command":"get_available_models","success":true,"data":{"models":[]}}'
 "#,
         );
         let agent_dir = tempfile::tempdir().unwrap();
@@ -16566,7 +16566,7 @@ printf '%s\n' '{"id":"recur-code-models","type":"response","command":"get_availa
             &script,
             r#"@echo off
 set /p request=
-echo {"id":"recur-code-models","type":"response","command":"get_available_models","success":true,"data":{"models":[{"provider":"openai","id":"windows","reasoning":true,"thinkingLevelMap":{"max":"max"}}]}}
+echo {"id":"rc-models","type":"response","command":"get_available_models","success":true,"data":{"models":[{"provider":"openai","id":"windows","reasoning":true,"thinkingLevelMap":{"max":"max"}}]}}
 "#.replace('\n', "\r\n"),
         ).unwrap();
         let mut env = BTreeMap::new();
@@ -16963,7 +16963,7 @@ wire_api = "chat"
     }
 
     fn unique_test_dir(name: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("recur-code-acp-{name}-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("rc-acp-{name}-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).expect("create test directory");
         dir
     }
@@ -17726,7 +17726,7 @@ wire_api = "chat"
                 .expect("custom provider must survive");
             assert!(
                 !custom.contains_key("requires_openai_auth"),
-                "only the RecurCode provider is recur-code-managed"
+                "only the RecurCode provider is rc-managed"
             );
         });
     }
@@ -18271,10 +18271,10 @@ wire_api = "chat"
         let bin_dir = home.path().join(".local").join("bin");
         let prefix = home.path().join("npm-prefix");
         let prefix_bin_dir = npm_prefix_bin_dir(&prefix);
-        let cmd = "recur-code-test-local-bin-npx-agent";
+        let cmd = "rc-test-local-bin-npx-agent";
         let command_path = bin_dir.join(cmd);
         // Only in the npm prefix: the list path must still fall through to it.
-        let prefix_only_cmd = "recur-code-test-npm-prefix-only-npx-agent";
+        let prefix_only_cmd = "rc-test-npm-prefix-only-npx-agent";
         let prefix_only_path = prefix_bin_dir.join(prefix_only_cmd);
         for path in [
             bin_dir.join(cmd),
@@ -19810,7 +19810,7 @@ api_key = "sk"
 [providers.mine]
 type = "openai"
 api_key = "sk-user"
-[models.recur-code-managed]
+[models.rc-managed]
 provider = "RecurCode"
 model = "x"
 [models.mine]
@@ -19837,10 +19837,10 @@ model = "gpt"
     #[test]
     fn kimi_managed_block_clear_resets_our_default_and_empties() {
         let mut doc: toml::Value = r#"
-default_model = "recur-code-managed"
+default_model = "rc-managed"
 [providers.recurcode]
 type = "kimi"
-[models.recur-code-managed]
+[models.rc-managed]
 provider = "RecurCode"
 model = "kimi-for-coding"
 "#
@@ -20101,10 +20101,10 @@ model = "kimi-for-coding"
     #[test]
     fn kimi_project_managed_config_round_trips_reasoning_metadata() {
         let value: toml::Value = r#"
-default_model = "recur-code-managed"
+default_model = "rc-managed"
 [providers.recurcode]
 type = "openai_responses"
-[models.recur-code-managed]
+[models.rc-managed]
 provider = "RecurCode"
 model = "gpt-5.6-sol"
 max_context_size = 1000000
@@ -20139,7 +20139,7 @@ default_effort = "high"
         let value: toml::Value = r#"
 [providers.recurcode]
 type = "kimi"
-[models.recur-code-managed]
+[models.rc-managed]
 provider = "RecurCode"
 model = "kimi-k2"
 max_context_size = 262144
@@ -20159,12 +20159,12 @@ max_context_size = 262144
         // config.toml values back into the KIMI_MODEL_* runtime env, defeating the
         // single-source-of-truth between env override and config.toml.
         let value: toml::Value = r#"
-default_model = "recur-code-managed"
+default_model = "rc-managed"
 [providers.recurcode]
 type = "anthropic"
 base_url = "https://api.anthropic.com"
 api_key = "sk-ant"
-[models.recur-code-managed]
+[models.rc-managed]
 provider = "RecurCode"
 model = "claude-opus-4-7"
 max_context_size = 200000
@@ -20213,7 +20213,7 @@ max_context_size = 200000
 type = "openai"
 [providers.recurcode.env]
 OPENAI_API_KEY = "sk-x"
-[models.recur-code-managed]
+[models.rc-managed]
 provider = "RecurCode"
 model = "gpt"
 "#

@@ -127,7 +127,7 @@ pub(crate) async fn create_backup_core(
             );
         };
         builder.add_file("db/RecurCode.db", &db_snapshot_c, &cancel_c, &mut prog)?;
-        // Every recur-code-owned section, straight off the shared table — see
+        // Every rc-owned section, straight off the shared table — see
         // `sections.rs` for why this must not be re-hardcoded here.
         let exclude = |rel: &Path| sections::is_excluded_section_entry(rel);
         for section in sections::MANAGED_SECTIONS {

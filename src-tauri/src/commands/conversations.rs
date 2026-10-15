@@ -1189,7 +1189,7 @@ fn parse_delegate_task_id(output: &str) -> Option<String> {
 /// so re-parse those. Depth-capped like the frontend walker.
 ///
 /// Shares `acp::lifecycle`'s key list rather than restating it: that list, its
-/// frontend twins in `delegation-card.ts` / `recur-code-mcp-tool.ts`, and this
+/// frontend twins in `delegation-card.ts` / `rc-mcp-tool.ts`, and this
 /// walker must peel the same envelopes, or a card and the meta injected beneath
 /// it disagree about which task a call names.
 fn find_task_id_in_value(value: &serde_json::Value, depth: u8) -> Option<String> {
@@ -1251,7 +1251,7 @@ fn parse_resume_task_id(input: &str) -> Option<String> {
 /// set `meta["RecurCode.delegation"]` to the DB-derived snapshot. Skips blocks
 /// whose meta is already populated so the live-broker write (when present)
 /// always wins. Tool-name match is by substring to cover the MCP-prefixed
-/// (`mcp__recur-code-mcp__delegate_to_agent`) and bare forms the host may have
+/// (`mcp__rc-mcp__delegate_to_agent`) and bare forms the host may have
 /// emitted.
 ///
 /// For `delegate_to_agent`, matching is by `parent_tool_use_id` first, then by
@@ -3365,7 +3365,7 @@ mod tests {
     fn inject_delegation_meta_populates_completed_child() {
         let mut turns = vec![tool_use_turn(
             Some("tu-1"),
-            "mcp__recur-code-mcp__delegate_to_agent",
+            "mcp__rc-mcp__delegate_to_agent",
         )];
         let children = vec![summary_child(42, "tu-1", "completed")];
         inject_delegation_meta(&mut turns, &children);
@@ -3451,7 +3451,7 @@ mod tests {
     fn inject_delegation_meta_binds_a_resume_call_by_its_task_id_argument() {
         let mut turns = vec![tool_use_turn_with_input(
             Some("tu-resume"),
-            "mcp__recur-code-mcp__resume_delegation",
+            "mcp__rc-mcp__resume_delegation",
             Some(r#"{"task_id":"b0858712-9257","reason":"the app was killed"}"#),
         )];
         let mut child = summary_child(9, "tu-original-delegate", "completed");
@@ -3510,7 +3510,7 @@ mod tests {
         // `params` on `input_preview` on purpose, for readers to peel.
         assert_eq!(
             parse_resume_task_id(
-                r#"{"toolName":"mcp__recur-code-mcp__resume_delegation","params":{"task_id":"abc-123"}}"#
+                r#"{"toolName":"mcp__rc-mcp__resume_delegation","params":{"task_id":"abc-123"}}"#
             )
             .as_deref(),
             Some("abc-123")
@@ -3523,7 +3523,7 @@ mod tests {
         // Cursor's `{providerIdentifier, toolName, args}`.
         assert_eq!(
             parse_resume_task_id(
-                r#"{"providerIdentifier":"recur-code-mcp","toolName":"resume_delegation","args":{"task_id":"abc-123"}}"#
+                r#"{"providerIdentifier":"rc-mcp","toolName":"resume_delegation","args":{"task_id":"abc-123"}}"#
             )
             .as_deref(),
             Some("abc-123")
@@ -3692,7 +3692,7 @@ mod tests {
         // tests above; here we just verify the wiring inside the _core fn
         // doesn't error on the join path.
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-inject-test").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-inject-test").await;
         let parent_id = create_conversation_core(
             &db.conn,
             folder_id,
@@ -3729,7 +3729,7 @@ mod tests {
     #[tokio::test]
     async fn create_conversation_core_happy_path() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-conv-test-1").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-conv-test-1").await;
         let id = create_conversation_core(
             &db.conn,
             folder_id,
@@ -4177,7 +4177,7 @@ mod tests {
     async fn chat_folders_excluded_from_user_facing_lists_but_in_all_details() {
         let db = fresh_in_memory_db().await;
         let data_dir = tempfile::tempdir().expect("tempdir");
-        let normal_id = seed_folder(&db, "/tmp/recur-code-chat-list-test").await;
+        let normal_id = seed_folder(&db, "/tmp/rc-chat-list-test").await;
         let chat_id =
             create_chat_conversation_core(&db.conn, data_dir.path(), AgentType::Codex, None, None)
                 .await
@@ -4243,7 +4243,7 @@ mod tests {
     #[tokio::test]
     async fn list_all_conversations_core_syncs_codex_index_title_before_search() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-list-codex-index").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-list-codex-index").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4312,7 +4312,7 @@ mod tests {
     #[tokio::test]
     async fn list_all_conversations_core_preserves_locked_codex_title() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-list-codex-locked").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-list-codex-locked").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4356,7 +4356,7 @@ mod tests {
     #[tokio::test]
     async fn list_all_conversations_core_keeps_title_when_codex_index_is_missing() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-list-codex-no-index").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-list-codex-no-index").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4403,7 +4403,7 @@ mod tests {
         use sea_orm::{ConnectionTrait, DbBackend, Statement};
 
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-list-codex-sync-failure").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-list-codex-sync-failure").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4454,7 +4454,7 @@ mod tests {
     #[tokio::test]
     async fn scan_importable_sessions_syncs_title_and_notifies_clients() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-scan-codex-title-sync").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-scan-codex-title-sync").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4473,7 +4473,7 @@ mod tests {
         let mut summary = scan_summary(
             "scan-session",
             AgentType::Codex,
-            Some("/tmp/recur-code-scan-codex-title-sync"),
+            Some("/tmp/rc-scan-codex-title-sync"),
             at(0),
         );
         summary.1.title = Some("Codex index title".into());
@@ -4517,7 +4517,7 @@ mod tests {
     #[tokio::test]
     async fn notify_conversation_title_updates_detaches_channel_sync_from_the_caller() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-notify-detached").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-notify-detached").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4565,7 +4565,7 @@ mod tests {
     #[tokio::test]
     async fn detached_title_sync_converges_on_a_rename_that_lands_mid_flight() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-notify-late-rename").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-notify-late-rename").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4618,7 +4618,7 @@ mod tests {
     #[tokio::test]
     async fn detached_title_sync_converges_after_a_run_of_mid_flight_renames() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-notify-rename-run").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-notify-rename-run").await;
         let row = conversation_service::create(
             &db.conn,
             folder_id,
@@ -4701,7 +4701,7 @@ mod tests {
     #[tokio::test]
     async fn save_opened_tabs_core_persists_only_conversation_tabs_and_bumps_version() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-tabs-test").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-tabs-test").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4746,7 +4746,7 @@ mod tests {
     #[tokio::test]
     async fn save_opened_tabs_core_rejects_stale_version_without_emitting() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-tabs-stale").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-tabs-stale").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4792,7 +4792,7 @@ mod tests {
     #[tokio::test]
     async fn cleanup_tabs_for_deleted_conversation_removes_tab_and_emits() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-tab-conv-del").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-tab-conv-del").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4825,7 +4825,7 @@ mod tests {
     #[tokio::test]
     async fn cleanup_tabs_for_deleted_conversation_bumps_barrier_without_emitting_when_no_open_tab() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-tab-conv-del-noop").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-tab-conv-del-noop").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4848,7 +4848,7 @@ mod tests {
     #[tokio::test]
     async fn remove_folder_from_workspace_cleans_tabs_and_emits() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-folder-remove-tabs").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-folder-remove-tabs").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4880,7 +4880,7 @@ mod tests {
     #[tokio::test]
     async fn stale_save_after_conversation_cleanup_is_rejected_no_resurrection() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-tab-cleanup-race").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-tab-cleanup-race").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4936,7 +4936,7 @@ mod tests {
     #[tokio::test]
     async fn stale_save_after_folder_removal_is_rejected_no_resurrection() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-folder-remove-race").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-folder-remove-race").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -4987,7 +4987,7 @@ mod tests {
         // (built on the pre-deletion version, still listing c1) is then rejected,
         // so a tab for the soft-deleted conversation is never persisted.
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-tab-zero-row-race").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-tab-zero-row-race").await;
         let c1 = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("c1");
@@ -5064,7 +5064,7 @@ mod tests {
     #[tokio::test]
     async fn update_conversation_status_core_invalid_string_errors() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-status-test").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-status-test").await;
         let conv_id = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("create");
@@ -5082,7 +5082,7 @@ mod tests {
     #[tokio::test]
     async fn update_conversation_title_core_roundtrip() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-title-test").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-title-test").await;
         let conv_id = create_conversation_core(&db.conn, folder_id, AgentType::Gemini, None)
             .await
             .expect("create");
@@ -5098,7 +5098,7 @@ mod tests {
     #[tokio::test]
     async fn delete_conversation_core_soft_deletes() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-delete-test").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-delete-test").await;
         let conv_id = create_conversation_core(&db.conn, folder_id, AgentType::Codex, None)
             .await
             .expect("create");
@@ -5127,7 +5127,7 @@ mod tests {
     #[tokio::test]
     async fn list_child_conversations_core_returns_empty_for_no_parent() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-list-children-empty").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-list-children-empty").await;
         let parent_id = create_conversation_core(&db.conn, folder_id, AgentType::Codex, None)
             .await
             .expect("create parent");
@@ -5143,7 +5143,7 @@ mod tests {
         use crate::db::service::conversation_service;
 
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-list-children-match").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-list-children-match").await;
         let parent_id = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("create parent");
@@ -5420,7 +5420,7 @@ mod tests {
     #[tokio::test]
     async fn emit_conversation_upsert_broadcasts_full_root_summary() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-sync-upsert").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-sync-upsert").await;
         let id = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("create");
@@ -5455,7 +5455,7 @@ mod tests {
     #[tokio::test]
     async fn emit_conversation_upsert_carries_new_status_after_update() {
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-sync-status").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-sync-status").await;
         let id = create_conversation_core(&db.conn, folder_id, AgentType::Codex, None)
             .await
             .expect("create");
@@ -5474,7 +5474,7 @@ mod tests {
         // Anti-resurrection: get_by_id filters deleted_at, so an upsert that
         // races a delete emits nothing instead of re-inserting a tombstone.
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-sync-deleted-silent").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-sync-deleted-silent").await;
         let id = create_conversation_core(&db.conn, folder_id, AgentType::Gemini, None)
             .await
             .expect("create");
@@ -5499,7 +5499,7 @@ mod tests {
         // chevron), unlike a root whose `parent_id` is omitted.
         use crate::acp::delegation::spawner::DelegationLink;
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-sync-child-broadcast").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-sync-child-broadcast").await;
         let parent_id = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("parent");
@@ -5543,7 +5543,7 @@ mod tests {
         // symmetric with the create-time parent re-emit.
         use crate::acp::delegation::spawner::DelegationLink;
         let db = fresh_in_memory_db().await;
-        let folder_id = seed_folder(&db, "/tmp/recur-code-delete-child-reemit").await;
+        let folder_id = seed_folder(&db, "/tmp/rc-delete-child-reemit").await;
         let parent_id = create_conversation_core(&db.conn, folder_id, AgentType::ClaudeCode, None)
             .await
             .expect("parent");

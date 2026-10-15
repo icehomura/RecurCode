@@ -119,9 +119,9 @@ describe("groupConsecutiveDelegationStatus", () => {
 
   it("matches host-prefixed historical names", () => {
     const out = groupConsecutiveDelegationStatus([
-      poll("mcp__recur-code-mcp__get_delegation_status", "t1"),
-      poll("mcp__recur-code-delegate__get_delegation_status", "t1"),
-      poll("recur-code-delegate/get_delegation_status", "t1"),
+      poll("mcp__rc-mcp__get_delegation_status", "t1"),
+      poll("mcp__rc-delegate__get_delegation_status", "t1"),
+      poll("rc-delegate/get_delegation_status", "t1"),
     ])
     expect(out).toHaveLength(1)
     expect(pollsOf(out[0])).toHaveLength(3)
@@ -1881,7 +1881,7 @@ describe("adaptMessageTurn — a search pipeline on a shell card", () => {
     // Each of these exits 1 printing nothing, and no search came up empty.
     [
       "a redirection the shell failed to open",
-      "cat /dev/null | grep needle 2>/dev/null </dev/null/recur-code-877",
+      "cat /dev/null | grep needle 2>/dev/null </dev/null/rc-877",
       exitOne,
     ],
     [

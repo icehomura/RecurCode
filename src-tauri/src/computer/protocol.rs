@@ -1,4 +1,4 @@
-//! Frames between RecurCode and `recur-code-computer-helper`.
+//! Frames between RecurCode and `rc-computer-helper`.
 //!
 //! One private channel per helper: the socketpair RecurCode created and handed to
 //! the helper as its stdin/stdout on macOS, plain pipes elsewhere. Frames are
@@ -222,7 +222,7 @@ pub enum HelperOp {
 }
 
 /// The argument that starts the helper for one permission request instead
-/// of serving RecurCode: `recur-code-computer-helper --request-permission
+/// of serving RecurCode: `rc-computer-helper --request-permission
 /// accessibility`. RecurCode starts it as it starts the helper — its own TCC
 /// principal — so the request names the helper; and a fresh process each
 /// time, because macOS takes a request from each process once. It asks for
@@ -864,7 +864,7 @@ impl HelperError {
         };
         Self {
             code: HelperErrorCode::PermissionMissing,
-            message: format!("recur-code-computer-helper has not been granted {what}"),
+            message: format!("rc-computer-helper has not been granted {what}"),
             permission: Some(permission),
         }
     }

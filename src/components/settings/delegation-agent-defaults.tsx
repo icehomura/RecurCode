@@ -6,7 +6,7 @@
  *
  * Isolation guarantees (critical — see the v2 plan):
  *   1. Options come from a LIVE probe (`describeAgentOptions`), not from the
- *      chat-side `selectorsCache`. What the user sees here is what recur-code-mcp
+ *      chat-side `selectorsCache`. What the user sees here is what rc-mcp
  *      will actually receive when it spawns a subagent.
  *   2. Saving a value here does NOT call `acpSetConfigOption` or write to
  *      `selector-prefs-storage.ts` localStorage. The chat input's own
@@ -127,7 +127,7 @@ export function DelegationAgentDefaultsPanel({
   disabled,
 }: DelegationAgentDefaultsPanelProps) {
   const t = useTranslations("AcpAgentSettings.multiAgent")
-  // Custom ACP agents are delegation targets too (recur-code-mcp advertises them
+  // Custom ACP agents are delegation targets too (rc-mcp advertises them
   // in `delegate_to_agent`'s enum), so they get a defaults tab after the
   // built-ins. The list mirrors what the agent registry currently holds.
   const { agents } = useAcpAgents()

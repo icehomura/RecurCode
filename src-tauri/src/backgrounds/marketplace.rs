@@ -27,7 +27,7 @@ use crate::backgrounds::{validate_background, write_background_atomic};
 use crate::models::background::BackgroundAsset;
 
 const WALLHAVEN_SEARCH_URL: &str = "https://wallhaven.cc/api/v1/search";
-const WALLHAVEN_USER_AGENT: &str = "recur-code-wallpaper-market/1.0";
+const WALLHAVEN_USER_AGENT: &str = "rc-wallpaper-market/1.0";
 /// SFW-only, permanently. Appended verbatim — never taken from params.
 const WALLHAVEN_PURITY: &str = "100";
 /// Search JSON cap. Real pages are ~50 KiB; 4 MiB matches the pet listing cap.

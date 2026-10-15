@@ -572,7 +572,7 @@
       // stuck on can see what it is. Not a secret: the node is in the page's
       // DOM either way, and what keeps it honest is the inline `!important`
       // above, not being hard to find.
-      host.setAttribute("data-recur-code-picker", "")
+      host.setAttribute("data-rc-picker", "")
       // A manual popover so the overlay can join the top layer, which is
       // painted above every ordinary child of the document no matter what
       // z-index they claim. Without it a page needs only to open a popover of

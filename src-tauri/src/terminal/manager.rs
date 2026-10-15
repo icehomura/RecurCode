@@ -1622,7 +1622,7 @@ mod tests {
 
         let manager = Arc::new(TerminalManager::new());
         let id = uuid::Uuid::new_v4().to_string();
-        let output = std::env::temp_dir().join(format!("recur-code-749-spawn-{}", uuid::Uuid::new_v4()));
+        let output = std::env::temp_dir().join(format!("rc-749-spawn-{}", uuid::Uuid::new_v4()));
         let gate = Arc::new(Barrier::new(3));
         let mut threads = Vec::new();
         for _ in 0..2 {

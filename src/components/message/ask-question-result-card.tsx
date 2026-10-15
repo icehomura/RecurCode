@@ -1,7 +1,7 @@
 "use client"
 
 /**
- * Read-only inline view of the recur-code-mcp `ask_user_question` tool in the message
+ * Read-only inline view of the rc-mcp `ask_user_question` tool in the message
  * stream (historical transcripts + the in-flight tool marker).
  *
  * The answered / declined record is collapsed by default into a capsule that
@@ -90,7 +90,7 @@ export function AskQuestionResultCard({
   const initialSelections = useMemo(() => {
     const sel: Record<string, { chosen: string[]; otherText: string }> = {}
     if (!pending || outcome?.declined) return sel
-    // codex `request_user_input` answers carry the question `id`; recur-code-mcp / grok
+    // codex `request_user_input` answers carry the question `id`; rc-mcp / grok
     // asks carry none and match on the header+question signature instead.
     const byId = new Map(
       (outcome?.answers ?? [])

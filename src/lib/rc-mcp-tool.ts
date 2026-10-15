@@ -1,5 +1,5 @@
 /**
- * Parsing helpers for the recur-code-mcp *workbench* companion tools — the ones that
+ * Parsing helpers for the rc-mcp *workbench* companion tools — the ones that
  * report back into RecurCode itself rather than driving a sub-agent:
  * `get_session_info`, `task_progress`, `task_complete`, `create_automation` and
  * `create_work_task` — plus `resume_delegation`.
@@ -16,7 +16,7 @@
  * `cancel_delegation`), `ask_user_question` and `check_user_feedback` each own a
  * richer, purpose-built card; these five had none, so they fell through to the
  * generic tool shell and rendered as a raw argument dump under a name like
- * `"task_progress (recur-code-mcp MCP Server)"`. This module resolves the one detail
+ * `"task_progress (rc-mcp MCP Server)"`. This module resolves the one detail
  * each call is actually about (which session, which message, which verdict) plus
  * its result text, so `RecurCodeMcpToolCard` can state it in one line.
  *
@@ -38,8 +38,8 @@ import type { ToolCallState } from "@/lib/adapters/ai-elements-adapter"
 /**
  * The canonical (post-`normalizeToolName`) names this module covers. Kept in
  * sync with the `*_SUFFIX_RE` rules in `tool-call-normalization.ts`, which
- * collapse every host spelling (`mcp__recur-code-mcp__task_progress`,
- * `recur-code-mcp/task_progress`, …) onto exactly these.
+ * collapse every host spelling (`mcp__rc-mcp__task_progress`,
+ * `rc-mcp/task_progress`, …) onto exactly these.
  */
 export const RC_MCP_WORKBENCH_TOOLS = [
   "get_session_info",
@@ -137,7 +137,7 @@ const ARGS_WRAPPER_KEYS = [
  * argument collides with the `name` of the very `{name, arguments}` relay
  * envelope this walker exists to peel — accepting the outer object first would
  * label the card with the TOOL's name ("Creating automation
- * mcp__recur-code-mcp__create_automation") instead of the automation's. Safe for all
+ * mcp__rc-mcp__create_automation") instead of the automation's. Safe for all
  * five tools because none of their schemas
  * (`src-tauri/src/acp/delegation/tool_schema.json`) has an argument named after
  * a wrapper key, so a descent can only ever reach a real payload.

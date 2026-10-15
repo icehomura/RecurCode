@@ -95,7 +95,7 @@ function renderSettings() {
 function manifest(overrides: Record<string, unknown> = {}) {
   return {
     formatVersion: 1,
-    kind: "recur-code-backup",
+    kind: "rc-backup",
     createdAt: "2026-06-06T00:00:00Z",
     appVersion: "0.30.0",
     latestMigration: "m1",
@@ -297,7 +297,7 @@ describe("BackupSettings — restore", () => {
       needsRestart: true,
       restartDelayMs: 0,
       staged: {
-        stagingDir: "/data/.recur-code-restore-staging/op1",
+        stagingDir: "/data/.rc-restore-staging/op1",
         manifest: manifest({ includesExternalTranscripts: true }),
         restoredExternalPath: "/data/restored-transcripts/x",
         skippedConflicts: [],
@@ -340,7 +340,7 @@ describe("BackupSettings — restore", () => {
       needsRestart: true,
       restartDelayMs: 0,
       staged: {
-        stagingDir: "/data/.recur-code-restore-staging/op1",
+        stagingDir: "/data/.rc-restore-staging/op1",
         manifest: manifest(),
         skippedConflicts: [],
       },
@@ -403,14 +403,14 @@ describe("BackupSettings — safety snapshots", () => {
     vi.mocked(listSafetySnapshots).mockResolvedValue([
       {
         id: "20260901-120000-op1",
-        path: "/data/.recur-code-restore-backup/20260901-120000-op1",
+        path: "/data/.rc-restore-backup/20260901-120000-op1",
         createdAt: "2026-09-01T12:00:00Z",
         sizeBytes: 5 * 1024 * 1024,
         rollbackSupported: true,
       },
       {
         id: "20260101-000000-legacy",
-        path: "/data/.recur-code-restore-backup/20260101-000000-legacy",
+        path: "/data/.rc-restore-backup/20260101-000000-legacy",
         createdAt: null,
         sizeBytes: 1024,
         rollbackSupported: false,

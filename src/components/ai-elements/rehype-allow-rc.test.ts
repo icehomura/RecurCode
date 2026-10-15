@@ -46,8 +46,8 @@ describe("rehypePluginsAllowingRecurCode", () => {
       expect.arrayContaining([
         "dataRecurCodeLocalImage",
         "dataRecurCodeImageLinked",
-        "data-recur-code-local-image",
-        "data-recur-code-image-linked",
+        "data-rc-local-image",
+        "data-rc-image-linked",
       ])
     )
     // The shipped schema's own `span` entries (if any) are preserved.

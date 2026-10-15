@@ -62,7 +62,7 @@ export const EDITOR_LINE_HIGHLIGHT: Record<
 // `defineMonacoThemes` registers one per (color, mode); `useMonacoThemeSync` returns
 // the matching name so flipping either axis re-applies through the editor `theme` prop.
 export function monacoThemeName(color: ThemeColor, dark: boolean): string {
-  return `recur-code-${dark ? "dark" : "light"}-${color}`
+  return `rc-${dark ? "dark" : "light"}-${color}`
 }
 
 // Neutral-preset names, exported as the stable defaults (e.g. the initial value
@@ -643,7 +643,7 @@ export function monacoWsbgThemeName(baseTheme: string, alpha: number): string {
 }
 
 // Recover (color, dark) from a base name produced by `monacoThemeName`
-// (`recur-code-{light|dark}-{color}`).
+// (`rc-{light|dark}-{color}`).
 function parseMonacoThemeName(baseTheme: string): {
   color: ThemeColor
   dark: boolean

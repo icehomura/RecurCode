@@ -14,9 +14,9 @@
 use std::fmt;
 
 /// WebSocket subprotocol both ends name, next to RecurCode's token protocol.
-pub const TUNNEL_PROTOCOL: &str = "recur-code-tunnel";
+pub const TUNNEL_PROTOCOL: &str = "rc-tunnel";
 
-/// Where the tunnel is served, relative to the recur-code-server's base URL.
+/// Where the tunnel is served, relative to the rc-server's base URL.
 pub const TUNNEL_PATH: &str = "/ws/browser-tunnel";
 
 /// Bytes a side may send on a stream before the other grants more — per

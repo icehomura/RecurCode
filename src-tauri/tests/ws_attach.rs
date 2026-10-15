@@ -56,7 +56,7 @@ async fn build_ws_server() -> (
 
 fn ws_auth_protocol(token: &str) -> String {
     let encoded = URL_SAFE_NO_PAD.encode(token);
-    format!("recur-code-events, recur-code-token.{encoded}")
+    format!("rc-events, rc-token.{encoded}")
 }
 
 /// Receive the next text frame, with a hard timeout so a missing frame fails

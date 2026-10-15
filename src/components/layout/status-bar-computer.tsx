@@ -19,7 +19,7 @@
  * for when RecurCode is out of sight.
  *
  * The permission rows name the helper, never RecurCode: on macOS the grants belong
- * to `recur-code-computer-helper`, and one given to RecurCode would be given to every
+ * to `rc-computer-helper`, and one given to RecurCode would be given to every
  * agent's shell. If RecurCode itself holds one, a line says so — nothing is
  * refused over it: the agents' shells have that permission whatever computer
  * use does. The rows are asked afresh when the popover opens and whenever

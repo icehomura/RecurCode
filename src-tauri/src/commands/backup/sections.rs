@@ -1,4 +1,4 @@
-//! The single table of recur-code-owned data sections a backup packs and a restore
+//! The single table of rc-owned data sections a backup packs and a restore
 //! swaps back in.
 //!
 //! Backup ([`super::core::create_backup_core`]) and restore
@@ -16,7 +16,7 @@
 //! remembered to exclude it. Deliberately out of the table: `logs/`
 //! (diagnostics), `cache/` (refetchable), `npm-global/` (machine-bound
 //! toolchain), `agents/` (no reader/writer in the current code) and the
-//! `.recur-code-*` scaffolding dirs.
+//! `.rc-*` scaffolding dirs.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -40,7 +40,7 @@ pub enum SectionPolicy {
     ReplaceIfPresent,
 }
 
-/// One recur-code-owned data section.
+/// One rc-owned data section.
 pub struct ManagedSection {
     /// Archive path prefix, snapshot subdirectory, and the stable identifier
     /// recorded in the manifest and the pending-restore marker. Never rename:
@@ -128,7 +128,7 @@ pub const MANAGED_SECTIONS: &[ManagedSection] = &[
 ];
 
 /// `db/RecurCode.db` is deliberately NOT a managed section: its live filename
-/// varies (`recur-code-dev.db` on debug desktop builds) and it is captured with
+/// varies (`rc-dev.db` on debug desktop builds) and it is captured with
 /// `VACUUM INTO` rather than a file copy, so both sides handle it explicitly.
 pub const DB_SECTION_PREFIX: &str = "db";
 
@@ -161,8 +161,8 @@ pub fn normalize_section_ids(declared: &[String]) -> Vec<String> {
         .collect()
 }
 
-/// Exclude recur-code-internal scaffolding from any packed section: upload staging
-/// (`uploads/.tmp/`) and any `.recur-code-*` directory (restore staging / safety
+/// Exclude rc-internal scaffolding from any packed section: upload staging
+/// (`uploads/.tmp/`) and any `.rc-*` directory (restore staging / safety
 /// snapshots), which must never be archived even if a data-dir layout ever
 /// nests one inside a section root.
 pub fn is_excluded_section_entry(rel: &Path) -> bool {
@@ -309,7 +309,7 @@ mod tests {
     fn excludes_scaffolding_entries() {
         assert!(is_excluded_section_entry(Path::new(".tmp/partial")));
         assert!(is_excluded_section_entry(Path::new(
-            "a/.recur-code-restore-staging/x"
+            "a/.rc-restore-staging/x"
         )));
         assert!(!is_excluded_section_entry(Path::new("a/b.png")));
     }

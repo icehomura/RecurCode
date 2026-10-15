@@ -194,7 +194,7 @@ fn raw_env_value(runtime_env: &BTreeMap<String, String>, key: &str) -> Option<Os
 /// Read a knob from the agent's `runtime_env` first, then RecurCode's process env,
 /// trimmed — for values compared as keywords, never as paths.
 ///
-/// Mirrors `RC_ACP_HOST_TOOLS` (`acp::host_tools_policy`): a recur-code-only key
+/// Mirrors `RC_ACP_HOST_TOOLS` (`acp::host_tools_policy`): a rc-only key
 /// that rides along in the per-agent `env_json`, so it is configurable per agent
 /// from the existing settings UI without a new surface.
 ///
@@ -709,7 +709,7 @@ fn agent_root_slots(agent_type: AgentType) -> &'static [RootSlot] {
                 default_rel: &[".ra", "sessions"],
             },
         ],
-        // A custom ACP agent has no recur-code-known private directory layout —
+        // A custom ACP agent has no rc-known private directory layout —
         // RecurCode never reads its store (history comes from RecurCode's own ACP
         // transcript), so there is nothing to widen the sandbox roots for.
         AgentType::Custom(_) => &[],
@@ -940,7 +940,7 @@ fn atomic_write_text(path: &Path, bytes: &[u8]) -> Result<(), FileSystemRuntimeE
     }
 
     let temp_path = parent.join(format!(
-        ".recur-code-fs-{}.{}.tmp",
+        ".rc-fs-{}.{}.tmp",
         std::process::id(),
         uuid::Uuid::new_v4().simple()
     ));
@@ -1119,7 +1119,7 @@ mod tests {
     use std::fs;
 
     fn temp_workspace() -> PathBuf {
-        let path = std::env::temp_dir().join(format!("recur-code-fs-test-{}", uuid::Uuid::new_v4()));
+        let path = std::env::temp_dir().join(format!("rc-fs-test-{}", uuid::Uuid::new_v4()));
         fs::create_dir_all(&path).expect("create test workspace");
         path
     }
@@ -1493,7 +1493,7 @@ mod tests {
     /// fallback) are covered by `relocation_suffixes_match_the_agents_own_resolvers`.
     #[test]
     fn agent_data_roots_honor_runtime_env_relocation() {
-        let relocated = absolute_path("tmp/recur-code-relocated-agent-home");
+        let relocated = absolute_path("tmp/rc-relocated-agent-home");
         let cases = [
             (AgentType::Grok, "GROK_HOME"),
             (AgentType::ClaudeCode, "CLAUDE_CONFIG_DIR"),
@@ -1523,7 +1523,7 @@ mod tests {
     /// writable, which for `GEMINI_CLI_HOME=$HOME` is the whole home directory.
     #[test]
     fn relocation_suffixes_match_the_agents_own_resolvers() {
-        let base = absolute_path("tmp/recur-code-relocation-base");
+        let base = absolute_path("tmp/rc-relocation-base");
         let cases = [
             (AgentType::Gemini, "GEMINI_CLI_HOME", ".gemini"),
             (AgentType::OpenCode, "XDG_DATA_HOME", "opencode"),
@@ -1725,7 +1725,7 @@ mod tests {
     /// inactive tree holds config and credentials, so it must not stay writable.
     #[test]
     fn relocation_excludes_the_inactive_default_root() {
-        let relocated = absolute_path("tmp/recur-code-isolated-profile");
+        let relocated = absolute_path("tmp/rc-isolated-profile");
         let cases = [
             (AgentType::Codex, "CODEX_HOME"),
             (AgentType::Grok, "GROK_HOME"),
@@ -1823,7 +1823,7 @@ mod tests {
     /// not to the masked key's inherited value.
     #[test]
     fn blank_runtime_value_falls_through_to_the_next_candidate() {
-        let xdg = absolute_path("tmp/recur-code-xdg");
+        let xdg = absolute_path("tmp/rc-xdg");
         let roots = agent_data_roots(
             AgentType::Cursor,
             &BTreeMap::from([
@@ -1937,7 +1937,7 @@ mod tests {
     #[test]
     fn home_relative_defaults_follow_the_childs_home() {
         let recur_code_home = dirs::home_dir().expect("home dir");
-        let isolated = PathBuf::from("/tmp/recur-code-isolated-home");
+        let isolated = PathBuf::from("/tmp/rc-isolated-home");
         let runtime_env =
             BTreeMap::from([("HOME".to_string(), isolated.to_string_lossy().to_string())]);
 
@@ -2046,7 +2046,7 @@ mod tests {
     /// Same hazard through the user-facing knob.
     #[test]
     fn relative_extra_roots_are_dropped() {
-        let absolute = absolute_path("tmp/recur-code-abs-extra");
+        let absolute = absolute_path("tmp/rc-abs-extra");
         let runtime_env = BTreeMap::from([(
             FS_EXTRA_ROOTS_ENV.to_string(),
             std::env::join_paths([Path::new("."), absolute.as_path()])
@@ -2190,7 +2190,7 @@ mod tests {
     /// first match must win rather than both being admitted.
     #[test]
     fn cursor_relocation_respects_resolver_precedence() {
-        let config_dir = absolute_path("tmp/recur-code-cursor");
+        let config_dir = absolute_path("tmp/rc-cursor");
         let runtime_env = BTreeMap::from([
             (
                 "CURSOR_CONFIG_DIR".to_string(),
@@ -2198,7 +2198,7 @@ mod tests {
             ),
             (
                 "XDG_CONFIG_HOME".to_string(),
-                absolute_path("tmp/recur-code-xdg").to_string_lossy().to_string(),
+                absolute_path("tmp/rc-xdg").to_string_lossy().to_string(),
             ),
         ]);
 
@@ -2211,7 +2211,7 @@ mod tests {
     /// roots on its own — the process-env-only resolver cannot see it.
     #[test]
     fn pi_session_dir_relocation_is_honored() {
-        let sessions = absolute_path("tmp/recur-code-pi-sessions-elsewhere");
+        let sessions = absolute_path("tmp/rc-pi-sessions-elsewhere");
         let runtime_env = BTreeMap::from([(
             "PI_CODING_AGENT_SESSION_DIR".to_string(),
             sessions.to_string_lossy().to_string(),
@@ -2310,7 +2310,7 @@ mod tests {
                 entry
                     .file_name()
                     .to_string_lossy()
-                    .starts_with(".recur-code-fs-")
+                    .starts_with(".rc-fs-")
             });
         assert!(!leaked_tmp, "temporary file should be cleaned up");
 

@@ -19,7 +19,7 @@
 //!
 //! Passing the subcommand's defaults explicitly restores them, since a flag
 //! outranks the config. `--port 0` means "4096 if free, else any free port",
-//! and that fallback is what isolates concurrent sessions; a recur-code-picked
+//! and that fallback is what isolates concurrent sessions; a rc-picked
 //! non-zero port would bring the failure back through the race between
 //! picking it and opencode binding it. `--hostname 127.0.0.1` keeps the
 //! listener on loopback, which also stops opencode from announcing it over
@@ -129,7 +129,7 @@ async fn help_probe(bin: &Path) -> Option<bool> {
 
 /// The flags to append after `acp` when launching `bin`.
 ///
-/// `cached_version` is the recur-code-managed install's version label: the release
+/// `cached_version` is the rc-managed install's version label: the release
 /// tag its archive was downloaded from. A binary found on PATH comes without
 /// one, so its `--version` is read through the same cached probe the agent
 /// list already runs on it, which usually makes this free. A release version
@@ -269,14 +269,14 @@ mod tests {
     async fn a_managed_release_label_decides_on_its_own() {
         // Nothing exists at this path, so no probe could have answered: the
         // label alone decided. (That none even runs is proven below, on unix.)
-        let missing = Path::new("/nonexistent/recur-code-860/opencode");
+        let missing = Path::new("/nonexistent/rc-860/opencode");
         assert_eq!(listen_args(missing, Some("1.18.33")).await, LISTEN_ARGS);
         assert!(listen_args(missing, Some("1.0.41")).await.is_empty());
     }
 
     #[tokio::test]
     async fn a_binary_that_cannot_be_asked_keeps_the_bare_argv() {
-        let missing = Path::new("/nonexistent/recur-code-860/opencode");
+        let missing = Path::new("/nonexistent/rc-860/opencode");
         assert!(listen_args(missing, Some("0.0.0-dev-202609282300"))
             .await
             .is_empty());

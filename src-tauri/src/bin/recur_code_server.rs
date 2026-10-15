@@ -23,7 +23,7 @@ fn main() -> ExitCode {
     }
 
     // `--supervise`: run as the process supervisor that owns the worker's
-    // lifecycle (PID 1 in Docker). It spawns `recur-code-server` without this
+    // lifecycle (PID 1 in Docker). It spawns `rc-server` without this
     // flag and relaunches it after an in-place upgrade. Never returns.
     if args.iter().any(|a| a == "--supervise") {
         // This mode never reaches init_server(); install a stderr-only
@@ -186,7 +186,7 @@ async fn async_main() -> ExitCode {
         let _ = recur_code_lib::update::install::take_upgrade_staged();
     }
 
-    tracing::info!("[SERVER] recur-code-server v{}", app_version);
+    tracing::info!("[SERVER] rc-server v{}", app_version);
     tracing::info!("[SERVER] Data directory: {}", data_dir.display());
     tracing::info!("[SERVER] Static directory: {}", static_dir.display());
 
@@ -390,14 +390,14 @@ async fn async_main() -> ExitCode {
     }
     // A server an earlier install.ps1 put in %LOCALAPPDATA%\RecurCode shares that
     // folder with the desktop app once it is installed there too: each
-    // install replaces the other's recur-code-mcp.exe, recur-code-computer-helper.exe
+    // install replaces the other's rc-mcp.exe, rc-computer-helper.exe
     // and web\. install.ps1 moves the server out.
     #[cfg(windows)]
     if std::env::current_exe().is_ok_and(|exe| beside_the_desktop_app(&exe)) {
         eprintln!(
-            "[SERVER] This recur-code-server is in the RecurCode desktop app's folder, where each \
-             replaces the other's recur-code-mcp.exe, recur-code-computer-helper.exe and web\\. Re-run \
-             install.ps1 to move it to %LOCALAPPDATA%\\recur-code-server."
+            "[SERVER] This rc-server is in the RecurCode desktop app's folder, where each \
+             replaces the other's rc-mcp.exe, rc-computer-helper.exe and web\\. Re-run \
+             install.ps1 to move it to %LOCALAPPDATA%\\rc-server."
         );
     }
     // Before accepting connections: keep ACP model terminal fallbacks aligned
@@ -754,7 +754,7 @@ fn beside_the_desktop_app(exe: &std::path::Path) -> bool {
 fn default_data_dir() -> PathBuf {
     dirs::data_dir()
         .map(|d| d.join("RecurCode"))
-        .unwrap_or_else(|| PathBuf::from(".recur-code-data"))
+        .unwrap_or_else(|| PathBuf::from(".rc-data"))
 }
 
 #[cfg(test)]
@@ -765,10 +765,10 @@ mod tests {
     #[test]
     fn a_server_beside_the_desktop_app_is_told_apart() {
         let dir = tempfile::tempdir().unwrap();
-        let exe = dir.path().join("recur-code-server.exe");
+        let exe = dir.path().join("rc-server.exe");
         std::fs::write(&exe, b"").unwrap();
         assert!(!beside_the_desktop_app(&exe));
-        std::fs::write(dir.path().join("recur-code-mcp.exe"), b"").unwrap();
+        std::fs::write(dir.path().join("rc-mcp.exe"), b"").unwrap();
         std::fs::create_dir(dir.path().join("RecurCode")).unwrap();
         assert!(!beside_the_desktop_app(&exe));
         std::fs::write(dir.path().join("RecurCode.exe"), b"").unwrap();

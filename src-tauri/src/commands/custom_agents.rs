@@ -50,7 +50,7 @@ pub struct CustomAgentInfo {
     /// Mirrors [`CustomAgentDef::version_probe`] for the edit form.
     pub version_probe: Option<String>,
     /// Mirrors [`CustomAgentDef::supports_mcp`] — backs the settings toggle
-    /// that decides whether recur-code-mcp rides along on `session/new`.
+    /// that decides whether rc-mcp rides along on `session/new`.
     pub supports_mcp: bool,
     /// False when the stored definition cannot produce launch metadata (e.g.
     /// a binary-only agent with no release for this platform). The row still
@@ -804,7 +804,7 @@ mod tests {
         // HOME is pinned so a parallel test rewriting it cannot flip the
         // expansion mid-test; expectations still derive from `dirs::home_dir()`
         // itself, which ignores $HOME on Windows.
-        temp_env::with_var("HOME", Some("/tmp/recur-code-skills-home"), || {
+        temp_env::with_var("HOME", Some("/tmp/rc-skills-home"), || {
             let home = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
 
             // Blank input reads as "not declared".

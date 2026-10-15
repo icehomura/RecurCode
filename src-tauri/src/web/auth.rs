@@ -6,8 +6,8 @@ use axum::{
 };
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 
-pub const WS_EVENT_PROTOCOL: &str = "recur-code-events";
-const WS_TOKEN_PROTOCOL_PREFIX: &str = "recur-code-token.";
+pub const WS_EVENT_PROTOCOL: &str = "rc-events";
+const WS_TOKEN_PROTOCOL_PREFIX: &str = "rc-token.";
 
 fn token_from_ws_protocols(value: &str) -> Option<String> {
     value
@@ -54,13 +54,13 @@ mod tests {
         let token = "secret/token+value";
         let encoded = URL_SAFE_NO_PAD.encode(token);
         assert_eq!(
-            token_from_ws_protocols(&format!("recur-code-events, recur-code-token.{encoded}")).as_deref(),
+            token_from_ws_protocols(&format!("rc-events, rc-token.{encoded}")).as_deref(),
             Some(token)
         );
     }
 
     #[test]
     fn ignores_invalid_ws_protocol_token() {
-        assert!(token_from_ws_protocols("recur-code-events, recur-code-token.not-valid-@@@@").is_none());
+        assert!(token_from_ws_protocols("rc-events, rc-token.not-valid-@@@@").is_none());
     }
 }

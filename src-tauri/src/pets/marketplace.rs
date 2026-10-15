@@ -70,7 +70,7 @@ static MARKETPLACE_HTTP_CLIENT: LazyLock<Result<reqwest::Client, String>> = Lazy
     reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(8))
         .timeout(Duration::from_secs(30))
-        .user_agent("recur-code-pet-market/1.0")
+        .user_agent("rc-pet-market/1.0")
         .build()
         .map_err(|e| format!("failed to initialize pet marketplace HTTP client: {e}"))
 });

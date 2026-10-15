@@ -16,7 +16,7 @@ function doc(overrides: Partial<DocGuestState> = {}): DocGuestState {
     mode: "safe",
     root: "/tmp/site",
     entry: "/tmp/site/index.html",
-    url: "recur-code-doc://doc/index.html",
+    url: "rc-doc://doc/index.html",
     reset: null,
     ...overrides,
   }

@@ -1,4 +1,4 @@
-//! Centralized resolution of recur-code-owned filesystem paths.
+//! Centralized resolution of rc-owned filesystem paths.
 //!
 //! Mirrors the conventions already used by `preferences.rs` (`~/.recurcode/`)
 //! and `experts.rs` (`~/.recurcode/skills/`). New features that need a
@@ -8,7 +8,7 @@
 //! The `recur_code_*_root` data directories resolve `$RC_HOME`, then
 //! `$RC_DATA_DIR`, then `~/.recurcode`. Both binaries export `RC_DATA_DIR`
 //! before anything reads it — the desktop app from [`desktop_data_dir`] at the
-//! top of `run()`, `recur-code-server` in `main` — so the data directory is what
+//! top of `run()`, `rc-server` in `main` — so the data directory is what
 //! they resolve to, and `~/.recurcode` only serves a process started without
 //! either variable.
 
@@ -88,8 +88,8 @@ pub fn recur_code_browser_profiles_root() -> PathBuf {
 ///
 /// **Concurrency contract:** the quota check uses a process-local
 /// in-flight reservation counter to make `RC_UPLOAD_MAX_TOTAL_BYTES`
-/// a hard ceiling within one `recur-code-server` process. Multiple
-/// `recur-code-server` processes sharing the same uploads root (e.g.
+/// a hard ceiling within one `rc-server` process. Multiple
+/// `rc-server` processes sharing the same uploads root (e.g.
 /// horizontally-scaled containers mounted on the same volume) will
 /// each enforce the cap independently and can collectively exceed it.
 /// RecurCode is designed for single-process deployments; horizontal
@@ -135,7 +135,7 @@ pub fn recur_code_backgrounds_root() -> PathBuf {
 /// 3. `~/.recurcode/logs` (neither set)
 ///
 /// Pure env + `dirs::home_dir()`, so it is callable at the very start of a
-/// process — before the database (or, in `recur-code-server`, the tokio runtime)
+/// process — before the database (or, in `rc-server`, the tokio runtime)
 /// exists — which is exactly when the subscriber must be installed. Both
 /// binaries export the data directory before that point, so the logs sit
 /// beside the database however the process was started.
@@ -175,7 +175,7 @@ pub fn recur_code_turn_timings_root() -> PathBuf {
 
 /// Root directory for RecurCode's own ACP transcripts (see
 /// `crate::acp_transcript`) — the raw `session/update` stream and outgoing
-/// prompts recorded for **custom ACP agents**, which have no recur-code-side
+/// prompts recorded for **custom ACP agents**, which have no rc-side
 /// transcript parser of their own. Written by the live connection, read back
 /// by `crate::parsers::acp_native`.
 ///

@@ -22,11 +22,11 @@ RUN apt-get update && apt-get install -y \
 # server/Docker mode. The version (72) is pinned to Debian bookworm; bump it to match
 # if the base image moves to a newer Debian release (e.g. trixie ships libicu76).
 
-COPY dist/${TARGETARCH}/recur-code-server /usr/local/bin/recur-code-server
-# recur-code-mcp is the stdio MCP companion the runtime injects per session
-# (see acp/delegation/companion.rs). It must ship next to recur-code-server so
+COPY dist/${TARGETARCH}/rc-server /usr/local/bin/rc-server
+# rc-mcp is the stdio MCP companion the runtime injects per session
+# (see acp/delegation/companion.rs). It must ship next to rc-server so
 # `locate_recur_code_mcp_binary()` finds it via the exe-sibling lookup.
-COPY dist/${TARGETARCH}/recur-code-mcp /usr/local/bin/recur-code-mcp
+COPY dist/${TARGETARCH}/rc-mcp /usr/local/bin/rc-mcp
 COPY dist/web /app/web
 
 ENV RC_STATIC_DIR=/app/web
@@ -45,4 +45,4 @@ VOLUME /data
 
 # Run under the built-in supervisor (PID 1) so an in-place upgrade can swap
 # the binary and have the worker relaunched without stopping the container.
-CMD ["recur-code-server", "--supervise"]
+CMD ["rc-server", "--supervise"]

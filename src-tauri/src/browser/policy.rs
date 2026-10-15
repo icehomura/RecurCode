@@ -501,7 +501,7 @@ mod tests {
             "about:srcdoc",
             "blob:null/abc",
             "blob:file:///x",
-            "recur-code-doc://grant/index.html",
+            "rc-doc://grant/index.html",
             "ftp://example.com/",
             "vscode://file/x",
         ] {
@@ -523,7 +523,7 @@ mod tests {
         ] {
             assert!(subframe_navigation_allowed(&u(ok)), "{ok}");
         }
-        for bad in ["file:///etc/passwd", "tauri://localhost/", "recur-code-doc://g/x", "about:config"] {
+        for bad in ["file:///etc/passwd", "tauri://localhost/", "rc-doc://g/x", "about:config"] {
             assert!(!subframe_navigation_allowed(&u(bad)), "{bad}");
         }
     }

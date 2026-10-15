@@ -7,7 +7,7 @@
  *
  * Same storage shape and reactive plumbing as `notification-sound-prefs.ts`,
  * for the same reason: where a notification lands is a per-device concern. A
- * phone browser attached to the same `recur-code-server` must not start buzzing
+ * phone browser attached to the same `rc-server` must not start buzzing
  * because the desktop was configured to.
  *
  * The event catalogue is deliberately NOT identical to the sound one. Sounds

@@ -6,19 +6,19 @@
 //   1. Resolves the target triple — `--target <triple>` arg, or
 //      `TAURI_TARGET_TRIPLE` env, or the host's `rustc -vV` host triple.
 //   2. Runs `cargo build --release --no-default-features`, with the feature
-//      each binary target requires, for each sidecar bin (`recur-code-mcp`,
-//      `recur-code-computer-helper`) for that triple from `src-tauri/`.
+//      each binary target requires, for each sidecar bin (`rc-mcp`,
+//      `rc-computer-helper`) for that triple from `src-tauri/`.
 //   3. Copies each produced binary to
 //      `src-tauri/binaries/<bin>-<triple>{.exe}` so Tauri's externalBin
 //      bundler picks it up under its bare name at install time.
 //   4. For a macOS target, also wraps the helper in an app of its own,
-//      `src-tauri/binaries/recur-code-computer-helper.app`, which the bundle
-//      carries as `Contents/Helpers/recur-code-computer-helper.app` (see
+//      `src-tauri/binaries/rc-computer-helper.app`, which the bundle
+//      carries as `Contents/Helpers/rc-computer-helper.app` (see
 //      `tauri.macos.conf.json`). macOS charges an executable's permissions to
 //      the app bundle it sits in: a helper beside RecurCode in `Contents/MacOS/`
 //      would hold RecurCode's — every agent's shell's — and none of its own.
 //
-// `recur-code-computer-helper` takes its trust anchors from the environment at
+// `rc-computer-helper` takes its trust anchors from the environment at
 // compile time (`RC_COMPUTER_PEER_REQUIREMENT`): the release workflow sets
 // it for the macOS builds, and a local build without it is a development
 // helper that says so. Nothing here sets or defaults it.
@@ -56,10 +56,10 @@ const SRC_TAURI = resolve(SCRIPT_DIR, "..")
 const BINARIES_DIR = join(SRC_TAURI, "binaries")
 // Every sidecar in `bundle.externalBin`, in the order they are built. (On
 // macOS the helper is bundled as an app instead; see `stageHelperApp`.)
-const BIN_NAMES = ["recur-code-mcp", "recur-code-computer-helper"]
+const BIN_NAMES = ["rc-mcp", "rc-computer-helper"]
 // The features their binary targets require (Cargo.toml).
 const FEATURES = "mcp-bin,computer-helper"
-const HELPER = "recur-code-computer-helper"
+const HELPER = "rc-computer-helper"
 const HELPER_APP = join(BINARIES_DIR, `${HELPER}.app`)
 
 function log(msg) {

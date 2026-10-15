@@ -1,4 +1,4 @@
-//! `recur-code-server --supervise` — a minimal process supervisor that owns the
+//! `rc-server --supervise` — a minimal process supervisor that owns the
 //! lifecycle of the real worker so an in-place upgrade can swap the binary
 //! and have the *new* version relaunched deterministically.
 //!

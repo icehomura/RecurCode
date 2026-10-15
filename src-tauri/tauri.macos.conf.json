@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "bundle": {
-    "externalBin": ["binaries/recur-code-mcp"],
+    "externalBin": ["binaries/rc-mcp"],
     "macOS": {
       "files": {
-        "Helpers/recur-code-computer-helper.app": "binaries/recur-code-computer-helper.app"
+        "Helpers/rc-computer-helper.app": "binaries/rc-computer-helper.app"
       }
     }
   }

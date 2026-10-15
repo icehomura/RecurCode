@@ -39,10 +39,10 @@ use crate::app_error::{AppCommandError, AppErrorCode};
 const BUNDLED_SNAPSHOT: &str = include_str!("../../resources/codex/bundled-catalog.json");
 
 /// File name (relative to `CODEX_HOME`) of the generated catalog codex reads.
-pub const CATALOG_REL: &str = "recur-code-model-catalog.json";
+pub const CATALOG_REL: &str = "rc-model-catalog.json";
 /// File name (relative to `CODEX_HOME`) of the compact source list we round-trip
 /// back into the editor when no DB provider owns the list (api-key mode).
-pub const SOURCE_REL: &str = "recur-code-model-catalog.source.json";
+pub const SOURCE_REL: &str = "rc-model-catalog.source.json";
 
 /// Fields RecurCode owns/derives itself, so they are never captured as `overrides`
 /// when importing a pre-existing catalog: `slug`/`display_name`/`context_window`
@@ -1335,7 +1335,7 @@ mod tests {
 
     #[test]
     fn write_and_clear_catalog_files() {
-        let dir = std::env::temp_dir().join(format!("recur-code-catalog-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("rc-catalog-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let s = snap();
         let raw = r#"{"customs":[{"slug":"gw/x","base":"gpt-5.6-sol"}],"default":"gw/x"}"#;

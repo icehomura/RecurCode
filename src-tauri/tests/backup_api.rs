@@ -68,7 +68,7 @@ async fn export_download_upload_inspect_stage_roundtrip() {
     // 3. Upload it back.
     let form = MultipartForm::new().add_part(
         "file",
-        Part::bytes(bytes).file_name("recur-code-backup.recurcode.zip"),
+        Part::bytes(bytes).file_name("rc-backup.recurcode.zip"),
     );
     let up = server
         .post("/api/backup_upload")
@@ -110,7 +110,7 @@ async fn export_download_upload_inspect_stage_roundtrip() {
     assert_eq!(stage.json::<Value>()["needsRestart"], json!(true));
     assert!(data_dir
         .path()
-        .join(".recur-code-restore-pending.json")
+        .join(".rc-restore-pending.json")
         .is_file());
 
     // 6. The prepared source is released on a successful stage.
@@ -133,7 +133,7 @@ async fn export_download_upload_inspect_stage_roundtrip() {
     assert_eq!(discarded.json::<Value>(), json!(true));
     assert!(!data_dir
         .path()
-        .join(".recur-code-restore-pending.json")
+        .join(".rc-restore-pending.json")
         .exists());
 }
 

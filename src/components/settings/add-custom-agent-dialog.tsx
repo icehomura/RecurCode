@@ -250,7 +250,7 @@ export function AddCustomAgentDialog({
   const [manualSkills, setManualSkills] = useState(false)
   const [manualSkillsDir, setManualSkillsDir] = useState("")
   const [manualVersionProbe, setManualVersionProbe] = useState("")
-  // Whether RecurCode may put MCP servers (its recur-code-mcp companion) on the ACP
+  // Whether RecurCode may put MCP servers (its rc-mcp companion) on the ACP
   // wire for this agent. On by default — the value almost every agent works
   // with, and the one a new definition should start from.
   const [manualSupportsMcp, setManualSupportsMcp] = useState(true)

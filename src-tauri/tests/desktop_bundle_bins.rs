@@ -79,7 +79,7 @@ fn only_recur_code_is_a_binary_target_tauri_build_bundles() {
              compiled with the desktop's features and put in the desktop bundle"
         );
     }
-    assert!(others >= 3, "recur-code-server, recur-code-mcp and the helper");
+    assert!(others >= 3, "rc-server, rc-mcp and the helper");
 }
 
 /// The release workflow gives `tauri build` no features of its own: one named

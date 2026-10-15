@@ -306,7 +306,7 @@ fn apply_grok_env_policy(merged: &mut Vec<(String, String)>, runtime_env: &BTree
     }
 }
 
-/// recur-code-side knob recording which Antigravity auth method the settings panel
+/// rc-side knob recording which Antigravity auth method the settings panel
 /// chose. It is NOT read by the agent — the server takes its auth intent from
 /// `auth.type` in `antigravity-acp/settings.json` — so the launch path uses it
 /// twice: to decide which credential env vars may reach the process
@@ -884,7 +884,7 @@ fn write_antigravity_settings(
     let parent = target.parent().unwrap_or(acp_dir);
     std::fs::create_dir_all(parent).map_err(|err| err.to_string())?;
 
-    let temp = parent.join(format!(".settings.json.recur-code-{}.tmp", std::process::id()));
+    let temp = parent.join(format!(".settings.json.rc-{}.tmp", std::process::id()));
     std::fs::write(&temp, format!("{body}\n")).map_err(|err| err.to_string())?;
     if let Err(err) = std::fs::rename(&temp, &target) {
         let _ = std::fs::remove_file(&temp);
@@ -993,11 +993,11 @@ fn merge_antigravity_settings(
 }
 
 /// Codex-only launch policy: force codex-acp's MCP name-conflict de-duplication
-/// OFF. RecurCode injects its companion server (`recur-code-mcp`) over ACP
+/// OFF. RecurCode injects its companion server (`rc-mcp`) over ACP
 /// `session/new.mcpServers`; codex-acp otherwise drops any ACP-passed server
 /// whose name collides with a `config.toml` entry — global *or* project layer
 /// (the check was widened to project `.codex/config.toml` in codex-acp #322) —
-/// silently stripping recur-code-mcp and with it ask_user_question / delegation /
+/// silently stripping rc-mcp and with it ask_user_question / delegation /
 /// feedback / session_info. The late `retain` + `push` makes the override win
 /// over any user `runtime_env` twin, so the injection is guaranteed to survive.
 /// Codex launch env policy. `initial_agent_mode` is the preset resolved from
@@ -2091,7 +2091,7 @@ async fn build_agent(
             // Cursor's ROOT-level `--model <id>` flag precedes the `acp`
             // subcommand and sets the session's default model. Sourced from
             // the Cursor panel's default-model control (env_json key
-            // CURSOR_MODEL — a recur-code-side launch knob; the CLI itself reads
+            // CURSOR_MODEL — a rc-side launch knob; the CLI itself reads
             // no model env var).
             if agent_type == AgentType::Cursor {
                 if let Some(model) = runtime_env
@@ -2107,7 +2107,7 @@ async fn build_agent(
                 // never reach session/request_permission (deny rules still
                 // apply, and an org policy can downgrade it to rule-based
                 // approval). Sourced from the panel's permission-mode
-                // control (env_json key CURSOR_FORCE — recur-code-side knob; the
+                // control (env_json key CURSOR_FORCE — rc-side knob; the
                 // CLI reads no such env var). Unset means Ask; see
                 // `cursor_force_enabled`.
                 if cursor_force_enabled(runtime_env.get("CURSOR_FORCE").map(String::as_str)) {
@@ -2483,7 +2483,7 @@ pub async fn spawn_agent_connection(
         .filter(|(k, _)| k.starts_with("GIT_CONFIG_"))
         .map(|(k, v)| (k.clone(), v.clone()))
         .collect();
-    // Also surface a recur-code-installed OfficeCLI on the terminal's PATH: agents run
+    // Also surface a rc-installed OfficeCLI on the terminal's PATH: agents run
     // office skills' `officecli …` through this `terminal/create` tool, not as a
     // child of the agent process, so the agent-env injection alone wouldn't reach
     // them right after install (before install.ps1's User-PATH change lands).
@@ -4734,7 +4734,7 @@ fn claude_raw_sdk_session_meta(
 ///   `session/request_permission`, which RecurCode already handles. Scoped to
 ///   these agents to keep the blast radius off the others (e.g. Claude's
 ///   native AskUserQuestion, which would otherwise un-gate and duplicate the
-///   recur-code-mcp ask tool).
+///   rc-mcp ask tool).
 /// - Claude Code only: `_meta["subagent-transcript"] = true` — opt into
 ///   claude-agent-acp ≥0.63's subagent transcript forwarding (#881, SDK
 ///   `forwardSubagentText`). Subagent text/thought chunks then stream with
@@ -5271,11 +5271,11 @@ async fn send_new_session_capturing_models(
 /// actually reach the agent's model. Almost all adapters deliver them; pi-acp
 /// (0.0.31) accepts the `mcpServers` field but DROPS it — it never forwards MCP
 /// to the inner `pi --mode rpc` process, and pi has no native MCP. So forwarding
-/// either user servers or the built-in recur-code-mcp companion to pi is futile, and
-/// injecting recur-code-mcp would falsely mark delegation/feedback/ask as available
+/// either user servers or the built-in rc-mcp companion to pi is futile, and
+/// injecting rc-mcp would falsely mark delegation/feedback/ask as available
 /// (`feedback_tool_available`, a registered delegation token pi can never use).
 /// `supports_mcp` stays `true` for pi (session/new tolerates the field), so this
-/// is a separate, narrower gate. Gate recur-code-mcp injection on it.
+/// is a separate, narrower gate. Gate rc-mcp injection on it.
 fn agent_delivers_wire_mcp(agent_type: AgentType) -> bool {
     !matches!(agent_type, AgentType::Pi)
 }
@@ -5292,7 +5292,7 @@ fn load_mcp_servers_for_agent(agent_type: AgentType) -> Vec<McpServer> {
     // (`mcpServers`, shared with the IDE). RecurCode manages those files directly
     // via the MCP settings UI, so forwarding the same servers over the ACP
     // wire here would double-register them — skip it. (The built-in
-    // `recur-code-mcp` companion is injected separately by `inject_recur_code_mcp`, so
+    // `rc-mcp` companion is injected separately by `inject_recur_code_mcp`, so
     // it still reaches them.)
     //
     // DeepSeek is deliberately NOT in this set: deepseek-acp reads no MCP file
@@ -5309,7 +5309,7 @@ fn load_mcp_servers_for_agent(agent_type: AgentType) -> Vec<McpServer> {
     // settings UI manages) and MERGES it with the wire list BY NAME, wire
     // winning — so forwarding would not actually double-mount. It is skipped
     // anyway because defining one server through two channels is noise, and
-    // because the `recur-code-mcp` companion is injected separately regardless.
+    // because the `rc-mcp` companion is injected separately regardless.
     if matches!(
         agent_type,
         AgentType::Hermes
@@ -5347,7 +5347,7 @@ fn load_mcp_servers_for_agent(agent_type: AgentType) -> Vec<McpServer> {
     out
 }
 
-/// Context the connection layer needs to inject the built-in `recur-code-mcp`
+/// Context the connection layer needs to inject the built-in `rc-mcp`
 /// MCP entry. Built once per `run_connection` from the live AppState pieces
 /// (broker config, token registry, UDS path) and passed through.
 ///
@@ -5406,17 +5406,17 @@ pub struct DelegationInjection {
     /// time so `delegate_to_agent` only advertises launchable targets.
     pub agent_availability: Arc<dyn AgentAvailabilityLookup>,
     /// Hot-swappable "is live-feedback enabled?" flag. Read at injection time
-    /// alongside the broker's delegation flag so `recur-code-mcp` is injected when
+    /// alongside the broker's delegation flag so `rc-mcp` is injected when
     /// EITHER feature is on, and the companion is told which tool groups to
     /// expose. Shares the same `tokens` registry and UDS socket as delegation.
     pub feedback: crate::acp::feedback::FeedbackRuntimeConfig,
     /// Hot-swappable "is ask-user-question enabled?" flag. Read at injection
-    /// time alongside delegation + feedback so `recur-code-mcp` is injected when ANY
+    /// time alongside delegation + feedback so `rc-mcp` is injected when ANY
     /// of the three is on, and the companion's `--features` lists `ask` to expose
     /// the `ask_user_question` tool.
     pub ask: crate::acp::question::QuestionRuntimeConfig,
     /// Hot-swappable "is get-session-info enabled?" flag. Read at injection time
-    /// alongside the other three so `recur-code-mcp` is injected when ANY of the four
+    /// alongside the other three so `rc-mcp` is injected when ANY of the four
     /// is on, and the companion's `--features` lists `sessions` to expose the
     /// `get_session_info` tool. No teardown handle (the lookup is stateless).
     pub sessions: crate::acp::session_info::SessionInfoRuntimeConfig,
@@ -5444,7 +5444,7 @@ pub struct DelegationInjection {
     /// `ConnectionManager` as the listener's question lookup.
     pub questions: Arc<dyn crate::acp::question::SessionQuestionAccess>,
     /// Plan-approval registry handle for Grok's `exit_plan_mode` ext bridge.
-    /// Unlike delegation / ask / feedback this is NOT a recur-code-mcp feature — it is
+    /// Unlike delegation / ask / feedback this is NOT a rc-mcp feature — it is
     /// Grok's native plan mode — so it has no runtime on/off flag and is always
     /// wired. Shares the same backing `ConnectionManager` as the question lookup.
     /// The `run_connection` handler registers approvals + parks on the reply
@@ -5453,19 +5453,19 @@ pub struct DelegationInjection {
     pub plan_approvals: Arc<dyn crate::acp::plan_approval::SessionPlanApprovalAccess>,
 }
 
-/// Locate the `recur-code-mcp` companion binary across the supported deployment
+/// Locate the `rc-mcp` companion binary across the supported deployment
 /// shapes:
 ///
 /// 1. `RC_MCP_BIN` env override — explicit absolute path. Lets dev shells,
 ///    custom installs, and integration tests point at a freshly compiled
 ///    binary without touching the install layout.
 /// 2. Sibling of the running executable — the production layout for every
-///    shipping target. Tauri sidecar (`Contents/MacOS/recur-code-mcp` on macOS,
+///    shipping target. Tauri sidecar (`Contents/MacOS/rc-mcp` on macOS,
 ///    next to `RecurCode.exe` on Windows, next to the unix binary on Linux
-///    deb/rpm), `install.sh`/`install.ps1` (drops `recur-code-mcp` next to
-///    `recur-code-server`), Docker image (`/usr/local/bin/recur-code-mcp` next to
-///    `recur-code-server`), and `cargo build` dev output
-///    (`target/<profile>/recur-code-mcp`).
+///    deb/rpm), `install.sh`/`install.ps1` (drops `rc-mcp` next to
+///    `rc-server`), Docker image (`/usr/local/bin/rc-mcp` next to
+///    `rc-server`), and `cargo build` dev output
+///    (`target/<profile>/rc-mcp`).
 /// 3. `PATH` lookup — last-resort for atypical layouts where ops moved the
 ///    two binaries apart but kept both reachable on `PATH`.
 ///
@@ -5476,9 +5476,9 @@ pub struct DelegationInjection {
 /// down on stricter agents.
 pub fn locate_recur_code_mcp_binary() -> Option<PathBuf> {
     let filename = if cfg!(windows) {
-        "recur-code-mcp.exe"
+        "rc-mcp.exe"
     } else {
-        "recur-code-mcp"
+        "rc-mcp"
     };
 
     if let Some(raw) = std::env::var_os("RC_MCP_BIN") {
@@ -5520,7 +5520,7 @@ fn is_executable_file(path: &Path) -> bool {
     true
 }
 
-/// Append the built-in `recur-code-mcp` MCP entry if delegation is enabled
+/// Append the built-in `rc-mcp` MCP entry if delegation is enabled
 /// AND the companion binary is present on disk. Returns the per-launch token
 /// that was registered, or `None` when injection was skipped (disabled by
 /// config, or binary missing).
@@ -5531,7 +5531,7 @@ fn is_executable_file(path: &Path) -> bool {
 /// new ACP session ship a guaranteed-to-fail MCP server entry: stricter
 /// agents (Claude Code) refuse the whole session; lax agents lose the
 /// delegate tool silently. Skipping leaves the agent fully functional minus
-/// `delegate_to_agent`, which is the right degradation when recur-code-mcp didn't
+/// `delegate_to_agent`, which is the right degradation when rc-mcp didn't
 /// make it into the install.
 /// Which tool groups a companion launch should expose. A struct rather than a
 /// positional bool list: the groups keep growing and seven adjacent `bool`s at a
@@ -5622,7 +5622,7 @@ fn companion_features_arg(flags: CompanionFeatureFlags) -> Option<String> {
     Some(features.join(","))
 }
 
-/// Outcome of injecting the `recur-code-mcp` companion: the per-launch token to
+/// Outcome of injecting the `rc-mcp` companion: the per-launch token to
 /// stash for revocation, plus whether the `check_user_feedback` tool was exposed
 /// to this agent (so the session can gate submit + UI on its real capability).
 struct CompanionInjection {
@@ -5664,7 +5664,7 @@ async fn inject_recur_code_mcp_with_binary_locator<F>(
 where
     F: FnOnce() -> Option<PathBuf>,
 {
-    // recur-code-mcp carries BOTH the delegation tools and the live-feedback tool.
+    // rc-mcp carries BOTH the delegation tools and the live-feedback tool.
     // Inject it when EITHER feature is enabled; the `--features` arg tells the
     // companion which tool groups to expose so a disabled feature's tools never
     // surface to the LLM. (Historically this was gated on delegation alone.)
@@ -5721,7 +5721,7 @@ where
         browser: cfg!(feature = "tauri-runtime") && injection.browser.is_enabled().await,
         browser_eval: cfg!(feature = "tauri-runtime") && injection.browser.is_eval_enabled().await,
         // Only where this process serves computer use: the desktop app, and
-        // recur-code-server where the person who runs it has let it share the
+        // rc-server where the person who runs it has let it share the
         // screen it runs on (`RC_COMPUTER_USE`). Elsewhere there are no
         // windows to offer.
         computer: injection.computer.is_served() && injection.computer.is_enabled().await,
@@ -5737,7 +5737,7 @@ where
     let features_arg = companion_features_arg(flags)?;
     let Some(binary_path) = locate_binary() else {
         tracing::warn!(
-            "[delegation][WARN] recur-code-mcp companion binary not found (checked RC_MCP_BIN, \
+            "[delegation][WARN] rc-mcp companion binary not found (checked RC_MCP_BIN, \
              exe sibling, and PATH); skipping delegate_to_agent / check_user_feedback / \
              ask_user_question / get_session_info tool injection for connection \
              {parent_connection_id}. Reinstall RecurCode or set RC_MCP_BIN to fix."
@@ -5748,7 +5748,7 @@ where
     // targets; disabled BUILT-INS are subtracted companion-side
     // (`--disabled-agents`) so the embedded schema stays the single source of
     // truth for the builtin list and its order. Either flag is omitted when
-    // empty, which also keeps an older recur-code-mcp binary — one that rejects
+    // empty, which also keeps an older rc-mcp binary — one that rejects
     // unknown flags at startup — working for installations needing neither.
     let (custom_slugs, disabled_builtins) = delegate_target_args(&disabled);
     let token = uuid::Uuid::new_v4().to_string();
@@ -5762,7 +5762,7 @@ where
             },
         )
         .await;
-    let mut server = McpServerStdio::new("recur-code-mcp", binary_path.clone());
+    let mut server = McpServerStdio::new("rc-mcp", binary_path.clone());
     let mut args = vec![
         "--parent-connection-id".to_string(),
         parent_connection_id.to_string(),
@@ -5770,7 +5770,7 @@ where
         injection.socket_path.to_string_lossy().to_string(),
         "--token".to_string(),
         token.clone(),
-        // Self-cleanup watchdog: recur-code-mcp exits when this PID is gone so
+        // Self-cleanup watchdog: rc-mcp exits when this PID is gone so
         // orphaned companions can't keep the binary file locked across an
         // installer upgrade (Windows) or hold a stale broker connection
         // (any platform).
@@ -6002,7 +6002,7 @@ async fn run_connection(
 
     // Shared question access + feature toggle (both live on the delegation
     // injection) for the agents that ask NATIVELY, over a blocking request of
-    // their own rather than the recur-code-mcp tool: grok's `_x.ai/ask_user_question`
+    // their own rather than the rc-mcp tool: grok's `_x.ai/ask_user_question`
     // ext request (verified against 0.2.101) and pi's extension-UI `select`,
     // which pi-acp folds into `session/request_permission`. Both handlers
     // register the questions through the SAME interactive-card pipeline and
@@ -6295,7 +6295,7 @@ async fn run_connection(
             {
                 // Codex `elicitation/create`: question-style requests (Plan
                 // mode `request_user_input`, generic MCP forms) bridge into
-                // the same ask card as the recur-code-mcp ask tool (reusing the ask
+                // the same ask card as the rc-mcp ask tool (reusing the ask
                 // access + kill switch); approval-style requests (MCP
                 // tool-call approvals, message-only confirms) route through
                 // the permission card via `pending_perms`.
@@ -6536,7 +6536,7 @@ async fn run_connection(
             // Whether this agent accepts MCP server entries over the ACP wire
             // (`session/new`'s `mcpServers`). Almost all do; OpenClaw rejects
             // any server entry and fails session creation, so it must receive
-            // NONE — neither user-configured servers nor the built-in recur-code-mcp
+            // NONE — neither user-configured servers nor the built-in rc-mcp
             // companion. A custom agent carries the same flag as a stored
             // declaration the user flips in settings, for the same reason:
             // RecurCode cannot know whether an arbitrary ACP agent tolerates the
@@ -6585,13 +6585,13 @@ async fn run_connection(
                     .collect()
             } else {
                 tracing::info!(
-                    "[ACP][{}] supports_mcp=false: skipping all MCP wire forwarding (user servers + recur-code-mcp companion)",
+                    "[ACP][{}] supports_mcp=false: skipping all MCP wire forwarding (user servers + rc-mcp companion)",
                     agent_type
                 );
                 Vec::new()
             };
 
-            // Inject the built-in `recur-code-mcp` MCP server. Stdio is
+            // Inject the built-in `rc-mcp` MCP server. Stdio is
             // unconditionally supported by the ACP wire — no `mcp_caps`
             // filter needed. The returned token is stashed on the session
             // state so connection teardown can revoke it. Skipped entirely
@@ -6620,7 +6620,7 @@ async fn run_connection(
             {
                 let mut s = state.write().await;
                 // Native steering is independent of the MCP companion — set it
-                // even when no recur-code-mcp is injected (it's exactly the channel
+                // even when no rc-mcp is injected (it's exactly the channel
                 // that needs no tool; OpenClaw-style `supports_mcp: false`
                 // agents could ship it someday).
                 s.native_steering_available = native_steering_available;
@@ -7355,7 +7355,7 @@ fn connection_failure(err: agent_client_protocol::Error) -> AcpError {
 
 /// Grok's native `ask_user_question` tool issues this ACP ext request
 /// (`_x.ai/ask_user_question`) and BLOCKS on the reply — it does NOT go through
-/// the recur-code-mcp ask tool. Transparent over the raw params object
+/// the rc-mcp ask tool. Transparent over the raw params object
 /// (`{sessionId, toolCallId, questions, mode}`); the fields RecurCode needs are read
 /// by [`crate::acp::question::parse_grok_ext_questions`]. The runtime routes typed
 /// handlers on the RAW wire method, so the derive keeps the leading `_`.
@@ -7392,7 +7392,7 @@ struct CodexElicitationRequest(serde_json::Value);
 /// Bridge grok's native `_x.ai/ask_user_question` ext request into RecurCode's
 /// interactive question card. Grok blocks on the reply, so RecurCode registers the
 /// questions through the shared [`crate::acp::question::SessionQuestionAccess`] —
-/// the SAME path the recur-code-mcp ask tool uses (it sets `pending_question`,
+/// the SAME path the rc-mcp ask tool uses (it sets `pending_question`,
 /// broadcasts `QuestionRequest`, and the `AskQuestionCard` renders) — then answers
 /// the ext request with the user's choice, serialized to grok's own format, once
 /// they submit. Every early return responds with an error, which makes grok fall
@@ -7413,7 +7413,7 @@ async fn handle_grok_ask_user_question(
         let _ = responder.respond_with_internal_error("ask_user_question bridge unavailable");
         return;
     };
-    // Same kill switch as the recur-code-mcp ask tool: when off, let grok fall back.
+    // Same kill switch as the rc-mcp ask tool: when off, let grok fall back.
     if !ask_cfg.is_enabled().await {
         let _ = responder.respond_with_internal_error("ask_user_question is disabled");
         return;
@@ -7451,7 +7451,7 @@ async fn handle_grok_ask_user_question(
     tokio::spawn(async move {
         match registered.answer_rx.await {
             Ok(outcome) => {
-                // Surface the answered "提问回答" capsule in-stream — the recur-code-mcp
+                // Surface the answered "提问回答" capsule in-stream — the rc-mcp
                 // ask parity grok's native tool never emits into the ACP stream (it
                 // resolves the answer over THIS ext round-trip). Emit BEFORE
                 // unblocking grok so the card lands ahead of grok's follow-up text;
@@ -7500,7 +7500,7 @@ async fn handle_grok_ask_user_question(
 ///
 /// An agent whose permission mode consults the user before every MCP tool call
 /// (claude-agent-acp's default) gates the ask tool too, so asking the user a
-/// question used to cost TWO dialogs: a raw "run mcp__recur-code-mcp__ask_user_question?"
+/// question used to cost TWO dialogs: a raw "run mcp__rc-mcp__ask_user_question?"
 /// approval dumping the questions as JSON, and only after "Yes" the real
 /// interactive card. The first one carries no decision the second doesn't — see
 /// [`crate::acp::question::is_recur_code_ask_tool_name`] for why answering it is the
@@ -7559,7 +7559,7 @@ async fn try_auto_allow_recur_code_ask(
         return Err(responder);
     };
     // Same kill switch as the ask tool itself (and as `try_bridge_pi_select_ask`):
-    // with the feature off recur-code-mcp never exposed `ask_user_question`, so a
+    // with the feature off rc-mcp never exposed `ask_user_question`, so a
     // request naming it is not the tool this shortcut is allowed to speak for.
     let Some((_, ask_cfg)) = access else {
         return Err(responder);
@@ -7588,7 +7588,7 @@ async fn try_auto_allow_recur_code_ask(
 /// call as raw JSON, and — because pi never emits a `session/update` for that
 /// `pi-ui-*` id — left NO record of the answer once the card was dismissed
 /// (#644). This registers the choices through the shared
-/// [`crate::acp::question::SessionQuestionAccess`] (the SAME path the recur-code-mcp
+/// [`crate::acp::question::SessionQuestionAccess`] (the SAME path the rc-mcp
 /// ask tool uses), answers the blocked permission request with the option the
 /// user picked, and emits the answered `AskQuestionResultCard` into the stream.
 ///
@@ -7625,7 +7625,7 @@ async fn try_bridge_pi_select_ask(
     let Some((questions, ask_cfg)) = access else {
         return Err(responder);
     };
-    // Same kill switch as the recur-code-mcp ask tool: when the feature is off, the
+    // Same kill switch as the rc-mcp ask tool: when the feature is off, the
     // approval card stays the way to answer.
     if !ask_cfg.is_enabled().await {
         return Err(responder);
@@ -7831,14 +7831,14 @@ async fn handle_grok_exit_plan_mode(
 ///
 ///   * Question-style (Plan-mode `request_user_input`, generic MCP forms) →
 ///     the shared [`crate::acp::question::SessionQuestionAccess`] path — the
-///     SAME one the recur-code-mcp ask tool and the grok bridge use (it sets
+///     SAME one the rc-mcp ask tool and the grok bridge use (it sets
 ///     `pending_question`, broadcasts `QuestionRequest`, and `AskQuestionCard`
 ///     renders) — answered once the user submits.
 ///   * Approval-style (MCP tool-call approvals, message-only confirms) → the
 ///     permission card via `pending_perms`, exactly like the
 ///     `session/request_permission` fallback codex-acp used before the
 ///     capability was advertised. Auto-declining these would reject the tool
-///     call (including recur-code-mcp's own tools in consent-requiring modes).
+///     call (including rc-mcp's own tools in consent-requiring modes).
 ///
 /// Question-path early returns DECLINE, which makes codex proceed with its own
 /// judgment — no worse than the pre-bridge `{answers:{}}`, so nothing here can
@@ -8140,13 +8140,13 @@ async fn handle_elicitation_request(
             .await;
         }
         // Question-style (codex `request_user_input`, generic MCP forms):
-        // bridge into the same ask card as the recur-code-mcp ask tool.
+        // bridge into the same ask card as the rc-mcp ask tool.
         crate::acp::question::ElicitationPlan::Questions(questions) => {
             let Some((question_access, ask_cfg)) = access else {
                 let _ = responder.respond(decline());
                 return;
             };
-            // Same kill switch as the recur-code-mcp ask tool and the grok bridge:
+            // Same kill switch as the rc-mcp ask tool and the grok bridge:
             // when the user has turned ask_user_question off, decline so codex
             // proceeds.
             if !ask_cfg.is_enabled().await {
@@ -10195,7 +10195,7 @@ async fn handle_fork_or_exit(
     //     shows it.
     //
     // This is the agent-side half of what the caller just did to the parent's
-    // recur-code-hosted terminals (`release_all_for_session`). It goes out after the
+    // rc-hosted terminals (`release_all_for_session`). It goes out after the
     // resume step, whether that resumed the child, failed, or was skipped for
     // an agent without resume, so making the child usable never overlaps the
     // parent's teardown. It is not awaited: a slow close (deepseek-acp waits
@@ -12081,7 +12081,7 @@ async fn run_conversation_loop(
                                     // is up answers it declined first. Through
                                     // Claude Code 2.1.284 the steer interrupted
                                     // the blocked MCP call; the CLI's
-                                    // `notifications/cancelled` made recur-code-mcp
+                                    // `notifications/cancelled` made rc-mcp
                                     // abandon the ask and the card closed. From
                                     // 2.1.286 (claude-agent-acp 0.85.0) the CLI
                                     // moves the call to the background instead
@@ -13412,7 +13412,7 @@ fn stamp_codex_search_action(
 /// the result ITSELF is handed JSON source instead of the result.
 ///
 /// Verified against opencode 1.18.23 (driven over real ACP with a stub MCP
-/// server): a recur-code-mcp `ask_user_question` completes as
+/// server): a rc-mcp `ask_user_question` completes as
 ///   content:   [{"type":"content","content":{"type":"text","text":"The user
 ///               answered your question(s):\n1. [框架] …\n   → 选项 A\n"}}]
 ///   rawOutput: {"output":"<that same text>","metadata":{"truncated":false}}
@@ -13788,7 +13788,7 @@ async fn gemini_mode_update_chunk(
 /// `raw_input` is `{"tool_name": "<server>__<tool>", "tool_input": {..real args..}}`.
 /// Peel it so the call is correlated (delegation `lifecycle.rs`), classified, and
 /// parsed as a direct MCP call — identical to how hosts like Claude Code surface
-/// MCP tools. Without this, Grok's `delegate_to_agent` (and the other recur-code-mcp
+/// MCP tools. Without this, Grok's `delegate_to_agent` (and the other rc-mcp
 /// companion tools) never resolve to their dedicated cards, and the delegation
 /// broker can't correlate the parent tool call to bind the sub-session.
 ///
@@ -13831,7 +13831,7 @@ fn grok_mcp_output_text(raw_output: &serde_json::Value) -> Option<String> {
         .map(str::to_string)
 }
 
-/// Recover a recur-code-mcp companion tool's identity from its RESULT text, for
+/// Recover a rc-mcp companion tool's identity from its RESULT text, for
 /// Cursor sessions only.
 ///
 /// Cursor's ACP layer announces every MCP call from the first streaming
@@ -13839,8 +13839,8 @@ fn grok_mcp_output_text(raw_output: &serde_json::Value) -> Option<String> {
 /// title "MCP: tool" with an empty `raw_input`, and `sendToolCallUpdate`
 /// (bundle-verified) never forwards `title`/`raw_input` again. The ONLY
 /// wire signal that ever identifies the call is the MCP result text arriving
-/// on the completion update, and for the recur-code-mcp companion tools that text
-/// is a recur-code-owned contract:
+/// on the completion update, and for the rc-mcp companion tools that text
+/// is a rc-owned contract:
 ///
 /// * a `delegate_to_agent` ack opens with
 ///   `"Delegation successful. task_id="` (`broker.rs::running_ack`);
@@ -15989,7 +15989,7 @@ pub(crate) fn grok_failed_compaction_meta(update: &serde_json::Value) -> serde_j
 /// * `subagent_finished` for a spawn whose CALL already settled (= a
 ///   BACKGROUND child; the launch ack was its final wire output) settles via
 ///   the same `BackgroundActivity` channel Claude's async sub-agents use: the
-///   frontend flips the launch card's `[[recur-code-background-task]]` marker
+///   frontend flips the launch card's `[[rc-background-task]]` marker
 ///   in-memory (works out-of-turn too), raises the OS notification, and
 ///   mirrors `outstanding` for the idle-sweep exemption. A BLOCKING spawn is
 ///   skipped — its own completion frame delivers the output.
@@ -16923,7 +16923,7 @@ fn air_task_usage(value: Option<&serde_json::Value>) -> Option<AsyncTaskUsage> {
 /// from grok 1.0.41:
 ///
 ///   {"sessionUpdate":"workflow_updated","run_id":"wf_01a0e8a2…","revision":5,
-///    "name":"recur-code-probe","objective":"…","status":"active",
+///    "name":"rc-probe","objective":"…","status":"active",
 ///    "phases":[{"title":"Alpha","state":"active"},…],"current_phase":"Alpha",
 ///    "active_agents":1,"current_agent_label":"probe-agent","agents":[…],…}
 ///
@@ -18232,7 +18232,7 @@ async fn emit_conversation_update(
             // Cursor loses MCP tool identity on the wire entirely (announced as
             // "MCP: tool" before McpArgs exists; updates never resend title or
             // raw_input). The completion update's result text is the one signal
-            // left — recover the recur-code-mcp companion identity from it and record
+            // left — recover the rc-mcp companion identity from it and record
             // it as an authoritative override so the delegation / status cards
             // resolve instead of a generic tool. Gated to ids this connection
             // announced with the identity-less title (see the
@@ -20815,7 +20815,7 @@ mod tests {
     #[test]
     fn recur_code_ask_auto_allow_option_picks_allow_once_for_recur_codes_own_ask_tool() {
         let req = claude_mcp_permission_request(
-            "mcp__recur-code-mcp__ask_user_question",
+            "mcp__rc-mcp__ask_user_question",
             claude_permission_options(),
         );
         assert_eq!(
@@ -20825,7 +20825,7 @@ mod tests {
         // The title alone is enough: an agent that sends no request-level
         // `_meta.permission` block still gets the shortcut.
         let mut bare = claude_mcp_permission_request(
-            "mcp__recur-code-mcp__ask_user_question",
+            "mcp__rc-mcp__ask_user_question",
             claude_permission_options(),
         );
         bare.meta = None;
@@ -20841,7 +20841,7 @@ mod tests {
         // RecurCode's, even though the tool half of the name matches.
         for foreign in [
             "mcp__other-server__ask_user_question",
-            "mcp__recur-code-mcp__delegate_to_agent",
+            "mcp__rc-mcp__delegate_to_agent",
             "Bash",
         ] {
             let req = claude_mcp_permission_request(foreign, claude_permission_options());
@@ -20853,7 +20853,7 @@ mod tests {
         // An agent offering only a DURABLE allow writes a rule into the user's
         // own settings — that outlives this turn, so it stays their decision.
         let always_only = claude_mcp_permission_request(
-            "mcp__recur-code-mcp__ask_user_question",
+            "mcp__rc-mcp__ask_user_question",
             vec![
                 agent_client_protocol::schema::v1::PermissionOption::new(
                     "allow-with-updates",
@@ -21255,7 +21255,7 @@ mod tests {
         ] {
             assert!(
                 !recovers_load_failure_locally(builtin, Some("session_unavailable")),
-                "{builtin:?} has no recur-code-side transcript to fall back on"
+                "{builtin:?} has no rc-side transcript to fall back on"
             );
         }
     }
@@ -22001,7 +22001,7 @@ mod tests {
     #[test]
     fn codex_env_policy_forces_mcp_filter_off_and_overrides_user_twin() {
         // Codex gets the flag injected so codex-acp never drops the injected
-        // `recur-code-mcp` server on a config.toml name collision.
+        // `rc-mcp` server on a config.toml name collision.
         let mut env = vec![("PATH".to_string(), "/usr/bin".to_string())];
         apply_codex_env_policy(AgentType::Codex, &mut env, None);
         assert!(env
@@ -24188,11 +24188,11 @@ mod tests {
             .is_some_and(|d| d.ends_with("\n\n\nOriginal prompt: say hi")));
 
         let codex = session_notice(&from_wire(
-            r#"{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"01a0cc1b-7aa2-78e3-8e55-c9ab3b7f506e","update":{"sessionUpdate":"notice","severity":"warning","title":"Model metadata for `recur-code-probe-unknown-model` not found. Defaulting to fallback metadata; this can degrade performance and cause issues."}}}"#,
+            r#"{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"01a0cc1b-7aa2-78e3-8e55-c9ab3b7f506e","update":{"sessionUpdate":"notice","severity":"warning","title":"Model metadata for `rc-probe-unknown-model` not found. Defaulting to fallback metadata; this can degrade performance and cause issues."}}}"#,
         ))
         .expect("codex notice");
         assert_eq!(codex.severity, "warning");
-        assert!(codex.title.starts_with("Model metadata for `recur-code-probe-unknown-model`"));
+        assert!(codex.title.starts_with("Model metadata for `rc-probe-unknown-model`"));
         assert_eq!(codex.description, None);
 
         let codex_multiline = session_notice(&from_wire(
@@ -25851,7 +25851,7 @@ mod tests {
     // that field on NewSessionRequest/LoadSessionRequest, so it always
     // serializes as `[]`; every agent (OpenClaw included) already receives
     // `mcpServers: []` on a fresh install with no servers configured and
-    // recur-code-mcp off — the known-good payload. The connection-layer gate
+    // rc-mcp off — the known-good payload. The connection-layer gate
     // (`supports_mcp == false`) forces OpenClaw onto that empty payload
     // unconditionally. This pins the wire contract: both builders emit an
     // empty list, so no server entry can ever reach OpenClaw.
@@ -27253,7 +27253,7 @@ mod tests {
         assert_eq!(grok_live_tool_output(&None, &None), None);
     }
 
-    /// The captured opencode 1.18.23 completion envelope for a recur-code-mcp
+    /// The captured opencode 1.18.23 completion envelope for a rc-mcp
     /// `ask_user_question` — the clean answer text on both channels, the
     /// `rawOutput` one wrapped in `{output, metadata}`.
     fn opencode_ask_raw_output() -> serde_json::Value {
@@ -27486,7 +27486,7 @@ mod tests {
     }
 
     /// End-to-end over the frames opencode 1.18.23 actually put on the wire for a
-    /// recur-code-mcp `ask_user_question` (captured by driving `opencode acp` against a
+    /// rc-mcp `ask_user_question` (captured by driving `opencode acp` against a
     /// stub MCP server). The card reconstructs the answer from the result TEXT —
     /// opencode drops the MCP `structuredContent` — so the completion must hand
     /// the frontend that text, not the `{output, metadata}` blob that shadows it
@@ -27503,7 +27503,7 @@ mod tests {
             serde_json::json!({
                 "sessionUpdate": "tool_call",
                 "toolCallId": "call_probe_1",
-                "title": "recur-code-mcp_ask_user_question",
+                "title": "rc-mcp_ask_user_question",
                 "kind": "other",
                 "status": "pending",
                 "locations": [],
@@ -29029,7 +29029,7 @@ mod tests {
     /// The `_meta` Antigravity puts on every MCP frame (`unwrap_mcp_tool_call`).
     fn antigravity_mcp_meta(prompt: Option<&str>) -> serde_json::Value {
         let mut meta = serde_json::json!({
-            "mcp": {"tool": "browser_navigate", "server": "recur-code-mcp"},
+            "mcp": {"tool": "browser_navigate", "server": "rc-mcp"},
             "is_mcp_tool_call": true,
         });
         if let Some(prompt) = prompt {
@@ -29081,7 +29081,7 @@ mod tests {
                 "_meta": antigravity_mcp_meta(Some("Opening the example page")),
             });
             if session_update == "tool_call" {
-                wire["title"] = serde_json::json!("recur-code-mcp_browser_navigate");
+                wire["title"] = serde_json::json!("rc-mcp_browser_navigate");
             }
             let (_, emitted, _, _) =
                 pi_emit(AgentType::Antigravity, &mut cache, &mut cb, wire).await;
@@ -29741,11 +29741,11 @@ mod tests {
     fn unwrap_grok_use_tool_peels_mcp_envelope() {
         // Grok's `use_tool` envelope nests the real MCP tool name + args.
         let raw = serde_json::json!({
-            "tool_name": "recur-code-mcp__delegate_to_agent",
+            "tool_name": "rc-mcp__delegate_to_agent",
             "tool_input": {"agent_type": "codex", "task": "build", "working_dir": "/w"},
         });
         let (name, input) = unwrap_grok_use_tool(Some(&raw)).expect("envelope peels");
-        assert_eq!(name, "recur-code-mcp__delegate_to_agent");
+        assert_eq!(name, "rc-mcp__delegate_to_agent");
         assert_eq!(input.get("task").and_then(|v| v.as_str()), Some("build"));
         assert_eq!(
             input.get("agent_type").and_then(|v| v.as_str()),
@@ -29812,11 +29812,11 @@ mod tests {
                    Call get_delegation_status with this id in the task_ids array.";
         assert_eq!(
             cursor_companion_title_from_content(Some(ack)),
-            Some("recur-code-mcp__delegate_to_agent")
+            Some("rc-mcp__delegate_to_agent")
         );
         assert_eq!(
             cursor_companion_title_from_content(Some(&format!("  {ack}"))),
-            Some("recur-code-mcp__delegate_to_agent")
+            Some("rc-mcp__delegate_to_agent")
         );
     }
 
@@ -29826,13 +29826,13 @@ mod tests {
         let report = r#"{"tasks":[{"agent_type":"claude_code","child_conversation_id":1576,"duration_ms":27288,"status":"completed","task_id":"799467c7-0188-4e7a-b5ef-241d4b141a83","text":"done"}]}"#;
         assert_eq!(
             cursor_companion_title_from_content(Some(report)),
-            Some("recur-code-mcp__get_delegation_status")
+            Some("rc-mcp__get_delegation_status")
         );
         // Mixed batch with a running item still resolves.
         let mixed = r#"{"tasks":[{"task_id":"a","status":"running"},{"task_id":"b","status":"unknown"}]}"#;
         assert_eq!(
             cursor_companion_title_from_content(Some(mixed)),
-            Some("recur-code-mcp__get_delegation_status")
+            Some("rc-mcp__get_delegation_status")
         );
     }
 
@@ -29869,7 +29869,7 @@ mod tests {
         let raw = Some(serde_json::json!({
             "type": "MCP",
             "tool_name": "delegate_to_agent",
-            "server_name": "recur-code-mcp",
+            "server_name": "rc-mcp",
             "output": {"OkayOutput": "Delegation successful. task_id=2dc85849-5426."},
         }));
         assert_eq!(
@@ -29905,7 +29905,7 @@ mod tests {
             "toolCallId": "call-d",
             "title": "use_tool",
             "rawInput": {
-                "tool_name": "recur-code-mcp__delegate_to_agent",
+                "tool_name": "rc-mcp__delegate_to_agent",
                 "tool_input": {"agent_type": "codex", "working_dir": "/w", "task": "run build"},
             },
         }))
@@ -29933,7 +29933,7 @@ mod tests {
             "rawOutput": {
                 "type": "MCP",
                 "tool_name": "delegate_to_agent",
-                "server_name": "recur-code-mcp",
+                "server_name": "rc-mcp",
                 "output": {"OkayOutput": "Delegation successful. task_id=2dc85849-5426-44f7."},
             },
         }))
@@ -29963,7 +29963,7 @@ mod tests {
                 _ => None,
             })
             .expect("a tool_call event is emitted");
-        assert_eq!(title, "recur-code-mcp__delegate_to_agent");
+        assert_eq!(title, "rc-mcp__delegate_to_agent");
         let raw_input = raw_input.expect("raw_input present after unwrap");
         assert!(
             raw_input.contains("\"agent_type\":\"codex\""),
@@ -29996,7 +29996,7 @@ mod tests {
         );
         assert_eq!(
             upd_title.as_deref(),
-            Some("recur-code-mcp__delegate_to_agent"),
+            Some("rc-mcp__delegate_to_agent"),
             "the sparse-update wrapper title is overridden by the recorded name"
         );
         // No emitted event ever ships the generic `use_tool` wrapper title.
@@ -30035,7 +30035,7 @@ mod tests {
             "title": "use_tool",
             "status": "in_progress",
             "rawInput": {
-                "tool_name": "recur-code-mcp__cancel_delegation",
+                "tool_name": "rc-mcp__cancel_delegation",
                 "tool_input": {"task_id": "abc-123"},
             },
         }))
@@ -30062,7 +30062,7 @@ mod tests {
                 _ => None,
             })
             .expect("a tool_call_update event is emitted");
-        assert_eq!(title.as_deref(), Some("recur-code-mcp__cancel_delegation"));
+        assert_eq!(title.as_deref(), Some("rc-mcp__cancel_delegation"));
         let raw_input = raw_input.expect("raw_input present after unwrap");
         assert!(
             raw_input.contains("\"task_id\":\"abc-123\""),
@@ -30310,14 +30310,14 @@ mod tests {
         for key in crate::acp::scratch_dir::TEMP_ENV_KEYS {
             runtime_env.insert(key.to_string(), "/somewhere/the/user/picked".to_string());
         }
-        let scratch = Path::new("/scratch/recur-code-acp/123-deadbeef");
+        let scratch = Path::new("/scratch/rc-acp/123-deadbeef");
 
         let merged = merge_agent_env_with_color(false, &[], &runtime_env, Some(scratch));
 
         for key in crate::acp::scratch_dir::TEMP_ENV_KEYS {
             assert_eq!(
                 merged_value(&merged, key),
-                Some("/scratch/recur-code-acp/123-deadbeef"),
+                Some("/scratch/rc-acp/123-deadbeef"),
                 "{key} must point at the scratch dir, not the per-agent override"
             );
         }
@@ -30582,26 +30582,26 @@ mod tests {
     fn deferred_unwraps_codebuddy_mcp_tool_name() {
         // CodeBuddy wraps MCP calls as `{toolName, params}` via DeferExecuteTool.
         let input = Some(
-            r#"{"params":{"agent_type":"codex","task":"build"},"toolName":"mcp__recur-code-mcp__delegate_to_agent"}"#
+            r#"{"params":{"agent_type":"codex","task":"build"},"toolName":"mcp__rc-mcp__delegate_to_agent"}"#
                 .to_string(),
         );
         assert_eq!(
             codebuddy_deferred_tool_name(AgentType::CodeBuddy, &input).as_deref(),
-            Some("mcp__recur-code-mcp__delegate_to_agent")
+            Some("mcp__rc-mcp__delegate_to_agent")
         );
     }
 
     #[test]
     fn deferred_gates_on_codebuddy_and_shape() {
         let wrapped = Some(
-            r#"{"params":{"task_id":"a"},"toolName":"mcp__recur-code-mcp__cancel_delegation"}"#
+            r#"{"params":{"task_id":"a"},"toolName":"mcp__rc-mcp__cancel_delegation"}"#
                 .to_string(),
         );
         // Only CodeBuddy is unwrapped.
         assert!(codebuddy_deferred_tool_name(AgentType::OpenCode, &wrapped).is_none());
         // Missing `params`, missing/blank `toolName`, or non-wrapper shapes → None.
         for raw in [
-            r#"{"toolName":"mcp__recur-code-mcp__delegate_to_agent"}"#, // no params
+            r#"{"toolName":"mcp__rc-mcp__delegate_to_agent"}"#, // no params
             r#"{"params":{"x":1},"toolName":""}"#,                 // blank toolName
             r#"{"params":{"x":1}}"#,                               // no toolName
             r#"{"command":"ls"}"#,                                 // plain tool
@@ -30694,18 +30694,18 @@ mod tests {
         );
         // Deferred MCP tool: inner name recorded, then re-asserted on a bare update.
         let deferred = Some(
-            r#"{"params":{"agent_type":"codex","task":"x"},"toolName":"mcp__recur-code-mcp__delegate_to_agent"}"#
+            r#"{"params":{"agent_type":"codex","task":"x"},"toolName":"mcp__rc-mcp__delegate_to_agent"}"#
                 .to_string(),
         );
         assert_eq!(
             resolve_rewritten_title(AgentType::CodeBuddy, &deferred, "tc3", false, false, &mut overrides)
                 .as_deref(),
-            Some("mcp__recur-code-mcp__delegate_to_agent")
+            Some("mcp__rc-mcp__delegate_to_agent")
         );
         assert_eq!(
             resolve_rewritten_title(AgentType::CodeBuddy, &None, "tc3", true, false, &mut overrides)
                 .as_deref(),
-            Some("mcp__recur-code-mcp__delegate_to_agent")
+            Some("mcp__rc-mcp__delegate_to_agent")
         );
         // Non-CodeBuddy agent with no prior classification: never rewritten.
         assert_eq!(
@@ -30767,7 +30767,7 @@ mod tests {
         );
         // DeferExecuteTool still wins over the meta path (distinct mechanism).
         let deferred = Some(
-            r#"{"params":{"agent_type":"codex","task":"x"},"toolName":"mcp__recur-code-mcp__delegate_to_agent"}"#
+            r#"{"params":{"agent_type":"codex","task":"x"},"toolName":"mcp__rc-mcp__delegate_to_agent"}"#
                 .to_string(),
         );
         assert_eq!(
@@ -30780,7 +30780,7 @@ mod tests {
                 &mut overrides
             )
             .as_deref(),
-            Some("mcp__recur-code-mcp__delegate_to_agent")
+            Some("mcp__rc-mcp__delegate_to_agent")
         );
     }
 
@@ -31115,7 +31115,7 @@ mod tests {
         DelegationInjection {
             broker,
             tokens: Arc::new(TokenRegistry::default()),
-            socket_path: std::path::PathBuf::from("/tmp/recur-code-mcp.sock"),
+            socket_path: std::path::PathBuf::from("/tmp/rc-mcp.sock"),
             agent_availability,
             feedback: crate::acp::feedback::FeedbackRuntimeConfig::new(),
             ask: crate::acp::question::QuestionRuntimeConfig::new(),
@@ -31137,7 +31137,7 @@ mod tests {
     // delegate-MCP injection must not push a server entry and must not
     // register a per-launch token. The early return at the top of
     // `inject_recur_code_mcp` is the single chokepoint that keeps a
-    // recur-code-mcp stdio MCP out of every ACP session until the user
+    // rc-mcp stdio MCP out of every ACP session until the user
     // opts in via the settings panel.
     #[tokio::test]
     async fn inject_recur_code_delegate_skipped_when_broker_disabled() {
@@ -31991,7 +31991,7 @@ mod tests {
             "sessionUpdate": "workflow_updated",
             "run_id": GROK_RUN_ID,
             "revision": revision,
-            "name": "recur-code-probe",
+            "name": "rc-probe",
             "objective": "RecurCode wire probe: two phases, one tiny agent",
             "status": status,
             "foreground": false,
@@ -32407,7 +32407,7 @@ mod tests {
             .collect()
     }
 
-    /// The captured `/workflow recur-code-probe` run: the launch turn, the run
+    /// The captured `/workflow rc-probe` run: the launch turn, the run
     /// ticking between turns, and the follow-up turn Grok starts on its own
     /// once the run stops.
     fn grok_workflow_script() -> GrokScript {
@@ -32417,7 +32417,7 @@ mod tests {
                 grok_workflow_update(2, "active", Some("Alpha"), None),
                 grok_chunk(
                     "agent_message_chunk",
-                    "Workflow 'recur-code-probe' started in the background.",
+                    "Workflow 'rc-probe' started in the background.",
                     Some("p1"),
                 ),
             ],
@@ -32442,7 +32442,7 @@ mod tests {
                 ),
                 grok_chunk(
                     "agent_message_chunk",
-                    "**recur-code-probe** finished",
+                    "**rc-probe** finished",
                     Some(GROK_FOLLOW_UP_ID),
                 ),
                 grok_chunk("agent_message_chunk", " successfully.", Some(GROK_FOLLOW_UP_ID)),
@@ -32458,13 +32458,13 @@ mod tests {
         }
     }
 
-    /// Send the `/workflow recur-code-probe` launch and see its turn through: its
+    /// Send the `/workflow rc-probe` launch and see its turn through: its
     /// frames read in-turn, then the response, then the frames the idle loop
     /// reads after it. Returns the launch turn's `TurnComplete` index.
     async fn launch_grok_workflow(grok: &mut GrokLoop) -> usize {
-        grok.prompt("/workflow recur-code-probe").await;
+        grok.prompt("/workflow rc-probe").await;
         grok.until("the launch turn's reply", |e| {
-            matches!(e, AcpEvent::ContentDelta { text, .. } if text.starts_with("Workflow 'recur-code-probe'"))
+            matches!(e, AcpEvent::ContentDelta { text, .. } if text.starts_with("Workflow 'rc-probe'"))
         })
         .await;
         grok.release_response();
@@ -32490,7 +32490,7 @@ mod tests {
         let running = grok.state.read().await.async_tasks.get(GROK_RUN_ID).cloned();
         let running = running.expect("the launched workflow has a strip row");
         assert_eq!(running.state, "running");
-        assert_eq!(running.name, "recur-code-probe");
+        assert_eq!(running.name, "rc-probe");
         assert_eq!(running.task_type, "workflow");
         assert_eq!(running.description, "RecurCode wire probe: two phases, one tiny agent");
         assert!(!running.can_stop, "Grok has no stop request");
@@ -32574,7 +32574,7 @@ mod tests {
         assert!(!s.turn_in_flight);
         assert_eq!(
             s.last_assistant_text.as_deref(),
-            Some("**recur-code-probe** finished successfully.")
+            Some("**rc-probe** finished successfully.")
         );
         drop(s);
         assert_eq!(
@@ -33955,7 +33955,7 @@ mod tests {
         let delta = grok_workflow_task_delta(&dispatch, AgentType::Grok).expect("maps");
         assert_eq!(delta.task_id, GROK_RUN_ID);
         assert!(delta.spawned, "every frame restates the run");
-        assert_eq!(delta.name.as_deref(), Some("recur-code-probe"));
+        assert_eq!(delta.name.as_deref(), Some("rc-probe"));
         assert_eq!(delta.task_type.as_deref(), Some("workflow"));
         assert_eq!(delta.can_stop, Some(false));
         assert_eq!(delta.state.as_deref(), Some("running"));

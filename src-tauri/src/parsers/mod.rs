@@ -372,7 +372,7 @@ pub trait AgentParser {
 ///
 /// Every caller goes through here so the internal `@agent` routing frame is
 /// stripped from every agent's history — not just the one agent whose parser
-/// happens to know about it. `recur-code-mcp` is injected into every MCP-capable
+/// happens to know about it. `rc-mcp` is injected into every MCP-capable
 /// agent, so the frame lands in each of their native transcripts; a per-parser
 /// fix would silently miss whichever parser was written next.
 pub fn build_agent_parser(agent_type: AgentType) -> Box<dyn AgentParser> {

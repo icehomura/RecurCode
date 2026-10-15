@@ -739,7 +739,7 @@ fn ensure_pushable_branch(branch: &str) -> Result<(), String> {
 
 /// How a RecurCode task id is written into text that lands on a forge.
 ///
-/// The number is recur-code-local: it names a row in this workspace's task list,
+/// The number is rc-local: it names a row in this workspace's task list,
 /// not anything in the repository the text is posted to. Both halves of the
 /// form below carry weight — neither is decoration:
 ///

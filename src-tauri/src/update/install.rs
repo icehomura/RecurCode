@@ -1,5 +1,5 @@
 //! Download → verify → extract → atomic swap of the server bundle
-//! (`recur-code-server` + `recur-code-mcp` + `web/`, and `recur-code-computer-helper` where
+//! (`rc-server` + `rc-mcp` + `web/`, and `rc-computer-helper` where
 //! the release ships it).
 //!
 //! The running worker performs the swap, keeping a `.bak` of each artifact,
@@ -50,11 +50,11 @@ pub struct InstallOutcome {
 pub fn asset_basename() -> Option<&'static str> {
     use std::env::consts::{ARCH, OS};
     Some(match (OS, ARCH) {
-        ("linux", "x86_64") => "recur-code-server-linux-x64",
-        ("linux", "aarch64") => "recur-code-server-linux-arm64",
-        ("macos", "x86_64") => "recur-code-server-darwin-x64",
-        ("macos", "aarch64") => "recur-code-server-darwin-arm64",
-        ("windows", "x86_64") => "recur-code-server-windows-x64",
+        ("linux", "x86_64") => "rc-server-linux-x64",
+        ("linux", "aarch64") => "rc-server-linux-arm64",
+        ("macos", "x86_64") => "rc-server-darwin-x64",
+        ("macos", "aarch64") => "rc-server-darwin-arm64",
+        ("windows", "x86_64") => "rc-server-windows-x64",
         _ => return None,
     })
 }
@@ -69,17 +69,17 @@ fn archive_ext() -> &'static str {
 
 fn server_bin_filename() -> &'static str {
     if cfg!(windows) {
-        "recur-code-server.exe"
+        "rc-server.exe"
     } else {
-        "recur-code-server"
+        "rc-server"
     }
 }
 
 fn mcp_bin_filename() -> &'static str {
     if cfg!(windows) {
-        "recur-code-mcp.exe"
+        "rc-mcp.exe"
     } else {
-        "recur-code-mcp"
+        "rc-mcp"
     }
 }
 
@@ -145,7 +145,7 @@ fn resolve_targets() -> Result<Targets, AppCommandError> {
 fn upgrade_marker_path() -> Option<PathBuf> {
     crate::update::runtime::self_exe()
         .parent()
-        .map(|d| d.join(".recur-code-upgrade-staged"))
+        .map(|d| d.join(".rc-upgrade-staged"))
 }
 
 /// True if a swapped-but-not-yet-applied upgrade is staged.
@@ -245,7 +245,7 @@ fn preflight_writable(targets: &Targets) -> Result<(), AppCommandError> {
 }
 
 fn check_writable(dir: &Path) -> Result<(), AppCommandError> {
-    let probe = dir.join(format!(".recur-code-write-probe-{}", std::process::id()));
+    let probe = dir.join(format!(".rc-write-probe-{}", std::process::id()));
     match std::fs::File::create(&probe) {
         Ok(_) => {
             let _ = std::fs::remove_file(&probe);
@@ -355,7 +355,7 @@ pub async fn perform_update(
 
     // 3. Extract into a scratch dir on the data volume.
     on_progress(UpdatePhase::Extracting, 0, None);
-    let staging = data_dir.join(format!(".recur-code-update-{}", std::process::id()));
+    let staging = data_dir.join(format!(".rc-update-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&staging);
     std::fs::create_dir_all(&staging).map_err(AppCommandError::io)?;
     let _cleanup = ScopedDir(staging.clone());
@@ -372,7 +372,7 @@ pub async fn perform_update(
     if !new_server.is_file() || !new_mcp.is_file() || !new_web.is_dir() {
         return Err(AppCommandError::new(
             crate::app_error::AppErrorCode::TaskExecutionFailed,
-            "Downloaded update is incomplete (expected recur-code-server, recur-code-mcp and a web/ directory)",
+            "Downloaded update is incomplete (expected rc-server, rc-mcp and a web/ directory)",
         ));
     }
 
@@ -610,7 +610,7 @@ fn extract_tar_gz(bytes: &[u8], dest: &Path, max: u64) -> Result<(), AppCommandE
                 ));
             }
             extracted += written;
-            // Preserve unix mode so +x on recur-code-server / recur-code-mcp survives.
+            // Preserve unix mode so +x on rc-server / rc-mcp survives.
             #[cfg(unix)]
             if let Some(mode) = mode {
                 use std::os::unix::fs::PermissionsExt;
@@ -1059,8 +1059,8 @@ mod tests {
 
     #[test]
     fn sanitize_keeps_normal_paths() {
-        let p = sanitize_entry_path(Path::new("recur-code-server-linux-x64/web/index.html")).unwrap();
-        assert_eq!(p, PathBuf::from("recur-code-server-linux-x64/web/index.html"));
+        let p = sanitize_entry_path(Path::new("rc-server-linux-x64/web/index.html")).unwrap();
+        assert_eq!(p, PathBuf::from("rc-server-linux-x64/web/index.html"));
     }
 
     /// Build a gzip'd tar with the given (path, bytes) regular-file entries.
@@ -1105,7 +1105,7 @@ mod tests {
     #[test]
     fn replace_file_keeps_backup_and_swaps() {
         let dir = tempfile::tempdir().unwrap();
-        let target = dir.path().join("recur-code-server");
+        let target = dir.path().join("rc-server");
         std::fs::write(&target, b"old").unwrap();
         let src = dir.path().join("new-bin");
         std::fs::write(&src, b"new").unwrap();
@@ -1302,15 +1302,15 @@ mod tests {
         std::fs::create_dir_all(&bindir).unwrap();
         std::fs::create_dir_all(bak_path(&web_dir)).unwrap();
         std::fs::create_dir_all(&web_dir).unwrap();
-        let server_bin = bindir.join("recur-code-server");
+        let server_bin = bindir.join("rc-server");
         std::fs::write(&server_bin, b"new").unwrap();
         std::fs::write(bak_path(&server_bin), b"old").unwrap();
         std::fs::write(web_dir.join("index.html"), b"new").unwrap();
         std::fs::write(bak_path(&web_dir).join("index.html"), b"old").unwrap();
         Targets {
             server_bin,
-            mcp_bin: bindir.join("recur-code-mcp"),
-            helper_bin: bindir.join("recur-code-computer-helper"),
+            mcp_bin: bindir.join("rc-mcp"),
+            helper_bin: bindir.join("rc-computer-helper"),
             web_dir,
         }
     }

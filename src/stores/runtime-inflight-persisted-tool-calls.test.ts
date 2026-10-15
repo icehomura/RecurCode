@@ -56,7 +56,7 @@ function assistantTurn(id: string, blocks: ContentBlock[]): MessageTurn {
 const poll = (id: string): ContentBlock => ({
   type: "tool_use",
   tool_use_id: id,
-  tool_name: "mcp__recur-code-mcp__get_delegation_status",
+  tool_name: "mcp__rc-mcp__get_delegation_status",
   input_preview: JSON.stringify({ task_ids: ["task-1"], wait_ms: 0 }),
 })
 

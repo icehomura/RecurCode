@@ -130,7 +130,7 @@ impl BinaryDirEntry {
 pub struct AcpAgentMeta {
     pub agent_type: AgentType,
     /// 是否经 ACP 线缆（session/new 的 `mcpServers` 字段）向该 agent 转发 MCP
-    /// 服务器——既包括用户配置的服务器，也包括内置 recur-code-mcp 伴生进程。
+    /// 服务器——既包括用户配置的服务器，也包括内置 rc-mcp 伴生进程。
     /// OpenClaw 拒绝 `mcpServers` 中的任何服务器条目（会使 session/new 失败），
     /// 故置 false。注意空列表 `[]` 仍会按 ACP schema 序列化、OpenClaw 可接受——
     /// 闸门只是保证该列表对 OpenClaw 恒为空（不含任何条目）。
@@ -378,7 +378,7 @@ pub fn acp_adapter_relation(agent_type: AgentType) -> Option<AcpAdapterRelation>
 /// file a desktop app launched from Finder or the Dock never reads, which is
 /// exactly how a working install reads as missing.
 ///
-/// Probed after PATH and `~/.local/bin`, so a recur-code-managed copy and anything
+/// Probed after PATH and `~/.local/bin`, so a rc-managed copy and anything
 /// genuinely on PATH still win.
 pub fn binary_system_dirs(agent_type: AgentType) -> &'static [&'static str] {
     match agent_type {
@@ -911,7 +911,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // always-allow button simply is not offered.
             //
             // (n) `<system-reminder>` blocks are stripped from replayed prompts
-            // (upstream #1040) — a recur-code-visible fix that arrives for free. The
+            // (upstream #1040) — a rc-visible fix that arrives for free. The
             // CLI appends them to a user turn to steer the model; live they
             // never reach a client, but `session/load` replayed them verbatim
             // INSIDE the user's own bubble. `parsers::claude` has stripped them
@@ -1186,7 +1186,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `_meta.claudeCode.mcpServer` (SDK 0.3.274's `McpServerProvenance`,
             // `{name, source}`) is NOT consumed. It answers "which server serves
             // this `mcp__*` tool, and was it registered in-process by the host
-            // (`source: "sdk"`) or configured"; RecurCode injects recur-code-mcp over
+            // (`source: "sdk"`) or configured"; RecurCode injects rc-mcp over
             // stdio, which is a configured source and never reads `sdk`, and the
             // only trust question RecurCode asks of an MCP tool call — is this one of
             // the companions I minted? — it already answers from the tool name
@@ -1194,7 +1194,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // the block is now emitted when `mcpServer` is present even with no
             // `parentToolUseId`, so `_meta.claudeCode.toolName` reaches a
             // top-level MCP tool's PERMISSION frame for the first time. That is
-            // the signal `inferLiveToolName` resolves the recur-code-mcp companion
+            // the signal `inferLiveToolName` resolves the rc-mcp companion
             // cards on, so a pending MCP approval now shows the right card
             // instead of flipping to it once the call runs and the streamed
             // frame (which always carried `toolName`) refines it.
@@ -1820,7 +1820,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //     surface or a `diffPatch` client, and RecurCode is neither for
             //     Claude.
             //   * CLI 2.1.287 offers MCP servers on the 2025-11-25 protocol
-            //     `elicitation: {form, url}` where 2.1.286 sent `{}`. recur-code-mcp
+            //     `elicitation: {form, url}` where 2.1.286 sent `{}`. rc-mcp
             //     answers 2024-11-05 and reads no client capability, and a probe
             //     server with the same handshake still lists its tools.
             //   * A `context: fork` skill typed as `/<skill>` now streams its
@@ -1928,7 +1928,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             //
             // (iii) **MCP handshake** (CLI 2.1.292). A stdio server is first
             // offered protocol 2026-07-28 through a `server/discover` probe, with
-            // up to 3 s to answer before the 2025-11-25 `initialize`. recur-code-mcp
+            // up to 3 s to answer before the 2025-11-25 `initialize`. rc-mcp
             // answers it at once with -32601 (method not found), and the CLI
             // falls back at once. Measured with the real binary: `initialize`
             // follows 6 ms after the probe, and `session/new` takes as long as
@@ -2104,7 +2104,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // 1.1.5 (#322) also widened codex-acp's MCP config filtering to
             // project `.codex` layers, which is why RecurCode forces
             // `DISABLE_MCP_CONFIG_FILTERING` (see `apply_codex_env_policy`) so
-            // the injected `recur-code-mcp` server always survives. 1.1.6 adds
+            // the injected `rc-mcp` server always survives. 1.1.6 adds
             // steering (#309): `_session/steering` injects a user prompt into
             // the LIVE turn (initialize advertises `_meta.steering.supported`)
             // — RecurCode keeps codex on the MCP pull channel because 1.1.9 still
@@ -3003,8 +3003,8 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // (ee) `/mcp` (#579) reports each server's live status in markdown
             // and takes `reconnect`, which its entry now names as the input
             // hint `[reconnect]`. Every status read briefly starts one more copy
-            // of each session MCP server, recur-code-mcp included, which is harmless:
-            // recur-code-mcp opens its socket on `tools/call` only. `$skill` commands
+            // of each session MCP server, rc-mcp included, which is harmless:
+            // rc-mcp opens its socket on `tools/call` only. `$skill` commands
             // carry their SKILL.md path in `_meta.jetbrains.air.skillPath`,
             // which RecurCode does not show.
             //
@@ -3111,7 +3111,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `mcp-client.ts` now drops MCP-server env entries whose key is in
             // `BLOCKED_EXECUTION_ENVS`. That list is loader/interpreter hijacks
             // (`NODE_OPTIONS`, `LD_PRELOAD`, `DYLD_*`, `PYTHONPATH`, `BASH_ENV`,
-            // …); RecurCode injects `recur-code-mcp` with `RC_*`, so nothing we send
+            // …); RecurCode injects `rc-mcp` with `RC_*`, so nothing we send
             // is dropped. `engines.node` stays `>=20`.
             distribution: AgentDistribution::Npx {
                 version: "0.60.0",
@@ -3125,7 +3125,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
         AgentType::OpenClaw => AcpAgentMeta {
             agent_type,
             // OpenClaw 拒绝 `mcpServers` 中的任何服务器条目（会使 session/new 失败），
-            // 故不向其转发任何 MCP 条目（含 recur-code-mcp 伴生进程）。详见 supports_mcp 字段注释。
+            // 故不向其转发任何 MCP 条目（含 rc-mcp 伴生进程）。详见 supports_mcp 字段注释。
             supports_mcp: false,
             name: "OpenClaw",
             description: "OpenClaw is a personal AI assistant you run on your own devices.",
@@ -3221,7 +3221,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // out of the transcript along with cline's other model-only
             // messages; live, the two halves arrive as one message. 3.0.69 also
             // raised the stdio MCP connect budget from 3 s to 10 s
-            // (`DEFAULT_MCP_CONNECT_TIMEOUT_MS`), which gives the recur-code-mcp
+            // (`DEFAULT_MCP_CONNECT_TIMEOUT_MS`), which gives the rc-mcp
             // companion more headroom. What moved in 3.0.66 is token
             // accounting; see `outputTokens` in `parsers::cline`.
             distribution: AgentDistribution::Npx {
@@ -3351,7 +3351,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // leaves RecurCode's assumptions standing: the per-platform toolset
             // resolver (`platform_toolsets.acp`, `agent.disabled_toolsets`;
             // RecurCode writes neither), every enabled `mcp_servers` entry switched
-            // on by default, and servers handed over on `session/new` (recur-code-mcp
+            // on by default, and servers handed over on `session/new` (rc-mcp
             // included) appended unconditionally as `mcp-<name>`. A fresh
             // session's default toolset now also carries six browser and
             // password-vault tools (`browser_exec`, `browser_vault_*`), the
@@ -3435,7 +3435,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `session/new` (and `session/load` / `session/resume`) with "ACP
             // stdio MCP server <name> does not declare a runtime identity" as
             // soon as any stdio server rides the wire — for Kimi that is always
-            // the recur-code-mcp companion, so the whole agent was unusable, not
+            // the rc-mcp companion, so the whole agent was unusable, not
             // just delegation. RecurCode sat on 0.36.1 until 0.39.0 restored it.
             //
             // Root cause, if it ever regresses: 0.37.x added a SECOND converter
@@ -3544,7 +3544,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // 0.43.1, the same 16 minus `custom-theme` on 2.0.0.
             //
             // Backed by a live run as for 0.39.0 and 0.42.0, because a major
-            // bump deserves one: `kimi acp` driven with the recur-code-managed
+            // bump deserves one: `kimi acp` driven with the rc-managed
             // config.toml block and the synthetic gate token answers
             // `initialize` / `session/new` / `session/prompt` / `session/list`
             // with byte-identical payloads (same capabilities, same four modes,
@@ -3630,7 +3630,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // on), so config.toml, `mcp.json` and skill roots are no longer
             // watched mid-process.
             // Nothing RecurCode does at launch depends on that — config.toml is
-            // written before the spawn and recur-code-mcp rides `session/new` — but
+            // written before the spawn and rc-mcp rides `session/new` — but
             // an MCP server or skill added from RecurCode's settings while a Kimi
             // session is open now lands on the next connect. The bundled
             // models.dev catalog grew, yet its `moonshotai` rows are untouched,
@@ -3705,7 +3705,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // `true` only to satisfy the `only_openclaw_opts_out_of_mcp`
             // invariant — actual wire forwarding is short-circuited in
             // `connection.rs` (see the skip-list), so neither user servers nor
-            // the recur-code-mcp companion are futilely forwarded.
+            // the rc-mcp companion are futilely forwarded.
             supports_mcp: true,
             name: "Pi",
             description: "Self-extensible coding agent (ACP via pi-acp)",
@@ -3926,7 +3926,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // It advertises loadSession + sessionCapabilities.list/resume and
             // accepts wire `mcpServers` (stdio + streamable HTTP; SSE and the
             // `acp` transport are explicitly rejected), so both the resume rung
-            // and the recur-code-mcp companion work out of the box. Since 0.3.0 it
+            // and the rc-mcp companion work out of the box. Since 0.3.0 it
             // mounts the upstream skills chain (`skill_storage_spec` mirrors
             // its roots) and, since 0.2.0, offers `--setup` terminal auth for
             // storing the key in `$DSH_HOME/.credentials.yaml`.
@@ -4085,7 +4085,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // community bridge): verified handshake advertises `loadSession`
             // plus the full `sessionCapabilities` set (list/resume/fork/close/
             // delete/additionalDirectories), image + embeddedContext prompts,
-            // and MCP http+sse — so the resume rung and the recur-code-mcp
+            // and MCP http+sse — so the resume rung and the rc-mcp
             // companion work with no adapters in between. Auth is the qoder
             // account (`qoder login`, or the IDE's qoder-browser flow); there
             // is no API-key env to manage. Model, mode and reasoning effort
@@ -4301,7 +4301,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             agent_type,
             // RecurAgent's ACP server IGNORES `session/new`'s `mcpServers`: its
             // ACP entry point never builds an MCP client, so neither the built-in
-            // recur-code-mcp companion nor a user's own servers ever reach its model
+            // rc-mcp companion nor a user's own servers ever reach its model
             // (probed: a server handed to `session/new` is never spawned).
             // Declaring `false` is what keeps RecurCode from injecting a companion
             // whose `delegate_to_agent` / live-feedback tools the agent can never
@@ -4705,7 +4705,7 @@ mod tests {
             Some("22.0.0"),
         );
         // Kimi Code must never land on 0.37.0–0.38.0: every session in that
-        // range dies on the recur-code-mcp stdio entry (see the registry entry).
+        // range dies on the rc-mcp stdio entry (see the registry entry).
         assert_npx_version(
             AgentType::KimiCode,
             "2.1.1",

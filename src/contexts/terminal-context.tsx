@@ -42,7 +42,7 @@ const MAX_HEIGHT = 600
 const TERMINAL_SETTINGS_UPDATED_EVENT = "app://terminal-settings-updated"
 
 const TERMINAL_SESSION_KEY = "RecurCode:terminal-session:v1"
-const PAGE_NAME_PREFIX = "recur-code-terminal-page:"
+const PAGE_NAME_PREFIX = "rc-terminal-page:"
 const MAX_STORED_TITLE_LENGTH = 256
 const DEFAULT_TITLE = /^Terminal (\d+)$/
 const UUID_V4 =

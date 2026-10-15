@@ -445,7 +445,7 @@ pub struct ConnectionManager {
     /// Delegation broker + token registry + UDS path installed during app
     /// bootstrap (`install_delegation`). When present, `spawn_agent` propagates
     /// the injection to `spawn_agent_connection`, which makes
-    /// `recur-code-mcp` appear in the agent's MCP server list during ACP
+    /// `rc-mcp` appear in the agent's MCP server list during ACP
     /// init. `Arc<OnceLock>` so the inner `Self` cloned from `clone_ref` sees
     /// the install too — the lock is set once at startup and never mutated.
     delegation_injection: Arc<std::sync::OnceLock<crate::acp::connection::DelegationInjection>>,
@@ -2416,7 +2416,7 @@ impl ConnectionManager {
     ///
     /// Used by the delegation-settings UI to enumerate the options the user
     /// can override, with the guarantee that what the UI shows is exactly
-    /// what `recur-code-mcp` will pass through to `session/set_config_option`
+    /// what `rc-mcp` will pass through to `session/set_config_option`
     /// when a delegation actually fires.
     ///
     /// `preferred_config_values` are applied on the probe session before the
@@ -3836,7 +3836,7 @@ impl ConnectionManager {
 ///
 /// `data_dir` is required so `spawn` can build a runtime env that
 /// includes the git credential helper — without it, delegated subagents
-/// fail any git command that depends on the recur-code-injected helper.
+/// fail any git command that depends on the rc-injected helper.
 #[derive(Clone)]
 pub struct ConnectionManagerSpawner {
     pub manager: Arc<ConnectionManager>,

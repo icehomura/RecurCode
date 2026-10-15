@@ -1,5 +1,5 @@
 services:
-  recur-code:
+  rc:
     build: .
     # Or use a pre-built image:
     # image: xintaofei/codeg:latest
@@ -12,7 +12,7 @@ services:
       # Drop this line if you set RC_BRIDGE_HOST_PATTERN below.
       - "3081-3090:3081-3090"
     volumes:
-      - recur-code-data:/data
+      - rc-data:/data
       # Mount your project directories (optional):
       # - /path/to/projects:/projects
     environment:
@@ -25,17 +25,17 @@ services:
       # published 3080, so nothing above has to be published and no range has
       # to be guessed. Needs a wildcard DNS record for the name and, behind a
       # reverse proxy, a wildcard vhost pointing at this service and passing
-      # `Host` through (Caddy: `*.recurcode.example.com { reverse_proxy recur-code:3080 }`).
+      # `Host` through (Caddy: `*.recurcode.example.com { reverse_proxy rc:3080 }`).
       # `auto` puts the port one label in front of whatever host the workbench
       # itself was opened at.
       # - RC_BRIDGE_HOST_PATTERN=auto
     # In-place upgrades (Settings → Software Update) rewrite the binaries and
     # web assets inside this container's writable layer, not the image. The
-    # recur-code-data volume persists, but an upgrade lives only in the running
+    # rc-data volume persists, but an upgrade lives only in the running
     # container: recreating it (`--force-recreate`, or recreating after a
     # `docker pull`) starts from the image again and drops the upgrade. Build or
     # pull an image at the new version and recreate to make it permanent.
     restart: unless-stopped
 
 volumes:
-  recur-code-data:
+  rc-data:

@@ -14,7 +14,7 @@
 //! A conversation is re-parsed when its `conversation.updated_at` differs from
 //! what the last sync recorded. That covers:
 //!
-//!   * every recur-code-driven turn — each one flips the row's status, bumping
+//!   * every rc-driven turn — each one flips the row's status, bumping
 //!     `updated_at`;
 //!   * every freshly imported session — it has no stamp at all;
 //!   * every **re-imported** session — `import_one` drops the stamp explicitly,

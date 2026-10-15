@@ -30,7 +30,7 @@ describe("parseInput wrapper peeling", () => {
     // walker in acp/lifecycle.rs (ARGS_WRAPPER_KEYS).
     const parsed = parseInput(
       JSON.stringify({
-        providerIdentifier: "recur-code-mcp",
+        providerIdentifier: "rc-mcp",
         toolName: "delegate_to_agent",
         args: { agent_type: "claude_code", task: "执行 pnpm build" },
       })

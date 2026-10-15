@@ -166,7 +166,7 @@ describe("parseRecurCodeReferenceUri", () => {
   it("recognizes a freshly minted embedded reference uri", () => {
     const uri = buildEmbeddedReferenceUri()
     expect(isEmbeddedReferenceUri(uri)).toBe(true)
-    expect(isEmbeddedReferenceUri("file:///recur-code-embedded/real.ts")).toBe(false)
+    expect(isEmbeddedReferenceUri("file:///rc-embedded/real.ts")).toBe(false)
     expect(isEmbeddedReferenceUri("recurcode://session/abc")).toBe(false)
   })
 })

@@ -570,7 +570,7 @@ async fn check_binary_environment(
                     label: "Binary cache".into(),
                     status: CheckStatus::Pass,
                     message: format!(
-                        "Using the system-installed {cmd} (recur-code-managed download also available)"
+                        "Using the system-installed {cmd} (rc-managed download also available)"
                     ),
                     fixes: vec![],
                 }

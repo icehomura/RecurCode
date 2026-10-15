@@ -433,7 +433,7 @@ describe("CursorConfigPanel", () => {
   })
 
   it("offers a command a headless RecurCode server can actually run", async () => {
-    // The reported deployment: recur-code-server on a Linux box, panel open in a
+    // The reported deployment: rc-server on a Linux box, panel open in a
     // browser somewhere else. `login` would run on the server, where nothing
     // can open a browser — the reason the offered command "just cannot be
     // run". Cursor's documented answer is to print the URL instead.

@@ -69,7 +69,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * recur-code-mcp service indicator, bottom-right of the workspace.
+ * rc-mcp service indicator, bottom-right of the workspace.
  *
  * The companion is what carries RecurCode's own tools into an agent session —
  * delegation, live feedback, ask-user-question, session lookup, the two

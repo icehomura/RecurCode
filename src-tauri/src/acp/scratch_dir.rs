@@ -51,7 +51,7 @@ use std::time::Duration;
 /// confined to this subtree, which is what makes it safe to delete without
 /// asking: `%TEMP%` itself is a namespace shared with every other application,
 /// but nothing except RecurCode writes here.
-const SCRATCH_NAMESPACE: &str = "recur-code-acp";
+const SCRATCH_NAMESPACE: &str = "rc-acp";
 
 /// Opt out of isolation entirely and let the child inherit the ambient
 /// `TMP`/`TEMP`/`TMPDIR` the way it did before this module existed. Escape
@@ -145,7 +145,7 @@ pub fn isolation_enabled() -> bool {
 }
 
 /// A scratch root is only usable if a child can still bind a unix socket
-/// INSIDE it. Isolation costs `/recur-code-acp/<pid>-<hex>` — about 25 bytes — and
+/// INSIDE it. Isolation costs `/rc-acp/<pid>-<hex>` — about 25 bytes — and
 /// [`SUN_PATH_CAP`] is small enough that spending them can push a child that
 /// bound fine on the ambient temp directory over the cap (#754: a macOS
 /// `/var/folders/…/T` is 48 bytes, leaving 55 for a socket name; nesting under
@@ -166,7 +166,7 @@ fn leaves_room_for_a_child_socket(root: &Path) -> bool {
 /// `/tmp` because it is the shortest directory POSIX guarantees exists. Scoped
 /// by euid because, unlike a macOS per-user `/var/folders/…/T`, `/tmp` is
 /// shared with every other user on the machine: without the uid the first
-/// account to run RecurCode would own `recur-code-acp` and every other account would be
+/// account to run RecurCode would own `rc-acp` and every other account would be
 /// unable to create inside it. [`create`] makes it `0700` so the contents stay
 /// as private as they were in the per-user directory this replaces.
 #[cfg(unix)]
@@ -473,7 +473,7 @@ pub(crate) fn create_root(root: &Path) -> std::io::Result<()> {
 
 /// Refuse a scratch root RecurCode did not create.
 ///
-/// Guards the two ways `/tmp/recur-code-acp-<euid>` can be waiting for us: a
+/// Guards the two ways `/tmp/rc-acp-<euid>` can be waiting for us: a
 /// directory another local account created first (they own it, so they can read
 /// and replace what the agent unpacks there), and a SYMLINK aimed somewhere
 /// else — `create_dir_all` is satisfied by a symlink to a directory, so without
@@ -806,7 +806,7 @@ mod tests {
     /// Length of a real macOS per-user temp directory,
     /// `/var/folders/hl/26lfwjvs4s760g9fm1nk15xm0000gn/T`. Short enough that a
     /// child could bind a socket directly in it, long enough that it cannot
-    /// also absorb `/recur-code-acp/<pid>-<hex>` — which is the whole of #754.
+    /// also absorb `/rc-acp/<pid>-<hex>` — which is the whole of #754.
     #[cfg(unix)]
     const MACOS_TEMP_DIR_LEN: usize = 48;
 
@@ -827,7 +827,7 @@ mod tests {
     /// than against [`leaves_room_for_a_child_socket`]'s own opinion.
     ///
     /// Before the length budget existed this bound
-    /// `<ambient>/recur-code-acp/<pid>-<hex>/znr-<uuid>.sock` — 119 bytes — and
+    /// `<ambient>/rc-acp/<pid>-<hex>/znr-<uuid>.sock` — 119 bytes — and
     /// failed with `path must be shorter than SUN_LEN`.
     #[cfg(unix)]
     #[test]
@@ -907,7 +907,7 @@ mod tests {
     fn a_loose_root_we_own_is_tightened_rather_than_refused() {
         use std::os::unix::fs::PermissionsExt;
         let holder = tempfile::tempdir().expect("tempdir");
-        let root = holder.path().join("recur-code-acp");
+        let root = holder.path().join("rc-acp");
         std::fs::create_dir(&root).expect("create root");
         std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o755)).expect("chmod");
 

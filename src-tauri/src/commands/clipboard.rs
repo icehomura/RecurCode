@@ -63,7 +63,7 @@ pub fn resolve_clipboard_paths(paths: &[String]) -> Result<Vec<PathBuf>, AppComm
 /// rule is not a thing only a Linux CI run can check.
 ///
 /// The one non-test caller therefore exists only in a Linux **desktop** build:
-/// `platform` is behind `tauri-runtime`, so a Linux `recur-code-server` build has no
+/// `platform` is behind `tauri-runtime`, so a Linux `rc-server` build has no
 /// caller at all and would otherwise trip `-D dead-code`.
 #[cfg_attr(
     not(all(target_os = "linux", feature = "tauri-runtime")),

@@ -157,7 +157,7 @@ describe("restampSkillPrefixes", () => {
   })
   afterEach(() => editor?.destroy())
 
-  /** A recur-code-managed skill badge (carries a `meta.scope`, unlike ACP commands). */
+  /** A rc-managed skill badge (carries a `meta.scope`, unlike ACP commands). */
   function insertSkillBadge(id: string, prefix: "/" | "$" = "/") {
     editor.commands.insertReference({
       refType: "skill",

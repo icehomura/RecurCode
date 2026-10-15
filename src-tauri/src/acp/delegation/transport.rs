@@ -1,4 +1,4 @@
-//! Wire format for `recur-code-mcp` companion ↔ main process round-trip over UDS
+//! Wire format for `rc-mcp` companion ↔ main process round-trip over UDS
 //! (Unix) or named pipe (Windows).
 //!
 //! The frame is dead simple: a little-endian `u32` byte length followed by
@@ -41,11 +41,11 @@
 //!
 //! ### Version coupling
 //!
-//! The companion (`recur-code-mcp`) and the listener (inside the RecurCode main
+//! The companion (`rc-mcp`) and the listener (inside the RecurCode main
 //! process) ship in the SAME release artifact — the Tauri bundle, the
 //! server Docker image, and the standalone binary tree all install both
 //! binaries at the same path. The MCP config pointing the agent CLI at
-//! `recur-code-mcp` uses an absolute path that is replaced atomically by the
+//! `rc-mcp` uses an absolute path that is replaced atomically by the
 //! upgrade, so an old-version companion talking to a new-version listener
 //! is not a supported configuration. As a consequence this protocol does
 //! NOT carry a version field and the tagged-enum cutover from the older
@@ -71,7 +71,7 @@ pub struct BrokerRequest {
     /// the agent passes it through to the companion via `--token`. Rejects
     /// anything else.
     pub token: String,
-    /// recur-code-internal ACP connection UUID for the parent session.
+    /// rc-internal ACP connection UUID for the parent session.
     pub parent_connection_id: String,
     /// The MCP `tool_use_id` for the LLM-issued `delegate_to_agent` call.
     /// Used to bind the eventual child outcome back to the parent's
@@ -783,7 +783,7 @@ pub async fn client_computer_act_round_trip(
 }
 
 /// Probe the listener: write a [`BrokerMessage::Ping`] and read the
-/// `{"ok": true}` answer back. Used by the recur-code-mcp service-status indicator
+/// `{"ok": true}` answer back. Used by the rc-mcp service-status indicator
 /// to tell "listening" from "socket file exists but nobody is accepting".
 /// Callers should wrap this in their own timeout — a socket whose peer accepts
 /// but never answers would otherwise park here.
@@ -977,7 +977,7 @@ mod tests {
         // PID + nanosecond suffix keeps the pipe name unique across parallel
         // tests and avoids collisions with a live listener on the same box.
         let pipe_name = format!(
-            r"\\.\pipe\recur-code-mcp-test-{}-{}",
+            r"\\.\pipe\rc-mcp-test-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -1029,7 +1029,7 @@ mod tests {
         // agents it launches. Under `tempdir()` this lands at 99 bytes there —
         // green, but one directory level from an unexplainable red.
         let dir = tempfile::tempdir_in("/tmp").unwrap();
-        let path = dir.path().join("recur-code-mcp.sock");
+        let path = dir.path().join("rc-mcp.sock");
         let listener = UnixListener::bind(&path).unwrap();
         let server_path = path.to_string_lossy().to_string();
 

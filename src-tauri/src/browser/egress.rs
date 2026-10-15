@@ -7,7 +7,7 @@
 //! network leaves from there. Each remote connection gets a browser profile
 //! of its own whose proxy is a SOCKS5 listener on this computer's loopback;
 //! every connection that profile makes is carried as one stream over a single
-//! WebSocket to the remote recur-code-server's tunnel (`web/browser_tunnel`), which
+//! WebSocket to the remote rc-server's tunnel (`web/browser_tunnel`), which
 //! connects to the destination from its side. Nothing is rewritten on the
 //! way: the tunnel moves bytes, so TLS, WebSockets and HTTP/2 are exactly what
 //! they would be on the remote host.
@@ -76,7 +76,7 @@ const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(10);
 const OUTGOING_QUEUE: usize = 256;
 
 /// Path the probe page and its WebSocket live under, on the listener's port.
-pub const PROBE_PATH: &str = "/recur-code-egress-probe/";
+pub const PROBE_PATH: &str = "/rc-egress-probe/";
 
 // ─── SOCKS5 ─────────────────────────────────────────────────────────────
 
@@ -252,9 +252,9 @@ pub enum EgressStatus {
     /// The WebSocket dropped or could not be opened; the next connection a
     /// tab makes tries again.
     Down { reason: String },
-    /// The remote recur-code-server has no tunnel (an older version).
+    /// The remote rc-server has no tunnel (an older version).
     Unsupported,
-    /// The remote recur-code-server's tunnel is switched off.
+    /// The remote rc-server's tunnel is switched off.
     Disabled,
 }
 
@@ -1068,11 +1068,11 @@ mod tests {
 
     #[test]
     fn probe_paths_carry_a_plain_nonce_and_nothing_else() {
-        assert_eq!(probe_nonce("/recur-code-egress-probe/abc-123"), Some("abc-123"));
-        assert_eq!(probe_nonce("/recur-code-egress-probe/abc/ws"), Some("abc"));
-        assert_eq!(probe_nonce("/recur-code-egress-probe/abc?x=1"), Some("abc"));
-        assert_eq!(probe_nonce("/recur-code-egress-probe/"), None);
-        assert_eq!(probe_nonce("/recur-code-egress-probe/a%20b"), None);
+        assert_eq!(probe_nonce("/rc-egress-probe/abc-123"), Some("abc-123"));
+        assert_eq!(probe_nonce("/rc-egress-probe/abc/ws"), Some("abc"));
+        assert_eq!(probe_nonce("/rc-egress-probe/abc?x=1"), Some("abc"));
+        assert_eq!(probe_nonce("/rc-egress-probe/"), None);
+        assert_eq!(probe_nonce("/rc-egress-probe/a%20b"), None);
         assert_eq!(probe_nonce("/other/abc"), None);
     }
 

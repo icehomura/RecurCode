@@ -52,7 +52,7 @@ vi.mock("@/contexts/active-folder-context", () => ({
     activeFolder:
       h.activeFolderId == null
         ? null
-        : { id: h.activeFolderId, path: "/tmp/recur-code-749" },
+        : { id: h.activeFolderId, path: "/tmp/rc-749" },
     activeFolderId: h.activeFolderId,
   }),
 }))
@@ -88,7 +88,7 @@ function Probe() {
       </button>
       <button
         onClick={() => {
-          void terminal.createTerminalInDirectory("/tmp/recur-code-749-other", "Dir")
+          void terminal.createTerminalInDirectory("/tmp/rc-749-other", "Dir")
         }}
       >
         Open dir
@@ -369,7 +369,7 @@ describe("TerminalProvider reload recovery", () => {
   it("drops only the stored tab it cannot validate, and clamps a long title", () => {
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
     const goodId = "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098"
-    window.name = `recur-code-terminal-page:${pageId}`
+    window.name = `rc-terminal-page:${pageId}`
     sessionStorage.setItem(
       "RecurCode:terminal-session:v1",
       JSON.stringify({
@@ -478,7 +478,7 @@ describe("TerminalProvider reload recovery", () => {
   it("restores a tab whose stored command link is unusable, without the link", () => {
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
     const id = "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098"
-    window.name = `recur-code-terminal-page:${pageId}`
+    window.name = `rc-terminal-page:${pageId}`
     sessionStorage.setItem(
       "RecurCode:terminal-session:v1",
       JSON.stringify({
@@ -509,7 +509,7 @@ describe("TerminalProvider reload recovery", () => {
 
   function storeCommandTab(id: string) {
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
-    window.name = `recur-code-terminal-page:${pageId}`
+    window.name = `rc-terminal-page:${pageId}`
     sessionStorage.setItem(
       "RecurCode:terminal-session:v1",
       JSON.stringify({
@@ -609,7 +609,7 @@ describe("TerminalProvider reload recovery", () => {
     // Neither ever launches anything for a restored tab, so no bound on them
     // protects a thing — while each one cost a tab its way back.
     const pageId = "0b6f3d7e-5a1c-4e2b-9f8a-1c2d3e4f5a6b"
-    window.name = `recur-code-terminal-page:${pageId}`
+    window.name = `rc-terminal-page:${pageId}`
     const ids = [
       "3f2c1b0a-9e8d-4c7b-a6f5-e4d3c2b1a098",
       "4e3d2c1b-0a9f-4e8d-b7c6-d5e4f3a2b109",

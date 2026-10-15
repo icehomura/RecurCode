@@ -429,7 +429,7 @@ fn windows_name(path: &str, app_user_model_id: Option<&str>) -> String {
     let (told, answer) = mpsc::channel();
     let asked = key.clone();
     let reader = std::thread::Builder::new()
-        .name("recur-code-app-name".into())
+        .name("rc-app-name".into())
         .spawn(move || {
             let (path, id) = &asked;
             let name = id

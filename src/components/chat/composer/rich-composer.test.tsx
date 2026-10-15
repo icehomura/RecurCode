@@ -641,7 +641,7 @@ describe("RichComposer prompt-history Arrow routing", () => {
 describe("RichComposer editable-area sizing (#746)", () => {
   it("grows the editable area off a content basis, never a zero basis", async () => {
     const { container } = await mount()
-    const scroll = container.querySelector(".recur-code-composer-scroll")
+    const scroll = container.querySelector(".rc-composer-scroll")
     expect(scroll).not.toBeNull()
 
     const classes = scroll!.className.split(/\s+/)
@@ -656,7 +656,7 @@ describe("RichComposer editable-area sizing (#746)", () => {
 
   it("lets the contenteditable fill the editable area so taps land on it", async () => {
     const { container } = await mount()
-    const scroll = container.querySelector(".recur-code-composer-scroll")
+    const scroll = container.querySelector(".rc-composer-scroll")
     const editable = container.querySelector('[contenteditable="true"]')
     expect(editable).not.toBeNull()
 

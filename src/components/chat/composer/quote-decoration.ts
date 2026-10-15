@@ -6,7 +6,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view"
 import { quoteMarkerLength } from "@/lib/message-quote"
 
 /** CSS class painted over one `> ` marker (see globals.css). */
-export const QUOTE_MARKER_CLASS = "recur-code-quote-marker"
+export const QUOTE_MARKER_CLASS = "rc-quote-marker"
 
 /** Plugin state is the decoration set for the current document. */
 export const quoteLineDecorationKey = new PluginKey<DecorationSet>(

@@ -69,7 +69,7 @@ pub const HELPER_SIGNING_ID: &str = "app.recurcode.computer-helper";
 /// principal of its own for Accessibility; for Screen Recording only once it
 /// is out of RecurCode's bundle, which is why RecurCode runs a copy of this app
 /// (`helper_app`).
-pub const HELPER_APP: &str = "recur-code-computer-helper.app";
+pub const HELPER_APP: &str = "rc-computer-helper.app";
 
 // A release build pins both or neither: a requirement checked after launch
 // without the launch requirement would let a wrapper run first.
@@ -91,7 +91,7 @@ const READY_TIMEOUT: Duration = Duration::from_secs(15);
 /// RecurCode lives on another disk — until the person answers it.
 const NOT_STARTED: &str = if cfg!(target_os = "macos") {
     "the helper did not start in time — if macOS is asking about \
-     recur-code-computer-helper, answer it and try again"
+     rc-computer-helper, answer it and try again"
 } else {
     "the helper did not start in time"
 };
@@ -125,9 +125,9 @@ const MAX_ASK_OUTPUT: u64 = 256;
 
 pub fn helper_file_name() -> &'static str {
     if cfg!(windows) {
-        "recur-code-computer-helper.exe"
+        "rc-computer-helper.exe"
     } else {
-        "recur-code-computer-helper"
+        "rc-computer-helper"
     }
 }
 
@@ -1314,7 +1314,7 @@ mod tests {
     /// one blocks in dyld on a "removable volume" consent prompt):
     ///
     /// ```text
-    /// RC_TEST_HELPER=/tmp/recur-code-computer-helper \
+    /// RC_TEST_HELPER=/tmp/rc-computer-helper \
     /// RC_TEST_DRIVER=/tmp/cua-driver \
     ///   cargo test --features test-utils --lib computer::local -- --ignored
     /// ```
@@ -1468,7 +1468,7 @@ mod tests {
     /// it names a file, and otherwise looks only beside the executable.
     #[test]
     fn the_helper_is_looked_for_beside_recur_code() {
-        assert!(helper_file_name().starts_with("recur-code-computer-helper"));
+        assert!(helper_file_name().starts_with("rc-computer-helper"));
         let dir = tempfile::tempdir().unwrap();
         let fake = dir.path().join(helper_file_name());
         std::fs::write(&fake, b"").unwrap();
@@ -1585,7 +1585,7 @@ mod tests {
     fn the_helper_ships_as_recur_code_looks_for_it() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"));
         let plist =
-            std::fs::read_to_string(root.join("macos/recur-code-computer-helper.plist")).unwrap();
+            std::fs::read_to_string(root.join("macos/rc-computer-helper.plist")).unwrap();
         let value = |key: &str| -> Option<String> {
             let rest = plist
                 .split(&format!("<key>{key}</key>"))
@@ -1607,12 +1607,12 @@ mod tests {
         );
         assert_eq!(
             value("CFBundleExecutable").as_deref(),
-            Some("recur-code-computer-helper")
+            Some("rc-computer-helper")
         );
         // The name System Settings lists it by, as the settings page names it.
         assert_eq!(
             value("CFBundleName").as_deref(),
-            Some("recur-code-computer-helper")
+            Some("rc-computer-helper")
         );
         assert_eq!(value("CFBundlePackageType").as_deref(), Some("APPL"));
         // No Dock icon for a process that never shows a window.
@@ -1632,13 +1632,13 @@ mod tests {
         let mac = config("tauri.macos.conf.json");
         assert!(sidecars(&mac)
             .iter()
-            .all(|b| !b.contains("recur-code-computer-helper")));
+            .all(|b| !b.contains("rc-computer-helper")));
         assert_eq!(
             mac["bundle"]["macOS"]["files"][format!("Helpers/{HELPER_APP}")].as_str(),
             Some(format!("binaries/{HELPER_APP}").as_str())
         );
         let base = config("tauri.conf.json");
-        assert!(sidecars(&base).contains(&"binaries/recur-code-computer-helper".to_string()));
+        assert!(sidecars(&base).contains(&"binaries/rc-computer-helper".to_string()));
 
         // The copy `tauri build` would compile stays out of every bundle: the
         // CLI bundles a binary target only when its features are among those
@@ -1651,7 +1651,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .find(|b| b["name"].as_str() == Some("recur-code-computer-helper"))
+            .find(|b| b["name"].as_str() == Some("rc-computer-helper"))
             .unwrap();
         assert_eq!(
             helper_bin["required-features"].as_array().unwrap(),

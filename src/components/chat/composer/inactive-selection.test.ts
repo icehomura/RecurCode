@@ -48,6 +48,6 @@ describe("InactiveSelectionHighlight", () => {
   })
 
   it("exposes a stable decoration class shared with the CSS", () => {
-    expect(INACTIVE_SELECTION_CLASS).toBe("recur-code-inactive-selection")
+    expect(INACTIVE_SELECTION_CLASS).toBe("rc-inactive-selection")
   })
 })

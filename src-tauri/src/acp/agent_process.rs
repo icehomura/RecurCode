@@ -1009,7 +1009,7 @@ mod tests {
         // before that point would hit the default disposition and the test would
         // "fail" for a reason it isn't testing.
         let ready = std::env::temp_dir().join(format!(
-            "recur-code-agent-process-trap-ready-{}-{:p}",
+            "rc-agent-process-trap-ready-{}-{:p}",
             std::process::id(),
             &calls
         ));

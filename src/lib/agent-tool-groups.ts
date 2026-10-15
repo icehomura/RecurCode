@@ -14,7 +14,7 @@ import {
 /**
  * How RecurCode's own tool groups are named and drawn, in one table.
  *
- * Two surfaces render this list: the recur-code-mcp popover in the bottom-right of
+ * Two surfaces render this list: the rc-mcp popover in the bottom-right of
  * the workspace (`components/layout/status-bar-mcp.tsx`) and the "tools an
  * agent may use" panel in Collaboration settings
  * (`components/settings/agent-tools-settings.tsx`). They used to hold a table

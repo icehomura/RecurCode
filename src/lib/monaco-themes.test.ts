@@ -220,7 +220,7 @@ describe("EDITOR_CANVAS_BG", () => {
   })
 
   it("encodes color and mode in the theme name", () => {
-    expect(monacoThemeName("neutral", false)).toBe("recur-code-light-neutral")
-    expect(monacoThemeName("blue", true)).toBe("recur-code-dark-blue")
+    expect(monacoThemeName("neutral", false)).toBe("rc-light-neutral")
+    expect(monacoThemeName("blue", true)).toBe("rc-dark-blue")
   })
 })
