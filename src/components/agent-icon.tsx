@@ -493,19 +493,22 @@ const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
         strokeLinejoin="round"
         strokeWidth="1.5"
       />
-      {/* loop arrow: exits the outer frame and lands back on the inner one */}
+      {/* self-loop: a near-full circular arc that visibly returns to its
+          starting point, with the arrowhead pointing back at the start = the
+          loop returns to itself. */}
       <path
-        d="M20 5 C20 8, 16 9.5, 10.5 9.5"
+        d="M19 12.5 A7 7 0 1 0 18.58 14.79"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.5"
       />
       <path
-        d="M10.5 7.5 L10.5 11.5 L8.5 9.5 Z"
+        d="M18.58 14.79 L19.37 14.93 L17.79 14.65 Z"
         fill="currentColor"
         stroke="none"
       />
+      <circle cx="19" cy="12.5" r="0.9" fill="currentColor" />
     </svg>
   )
 })
