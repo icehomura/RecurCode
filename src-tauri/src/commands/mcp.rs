@@ -6325,6 +6325,47 @@ mod tests {
     }
 
     #[test]
+    fn ra_mcp_roundtrip_preserves_other_config_and_keys_by_identity() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("config.json");
+        // Missing / empty / no-array all read as empty and never create a file.
+        assert!(read_ra_servers_at(&path).unwrap().is_empty());
+        assert!(!remove_ra_server_at(&path, "nope").unwrap());
+        assert!(!path.exists());
+        // Seed a config that has OTHER keys RecurAgent owns; they must survive.
+        fs::write(
+            &path,
+            json!({ "provider": "anthropic", "model": "claude-x", "mcp_servers": [] })
+                .to_string(),
+        )
+        .unwrap();
+        // url-keyed server.
+        upsert_ra_server_at(
+            &path,
+            "ignored-id",
+            &json!({ "url": "https://mcp.example/mcp", "headers": {} }),
+        )
+        .unwrap();
+        // command-keyed server.
+        upsert_ra_server_at(&path, "x", &json!({ "command": "npx", "args": ["-y", "a"] })).unwrap();
+        let got = read_ra_servers_at(&path).unwrap();
+        assert!(got.contains_key("https://mcp.example/mcp"), "keyed by url: {got:?}");
+        assert!(got.contains_key("npx"), "keyed by command: {got:?}");
+        // Re-upserting the same command REPLACES (identity), not duplicates.
+        upsert_ra_server_at(&path, "y", &json!({ "command": "npx", "args": ["-y", "b"] })).unwrap();
+        let arr = read_json_file(&path).unwrap()["mcp_servers"].as_array().unwrap().clone();
+        assert_eq!(arr.len(), 2, "no duplicate for same identity: {arr:?}");
+        assert_eq!(arr[1]["args"], json!(["-y", "b"]));
+        // Unknown top-level keys survive the write.
+        let root = read_json_file(&path).unwrap();
+        assert_eq!(root["provider"], json!("anthropic"));
+        assert_eq!(root["model"], json!("claude-x"));
+        // Remove by identity.
+        assert!(remove_ra_server_at(&path, "npx").unwrap());
+        assert_eq!(read_ra_servers_at(&path).unwrap().len(), 1);
+    }
+
+    #[test]
     fn pi_mcp_missing_empty_and_invalid_configs_follow_scan_policy() {
         let dir = tempfile::tempdir().expect("tempdir");
         let path = dir.path().join("mcp.json");
