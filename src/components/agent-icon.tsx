@@ -462,43 +462,50 @@ const CursorMonoIcon = memo(function CursorMonoIcon({
 })
 
 const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
-  // RecurAgent (Recur Code) — a recursion call-tree: a trunk that self-splits
-  // into two, each splitting again. Drawn in currentColor as stroked lines so it
-  // renders frameless like the other mono marks; strokes carry the theme color.
+  // Recur Agent — recursion as self-similarity plus self-reference. The thing
+  // contains a smaller copy of itself (nested rounded rectangles), and a loop
+  // arrow exits the outer frame and lands back on the inner one (the "r" tail
+  // curling to its own start). Drawn in currentColor so it inherits the
+  // surrounding theme; the arrowhead is filled.
   return (
     <svg
       fill="none"
       height={size}
       style={baseSvgStyle}
-      viewBox="0 0 16 16"
+      viewBox="0 0 24 24"
       width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
       <title>Recur Agent</title>
-      <g
+      {/* outer frame — "the thing" */}
+      <path
+        d="M5 3 H19 a2 2 0 0 1 2 2 V19 a2 2 0 0 1 -2 2 H5 a2 2 0 0 1 -2 -2 V5 a2 2 0 0 1 2 -2"
         stroke="currentColor"
-        strokeWidth="1.4"
         strokeLinecap="round"
         strokeLinejoin="round"
-      >
-        {/* trunk */}
-        <path d="M8 14.5V11" />
-        {/* first split */}
-        <path d="M8 11 5.4 8.2" />
-        <path d="M8 11 10.6 8.2" />
-        {/* second split (self-similar) */}
-        <path d="M5.4 8.2 3.6 5.8" />
-        <path d="M5.4 8.2 7.2 5.8" />
-        <path d="M10.6 8.2 8.8 5.8" />
-        <path d="M10.6 8.2 12.4 5.8" />
-      </g>
-      {/* leaf nodes */}
-      <g fill="currentColor">
-        <circle cx="3.6" cy="5.3" r="1.05" />
-        <circle cx="7.2" cy="5.3" r="1.05" />
-        <circle cx="8.8" cy="5.3" r="1.05" />
-        <circle cx="12.4" cy="5.3" r="1.05" />
-      </g>
+        strokeWidth="1.5"
+      />
+      {/* inner frame — recursion: the thing inside the thing */}
+      <path
+        d="M10.5 8 H13.5 a1.5 1.5 0 0 1 1.5 1.5 V14.5 a1.5 1.5 0 0 1 -1.5 1.5 H10.5 a1.5 1.5 0 0 1 -1.5 -1.5 V9.5 a1.5 1.5 0 0 1 1.5 -1.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+      {/* loop arrow: exits the outer frame and lands back on the inner one */}
+      <path
+        d="M20 5 C20 8, 16 9.5, 10.5 9.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M10.5 7.5 L10.5 11.5 L8.5 9.5 Z"
+        fill="currentColor"
+        stroke="none"
+      />
     </svg>
   )
 })
