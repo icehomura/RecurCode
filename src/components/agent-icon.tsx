@@ -462,9 +462,10 @@ const CursorMonoIcon = memo(function CursorMonoIcon({
 })
 
 const RaColorIcon = memo(function RaColorIcon({ size = "1em" }: IconProps) {
-  // Recur Agent — BlueStacks-style blue squircle with a stack of layers. Three
-  // offset planes read bottom-to-top (the back ones peek out down-right); the
-  // front plane is the code face, marked `</>` in the brand blue.
+  // Recur Agent — BlueStacks-style blue squircle with a stack of rhombus
+  // (diamond) plates. Three isometric diamonds read bottom-to-top (the back
+  // ones peek out at the bottom); the front diamond is the code face, marked
+  // `</>` in the brand blue.
   return (
     <svg
       height={size}
@@ -482,15 +483,15 @@ const RaColorIcon = memo(function RaColorIcon({ size = "1em" }: IconProps) {
       </defs>
       {/* blue squircle tile */}
       <rect width="24" height="24" rx="5.3" fill="url(#raTile)" />
-      {/* back plane — peeks out down-right */}
-      <rect x="8" y="15.5" width="13" height="5" rx="2" fill="#FFFFFF" fillOpacity="0.45" />
-      {/* middle plane */}
-      <rect x="6.5" y="10.5" width="13" height="5" rx="2" fill="#FFFFFF" fillOpacity="0.7" />
-      {/* front plane — the code face */}
-      <rect x="5" y="5.5" width="13" height="5" rx="2" fill="#FFFFFF" />
-      {/* `</>` on the front plane: left chevron, slash, right chevron. */}
+      {/* back diamond — a rhombus plate, peeks out at the bottom */}
+      <polygon points="12,10 21,15 12,20 3,15" fill="#FFFFFF" fillOpacity="0.45" />
+      {/* middle diamond */}
+      <polygon points="12,6 21,11 12,16 3,11" fill="#FFFFFF" fillOpacity="0.7" />
+      {/* front diamond — the code face */}
+      <polygon points="12,2 21,7 12,12 3,7" fill="#FFFFFF" />
+      {/* `</>` on the front diamond: left chevron, slash, right chevron. */}
       <path
-        d="M9.3 6.9 L8 8 L9.3 9.1 M14.7 6.9 L16 8 L14.7 9.1 M13.3 6.7 L11 9.3"
+        d="M9.3 5.9 L8 7 L9.3 8.1 M14.7 5.9 L16 7 L14.7 8.1 M13.3 5.7 L11 8.3"
         fill="none"
         stroke="#0B4FD6"
         strokeLinecap="round"
