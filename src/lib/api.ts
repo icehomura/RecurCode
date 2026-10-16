@@ -6390,10 +6390,10 @@ export async function agentRoleCreate(params: {
   return getTransport().call("agent_role_create", {
     name: params.name,
     description: params.description,
-    system_prompt: params.systemPrompt,
-    agent_type: params.agentType ?? null,
-    model_id: params.modelId ?? null,
-    tools_json: params.toolsJson ?? null,
+    systemPrompt: params.systemPrompt,
+    agentType: params.agentType ?? null,
+    modelId: params.modelId ?? null,
+    toolsJson: params.toolsJson ?? null,
     temperature: params.temperature ?? null,
   })
 }
@@ -6412,10 +6412,10 @@ export async function agentRoleUpdate(params: {
     id: params.id,
     name: params.name ?? null,
     description: params.description ?? null,
-    system_prompt: params.systemPrompt ?? null,
-    agent_type: params.agentType ?? null,
-    model_id: params.modelId ?? null,
-    tools_json: params.toolsJson ?? null,
+    systemPrompt: params.systemPrompt ?? null,
+    agentType: params.agentType ?? null,
+    modelId: params.modelId ?? null,
+    toolsJson: params.toolsJson ?? null,
     temperature: params.temperature ?? null,
   })
 }
