@@ -10871,13 +10871,6 @@ fn cascade_update_agent_config(
             // Pi settings panel (`acp_update_pi_config`); it does not participate
             // in the model-provider credential cascade.
         }
-        AgentType::Ra => {
-            // Ra authenticates via its own `~/.ra/config.json` (plus
-            // `~/.ra/profiles/<id>.json`), managed by the dedicated Ra
-            // settings panel (`acp_update_ra_config`); unlike pi it has no
-            // `settings.json`/`auth.json` pair, and like pi it does not
-            // participate in the model-provider credential cascade.
-        }
         AgentType::Grok => {
             // Grok authenticates via `XAI_API_KEY` (or an interactive
             // `grok login` session stored in ~/.grok/auth.json), injected as a
