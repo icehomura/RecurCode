@@ -79,7 +79,7 @@ function status(overrides: Partial<ComputerStatus> = {}): ComputerStatus {
       accessibility: true,
       screenRecording: false,
     },
-    RecurCode: {
+    rc: {
       accessibility: false,
       screenRecording: false,
       selfResponsible: true,
@@ -226,7 +226,7 @@ describe("ComputerUseSettings", () => {
 
     api.computerStatus.mockResolvedValue(
       status({
-        RecurCode: {
+        rc: {
           accessibility: true,
           screenRecording: false,
           selfResponsible: true,

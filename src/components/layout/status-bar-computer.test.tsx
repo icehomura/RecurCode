@@ -64,7 +64,7 @@ function status(overrides: Partial<ComputerStatus> = {}): ComputerStatus {
       accessibility: true,
       screenRecording: false,
     },
-    RecurCode: {
+    rc: {
       accessibility: false,
       screenRecording: false,
       selfResponsible: true,
@@ -231,7 +231,7 @@ describe("StatusBarComputer", () => {
   it("tells, and only tells, when RecurCode itself holds a permission", async () => {
     api.computerStatus.mockResolvedValue(
       status({
-        RecurCode: {
+        rc: {
           accessibility: true,
           screenRecording: false,
           selfResponsible: true,

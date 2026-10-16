@@ -149,8 +149,6 @@ export function useComputerStatus(live: boolean) {
  *  Only for a RecurCode that is its own responsible process: a development build
  *  run from a terminal reports the terminal's. */
 export function rcHoldsPermission(status: ComputerStatus | null): boolean {
-  const RecurCode = status?.rc
-  return (
-    !!RecurCode?.selfResponsible && (RecurCode.accessibility || RecurCode.screenRecording)
-  )
+  const rc = status?.rc
+  return !!rc?.selfResponsible && (rc.accessibility || rc.screenRecording)
 }

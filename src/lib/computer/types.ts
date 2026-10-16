@@ -100,7 +100,7 @@ export interface ComputerStatus {
   verifiedPlatform: boolean
   backend: BackendStatus
   permissions?: PermissionReport
-  RecurCode?: RcTccStatus
+  rc?: RcTccStatus
   shared: SharedWindow[]
   /** Whether the share picker offers the entire screen: macOS and Windows,
    *  with its switch on in Settings. */
