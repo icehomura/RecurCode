@@ -1,36 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!--
+    Full-bleed on purpose: the web favicon, the Windows .ico and the Linux PNGs
+    all want the canvas filled. macOS is the exception — it needs an 824/1024
+    safe-area inset — and that inset is applied when building icon.icns:
+
+        python3 src-tauri/icons/macos-icon.gen.py
+
+    Re-run it after changing anything below, or the Dock icon keeps the old art.
+  -->
   <defs>
-    <!-- 代码符号渐变 -->
-    <linearGradient id="code" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#dcdfe9"/>
-      <stop offset="100%" style="stop-color:#cdd1e2"/>
-    </linearGradient>
-    <!-- 色料三元色 -->
-    <linearGradient id="bubble1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ff4081"/>
-      <stop offset="100%" style="stop-color:#e91e63"/>
-    </linearGradient>
-    <linearGradient id="bubble2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ffeb3b"/>
-      <stop offset="100%" style="stop-color:#fdd835"/>
-    </linearGradient>
-    <linearGradient id="bubble3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#29b6f6"/>
-      <stop offset="100%" style="stop-color:#03a9f4"/>
+    <linearGradient id="raBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4A90FF"/>
+      <stop offset="1" stop-color="#0B4FD6"/>
     </linearGradient>
   </defs>
 
-  <!-- 圆角矩形背景 -->
-  <rect x="0" y="0" width="512" height="512" rx="90" ry="90" fill="#1a1a2e"/>
+  <!-- blue squircle tile -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#raBg)"/>
 
-  <!-- 代码尖括号 < > -->
-  <polyline points="180,186 100,256 180,326"
-    fill="none" stroke="url(#code)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="332,186 412,256 332,326"
-    fill="none" stroke="url(#code)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- back diamond (rhombus plate) -->
+  <polygon points="256,256 448,363 256,469 64,363" fill="#FFFFFF" opacity="0.45"/>
+  <!-- middle diamond -->
+  <polygon points="256,171 448,277 256,384 64,277" fill="#FFFFFF" opacity="0.7"/>
+  <!-- front diamond — the code face -->
+  <polygon points="256,85 448,192 256,299 64,192" fill="#FFFFFF"/>
 
-  <!-- 中间三个圆点（横排） -->
-  <circle cx="206" cy="256" r="30" fill="url(#bubble1)" opacity="0.95"/>
-  <circle cx="256" cy="256" r="36" fill="url(#bubble2)" opacity="0.95"/>
-  <circle cx="306" cy="256" r="30" fill="url(#bubble3)" opacity="0.95"/>
+  <!-- `</>` on the front diamond: left chevron, slash, right chevron. -->
+  <polyline points="201,158 162,192 201,226"
+    fill="none" stroke="#0B4FD6" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="311,158 350,192 311,226"
+    fill="none" stroke="#0B4FD6" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="282" y1="149" x2="230" y2="235"
+    stroke="#0B4FD6" stroke-width="28" stroke-linecap="round"/>
 </svg>
