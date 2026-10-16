@@ -13,7 +13,7 @@ pub mod java_kotlin;
 pub mod ai_analysis;
 
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use crate::db::service::project_structure_service;
 use crate::db::AppDatabase;

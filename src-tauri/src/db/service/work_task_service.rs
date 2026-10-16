@@ -3020,7 +3020,7 @@ pub async fn tree_update_node(
     title: Option<String>,
     description: Option<String>,
 ) -> Result<(), DbError> {
-    let mut model = work_task::Entity::find_by_id(task_id)
+    let model = work_task::Entity::find_by_id(task_id)
         .one(conn)
         .await?
         .ok_or_else(|| DbError::NotFound(format!("work task {task_id}")))?;

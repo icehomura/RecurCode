@@ -2319,7 +2319,7 @@ pub struct ComputerStatus {
     pub permissions: Option<PermissionReport>,
     /// RecurCode's own TCC standing (macOS only).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub RecurCode: Option<RcTccStatus>,
+    pub recur_code: Option<RcTccStatus>,
     pub shared: Vec<SharedWindow>,
     /// Whether the share picker offers the entire screen: macOS and
     /// Windows, with its switch on.
@@ -2400,7 +2400,7 @@ pub async fn computer_status_core(
         verified_platform: false,
         backend: service.backend.status().await,
         permissions,
-        RecurCode: rc_tcc(),
+        recur_code: rc_tcc(),
         shared: service.targets.shared(),
         screen_offered: cfg!(any(target_os = "macos", windows)) && config.screen_enabled,
     })

@@ -1,7 +1,7 @@
 use chrono::Utc;
 use sea_orm::DatabaseConnection;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::NotSet, ColumnTrait, ConnectionTrait, DbBackend, EntityTrait,
+    ActiveModelTrait, ActiveValue::NotSet, ColumnTrait, EntityTrait,
     IntoActiveModel, QueryFilter, QueryOrder, Set,
 };
 
