@@ -4187,6 +4187,34 @@ export function buildVersionCheck(
   }
   if (supportsCustomInstall) footerFixes.push(customInstallFix)
 
+  // Recur Agent is RecurCode's own first-party agent — built and shipped
+  // alongside the app — so the registry's pinned version is not a real upgrade
+  // target and "Recommended: X · Upgrade available" is pure noise. Report it
+  // up to date (pass) against its LOCAL version alone, offering only Uninstall.
+  // This is the one agent allowed to bypass the version comparison.
+  if (agent.agent_type === "ra") {
+    return {
+      check_id: "version_status",
+      label: acpText("version.statusLabel", "Version Status"),
+      status: "pass",
+      message: acpText("version.latest", "{versionText}. Already latest.", {
+        versionText: acpText(
+          "version.localOnly",
+          "Local: {localVersion}",
+          { localVersion }
+        ),
+      }),
+      fixes: [
+        {
+          label: acpText("actions.uninstall", "Uninstall"),
+          kind: uninstallAction,
+          payload: agent.agent_type,
+        },
+      ],
+      footerFixes,
+    }
+  }
+
   if (!agent.installed_version) {
     return {
       check_id: "version_status",
