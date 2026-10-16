@@ -10697,6 +10697,19 @@ fn cascade_update_agent_config(
             // Hermes self-manages credentials in ~/.hermes/.env via
             // `hermes model` / `hermes setup`; RecurCode writes no provider creds.
         }
+        AgentType::Ra => {
+            // RecurCode IS the source of truth for Ra's provider: write the bound
+            // endpoint into Ra's own `~/.ra/config.json` (`provider`/`api_type`/
+            // `base_url` + the key under `env_vars[RC_MODEL_API_KEY]` with
+            // `api_key_env` pointing at it — Ra's native credential mechanism).
+            // The Ra config watcher hot-reloads the running runtime from this
+            // file, so a provider change applies without a restart.
+            crate::commands::ra_config::write_provider_to_ra_config(
+                api_url,
+                api_key,
+            )
+            .map_err(|e| AcpError::protocol(format!("cascade update agent config failed: {e}")))?;
+        }
         AgentType::Cursor => {
             // Cursor authenticates via `cursor-agent login` or CURSOR_API_KEY
             // against Cursor's own backend; there is no third-party

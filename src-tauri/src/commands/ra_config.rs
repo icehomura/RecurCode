@@ -212,6 +212,50 @@ pub fn update_ra_config(update: RaConfigUpdate) -> Result<(), AcpError> {
     update_ra_config_at(&ra_data_root(), update)
 }
 
+/// Env-var name RecurCode stores a bound provider's key under in Ra's
+/// `config.json` `env_vars` map (Ra's native credential mechanism).
+const RA_PROVIDER_KEY_ENV: &str = "RC_MODEL_API_KEY";
+
+/// Write a RecurCode-bound model provider into Ra's `~/.ra/config.json` as an
+/// OpenAI-compatible endpoint: `provider`/`api_type` = `openai`, `base_url` =
+/// the bound URL, and the key under `env_vars[RC_MODEL_API_KEY]` with
+/// `api_key_env` pointing at it. Unknown keys are preserved. The Ra config
+/// watcher hot-reloads the running runtime from this file, so a provider change
+/// applies without a restart.
+pub(crate) fn write_provider_to_ra_config(
+    api_url: &str,
+    api_key: &str,
+) -> Result<(), AcpError> {
+    write_provider_to_ra_config_at(&config_path(&ra_data_root()), api_url, api_key)
+}
+
+fn write_provider_to_ra_config_at(
+    path: &Path,
+    api_url: &str,
+    api_key: &str,
+) -> Result<(), AcpError> {
+    let mut map = read_json_object_or_empty(path);
+    map.insert("provider".into(), serde_json::Value::String("openai".into()));
+    map.insert("api_type".into(), serde_json::Value::String("openai".into()));
+    map.insert("api_key_env".into(), serde_json::Value::String(RA_PROVIDER_KEY_ENV.into()));
+    if !api_url.trim().is_empty() {
+        map.insert("base_url".into(), serde_json::Value::String(api_url.trim().into()));
+    }
+    if !api_key.trim().is_empty() {
+        let env = map
+            .entry("env_vars".to_string())
+            .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+        let obj = env.as_object_mut().ok_or_else(|| {
+            AcpError::protocol("recur config `env_vars` must be an object")
+        })?;
+        obj.insert(
+            RA_PROVIDER_KEY_ENV.to_string(),
+            serde_json::Value::String(api_key.trim().to_string()),
+        );
+    }
+    write_json_object_pretty(path, &map)
+}
+
 pub(crate) fn update_ra_config_at(root: &Path, update: RaConfigUpdate) -> Result<(), AcpError> {
     let path = config_path(root);
     let mut map = read_json_object_or_empty(&path);
@@ -266,6 +310,7 @@ pub(crate) fn update_ra_config_at(root: &Path, update: RaConfigUpdate) -> Result
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[test]
     fn round_trip_preserves_unknown_keys() {
@@ -359,6 +404,28 @@ mod tests {
         assert_eq!(listed[0].id, "dev");
         assert_eq!(listed[0].name, "Dev");
         assert_eq!(listed[1].name, "prod", "name falls back to id");
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn write_provider_to_ra_config_sets_openai_endpoint_and_preserves_unknowns() {
+        let dir = std::env::temp_dir().join(format!("recur-prov-{}", std::process::id()));
+        let _ = fs::create_dir_all(&dir);
+        let path = dir.join("config.json");
+        fs::write(&path, r#"{"model":"gpt-4o","mcp_servers":[{"command":"x"}]}"#).unwrap();
+
+        write_provider_to_ra_config_at(&path, "https://gw.example/v1", "sk-secret")
+            .expect("write ok");
+
+        let map = read_json_object_or_empty(&path);
+        assert_eq!(map["provider"], json!("openai"));
+        assert_eq!(map["api_type"], json!("openai"));
+        assert_eq!(map["base_url"], json!("https://gw.example/v1"));
+        assert_eq!(map["api_key_env"], json!("RC_MODEL_API_KEY"));
+        assert_eq!(map["env_vars"]["RC_MODEL_API_KEY"], json!("sk-secret"));
+        // Unknown / unrelated keys survive the write.
+        assert_eq!(map["model"], json!("gpt-4o"));
+        assert!(map["mcp_servers"].is_array());
         let _ = fs::remove_dir_all(&dir);
     }
 }
