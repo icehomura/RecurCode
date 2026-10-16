@@ -28,7 +28,8 @@ pub struct AgentSettingsUpdate {
 fn default_enabled(agent_type: AgentType) -> bool {
     matches!(
         agent_type,
-        AgentType::ClaudeCode
+        AgentType::Ra
+            | AgentType::ClaudeCode
             | AgentType::Codex
             | AgentType::Gemini
             | AgentType::OpenCode
