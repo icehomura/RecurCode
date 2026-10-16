@@ -1142,6 +1142,9 @@ export const ALL_AGENT_TYPES: BuiltinAgentType[] = [
 ]
 
 export const MODEL_PROVIDER_AGENT_TYPES: BuiltinAgentType[] = [
+  // RecurCode is the source of truth for Ra's provider/model too: it writes them
+  // into `~/.ra/config.json`, which Ra hot-reloads (see the ra-runtime watcher).
+  "ra",
   "claude_code",
   "codex",
   "gemini",
@@ -4184,6 +4187,7 @@ export interface GitHubTokenValidation {
 }
 
 export type McpAppType =
+  | "ra"
   | "claude_code"
   | "codex"
   | "gemini"

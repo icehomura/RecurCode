@@ -111,6 +111,10 @@ type McpTranslator = (
 ) => string
 
 const APP_OPTIONS: { value: McpAppType; label: string }[] = [
+  // Recur Agent is deep-managed: RecurCode writes assigned MCP servers into
+  // `~/.ra/config.json` (`mcp_servers`) and Ra hot-reloads them in-process, so it
+  // is a first-class, pinned-first assign target.
+  { value: "ra", label: "Recur Agent" },
   { value: "claude_code", label: "Claude Code" },
   { value: "codex", label: "Codex CLI" },
   { value: "gemini", label: "Gemini CLI" },
