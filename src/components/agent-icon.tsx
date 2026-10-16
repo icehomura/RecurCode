@@ -461,14 +461,12 @@ const CursorMonoIcon = memo(function CursorMonoIcon({
   )
 })
 
-const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
-  // Recur Agent — a stack of source layers, the front one being code. Three
-  // rounded rectangles drawn back-to-front (the classic "layers" glyph): the
-  // back two peek out from beneath, and the front layer is the code window
-  // itself, marked `</>`. Drawn in currentColor so it inherits the agent theme.
+const RaColorIcon = memo(function RaColorIcon({ size = "1em" }: IconProps) {
+  // Recur Agent — BlueStacks-style blue squircle with a stack of layers. Three
+  // offset planes read bottom-to-top (the back ones peek out down-right); the
+  // front plane is the code face, marked `</>` in the brand blue.
   return (
     <svg
-      fill="none"
       height={size}
       style={baseSvgStyle}
       viewBox="0 0 24 24"
@@ -476,37 +474,28 @@ const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <title>Recur Agent</title>
-      {/* back layer */}
+      <defs>
+        <linearGradient id="raTile" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#4A90FF" />
+          <stop offset="1" stopColor="#0B4FD6" />
+        </linearGradient>
+      </defs>
+      {/* blue squircle tile */}
+      <rect width="24" height="24" rx="5.3" fill="url(#raTile)" />
+      {/* back plane — peeks out down-right */}
+      <rect x="8" y="15.5" width="13" height="5" rx="2" fill="#FFFFFF" fillOpacity="0.45" />
+      {/* middle plane */}
+      <rect x="6.5" y="10.5" width="13" height="5" rx="2" fill="#FFFFFF" fillOpacity="0.7" />
+      {/* front plane — the code face */}
+      <rect x="5" y="5.5" width="13" height="5" rx="2" fill="#FFFFFF" />
+      {/* `</>` on the front plane: left chevron, slash, right chevron. */}
       <path
-        d="M4 16 H18 a2 2 0 0 1 2 2 V20 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 V18 a2 2 0 0 1 2 -2"
-        stroke="currentColor"
+        d="M9.3 6.9 L8 8 L9.3 9.1 M14.7 6.9 L16 8 L14.7 9.1 M13.3 6.7 L11 9.3"
+        fill="none"
+        stroke="#0B4FD6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="1.5"
-      />
-      {/* middle layer */}
-      <path
-        d="M3 11 H19 a2 2 0 0 1 2 2 V15 a2 2 0 0 1 -2 2 H3 a2 2 0 0 1 -2 -2 V13 a2 2 0 0 1 2 -2"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.5"
-      />
-      {/* front layer — the code window */}
-      <path
-        d="M4 5 H20 a2 2 0 0 1 2 2 V9 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 V7 a2 2 0 0 1 2 -2"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.5"
-      />
-      {/* `</>` inside the top window: left chevron, slash, right chevron. */}
-      <path
-        d="M8.5 6.8 L7 8 L8.5 9.2 M17.5 6.8 L19 8 L17.5 9.2 M15.5 6.4 L10.5 9.6"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.3"
+        strokeWidth="1.1"
       />
     </svg>
   )
@@ -523,6 +512,7 @@ const COLOR_ICONS: Partial<Record<AgentType, AnyIcon>> = {
   kimi_code: KimiCodeColorIcon,
   pi: PiColorIcon,
   deepseek: DeepSeekColorIcon,
+  ra: RaColorIcon,
 }
 
 const MONO_ICONS: Partial<Record<AgentType, AnyIcon>> = {
@@ -534,7 +524,6 @@ const MONO_ICONS: Partial<Record<AgentType, AnyIcon>> = {
   cursor: CursorMonoIcon,
   qoder: QoderMonoIcon,
   antigravity: AntigravityMonoIcon,
-  ra: RaMonoIcon,
 }
 
 // Per-agent color override for mono marks, layered on top of the default
