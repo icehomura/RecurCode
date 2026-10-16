@@ -48,6 +48,9 @@ fn mcp_i18n_params<const N: usize>(pairs: [(&str, &str); N]) -> BTreeMap<String,
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum McpAppType {
+    /// Recur Agent. Serializes as `ra`, matching `AgentType::as_wire`.
+    #[serde(rename = "ra")]
+    Ra,
     ClaudeCode,
     Codex,
     Gemini,
@@ -88,7 +91,8 @@ pub enum McpAppType {
 /// server come back on the next refresh. Both used to keep their own hand-typed
 /// copy of this list; one shared constant plus [`tests::all_mcp_apps_is_exhaustive`]
 /// (which fails to compile when a variant is added) is what keeps them honest.
-const ALL_MCP_APPS: [McpAppType; 15] = [
+const ALL_MCP_APPS: [McpAppType; 16] = [
+    McpAppType::Ra,
     McpAppType::ClaudeCode,
     McpAppType::Codex,
     McpAppType::Gemini,
@@ -2762,6 +2766,109 @@ fn read_qoder_servers() -> Result<BTreeMap<String, Value>, AppCommandError> {
     read_qoder_servers_at(&qoder_settings_path())
 }
 
+// ── Recur Agent (`ra`) — MCP servers live in `~/.ra/config.json` as a
+// positional `mcp_servers` array of objects with NO name/id field (RecurAgent
+// derives display via command/url). RecurCode assigns by identity (方案 A): a
+// server is keyed by its `url`, else its `command`. Ra hot-reloads this file, so
+// an assignment here takes effect without editing RecurCode's own records.
+
+fn ra_config_path() -> PathBuf {
+    crate::commands::ra_config::ra_data_root().join("config.json")
+}
+
+/// Stable identity for an `mcp_servers` entry: url wins, else command.
+fn ra_server_identity(entry: &Map<String, Value>) -> Option<String> {
+    entry
+        .get("url")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+        .or_else(|| entry.get("command").and_then(Value::as_str).map(str::to_string))
+}
+
+fn read_ra_servers() -> Result<BTreeMap<String, Value>, AppCommandError> {
+    read_ra_servers_at(&ra_config_path())
+}
+
+fn read_ra_servers_at(path: &Path) -> Result<BTreeMap<String, Value>, AppCommandError> {
+    let root = read_json_file(path)?;
+    let mut out = BTreeMap::new();
+    let Some(arr) = root.get("mcp_servers").and_then(Value::as_array) else {
+        return Ok(out);
+    };
+    for (i, v) in arr.iter().enumerate() {
+        let Some(obj) = v.as_object() else { continue };
+        match canonicalize_spec(v, "Ra config") {
+            Ok(normalized) => {
+                let id = ra_server_identity(obj).unwrap_or_else(|| format!("#entry-{i}"));
+                out.insert(id, normalized);
+            }
+            Err(err) => tracing::warn!("[MCP] skip invalid Ra MCP entry #{i}: {err}"),
+        }
+    }
+    Ok(out)
+}
+
+fn upsert_ra_server(id: &str, spec: &Value) -> Result<(), AppCommandError> {
+    upsert_ra_server_at(&ra_config_path(), id, spec)
+}
+
+fn upsert_ra_server_at(path: &Path, id: &str, spec: &Value) -> Result<(), AppCommandError> {
+    let mut root = read_json_file(path)?;
+    if !root.is_object() {
+        root = json!({});
+    }
+    let canonical = canonicalize_spec(spec, "Ra write")?;
+    // Identity of the NEW spec decides placement; fall back to the incoming id.
+    let new_id = canonical
+        .as_object()
+        .and_then(ra_server_identity)
+        .unwrap_or_else(|| id.to_string());
+
+    let obj = root
+        .as_object_mut()
+        .ok_or_else(|| mcp_configuration_invalid(format!("invalid JSON root in {}", path.display())))?;
+    let arr = obj
+        .entry("mcp_servers".to_string())
+        .or_insert_with(|| Value::Array(Vec::new()));
+    let arr = arr
+        .as_array_mut()
+        .ok_or_else(|| mcp_configuration_invalid(format!("invalid mcp_servers in {}", path.display())))?;
+    // Drop any entry already carrying this identity (or the legacy id), then push.
+    arr.retain(|e| {
+        let cur = e.as_object().and_then(ra_server_identity);
+        !(cur.as_deref() == Some(new_id.as_str()) || cur.as_deref() == Some(id))
+    });
+    arr.push(canonical);
+    write_json_file(path, &root)
+}
+
+fn remove_ra_server(id: &str) -> Result<bool, AppCommandError> {
+    remove_ra_server_at(&ra_config_path(), id)
+}
+
+fn remove_ra_server_at(path: &Path, id: &str) -> Result<bool, AppCommandError> {
+    if !path.exists() {
+        return Ok(false);
+    }
+    let mut root = read_json_file(path)?;
+    let Some(obj) = root.as_object_mut() else {
+        return Ok(false);
+    };
+    let Some(arr) = obj.get_mut("mcp_servers").and_then(Value::as_array_mut) else {
+        return Ok(false);
+    };
+    let before = arr.len();
+    arr.retain(|e| {
+        let cur = e.as_object().and_then(ra_server_identity);
+        cur.as_deref() != Some(id)
+    });
+    let removed = arr.len() < before;
+    if removed {
+        write_json_file(path, &root)?;
+    }
+    Ok(removed)
+}
+
 fn read_qoder_servers_at(path: &Path) -> Result<BTreeMap<String, Value>, AppCommandError> {
     let root = read_json_file(path)?;
     let mut out = BTreeMap::new();
@@ -3238,6 +3345,7 @@ fn upsert_server_for_app(app: McpAppType, id: &str, spec: &Value) -> Result<(), 
         McpAppType::DeepSeek => upsert_deepseek_server(id, spec),
         McpAppType::Qoder => upsert_qoder_server(id, spec),
         McpAppType::Antigravity => upsert_antigravity_server(id, spec),
+        McpAppType::Ra => upsert_ra_server(id, spec),
         McpAppType::Pi => upsert_pi_server(id, spec),
     }
 }
@@ -3268,7 +3376,7 @@ pub fn read_servers_for_agent_type(
         // is nothing to scan and nothing to forward: `.ra/mcp.json` is read by
         // Ra only on its own non-ACP launch paths, which RecurCode never
         // drives.
-        AgentType::Ra => Ok(BTreeMap::new()),
+        AgentType::Ra => read_ra_servers(),
         // deepseek-acp has no native MCP config file: it takes servers only
         // as `session/new`'s `mcpServers`. `$DSH_HOME/mcp.json` is RecurCode's own
         // record of what to send, and the ACP wire is the delivery path — so
@@ -4349,6 +4457,7 @@ fn remove_server_for_app(app: McpAppType, id: &str) -> Result<bool, AppCommandEr
         McpAppType::DeepSeek => remove_deepseek_server(id),
         McpAppType::Qoder => remove_qoder_server(id),
         McpAppType::Antigravity => remove_antigravity_server(id),
+        McpAppType::Ra => remove_ra_server(id),
         McpAppType::Pi => remove_pi_server(id),
     }
 }
@@ -7171,7 +7280,8 @@ mod tests {
         // decides — deliberately — whether the write paths must reach it.
         for app in ALL_MCP_APPS {
             match app {
-                McpAppType::ClaudeCode
+                McpAppType::Ra
+                | McpAppType::ClaudeCode
                 | McpAppType::Codex
                 | McpAppType::OpenCode
                 | McpAppType::Gemini

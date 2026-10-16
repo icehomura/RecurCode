@@ -308,6 +308,7 @@ function normalizeApps(apps: McpAppType[]): McpAppType[] {
 function appsToDraft(apps: McpAppType[]): Record<McpAppType, boolean> {
   const appSet = new Set(apps)
   return {
+    ra: appSet.has("ra"),
     claude_code: appSet.has("claude_code"),
     codex: appSet.has("codex"),
     gemini: appSet.has("gemini"),
