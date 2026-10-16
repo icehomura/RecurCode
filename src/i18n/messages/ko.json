@@ -3141,7 +3141,8 @@
           "disabled": "{agent}은(는) 에이전트 설정에서 비활성화되어 있습니다. 연결 전에 활성화하세요.",
           "unavailable": "{agent}은(는) 현재 플랫폼에서 사용할 수 없습니다.",
           "sdkMissing": "{agent} SDK가 설치되어 있지 않습니다",
-          "adapterMissing": "{agent}의 ACP 어댑터가 설치되어 있지 않습니다"
+          "adapterMissing": "{agent}의 ACP 어댑터가 설치되어 있지 않습니다",
+          "needsConfiguration": "{agent}에 모델 공급자가 설정되지 않아 사용할 수 없습니다. 설정에서 구성한 후 연결하세요."
         },
         "backendErrors": {
           "initializeTimeout": "{agent} 연결 핸드셰이크가 시간 초과되었습니다(60초 동안 응답 없음). 설정을 열어 에이전트 및 네트워크 구성을 확인하세요.",

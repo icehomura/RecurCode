@@ -3141,7 +3141,8 @@
           "disabled": "{agent} est désactivé dans les paramètres des agents. Activez-le avant de vous connecter.",
           "unavailable": "{agent} n'est pas disponible sur la plateforme actuelle.",
           "sdkMissing": "Le SDK de {agent} n'est pas installé",
-          "adapterMissing": "L'adaptateur ACP de {agent} n'est pas installé"
+          "adapterMissing": "L'adaptateur ACP de {agent} n'est pas installé",
+          "needsConfiguration": "{agent} n'a aucun fournisseur de modèle configuré et ne peut pas être utilisé. Configurez-en un dans ses réglages, puis reconnectez-vous."
         },
         "backendErrors": {
           "initializeTimeout": "Le handshake de connexion de {agent} a expiré (aucune réponse après 60 secondes). Ouvrez Paramètres pour vérifier la configuration de l'agent et du réseau.",

@@ -3141,7 +3141,8 @@
           "disabled": "{agent} 已在 Agents 管理中停用，請先啟用後再連線。",
           "unavailable": "{agent} 目前平台不可用。",
           "sdkMissing": "{agent} SDK 尚未安裝",
-          "adapterMissing": "{agent} 的 ACP 轉接器尚未安裝"
+          "adapterMissing": "{agent} 的 ACP 轉接器尚未安裝",
+          "needsConfiguration": "{agent} 尚未設定模型供應者，暫時無法使用。請先在它的設定裡設定，再連線。"
         },
         "backendErrors": {
           "initializeTimeout": "{agent} 連線交握逾時（60 秒未回應），請前往設定頁面檢查智能體與網路設定。",

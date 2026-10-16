@@ -3753,6 +3753,10 @@ export interface AcpAgentStatus {
   installed_version: string | null
   /** See AcpAgentInfo.is_acp_adapter. */
   is_acp_adapter: boolean
+  /** Installed, but missing configuration RecurCode cannot supply for it —
+   *  today exactly Recur Agent with no LLM provider in its own config.json.
+   *  Mirrors the Rust AcpAgentStatus.needs_configuration. */
+  needs_configuration: boolean
 }
 
 // Environment diagnostics (returned by acp_env_diagnostics). Mirrors the Rust

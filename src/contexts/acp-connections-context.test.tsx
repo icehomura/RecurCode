@@ -6392,6 +6392,42 @@ describe("connect failures land on the surface that asked", () => {
     ).toEqual(["actions.openAgentsSettings"])
   })
 
+  it("blocks an installed Recur Agent with no provider configured", async () => {
+    // Recur Agent ships without an LLM provider, so the preflight must stop it
+    // before `ra acp` spawns and exits — the user gets a configure prompt that
+    // opens its settings panel, not the agent's raw process-exit error.
+    h.acpGetAgentStatus.mockResolvedValue({
+      agent_type: "ra",
+      enabled: true,
+      available: true,
+      installed_version: "0.1.0",
+      host_tools_agent_mode: false,
+      is_acp_adapter: false,
+      needs_configuration: true,
+    })
+    await mountProvider()
+    await act(async () => {
+      await expect(
+        h.actions!.connect(TAB, "ra", "/tmp/x", "sess-1")
+      ).rejects.toThrow()
+    })
+
+    expect(h.store!.getConnectError(TAB)).toEqual({
+      agentType: "ra",
+      title: "blocked.needsConfiguration",
+      detail: null,
+      opensAgentSettings: true,
+    })
+    expect(h.acpConnect).not.toHaveBeenCalled()
+    expect(h.toastError.mock.calls[0][0]).toBe("blocked.needsConfiguration")
+    const options = toastOptions(h.toastError.mock.calls[0])
+    expect(options.action?.label).toBe("actions.openAgentsSettings")
+    act(() => options.action!.onClick())
+    expect(h.openSettingsWindow).toHaveBeenCalledWith("agents", {
+      agentType: "ra",
+    })
+  })
+
   it("records a spawn failure with its reason, and retires it on the next attempt", async () => {
     h.acpConnect.mockRejectedValueOnce(new Error("spawn claude ENOENT"))
     await mountProvider()

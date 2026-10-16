@@ -3142,7 +3142,8 @@
           "disabled": "{agent} 已在 Agents 管理中禁用，请先启用后再连接。",
           "unavailable": "{agent} 当前平台不可用。",
           "sdkMissing": "{agent} SDK 尚未安装",
-          "adapterMissing": "{agent} 的 ACP 适配器尚未安装"
+          "adapterMissing": "{agent} 的 ACP 适配器尚未安装",
+          "needsConfiguration": "{agent} 尚未配置模型提供者，暂时无法使用。请先在它的设置里配置，再连接。"
         },
         "backendErrors": {
           "initializeTimeout": "{agent} 连接握手超时（60 秒未响应），请前往设置页面检查智能体和网络配置。",

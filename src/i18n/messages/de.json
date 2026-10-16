@@ -3141,7 +3141,8 @@
           "disabled": "{agent} ist in den Agenten-Einstellungen deaktiviert. Aktivieren Sie ihn vor dem Verbinden.",
           "unavailable": "{agent} ist auf der aktuellen Plattform nicht verfügbar.",
           "sdkMissing": "{agent} SDK ist nicht installiert",
-          "adapterMissing": "Der ACP-Adapter von {agent} ist nicht installiert"
+          "adapterMissing": "Der ACP-Adapter von {agent} ist nicht installiert",
+          "needsConfiguration": "{agent} hat keinen Modell-Anbieter konfiguriert und kann nicht verwendet werden. Richte einen in den Einstellungen ein und verbinde dich dann erneut."
         },
         "backendErrors": {
           "initializeTimeout": "Der Verbindungs-Handshake von {agent} hat nach 60 Sekunden das Zeitlimit überschritten. Öffnen Sie die Einstellungen, um Agenten- und Netzwerkkonfiguration zu prüfen.",

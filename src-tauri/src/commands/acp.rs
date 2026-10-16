@@ -11723,6 +11723,8 @@ pub(crate) async fn acp_get_agent_status_core(
         enabled: setting.map(|m| m.enabled).unwrap_or(true),
         installed_version,
         is_acp_adapter: registry::acp_adapter_relation(agent_type).is_some(),
+        needs_configuration: matches!(agent_type, AgentType::Ra)
+            && !crate::commands::ra_config::ra_llm_configured(),
     })
 }
 

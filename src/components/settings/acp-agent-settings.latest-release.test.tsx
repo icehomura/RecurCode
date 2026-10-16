@@ -184,6 +184,7 @@ describe("AcpAgentSettings — unreviewed latest release", () => {
       enabled: true,
       installed_version: "0.60.1",
       is_acp_adapter: false,
+      needs_configuration: false,
     }))
     await renderPanel([GEMINI])
 

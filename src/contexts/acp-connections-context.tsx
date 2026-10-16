@@ -3685,7 +3685,12 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
   type ConnectBlockState =
     | { kind: "none"; reason: "" }
     | {
-        kind: "missing_config" | "disabled" | "unavailable" | "sdk_missing"
+        kind:
+          | "missing_config"
+          | "disabled"
+          | "unavailable"
+          | "sdk_missing"
+          | "needs_configuration"
         reason: string
       }
 
@@ -3711,6 +3716,16 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
       }
 
       if (agent.installed_version) {
+        // Installed but not yet usable: Recur Agent ships without an LLM
+        // provider, so it cannot start until the user configures one. Block
+        // with a "configure it" prompt (the connect path opens its settings
+        // panel) instead of spawning and surfacing the raw process-exit error.
+        if (agent.needs_configuration) {
+          return {
+            kind: "needs_configuration",
+            reason: t("blocked.needsConfiguration", { agent: agentLabel }),
+          }
+        }
         return { kind: "none", reason: "" }
       }
 
@@ -6649,7 +6664,8 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
           // "…is not installed" is a whole headline on its own; the other
           // blocks read as the reason a connect failed.
           publishConnectError(
-            blocked.kind === "sdk_missing"
+            blocked.kind === "sdk_missing" ||
+              blocked.kind === "needs_configuration"
               ? {
                   agentType,
                   title: blocked.reason,

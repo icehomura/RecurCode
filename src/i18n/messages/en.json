@@ -3142,7 +3142,8 @@
           "disabled": "{agent} is disabled in Agents settings. Enable it before connecting.",
           "unavailable": "{agent} is unavailable on the current platform.",
           "sdkMissing": "{agent} SDK is not installed",
-          "adapterMissing": "{agent}'s ACP adapter is not installed"
+          "adapterMissing": "{agent}'s ACP adapter is not installed",
+          "needsConfiguration": "{agent} has no model provider configured. Set one up in its settings, then connect."
         },
         "backendErrors": {
           "initializeTimeout": "{agent} connection handshake timed out after 60 seconds. Please open Settings to check Agent configuration and network settings.",

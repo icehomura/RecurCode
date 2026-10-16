@@ -38,6 +38,31 @@ fn config_path(root: &Path) -> PathBuf {
     root.join("config.json")
 }
 
+/// Whether Ra's own `config.json` names an LLM provider (or a model Ra can
+/// infer one from) — the one thing `ra acp` insists on before it will start.
+///
+/// RecurCode preflights this so a first-run user is offered a friendly
+/// "configure Recur Agent" prompt instead of the raw process-exit error the
+/// ACP handshake would otherwise surface. Deliberately narrow: only `provider`
+/// or `model` counts, mirroring the two fields `ra`'s factory consults
+/// (`config.provider`, else `detect_provider(config.model)`). A `--provider`
+/// flag or a `--profile` could satisfy `ra` without either field, but
+/// RecurCode's launch passes neither, so with both absent the agent cannot
+/// start.
+pub(crate) fn ra_llm_configured() -> bool {
+    ra_llm_configured_at(&config_path(&ra_data_root()))
+}
+
+fn ra_llm_configured_at(path: &Path) -> bool {
+    let map = read_json_object_or_empty(path);
+    let non_empty = |key: &str| {
+        map.get(key)
+            .and_then(|v| v.as_str())
+            .is_some_and(|s| !s.trim().is_empty())
+    };
+    non_empty("provider") || non_empty("model")
+}
+
 /// Flat model-config keys a user edits from the panel. All optional so an
 /// update can patch a subset. Serde names match Ra's `Config` exactly
 /// (verbatim snake_case, no rename).
@@ -353,6 +378,41 @@ mod tests {
             ..Default::default()
         };
         assert!(update_ra_config_at(&dir, update).is_err());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn llm_configured_requires_provider_or_model() {
+        // RecurCode's connect pre-check reads this to decide whether to block
+        // with a "configure Recur Agent" prompt, so it must only say
+        // "configured" for the two fields `ra acp` itself consults.
+        let dir = std::env::temp_dir().join(format!("recur-cfg-llm-{}", std::process::id()));
+        let _ = fs::create_dir_all(&dir);
+        let path = config_path(&dir);
+
+        // No file at all → not configured.
+        assert!(!ra_llm_configured_at(&path));
+
+        // Base URL / key without a provider or model → still not configured.
+        fs::write(
+            &path,
+            r#"{"base_url":"http://127.0.0.1:8188","api_key_env":"X"}"#,
+        )
+        .unwrap();
+        assert!(!ra_llm_configured_at(&path));
+
+        // A blank provider does not count.
+        fs::write(&path, r#"{"provider":"   "}"#).unwrap();
+        assert!(!ra_llm_configured_at(&path));
+
+        // A model alone is enough — Ra infers the provider from it.
+        fs::write(&path, r#"{"model":"claude-sonnet-4"}"#).unwrap();
+        assert!(ra_llm_configured_at(&path));
+
+        // So is an explicit provider.
+        fs::write(&path, r#"{"provider":"openai"}"#).unwrap();
+        assert!(ra_llm_configured_at(&path));
+
         let _ = fs::remove_dir_all(&dir);
     }
 

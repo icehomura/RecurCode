@@ -3141,7 +3141,8 @@
           "disabled": "{agent} はエージェント設定で無効になっています。接続前に有効化してください。",
           "unavailable": "{agent} は現在のプラットフォームでは利用できません。",
           "sdkMissing": "{agent} SDK がインストールされていません",
-          "adapterMissing": "{agent} の ACP アダプターがインストールされていません"
+          "adapterMissing": "{agent} の ACP アダプターがインストールされていません",
+          "needsConfiguration": "{agent} はモデルプロバイダーが未設定のため使用できません。設定で構成してから接続してください。"
         },
         "backendErrors": {
           "initializeTimeout": "{agent} の接続ハンドシェイクがタイムアウトしました（60 秒以内に応答なし）。設定を開いてエージェントとネットワーク設定を確認してください。",
