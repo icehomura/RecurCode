@@ -52,6 +52,7 @@ mod m20260929_000001_canvas_board;
 mod m20260930_000001_agent_setting_drop_adapter_channel;
 mod m20261006_000001_conversation_tag;
 mod m20261016_000001_recur_agent_first;
+mod m20261016_000002_enable_recur_agent;
 pub struct Migrator;
 
 #[async_trait::async_trait]
@@ -110,6 +111,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260930_000001_agent_setting_drop_adapter_channel::Migration),
             Box::new(m20261006_000001_conversation_tag::Migration),
             Box::new(m20261016_000001_recur_agent_first::Migration),
+            Box::new(m20261016_000002_enable_recur_agent::Migration),
         ]
     }
 }
