@@ -66,3 +66,6 @@ src-tauri/binaries/
 # Python bytecode (rename tooling artifacts)
 __pycache__/
 *.pyc
+
+# ra coding-agent workspace file (runtime artifact)
+.ra-workspace.toml
