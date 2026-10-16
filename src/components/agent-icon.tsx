@@ -462,11 +462,10 @@ const CursorMonoIcon = memo(function CursorMonoIcon({
 })
 
 const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
-  // Recur Agent — recursion as self-similarity plus self-reference. The thing
-  // contains a smaller copy of itself (nested rounded rectangles), and a loop
-  // arrow exits the outer frame and lands back on the inner one (the "r" tail
-  // curling to its own start). Drawn in currentColor so it inherits the
-  // surrounding theme; the arrowhead is filled.
+  // Recur Agent — a stack of source layers, the front one being code. Three
+  // rounded rectangles drawn back-to-front (the classic "layers" glyph): the
+  // back two peek out from beneath, and the front layer is the code window
+  // itself, marked `</>`. Drawn in currentColor so it inherits the agent theme.
   return (
     <svg
       fill="none"
@@ -477,38 +476,38 @@ const RaMonoIcon = memo(function RaMonoIcon({ size = "1em" }: IconProps) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <title>Recur Agent</title>
-      {/* outer frame — "the thing" */}
+      {/* back layer */}
       <path
-        d="M5 3 H19 a2 2 0 0 1 2 2 V19 a2 2 0 0 1 -2 2 H5 a2 2 0 0 1 -2 -2 V5 a2 2 0 0 1 2 -2"
+        d="M4 16 H18 a2 2 0 0 1 2 2 V20 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 V18 a2 2 0 0 1 2 -2"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.5"
       />
-      {/* inner frame — recursion: the thing inside the thing */}
+      {/* middle layer */}
       <path
-        d="M10.5 8 H13.5 a1.5 1.5 0 0 1 1.5 1.5 V14.5 a1.5 1.5 0 0 1 -1.5 1.5 H10.5 a1.5 1.5 0 0 1 -1.5 -1.5 V9.5 a1.5 1.5 0 0 1 1.5 -1.5"
+        d="M3 11 H19 a2 2 0 0 1 2 2 V15 a2 2 0 0 1 -2 2 H3 a2 2 0 0 1 -2 -2 V13 a2 2 0 0 1 2 -2"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.5"
       />
-      {/* self-loop: a near-full circular arc that visibly returns to its
-          starting point, with the arrowhead pointing back at the start = the
-          loop returns to itself. */}
+      {/* front layer — the code window */}
       <path
-        d="M19 12.5 A7 7 0 1 0 18.58 14.79"
+        d="M4 5 H20 a2 2 0 0 1 2 2 V9 a2 2 0 0 1 -2 2 H4 a2 2 0 0 1 -2 -2 V7 a2 2 0 0 1 2 -2"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="1.5"
       />
+      {/* `</>` inside the top window: left chevron, slash, right chevron. */}
       <path
-        d="M18.58 14.79 L19.37 14.93 L17.79 14.65 Z"
-        fill="currentColor"
-        stroke="none"
+        d="M8.5 6.8 L7 8 L8.5 9.2 M17.5 6.8 L19 8 L17.5 9.2 M15.5 6.4 L10.5 9.6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.3"
       />
-      <circle cx="19" cy="12.5" r="0.9" fill="currentColor" />
     </svg>
   )
 })
