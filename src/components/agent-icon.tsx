@@ -484,19 +484,19 @@ const RaColorIcon = memo(function RaColorIcon({ size = "1em" }: IconProps) {
       {/* blue squircle tile */}
       <rect width="24" height="24" rx="5.3" fill="url(#raTile)" />
       {/* back diamond — a rhombus plate, peeks out at the bottom */}
-      <polygon points="12,10 21,15 12,20 3,15" fill="#FFFFFF" fillOpacity="0.45" />
+      <polygon points="12,12 21,17 12,22 3,17" fill="#FFFFFF" fillOpacity="0.45" />
       {/* middle diamond */}
-      <polygon points="12,6 21,11 12,16 3,11" fill="#FFFFFF" fillOpacity="0.7" />
+      <polygon points="12,8 21,13 12,18 3,13" fill="#FFFFFF" fillOpacity="0.7" />
       {/* front diamond — the code face */}
-      <polygon points="12,2 21,7 12,12 3,7" fill="#FFFFFF" />
+      <polygon points="12,4 21,9 12,14 3,9" fill="#FFFFFF" />
       {/* `</>` on the front diamond: left chevron, slash, right chevron. */}
       <path
-        d="M9.3 5.9 L8 7 L9.3 8.1 M14.7 5.9 L16 7 L14.7 8.1 M13.3 5.7 L11 8.3"
+        d="M9.4 7.4 L7.6 9 L9.4 10.6 M14.6 7.4 L16.4 9 L14.6 10.6 M13.2 7 L10.8 11"
         fill="none"
         stroke="#0B4FD6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="1.1"
+        strokeWidth="1.3"
       />
     </svg>
   )
