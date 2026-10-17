@@ -69,7 +69,7 @@ import {
   raProfileList,
   raProfileSetActive,
 } from "@/lib/api"
-import type { ComponentInfo, RaProfileDetail, ToolInfo } from "@/lib/types"
+import type { ComponentInfo, RaProfileDetail } from "@/lib/types"
 
 const LEFT_MIN_WIDTH = 280
 const RIGHT_MIN_WIDTH = 420
@@ -326,43 +326,6 @@ export function ComponentsSettings() {
       }
     },
     [refresh, t]
-  )
-
-  const handleToggleTool = useCallback(
-    async (tool: ToolInfo, enabled: boolean) => {
-      setBusy(true)
-      // Optimistic against the selected component's own tool list, then
-      // authoritative: the list is re-read either way.
-      setComponents((prev) =>
-        prev.map((item) =>
-          item.id === selectedId
-            ? {
-                ...item,
-                tools: item.tools.map((t) =>
-                  t.id === tool.id ? { ...t, enabled } : t
-                ),
-              }
-            : item
-        )
-      )
-      try {
-        await componentsSetEnabled(tool.id, enabled)
-        await refresh()
-        toast.success(
-          enabled
-            ? t("toasts.enabledOn", { name: tool.name })
-            : t("toasts.enabledOff", { name: tool.name })
-        )
-      } catch (err) {
-        toast.error(t("toasts.saveFailed"), {
-          description: toErrorMessage(err),
-        })
-        await refresh()
-      } finally {
-        setBusy(false)
-      }
-    },
-    [refresh, selectedId, t]
   )
 
   const handleUpdate = useCallback(
@@ -849,47 +812,28 @@ export function ComponentsSettings() {
                         </SettingRow>
                       </SettingCard>
 
-                      {/* A multi-call binary's applets are toggled one by one;
-                          each enabled tool becomes a PATH shim. `?? []` because
-                          a backend built before this field omits it. */}
+                      {/* A multi-call binary's applets are listed for
+                          information only — the binary's switch above enables
+                          or disables them all. `?? []` because a backend built
+                          before this field omits it. */}
                       {(selected.tools ?? []).length > 0 && (
                         <SettingCard>
                           <SettingRow
                             title={t("toolsTitle")}
                             description={t("toolsDescription")}
                           />
-                          <div className="mt-1 space-y-0.5">
+                          <div className="mt-2 flex flex-wrap gap-1.5">
                             {(selected.tools ?? []).map((tool) => (
-                              <div
-                                key={tool.id}
-                                className="flex items-center justify-between gap-2 rounded-md px-1.5 py-1 hover:bg-muted/50"
+                              <Badge
+                                key={tool.name}
+                                variant="outline"
+                                className={cn(
+                                  "font-mono text-2xs",
+                                  !selected.enabled && "opacity-50"
+                                )}
                               >
-                                <div className="flex min-w-0 items-center gap-2">
-                                  <code className="text-xs font-medium">
-                                    {tool.name}
-                                  </code>
-                                  {!tool.installed && (
-                                    <Badge variant="outline">
-                                      {t("notInstalled")}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <Switch
-                                  checked={tool.enabled}
-                                  disabled={busy}
-                                  onCheckedChange={(checked) => {
-                                    handleToggleTool(tool, checked).catch(
-                                      (err) => {
-                                        console.error(
-                                          "[ComponentsSettings] tool toggle failed:",
-                                          err
-                                        )
-                                      }
-                                    )
-                                  }}
-                                  aria-label={tool.name}
-                                />
-                              </div>
+                                {tool.name}
+                              </Badge>
                             ))}
                           </div>
                         </SettingCard>

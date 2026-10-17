@@ -5440,12 +5440,8 @@ export interface ProjectCallEdge {
  * delete one.
  */
 export interface ToolInfo {
-  /** Derived setting id (`@recurbusybox:rg`) — what the toggle round-trips. */
-  id: string
+  /** The applet name, e.g. `rg`. */
   name: string
-  enabled: boolean
-  /** The shared binary is installed, so this tool is runnable now. */
-  installed: boolean
 }
 
 export interface ComponentInfo {
@@ -5456,8 +5452,8 @@ export interface ComponentInfo {
   description: string
   /**
    * The applets a multi-call binary dispatches to (empty for single-purpose
-   * binaries like `ra`). Each is toggled on its own — enabling one writes the
-   * PATH shim named after it.
+   * binaries like `ra`). Informational only: the binary's own switch enables
+   * or disables every applet together.
    */
   tools: ToolInfo[]
   enabled: boolean
