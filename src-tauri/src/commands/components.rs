@@ -956,16 +956,12 @@ pub(crate) async fn components_list_core(
         .collect())
 }
 
-/// Enable/disable a component. Refuses for `required` definitions — this is the
-/// "RecurAgent's own tools cannot be disabled" rule. On success the agent PATH
-/// shims are re-synced so the change takes effect on the next launch.
+/// The legacy `components_set_enabled` / `components_set_enabled_core` pair
+/// was structurally dishonest about mcp/skill (a single bool blanket-write
+/// could wipe unrelated settings) and was removed. Use [`components_apply_core`]
+/// with a typed `BinaryEnabled` / `ToolEnabled` action — each writes only
+/// its own row, and the agent PATH shims are still re-synced on success.
 ///
-/// Deprecated in favour of [`components_apply_core`]; removed. The flat bool
-/// model was structurally dishonest about mcp/skill, and a single bool
-/// blanket-write could wipe unrelated settings (`@recurbusybox` off clearing
-/// the rg/jq/fd applet rows it had never touched). Replaced by
-/// [`components_apply_core`] with a typed `BinaryEnabled` / `ToolEnabled`
-/// action, each of which writes only its own row.
 /// Persist a component's env overrides. Rejects ids the registry does not know
 /// and rejects mcp/skill rows: env only makes sense for the binary/mechanism
 /// pair RecurCode actually launches, and those categories are the only ones
