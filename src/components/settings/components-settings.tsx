@@ -160,6 +160,8 @@ function rowsEqual(a: EnvRow[], b: EnvRow[]): boolean {
 interface BinaryLike {
   kind: "binary" | "multicall"
   tool: string
+  /** The user's whole-binary switch (the multicall parent's, for a multicall). */
+  enabled: boolean
   installedVersion: string | null
   availableVersion: string | null
   updateAvailable: boolean
@@ -173,6 +175,7 @@ function asBinaryLike(component: ComponentInfo): BinaryLike | null {
     return {
       kind: "binary",
       tool: state.tool,
+      enabled: state.enabled,
       installedVersion: state.installedVersion,
       availableVersion: state.availableVersion,
       updateAvailable: state.updateAvailable,
@@ -182,6 +185,7 @@ function asBinaryLike(component: ComponentInfo): BinaryLike | null {
     return {
       kind: "multicall",
       tool: state.binary.tool,
+      enabled: state.binary.enabled,
       installedVersion: state.binary.installedVersion,
       availableVersion: state.binary.availableVersion,
       updateAvailable: state.binary.updateAvailable,
@@ -808,7 +812,7 @@ export function ComponentsSettings() {
             title={t("enabled")}
             control={
               <Switch
-                checked={component.enabled}
+                checked={state.enabled}
                 disabled={component.required || busy}
                 onCheckedChange={(checked) => {
                   handleBinaryToggle(component, checked).catch((err) => {

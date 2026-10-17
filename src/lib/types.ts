@@ -5472,6 +5472,9 @@ export interface BinaryState {
   kind: "binary"
   /** The binary name, e.g. `ra`. */
   tool: string
+  /** The user's whole-binary switch. Always `true` when the component is
+   *  `required` — the registry pins those on and the switch renders disabled. */
+  enabled: boolean
   installedVersion: string | null
   availableVersion: string | null
   updateAvailable: boolean
