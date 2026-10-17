@@ -195,6 +195,17 @@ async fn async_main() -> ExitCode {
         .await
         .expect("Failed to initialize database");
 
+    // A database upgraded from a build that kept mcp/skill rows in
+    // `component_setting` would carry a second, conflicting source of truth for
+    // state the live machinery owns. The per-list backstop covers it too; this
+    // keeps a fresh launch from even reading a stale row. Non-fatal on failure,
+    // like the desktop path. Runs before `db` is handed to the AppState.
+    if let Err(err) =
+        rc_lib::commands::components::purge_legacy_component_settings_on_startup(&db).await
+    {
+        tracing::warn!("[components] legacy purge failed: {err}");
+    }
+
     // Logging phase 2: override the default level from the persisted
     // `logging.level` now that the DB is open. Phase 3 (wiring the emitter)
     // happens once AppState exists, below.
