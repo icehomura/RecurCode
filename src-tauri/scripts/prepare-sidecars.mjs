@@ -85,9 +85,22 @@ const EXTERNAL = [
   {
     name: "ra",
     repo: "icehomura/RecurAgent",
-    // `ra-bundle-<triple>.{zip,tar.gz}`
+    // `ra-headless-bundle-<triple>.{zip,tar.gz}` — the HEADLESS build (kernel +
+    // tools, `--no-default-features --features api`), NOT `ra-bundle-*`.
+    //
+    // RecurCode drives Ra over ACP, which is a JSON-RPC protocol on
+    // stdin/stdout: one stray non-JSON line corrupts a frame and the session
+    // dies mid-parse. The full `ra-bundle` links the terminal UI, and a UI
+    // that thinks it owns the terminal is exactly the wrong tenant on that
+    // channel. `ra acp` already routes its own logs to stderr, but the only
+    // way to guarantee no TUI can ever reach the protocol channel is to ship a
+    // build that contains no TUI code at all. The registry's download URLs
+    // (`registry.rs`, AgentType::Ra) point at the same headless archives, so
+    // staged and downloaded Ra are the same variant.
+    //
+    // The executable inside either archive is still named `ra`.
     asset: (triple) =>
-      `ra-bundle-${triple}${triple.includes("windows") ? ".zip" : ".tar.gz"}`,
+      `ra-headless-bundle-${triple}${triple.includes("windows") ? ".zip" : ".tar.gz"}`,
     // Executable name inside the archive (before the `.exe` suffix).
     inner: "ra",
   },
