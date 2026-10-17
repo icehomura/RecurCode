@@ -390,8 +390,13 @@ pub(crate) fn create_profile_at(
             let mut m = serde_json::Map::new();
             m.insert("enabled".into(), serde_json::Value::Bool(true));
             m.insert("data_dir".into(), serde_json::Value::Null);
-            let root_config = read_json_object_or_empty(&config_path(root));
-            m.insert("config".into(), serde_json::Value::Object(root_config));
+            // NOT the flat `provider`/`model` pair `ra acp` reads from
+            // `config.json`: a profile's LLM selection lives in the structured
+            // `config.llm.primary` contract, and `config_from_profile` reads
+            // ONLY that (it does not migrate the flat pair). Seeding the flat
+            // object would create an LLM-less profile that fails with "No
+            // provider configured".
+            m.insert("config".into(), seed_config_from_root(root));
             m
         }
     };
@@ -405,6 +410,59 @@ pub(crate) fn create_profile_at(
     write_json_object_pretty(&path, &map)?;
     let active = active_profile_id(root);
     Ok(profile_detail_from_path(&path, &active))
+}
+
+/// Build a profile `config` object whose structured LLM contract mirrors the
+/// root `config.json`'s flat selection, so a brand-new profile starts as
+/// "whatever the app is using now" instead of an LLM-less profile.
+///
+/// Only the fields `LlmModelSelectionConfig` / `LlmRouteConfig` declare are
+/// written — both are `deny_unknown_fields`, so a stray key would make Ra
+/// reject the whole profile.
+fn seed_config_from_root(root: &Path) -> serde_json::Value {
+    let flat = read_json_object_or_empty(&config_path(root));
+    let text = |key: &str| {
+        flat.get(key)
+            .and_then(|v| v.as_str())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+    };
+
+    let mut route = serde_json::Map::new();
+    for (key, value) in [
+        ("base_url", text("base_url")),
+        ("api_key_env", text("api_key_env")),
+        ("api_type", text("api_type")),
+    ] {
+        if let Some(value) = value {
+            route.insert(key.into(), value.into());
+        }
+    }
+
+    let mut primary = serde_json::Map::new();
+    if let Some(provider) = text("provider") {
+        primary.insert("family_id".into(), provider.into());
+    }
+    if let Some(model) = text("model") {
+        primary.insert("model_id".into(), model.into());
+    }
+    if !route.is_empty() {
+        primary.insert("route".into(), serde_json::Value::Object(route));
+    }
+
+    let mut config = serde_json::Map::new();
+    if !primary.is_empty() {
+        let mut llm = serde_json::Map::new();
+        llm.insert("primary".into(), serde_json::Value::Object(primary));
+        config.insert("llm".into(), serde_json::Value::Object(llm));
+    }
+    // Ra reads the key itself from the profile's own `env_vars`, so the
+    // credential travels with the profile rather than through the flat pair.
+    if let Some(env_vars) = flat.get("env_vars") {
+        config.insert("env_vars".into(), env_vars.clone());
+    }
+    serde_json::Value::Object(config)
 }
 
 /// Delete a profile file. The synthetic `_main` (RecurAgent's internal
@@ -785,7 +843,10 @@ mod tests {
         let raw = read_json_object_or_empty(&profile_path(&dir, "hello-world"));
         assert_eq!(raw["enabled"], json!(true));
         assert_eq!(raw["data_dir"], json!(null));
-        assert_eq!(raw["config"]["provider"], json!("anthropic"));
+        // The seed goes into the STRUCTURED llm contract, not the flat pair —
+        // `config_from_profile` reads only `config.llm.primary`.
+        assert_eq!(raw["config"]["llm"]["primary"]["family_id"], json!("anthropic"));
+        assert_eq!(raw["config"]["llm"]["primary"]["model_id"], json!("claude"));
         assert!(raw["created_at"].is_string());
         assert!(raw["updated_at"].is_string());
 
