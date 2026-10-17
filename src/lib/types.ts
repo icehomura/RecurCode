@@ -5439,12 +5439,27 @@ export interface ProjectCallEdge {
  * frontend can only toggle, configure and update an entry, never create or
  * delete one.
  */
+export interface ToolInfo {
+  /** Derived setting id (`@recurbusybox:rg`) — what the toggle round-trips. */
+  id: string
+  name: string
+  enabled: boolean
+  /** The shared binary is installed, so this tool is runnable now. */
+  installed: boolean
+}
+
 export interface ComponentInfo {
   /** Stable tool-cache id, e.g. `@rg`; also what the operator sees in the UI. */
   id: string
   category: "binary" | "mcp" | "skill"
   name: string
   description: string
+  /**
+   * The applets a multi-call binary dispatches to (empty for single-purpose
+   * binaries like `ra`). Each is toggled on its own — enabling one writes the
+   * PATH shim named after it.
+   */
+  tools: ToolInfo[]
   enabled: boolean
   /** `true` locks the enable switch on — turning it off would break the app. */
   required: boolean

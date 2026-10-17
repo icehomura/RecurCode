@@ -4653,6 +4653,8 @@
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
     "requiredNote": "Diese Komponente ist erforderlich und kann nicht deaktiviert werden.",
+    "toolsTitle": "Werkzeuge",
+    "toolsDescription": "Die Applets, die dieses Binary im PATH bereitstellt. Ausschalten entfernt den jeweiligen Befehl.",
     "envTitle": "Umgebungsvariablen",
     "envDescription": "Zusätzliche Umgebungsvariablen, die dieser Komponente bei der Ausführung übergeben werden.",
     "envKey": "Schlüssel",

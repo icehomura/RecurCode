@@ -23,6 +23,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -38,7 +39,7 @@ import {
   componentsSetEnv,
   componentsUpdate,
 } from "@/lib/api"
-import type { ComponentInfo } from "@/lib/types"
+import type { ComponentInfo, ToolInfo } from "@/lib/types"
 
 const LEFT_MIN_WIDTH = 280
 const RIGHT_MIN_WIDTH = 420
@@ -231,6 +232,43 @@ export function ComponentsSettings() {
     [refresh, t]
   )
 
+  const handleToggleTool = useCallback(
+    async (tool: ToolInfo, enabled: boolean) => {
+      setBusy(true)
+      // Optimistic against the selected component's own tool list, then
+      // authoritative: the list is re-read either way.
+      setComponents((prev) =>
+        prev.map((item) =>
+          item.id === selectedId
+            ? {
+                ...item,
+                tools: item.tools.map((t) =>
+                  t.id === tool.id ? { ...t, enabled } : t
+                ),
+              }
+            : item
+        )
+      )
+      try {
+        await componentsSetEnabled(tool.id, enabled)
+        await refresh()
+        toast.success(
+          enabled
+            ? t("toasts.enabledOn", { name: tool.name })
+            : t("toasts.enabledOff", { name: tool.name })
+        )
+      } catch (err) {
+        toast.error(t("toasts.saveFailed"), {
+          description: toErrorMessage(err),
+        })
+        await refresh()
+      } finally {
+        setBusy(false)
+      }
+    },
+    [refresh, selectedId, t]
+  )
+
   const handleUpdate = useCallback(
     async (component: ComponentInfo) => {
       setUpdating(true)
@@ -365,7 +403,8 @@ export function ComponentsSettings() {
                     {t("empty")}
                   </div>
                 ) : (
-                  <div className="flex-1 min-h-0 overflow-y-auto space-y-1 p-2">
+                  <ScrollArea className="flex-1 min-h-0">
+                    <div className="space-y-1 p-2">
                     {inCategory.map((component) => (
                       <button
                         key={component.id}
@@ -400,7 +439,8 @@ export function ComponentsSettings() {
                         </div>
                       </button>
                     ))}
-                  </div>
+                    </div>
+                  </ScrollArea>
                 )}
               </div>
             </ResizablePanel>
@@ -411,7 +451,8 @@ export function ComponentsSettings() {
               <div className="h-full flex-1 min-h-0 min-w-0 rounded-lg border bg-card overflow-hidden lg:rounded-l-none lg:border-l-0">
                 {selected ? (
                   <div className="h-full flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <ScrollArea className="flex-1 min-h-0">
+                    <div className="p-4 space-y-4">
                       <div>
                         <h3 className="text-sm font-semibold">
                           {selected.name}
@@ -498,6 +539,51 @@ export function ComponentsSettings() {
                           </div>
                         </SettingRow>
                       </SettingCard>
+
+                      {/* A multi-call binary's applets are toggled one by one;
+                          each enabled tool becomes a PATH shim. */}
+                      {selected.tools.length > 0 && (
+                        <SettingCard>
+                          <SettingRow
+                            title={t("toolsTitle")}
+                            description={t("toolsDescription")}
+                          />
+                          <div className="mt-1 space-y-0.5">
+                            {selected.tools.map((tool) => (
+                              <div
+                                key={tool.id}
+                                className="flex items-center justify-between gap-2 rounded-md px-1.5 py-1 hover:bg-muted/50"
+                              >
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <code className="text-xs font-medium">
+                                    {tool.name}
+                                  </code>
+                                  {!tool.installed && (
+                                    <Badge variant="outline">
+                                      {t("notInstalled")}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <Switch
+                                  checked={tool.enabled}
+                                  disabled={busy}
+                                  onCheckedChange={(checked) => {
+                                    handleToggleTool(tool, checked).catch(
+                                      (err) => {
+                                        console.error(
+                                          "[ComponentsSettings] tool toggle failed:",
+                                          err
+                                        )
+                                      }
+                                    )
+                                  }}
+                                  aria-label={tool.name}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </SettingCard>
+                      )}
 
                       {selected.required && (
                         <SettingNote icon={Lock}>
@@ -608,6 +694,7 @@ export function ComponentsSettings() {
                         </SettingRow>
                       </SettingCard>
                     </div>
+                    </ScrollArea>
                   </div>
                 ) : (
                   <div className="h-full flex items-center justify-center px-4 text-center text-xs text-muted-foreground">

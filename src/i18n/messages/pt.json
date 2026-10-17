@@ -4653,6 +4653,8 @@
     "enabled": "Ativado",
     "disabled": "Desativado",
     "requiredNote": "Este componente é obrigatório e não pode ser desativado.",
+    "toolsTitle": "Ferramentas",
+    "toolsDescription": "Os applets que este binário fornece no PATH. Desative um para remover o comando.",
     "envTitle": "Variáveis de ambiente",
     "envDescription": "Variáveis de ambiente extras passadas a este componente durante a execução.",
     "envKey": "Chave",

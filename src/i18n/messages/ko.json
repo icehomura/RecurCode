@@ -4653,6 +4653,8 @@
     "enabled": "사용",
     "disabled": "사용 안 함",
     "requiredNote": "이 컴포넌트는 필수이므로 끌 수 없습니다.",
+    "toolsTitle": "도구",
+    "toolsDescription": "이 바이너리가 PATH에 제공하는 애플릿입니다. 끄면 해당 명령이 제거됩니다.",
     "envTitle": "환경 변수",
     "envDescription": "이 컴포넌트를 실행할 때 추가로 전달되는 환경 변수입니다.",
     "envKey": "키",

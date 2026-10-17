@@ -4674,6 +4674,8 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "requiredNote": "This component is required and cannot be turned off.",
+    "toolsTitle": "Tools",
+    "toolsDescription": "The applets this binary provides on PATH. Turn one off to remove its command.",
     "envTitle": "Environment variables",
     "envDescription": "Extra environment variables passed to this component when it runs.",
     "envKey": "Key",
