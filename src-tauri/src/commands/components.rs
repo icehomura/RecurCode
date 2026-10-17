@@ -8,9 +8,12 @@
 //! RecurAgent-owned component non-disableable.
 //!
 //! The `binary` category is served by ONE shared multi-call executable: the
-//! `recurbusybox` archive. It dispatches on `argv[0]`, so exposing the fifteen
-//! tools is a matter of giving each enabled one a shim named after the tool
+//! `recurbusybox` archive. It dispatches on `argv[0]`, so enabling the binary
+//! is a matter of giving every applet it provides a shim named after the tool
 //! (see [`sync_component_shims`]) that points back at the one cached binary.
+//!
+//! Applets are NOT independently configurable: the multi-call binary's switch
+//! is the only switch, so turning it off removes every applet shim at once.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -40,10 +43,11 @@ pub struct ComponentDef {
     pub description: &'static str,
     /// The executable this component provides on PATH (binary category only).
     pub tool: Option<&'static str>,
-    /// Tools a multi-call binary exposes (binary category only). Each is a
-    /// switchable face of the ONE executable in `tool`: enabling it writes a
-    /// shim named after the tool, which is how `recurbusybox` picks its
-    /// personality from `argv[0]`. Empty for single-purpose binaries (`ra`).
+    /// Applets a multi-call binary exposes (binary category only), listed in
+    /// the detail pane for information only. They are not switched on their
+    /// own: enabling the ONE executable in `tool` writes a shim per applet,
+    /// which is how `recurbusybox` picks its personality from `argv[0]`.
+    /// Empty for single-purpose binaries (`ra`).
     pub tools: &'static [&'static str],
     /// `true` = cannot be disabled (the agent RecurCode depends on).
     pub required: bool,
@@ -99,48 +103,13 @@ fn recur_busybox_sha256_url() -> Option<String> {
     recur_busybox_archive_url().map(|url| format!("{url}.sha256"))
 }
 
-/// One RecurBusyBox tool entry, all served by the shared archive above.
-///
-/// The tools are applets INSIDE the one `recurbusybox` binary — they are not
-/// binaries of their own, so they are not registry entries. Their enable state
-/// is persisted under a derived id (`@recurbusybox:rg`) so the same
-/// `component_setting` table can carry it.
+/// The applets INSIDE the one `recurbusybox` binary. They are not binaries of
+/// their own, so they are neither registry entries nor settings of their own:
+/// enabling RecurBusyBox enables every applet, disabling it removes them all.
 const RECURBUSYBOX_TOOLS: &[&str] = &[
     "rg", "fd", "sd", "astgrep", "jq", "tokei", "fzf", "xsv", "tree", "extract", "tar", "zip",
     "zcat", "ps", "dust",
 ];
-
-/// Separates a tool's derived setting id from its parent component:
-/// `@recurbusybox:rg`.
-pub(crate) const TOOL_ID_SEP: char = ':';
-
-/// The derived `component_setting.component_id` for one tool of a multi-call
-/// binary.
-pub(crate) fn tool_setting_id(component_id: &str, tool: &str) -> String {
-    format!("{component_id}{TOOL_ID_SEP}{tool}")
-}
-
-/// What a `components_set_enabled` id actually names.
-enum Target {
-    /// A registry entry (`@ra`, `@recurbusybox`, …).
-    Component(&'static ComponentDef),
-    /// One tool of a multi-call binary (`@recurbusybox:rg`).
-    Tool,
-}
-
-/// Resolve an id the settings UI hands back — either a registry id or a
-/// derived tool id. `None` for anything the registry does not know.
-fn resolve_target(id: &str) -> Option<Target> {
-    if let Some(def) = definition_for(id) {
-        return Some(Target::Component(def));
-    }
-    let (component_id, tool) = id.split_once(TOOL_ID_SEP)?;
-    let def = definition_for(component_id)?;
-    def.tools
-        .iter()
-        .any(|t| *t == tool)
-        .then_some(Target::Tool)
-}
 
 /// The whole built-in registry. Ordering is stable and drives the settings
 /// page's list order.
@@ -219,16 +188,12 @@ fn ensure_can_toggle(def: &ComponentDef, enabled: bool) -> Result<(), AppCommand
     Ok(())
 }
 
-/// One tool of a multi-call binary, as the settings detail pane renders it.
+/// One applet of a multi-call binary, as the settings detail pane renders it.
+/// Purely informational: every applet follows its parent binary's switch.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolInfo {
-    /// Derived setting id (`@recurbusybox:rg`) — what the toggle round-trips.
-    pub id: String,
     pub name: String,
-    pub enabled: bool,
-    /// The shared binary is installed, so this tool is runnable now.
-    pub installed: bool,
 }
 
 /// Registry joined with persisted state, shaped for the settings UI.
@@ -251,18 +216,12 @@ pub struct ComponentInfo {
     pub update_available: bool,
 }
 
-/// Every `component_setting.component_id` the registry implies: each registry
-/// entry plus each tool of every multi-call binary. Kept in ONE place so
-/// `ensure_defaults` and the shim sync cannot drift apart.
+/// Every `component_setting.component_id` the registry implies — one per
+/// registry entry. Applets are NOT settings: they ride their parent binary,
+/// so they never get a row. Kept in ONE place so `ensure_defaults` and the
+/// shim sync cannot drift apart.
 fn all_setting_ids() -> Vec<String> {
-    let mut ids = Vec::new();
-    for def in COMPONENTS {
-        ids.push(def.id.to_string());
-        for tool in def.tools {
-            ids.push(tool_setting_id(def.id, tool));
-        }
-    }
-    ids
+    COMPONENTS.iter().map(|def| def.id.to_string()).collect()
 }
 
 fn env_from_setting(
@@ -396,18 +355,8 @@ pub(crate) async fn components_list_core(
             let tools = def
                 .tools
                 .iter()
-                .map(|tool| {
-                    let id = tool_setting_id(def.id, tool);
-                    let enabled = by_id
-                        .get(id.as_str())
-                        .map(|m| m.enabled)
-                        .unwrap_or(true);
-                    ToolInfo {
-                        id,
-                        name: (*tool).to_string(),
-                        enabled,
-                        installed: installed.is_some(),
-                    }
+                .map(|tool| ToolInfo {
+                    name: (*tool).to_string(),
                 })
                 .collect();
             ComponentInfo {
@@ -437,16 +386,13 @@ pub(crate) async fn components_set_enabled_core(
     id: &str,
     enabled: bool,
 ) -> Result<(), AppCommandError> {
-    match resolve_target(id) {
-        None => {
-            return Err(AppCommandError::not_found(format!(
-                "unknown component: {id}"
-            )));
-        }
-        // Only a parent binary can be pinned; a tool of one never is.
-        Some(Target::Component(def)) => ensure_can_toggle(def, enabled)?,
-        Some(Target::Tool) => {}
-    }
+    // Only a registry entry is switchable. An applet id (`@recurbusybox:rg`)
+    // is not a component, so it is refused like any unknown id — enabling the
+    // parent binary is what turns applets on.
+    let def = definition_for(id).ok_or_else(|| {
+        AppCommandError::not_found(format!("unknown component: {id}"))
+    })?;
+    ensure_can_toggle(def, enabled)?;
     component_setting_service::set_enabled(&db.conn, id, enabled).await?;
     sync_component_shims(&db.conn).await?;
     emit_components_updated(emitter);
@@ -459,7 +405,7 @@ pub(crate) async fn components_set_env_core(
     id: &str,
     env: HashMap<String, String>,
 ) -> Result<(), AppCommandError> {
-    if resolve_target(id).is_none() {
+    if definition_for(id).is_none() {
         return Err(AppCommandError::not_found(format!(
             "unknown component: {id}"
         )));
@@ -593,17 +539,16 @@ pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<()
             .with_detail(e.to_string())
     })?;
 
-    // RecurBusyBox is the one component whose tools become PATH shims. Turning
-    // the binary itself off removes every shim regardless of the tool toggles.
+    // RecurBusyBox is the one component whose applets become PATH shims. The
+    // binary's switch is the only switch: on writes every applet shim, off
+    // removes them all.
     let busybox_enabled = by_id
         .get(RECURBUSYBOX_TOOL_ID)
         .copied()
         .unwrap_or(true);
     for tool in RECURBUSYBOX_TOOLS {
         let shim = dir.join(binary_cache::executable_file_name(tool));
-        let tool_id = tool_setting_id(RECURBUSYBOX_TOOL_ID, tool);
-        let enabled = busybox_enabled && by_id.get(tool_id.as_str()).copied().unwrap_or(true);
-        if enabled {
+        if busybox_enabled {
             if let Some(source) = source.as_deref() {
                 if let Err(e) = create_shim(source, &shim) {
                     tracing::warn!(
@@ -744,17 +689,16 @@ mod tests {
         // `recurbusybox` is the one multi-call binary; its applets ride along.
         let rb = binaries.iter().find(|c| c.id == RECURBUSYBOX_TOOL_ID).unwrap();
         assert_eq!(rb.tools.len(), RECURBUSYBOX_TOOLS.len());
-        assert!(rb.tools.iter().all(|t| t.enabled));
         assert_eq!(rb.available_version.as_deref(), Some(RECURBUSYBOX_VERSION));
-        // A tool's id is derived and namespaced under its parent.
+        // The applets are listed for information, not switched individually.
         assert_eq!(
-            rb.tools[0].id,
-            tool_setting_id(RECURBUSYBOX_TOOL_ID, rb.tools[0].name.as_str())
+            rb.tools.iter().map(|t| t.name.as_str()).collect::<Vec<_>>(),
+            RECURBUSYBOX_TOOLS
         );
     }
 
     #[tokio::test]
-    async fn a_required_binary_cannot_be_disabled_but_a_tool_can() {
+    async fn a_required_binary_cannot_be_disabled_and_applets_are_not_settings() {
         let db = fresh_in_memory_db().await;
         let emitter = EventEmitter::Noop;
 
@@ -765,24 +709,20 @@ mod tests {
             "RecurAgent is required"
         );
 
-        let rg = tool_setting_id(RECURBUSYBOX_TOOL_ID, "rg");
-        components_set_enabled_core(&db, &emitter, &rg, false)
+        // The applets are not individually switchable; the binary is the only
+        // switch, and toggling it turns every shim on or off together.
+        components_set_enabled_core(&db, &emitter, RECURBUSYBOX_TOOL_ID, false)
             .await
-            .expect("a tool toggles on its own");
-
+            .expect("the binary toggles");
         let rb = components_list_core(&db)
             .await
             .expect("list")
             .into_iter()
             .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
             .unwrap();
-        assert!(!rb.tools.iter().find(|t| t.name == "rg").unwrap().enabled);
-        assert!(
-            rb.tools.iter().find(|t| t.name == "fd").unwrap().enabled,
-            "sibling tools are untouched"
-        );
+        assert!(!rb.enabled);
 
-        for unknown in ["@nope", "@recurbusybox:nope"] {
+        for unknown in ["@nope", "@recurbusybox:rg", "@recurbusybox:nope"] {
             assert!(
                 components_set_enabled_core(&db, &emitter, unknown, false)
                     .await
@@ -793,7 +733,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn env_round_trips_for_components_and_tools() {
+    async fn env_round_trips_for_components() {
         let db = fresh_in_memory_db().await;
 
         let mut env = HashMap::new();
@@ -810,11 +750,14 @@ mod tests {
             .unwrap();
         assert_eq!(rb.env, env);
 
-        // A tool id is a valid env target too, and unknown ids are refused.
-        components_set_env_core(&db, &tool_setting_id(RECURBUSYBOX_TOOL_ID, "jq"), env.clone())
-            .await
-            .expect("set env on a tool");
-        assert!(components_set_env_core(&db, "@nope", env).await.is_err());
+        // Applet ids are not settings, so they are refused like any unknown id.
+        for unknown in ["@nope", "@recurbusybox:jq"] {
+            assert!(
+                components_set_env_core(&db, unknown, env.clone())
+                    .await
+                    .is_err()
+            );
+        }
     }
 
     #[test]
