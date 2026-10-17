@@ -1124,6 +1124,77 @@ fn prepend_agent_install_dirs_path(env: &mut Vec<(String, String)>, agent_type: 
     *env = map.into_iter().collect();
 }
 
+/// Append `dir` to the PATH entry of `env`, seeding from `fallback_path` when
+/// `env` has no PATH key of its own. Mirror of [`prepend_dir_to_path_env`]:
+/// removes any pre-existing PATH key first (case-insensitively when `windows`,
+/// since Windows env keys are case-insensitive) so the result has exactly one
+/// PATH entry, and keeps the helper pure (no env/fs access) so it is
+/// unit-tested for both platforms. Pure (no env/fs access).
+fn append_dir_to_path_env(
+    env: &mut BTreeMap<String, String>,
+    dir: &str,
+    fallback_path: &str,
+    windows: bool,
+) {
+    let sep = if windows { ';' } else { ':' };
+    // Same PATH-key dedup as the prepend variant: a stale differently-cased
+    // duplicate (e.g. `Path` plus an inserted `PATH`) could otherwise leave a
+    // ghost PATH key the child Command applies last and clobbers the appended
+    // dir with.
+    let matching: Vec<String> = env
+        .keys()
+        .filter(|k| {
+            if windows {
+                k.eq_ignore_ascii_case("PATH")
+            } else {
+                k.as_str() == "PATH"
+            }
+        })
+        .cloned()
+        .collect();
+    let mut existing_val: Option<String> = None;
+    for k in &matching {
+        existing_val = env.remove(k);
+    }
+    let existing_val = existing_val.unwrap_or_else(|| fallback_path.to_string());
+    let new_path = if existing_val.is_empty() {
+        dir.to_string()
+    } else {
+        format!("{existing_val}{sep}{dir}")
+    };
+    // Reuse the effective (last-sorted) key's casing when present; otherwise
+    // default to the platform-conventional name (`Path` on Windows, `PATH` on Unix).
+    let key = matching
+        .into_iter()
+        .next_back()
+        .unwrap_or_else(|| if windows { "Path" } else { "PATH" }.to_string());
+    env.insert(key, new_path);
+}
+
+/// Append RecurCode's components shim directory to the END of a merged env's
+/// PATH — the `prefer_bundled_tools=false` companion to
+/// [`prepend_components_bin_path`]. With the shims at the end, a host's
+/// `rg`/`jq`/… wins whenever one is installed; the shims remain a fallback for
+/// the agent's tool calls when the host has no copy. Same no-op rules: absent
+/// directory (nothing enabled/installed yet) is deliberately a no-op.
+fn append_components_bin_path(env: &mut Vec<(String, String)>) {
+    let Ok(dir) = crate::acp::binary_cache::components_bin_dir() else {
+        return;
+    };
+    if !dir.is_dir() {
+        return;
+    }
+    let fallback = std::env::var("PATH").unwrap_or_default();
+    let mut map: BTreeMap<String, String> = std::mem::take(env).into_iter().collect();
+    append_dir_to_path_env(
+        &mut map,
+        &dir.to_string_lossy(),
+        &fallback,
+        cfg!(windows),
+    );
+    *env = map.into_iter().collect();
+}
+
 /// Prepend RecurCode's components shim directory FIRST on a merged env's PATH.
 ///
 /// The shims are created by `commands::components::sync_component_shims` for
@@ -2225,8 +2296,19 @@ async fn build_agent(
             prepend_agent_install_dirs_path(&mut merged_env, agent_type);
             // Bundled RecurBusyBox tools win on PATH for every launch path
             // (session, delegation, automation), independent of which agent
-            // is being spawned.
-            prepend_components_bin_path(&mut merged_env);
+            // is being spawned. The exact precedence is a setting: the
+            // user-visible "优先使用内置工具" toggle on the Components page.
+            // ON (default) prepends the shim dir so the bundled tool always
+            // shadows a host copy; OFF appends it so the host's own tool wins
+            // when present and the shim stays a fallback for whatever the host
+            // does not provide. Read synchronously each launch — preferences
+            // is a tiny `~/.rc/preferences.json` file and the read is cheaper
+            // than the IPC of caching the answer.
+            if crate::preferences::load().prefer_bundled_tools {
+                prepend_components_bin_path(&mut merged_env);
+            } else {
+                append_components_bin_path(&mut merged_env);
+            }
             if agent_type == AgentType::Cursor {
                 apply_cursor_env_policy(&mut merged_env, runtime_env);
             } else if agent_type == AgentType::Grok {
@@ -22819,6 +22901,60 @@ mod tests {
             env.keys().filter(|k| k.eq_ignore_ascii_case("PATH")).collect();
         assert_eq!(path_keys.len(), 1, "exactly one PATH-ish key must remain: {env:?}");
         assert_eq!(env.get("Path").unwrap(), r"C:\OfficeCLI;C:\b");
+    }
+
+    #[test]
+    fn append_path_unix_appends_and_keeps_single_key() {
+        let mut env = BTreeMap::new();
+        env.insert("PATH".to_string(), "/usr/bin:/bin".to_string());
+        append_dir_to_path_env(&mut env, "/home/u/.local/bin", "/fallback", false);
+        // Existing PATH first, appended dir last — host's tools still win on
+        // lookup, the appended dir is purely a fallback for tools the host
+        // does not have.
+        assert_eq!(env.get("PATH").unwrap(), "/usr/bin:/bin:/home/u/.local/bin");
+        assert_eq!(env.keys().filter(|k| k.as_str() == "PATH").count(), 1);
+    }
+
+    #[test]
+    fn append_path_unix_seeds_from_fallback_when_absent() {
+        let mut env = BTreeMap::new();
+        append_dir_to_path_env(&mut env, "/x/bin", "/usr/bin:/bin", false);
+        // No prior key: the whole PATH becomes the fallback, with the appended
+        // dir pushed onto the end. A bare `/x/bin` would be wrong: the host's
+        // PATH is the source of truth for everything the agent will resolve,
+        // and silently dropping it would break every inherited tool.
+        assert_eq!(env.get("PATH").unwrap(), "/usr/bin:/bin:/x/bin");
+    }
+
+    #[test]
+    fn append_path_windows_appends_with_semicolon() {
+        let mut env = BTreeMap::new();
+        env.insert("Path".to_string(), r"C:\Windows".to_string());
+        append_dir_to_path_env(
+            &mut env,
+            r"C:\Users\u\AppData\Local\OfficeCLI",
+            "ignored-fallback",
+            true,
+        );
+        assert_eq!(
+            env.get("Path").unwrap(),
+            r"C:\Windows;C:\Users\u\AppData\Local\OfficeCLI"
+        );
+    }
+
+    #[test]
+    fn append_path_windows_collapses_duplicate_casings() {
+        // Same dedup rule as the prepend helper: a stale `PATH`/`Path` pair
+        // would otherwise leave a duplicate the child Command applies last
+        // and overwrites the appended dir with the un-appended value.
+        let mut env = BTreeMap::new();
+        env.insert("PATH".to_string(), r"C:\a".to_string());
+        env.insert("Path".to_string(), r"C:\b".to_string());
+        append_dir_to_path_env(&mut env, r"C:\OfficeCLI", "ignored-fallback", true);
+        let path_keys: Vec<&String> =
+            env.keys().filter(|k| k.eq_ignore_ascii_case("PATH")).collect();
+        assert_eq!(path_keys.len(), 1, "exactly one PATH-ish key must remain: {env:?}");
+        assert_eq!(env.get("Path").unwrap(), r"C:\b;C:\OfficeCLI");
     }
 
     #[test]
