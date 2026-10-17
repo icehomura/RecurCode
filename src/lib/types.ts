@@ -5438,31 +5438,138 @@ export interface ProjectCallEdge {
  * server or a skill pack). The list itself is fixed by the backend — the
  * frontend can only toggle, configure and update an entry, never create or
  * delete one.
+ *
+ * `state` is a tagged union: each component category carries its own real
+ * shape (rc-mcp is a socket + binary + nine groups; a skill is a central copy
+ * plus one link per agent). The previous flat boolean was structurally
+ * dishonest about both, so it is gone.
  */
-export interface ToolInfo {
-  /** The applet name, e.g. `rg`. */
-  name: string
-}
-
 export interface ComponentInfo {
-  /** Stable tool-cache id, e.g. `@rg`; also what the operator sees in the UI. */
+  /** Stable registry id (e.g. `@ra`, `@recurbusybox`, `@rc-mcp`,
+   *  `@ui-render-skill`). */
   id: string
-  category: "binary" | "mcp" | "skill"
+  /** The category the UI dispatches on. `binary` is a single-purpose binary;
+   *  `multicall` is a multi-call binary (its applets are individually
+   *  switchable). */
+  category: "binary" | "multicall" | "mcp" | "skill"
   name: string
   description: string
-  /**
-   * The applets a multi-call binary dispatches to (empty for single-purpose
-   * binaries like `ra`). Informational only: the binary's own switch enables
-   * or disables every applet together.
-   */
-  tools: ToolInfo[]
-  enabled: boolean
   /** `true` locks the enable switch on — turning it off would break the app. */
   required: boolean
+  /** Per-component env overrides (binary/multicall only). */
+  env: Record<string, string>
+  /** The category-specific state, mirroring the backend's `ComponentState`. */
+  state: ComponentState
+}
+
+/** Single-purpose binary (`ra`). */
+export interface BinaryState {
+  kind: "binary"
+  /** The binary name, e.g. `ra`. */
+  tool: string
   installedVersion: string | null
   availableVersion: string | null
   updateAvailable: boolean
-  env: Record<string, string>
+}
+
+/** One multi-call applet, as the settings detail pane renders it. */
+export interface MulticallTool {
+  /** Stable setting id, e.g. `@recurbusybox:rg`. */
+  id: string
+  /** The applet name, e.g. `rg`. */
+  name: string
+  /** The user's choice for this applet; `true` unless switched off. */
+  enabled: boolean
+  /** Whether the shared multi-call binary that provides this applet is
+   *  actually present on disk — an observation, not a user choice. */
+  installed: boolean
+}
+
+/** Multi-call binary (`rb` and friends). */
+export interface MulticallState {
+  kind: "multicall"
+  binary: BinaryState
+  tools: MulticallTool[]
+}
+
+/** rc-mcp live service status (mirrors the backend `RcMcpServiceStatus`
+ *  exactly — the UI does not invent a boolean of its own). Fields stay
+ *  snake_case because the transport passes them through unchanged. */
+export interface RcMcpComponentState {
+  kind: "mcp"
+  state:
+    | "stopped"
+    | "unavailable"
+    | "disabled"
+    | "running"
+  listening: boolean
+  socket_path: string
+  binary_path: string | null
+  tool_groups: RcMcpToolGroup[]
+  companion_count: number
+  session_count: number
+  active_delegations: number
+  depth_limit: number
+  started_at: number | null
+  last_error: string | null
+  can_start: boolean
+}
+
+/** One rc-mcp tool group toggle. `requires` is the parent group key when
+ *  this is a dependent switch (off + locked while the parent is off). */
+export interface RcMcpToolGroup {
+  key: string
+  enabled: boolean
+  requires: string | null
+}
+
+/** Where the bundled ui-render skill's central copy stands. */
+export type SkillCentralStatus = "present" | "missing" | "conflict"
+
+/** Generative-UI skill — central copy plus per-agent links. */
+export interface SkillState {
+  kind: "skill"
+  central: SkillCentralStatus
+  /** Wire slugs of the agents linked to our central copy. */
+  linkedAgents: string[]
+  bundledHash: string | null
+  centralHash: string | null
+  updateAvailable: boolean
+}
+
+/** Tagged union mirroring `ComponentState`. */
+export type ComponentState =
+  | BinaryState
+  | MulticallState
+  | RcMcpComponentState
+  | SkillState
+
+/** The result of one `componentsApply` call: the freshly built list the
+ *  frontend should swap into place atomically. */
+export interface ComponentsApplyResult {
+  components: ComponentInfo[]
+}
+
+/** A typed write against the components list. Every variant lands on the
+ *  real mechanism behind that category; none touches `component_setting`
+ *  for mcp or skill. */
+export type ComponentsAction =
+  | { kind: "binary_enabled"; id: string; enabled: boolean }
+  | { kind: "tool_enabled"; id: string; tool: string; enabled: boolean }
+  | { kind: "mcp_tool_group"; group: string; enabled: boolean }
+  | { kind: "mcp_start_service" }
+  | { kind: "skill_link"; agent: string; linked: boolean }
+  | {
+      kind: "refresh"
+      id: string
+      taskId: string | null
+    }
+
+/** Bundled-tools preference for the RecurBusyBox detail panel. Toggling it
+ *  off turns the components PATH shim into a fallback that only resolves
+ *  when the host has no same-named tool. */
+export interface SystemToolsSettings {
+  preferBundledTools: boolean
 }
 
 /**
