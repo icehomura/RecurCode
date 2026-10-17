@@ -1124,6 +1124,32 @@ fn prepend_agent_install_dirs_path(env: &mut Vec<(String, String)>, agent_type: 
     *env = map.into_iter().collect();
 }
 
+/// Prepend RecurCode's components shim directory FIRST on a merged env's PATH.
+///
+/// The shims are created by `commands::components::sync_component_shims` for
+/// every enabled binary component; a bundled `rg`/`jq`/… must resolve ahead of
+/// any system copy, which is why this runs after
+/// [`prepend_agent_install_dirs_path`] (each pass prepends). Absent directory
+/// (nothing enabled/installed yet) is a no-op rather than an error: a launch
+/// must never fail because the components cache has not been populated yet.
+fn prepend_components_bin_path(env: &mut Vec<(String, String)>) {
+    let Ok(dir) = crate::acp::binary_cache::components_bin_dir() else {
+        return;
+    };
+    if !dir.is_dir() {
+        return;
+    }
+    let fallback = std::env::var("PATH").unwrap_or_default();
+    let mut map: BTreeMap<String, String> = std::mem::take(env).into_iter().collect();
+    prepend_dir_to_path_env(
+        &mut map,
+        &dir.to_string_lossy(),
+        &fallback,
+        cfg!(windows),
+    );
+    *env = map.into_iter().collect();
+}
+
 /// Prepend RecurCode's known OfficeCLI install dir to `env`'s PATH when officecli is
 /// installed there but not yet on the live PATH (see
 /// `office_tools::officecli_agent_path_dir`). Applied to both the agent process
@@ -2197,6 +2223,10 @@ async fn build_agent(
             // desktop launch never inherits the shell rc line the vendor's
             // installer appended.
             prepend_agent_install_dirs_path(&mut merged_env, agent_type);
+            // Bundled RecurBusyBox tools win on PATH for every launch path
+            // (session, delegation, automation), independent of which agent
+            // is being spawned.
+            prepend_components_bin_path(&mut merged_env);
             if agent_type == AgentType::Cursor {
                 apply_cursor_env_policy(&mut merged_env, runtime_env);
             } else if agent_type == AgentType::Grok {

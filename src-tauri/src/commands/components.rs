@@ -8,37 +8,22 @@
 //! RecurAgent-owned component non-disableable.
 //!
 //! The `binary` category is served by ONE shared multi-call executable: the
-//! `recurbusybox` archive (`rb`), which dispatches on `argv[0]`. It is resolved
-//! and invoked at its fixed, RecurCode-owned path — never exposed as per-applet
-//! names on `PATH`, so a host tool with the same name can neither shadow it nor
-//! be shadowed by it.
+//! `recurbusybox` archive. It dispatches on `argv[0]`, so enabling the binary
+//! is a matter of giving every applet it provides a shim named after the tool
+//! (see [`sync_component_shims`]) that points back at the one cached binary.
 //!
 //! Applets are NOT independently configurable: the multi-call binary's switch
-//! is the only switch.
+//! is the only switch, so turning it off removes every applet shim at once.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 
 use crate::acp::binary_cache;
-use crate::acp::browser_tools::BrowserToolsRuntimeConfig;
-use crate::acp::chat_authoring::ChatAuthoringRuntimeConfig;
-use crate::acp::computer_tools::ComputerToolsRuntimeConfig;
-use crate::acp::delegation::broker::DelegationBroker;
-use crate::acp::delegation::listener::TokenRegistry;
-use crate::acp::feedback::FeedbackRuntimeConfig;
-use crate::acp::question::QuestionRuntimeConfig;
 use crate::acp::registry;
-use crate::acp::session_info::SessionInfoRuntimeConfig;
 use crate::app_error::AppCommandError;
-use crate::commands::generative_ui::{self, GenerativeUiComponentState};
-use crate::commands::mcp_service::{
-    rc_mcp_service_status_core, set_rc_mcp_tool_group_core, start_rc_mcp_service_core,
-    RcMcpServiceStatus, RcMcpStatusSources, RcMcpToolGroupTargets,
-};
 use crate::db::service::component_setting_service;
 use crate::db::AppDatabase;
 use crate::web::event_bridge::{self, EventEmitter};
@@ -56,12 +41,12 @@ pub struct ComponentDef {
     pub name: &'static str,
     /// One-line description shown in settings.
     pub description: &'static str,
-    /// The bundled executable this component provides (binary category only).
+    /// The executable this component provides on PATH (binary category only).
     pub tool: Option<&'static str>,
     /// Applets a multi-call binary exposes (binary category only), listed in
     /// the detail pane for information only. They are not switched on their
-    /// own: enabling the ONE executable in `tool` enables every applet, which
-    /// `recurbusybox` selects from `argv[0]` when invoked at its fixed path.
+    /// own: enabling the ONE executable in `tool` writes a shim per applet,
+    /// which is how `recurbusybox` picks its personality from `argv[0]`.
     /// Empty for single-purpose binaries (`ra`).
     pub tools: &'static [&'static str],
     /// `true` = cannot be disabled (the agent RecurCode depends on).
@@ -165,8 +150,7 @@ pub static COMPONENTS: &[ComponentDef] = &[
         id: "@rc-mcp",
         category: CATEGORY_MCP,
         name: "rc-mcp",
-        description: "RecurCode's collaboration MCP server for sub-agent delegation. \
-            Versionless: it is built from this RecurCode release, so there is no separate download.",
+        description: "RecurCode's collaboration MCP server for sub-agent delegation.",
         tool: None,
         tools: &[],
         required: false,
@@ -176,8 +160,7 @@ pub static COMPONENTS: &[ComponentDef] = &[
         id: "@ui-render-skill",
         category: CATEGORY_SKILL,
         name: "ui-render",
-        description: "Bundled generative-UI skill pack kept up to date by RecurCode. \
-            Versioned by content hash, not by a release number.",
+        description: "Bundled generative-UI skill pack kept up to date by RecurCode.",
         tool: None,
         tools: &[],
         required: false,
@@ -314,16 +297,9 @@ pub(crate) fn locate_sidecar(name: &str) -> Option<PathBuf> {
 /// 0-byte placeholder in the `ra-sandbox` case, which fails with `os error 193:
 /// %1 is not a valid Win32 application`.
 fn is_staged_sidecar_name(prefix: &str, file_name: &str) -> bool {
-    let Some(rest) = file_name.strip_prefix(prefix) else {
-        return false;
-    };
-    match rest.strip_suffix(".exe") {
-        Some(triple) => STAGED_TARGET_TRIPLES.contains(&triple),
-        // A Windows executable must carry its extension; a bare `-msvc` triple
-        // is not the file `prepare-sidecars.mjs` stages (and matching it is how
-        // the wrong `ra-sandbox` placeholder was launched).
-        None => !rest.ends_with("-msvc") && STAGED_TARGET_TRIPLES.contains(&rest),
-    }
+    file_name
+        .strip_prefix(prefix)
+        .is_some_and(|rest| STAGED_TARGET_TRIPLES.contains(&rest.trim_end_matches(".exe")))
 }
 
 /// A sidecar only counts when it is a real, non-empty file. `build.rs` writes a
@@ -363,199 +339,18 @@ fn probe_version(path: &Path) -> Option<String> {
         .map(|token| token.trim_start_matches('v').to_string())
 }
 
-/// The live machinery behind the two non-binary registry entries.
-///
-/// The Components tab is one row per component, while both real mechanisms are
-/// multi-part: rc-mcp is a socket + binary + nine tool-group switches, and the
-/// skill is a central copy plus one link per agent. These traits let the
-/// registry code report and toggle the real thing while tests supply a fake,
-/// without teaching the binary path anything about either mechanism.
-#[async_trait::async_trait]
-pub(crate) trait RcMcpComponent: Send + Sync {
-    async fn status(&self) -> RcMcpServiceStatus;
-    async fn set_enabled(
-        &self,
-        conn: &DatabaseConnection,
-        emitter: &EventEmitter,
-        enabled: bool,
-    ) -> Result<(), AppCommandError>;
-    async fn refresh(&self) -> Result<(), AppCommandError>;
-}
-
-#[async_trait::async_trait]
-pub(crate) trait GenerativeUiComponent: Send + Sync {
-    async fn state(&self) -> Result<GenerativeUiComponentState, AppCommandError>;
-    async fn set_enabled(&self, enable: bool) -> Result<(), AppCommandError>;
-    async fn refresh(&self, conn: &DatabaseConnection) -> Result<(), AppCommandError>;
-}
-
-#[derive(Clone, Copy, Default)]
-pub(crate) struct ComponentMachinery<'a> {
-    pub mcp: Option<&'a dyn RcMcpComponent>,
-    pub skill: Option<&'a dyn GenerativeUiComponent>,
-}
-
-/// The production implementation. It owns cheap clones of the same runtime
-/// handles `AppState` holds, so both transports construct it the same way and
-/// the `_core` helpers never see a Tauri type.
-#[allow(dead_code)]
-pub(crate) struct RuntimeMachinery {
-    broker: Arc<DelegationBroker>,
-    tokens: Arc<TokenRegistry>,
-    feedback: FeedbackRuntimeConfig,
-    question: QuestionRuntimeConfig,
-    session_info: SessionInfoRuntimeConfig,
-    authoring: ChatAuthoringRuntimeConfig,
-    browser: BrowserToolsRuntimeConfig,
-    computer: ComputerToolsRuntimeConfig,
-}
-
-impl RuntimeMachinery {
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn new(
-        broker: Arc<DelegationBroker>,
-        tokens: Arc<TokenRegistry>,
-        feedback: FeedbackRuntimeConfig,
-        question: QuestionRuntimeConfig,
-        session_info: SessionInfoRuntimeConfig,
-        authoring: ChatAuthoringRuntimeConfig,
-        browser: BrowserToolsRuntimeConfig,
-        computer: ComputerToolsRuntimeConfig,
-    ) -> Self {
-        Self {
-            broker,
-            tokens,
-            feedback,
-            question,
-            session_info,
-            authoring,
-            browser,
-            computer,
-        }
-    }
-
-    fn mcp_sources(&self) -> RcMcpStatusSources<'_> {
-        RcMcpStatusSources {
-            broker: &self.broker,
-            tokens: &self.tokens,
-            feedback: &self.feedback,
-            question: &self.question,
-            session_info: &self.session_info,
-            authoring: &self.authoring,
-            browser: &self.browser,
-            computer: &self.computer,
-        }
-    }
-
-    fn mcp_targets(&self) -> RcMcpToolGroupTargets<'_> {
-        RcMcpToolGroupTargets {
-            broker: &self.broker,
-            feedback: &self.feedback,
-            question: &self.question,
-            session_info: &self.session_info,
-            authoring: &self.authoring,
-            browser: &self.browser,
-            computer: &self.computer,
-        }
-    }
-}
-
-#[async_trait::async_trait]
-impl RcMcpComponent for RuntimeMachinery {
-    async fn status(&self) -> RcMcpServiceStatus {
-        rc_mcp_service_status_core(self.mcp_sources()).await
-    }
-
-    async fn set_enabled(
-        &self,
-        conn: &DatabaseConnection,
-        emitter: &EventEmitter,
-        enabled: bool,
-    ) -> Result<(), AppCommandError> {
-        let status = self.status().await;
-        if enabled {
-            // On means "the service runs and at least one group is live". If
-            // every group is off, turn the headline group (delegation) on;
-            // otherwise respect the user's existing group choices.
-            if !rc_mcp_component_enabled(&status) {
-                set_rc_mcp_tool_group_core(
-                    conn,
-                    self.mcp_targets(),
-                    emitter,
-                    "delegation",
-                    true,
-                )
-                .await?;
-            }
-            // The socket is the part this process can repair. A runtime with
-            // no handle cannot bind one, but the group write above still took
-            // effect, so report the toggle as done and log the rest.
-            if let Err(err) = start_rc_mcp_service_core().await {
-                tracing::warn!("[components] could not start rc-mcp broker: {err}");
-            }
-        } else {
-            // Off means every tool group is off. Dependents go first so a
-            // `browser_eval` write lands before the `browser` group that
-            // gates it.
-            let mut keys: Vec<String> = status
-                .tool_groups
-                .iter()
-                .filter(|group| group.enabled)
-                .map(|group| group.key.clone())
-                .collect();
-            keys.reverse();
-            for key in keys {
-                set_rc_mcp_tool_group_core(
-                    conn,
-                    self.mcp_targets(),
-                    emitter,
-                    &key,
-                    false,
-                )
-                .await?;
-            }
-        }
-        Ok(())
-    }
-
-    async fn refresh(&self) -> Result<(), AppCommandError> {
-        let status = self.status().await;
-        if status.binary_path.is_none() {
-            return Err(AppCommandError::configuration_missing(
-                "rc-mcp was not found beside RecurCode or on PATH; reinstall or set RC_MCP_BIN",
-            ));
-        }
-        start_rc_mcp_service_core().await
-    }
-}
-
-#[async_trait::async_trait]
-impl GenerativeUiComponent for RuntimeMachinery {
-    async fn state(&self) -> Result<GenerativeUiComponentState, AppCommandError> {
-        generative_ui::component_state().await
-    }
-
-    async fn set_enabled(&self, enable: bool) -> Result<(), AppCommandError> {
-        generative_ui::set_component_enabled(enable).await
-    }
-
-    async fn refresh(&self, conn: &DatabaseConnection) -> Result<(), AppCommandError> {
-        generative_ui::refresh_component(conn).await
-    }
-}
-
-/// The registry's `enabled` answer for rc-mcp: at least one real tool group is
-/// live. Dependent switches (`browser_eval`) cannot answer this on their own.
-fn rc_mcp_component_enabled(status: &RcMcpServiceStatus) -> bool {
-    status
-        .tool_groups
-        .iter()
-        .any(|group| group.requires.is_none() && group.enabled)
+/// The `rb` to point shims at: the downloaded copy when one is installed, else
+/// the sidecar RecurCode ships.
+fn busybox_executable() -> Option<PathBuf> {
+    installed_busybox_version()
+        .and_then(|version| {
+            binary_cache::tool_binary_path(RECURBUSYBOX_TOOL_ID, &version, RECURBUSYBOX_CMD)
+        })
+        .or_else(|| locate_sidecar(RECURBUSYBOX_CMD))
 }
 
 pub(crate) async fn components_list_core(
     db: &AppDatabase,
-    machinery: ComponentMachinery<'_>,
 ) -> Result<Vec<ComponentInfo>, AppCommandError> {
     // The registry is the source of truth for which ids exist; make sure every
     // built-in — and every tool of every multi-call binary — has a row
@@ -569,17 +364,6 @@ pub(crate) async fn components_list_core(
         .map(|m| (m.component_id.as_str(), m))
         .collect();
 
-    // Probe each non-binary mechanism once, then report what it actually says.
-    // An absent source is an unknown mechanism, which must not read as enabled.
-    let mcp_status = match machinery.mcp {
-        Some(mcp) => Some(mcp.status().await),
-        None => None,
-    };
-    let skill_state = match machinery.skill {
-        Some(skill) => Some(skill.state().await?),
-        None => None,
-    };
-
     let installed = installed_busybox_version();
     let available = RECURBUSYBOX_VERSION.to_string();
     // The bundled sidecars let the settings page show a version before anything
@@ -591,54 +375,24 @@ pub(crate) async fn components_list_core(
         .iter()
         .map(|def| {
             let setting = by_id.get(def.id).copied();
-            let stored_choice = setting.map(|m| m.enabled).unwrap_or(true);
             // Only RecurBusyBox is downloaded by this app; `ra` ships inside
             // the installer. `rb` therefore prefers the downloaded copy (which
             // may be newer) and otherwise reports the bundled one.
             let is_busybox = def.id == RECURBUSYBOX_TOOL_ID;
-            let (enabled, installed_version, available_version, update_available) =
-                if is_busybox {
-                    let update = installed
-                        .as_deref()
-                        .map(|v| v != available)
-                        .unwrap_or(false);
-                    let shown = installed
-                        .clone()
-                        .or_else(|| busybox_bundled.then(|| available.clone()));
-                    (stored_choice, shown, Some(available.clone()), update)
-                } else if def.id == "@ra" {
-                    (stored_choice, ra_bundled_version.clone(), None, false)
-                } else if def.category == CATEGORY_MCP {
-                    // No release number exists for a sidecar built from this
-                    // same release; the description says so rather than a
-                    // made-up version. `enabled` is the live group predicate,
-                    // not the stored choice.
-                    let enabled = mcp_status
-                        .as_ref()
-                        .is_some_and(rc_mcp_component_enabled);
-                    (enabled, None, None, false)
-                } else if def.category == CATEGORY_SKILL {
-                    match skill_state.as_ref() {
-                        Some(skill) => (
-                            skill.enabled,
-                            skill.installed_version.clone(),
-                            skill.available_version.clone(),
-                            skill.update_available,
-                        ),
-                        None => (false, None, None, false),
-                    }
-                } else {
-                    (stored_choice, None, None, false)
-                };
-            // The persisted row records the user's CHOICE; the machinery is
-            // the source of truth for the ACTUAL state. Keep the row, but say
-            // when the two diverge instead of silently preferring either.
-            if def.category != CATEGORY_BINARY && stored_choice != enabled {
-                tracing::debug!(
-                    "[components] {} choice {stored_choice} differs from live state {enabled}",
-                    def.id
-                );
-            }
+            let (installed_version, available_version, update_available) = if is_busybox {
+                let update = installed
+                    .as_deref()
+                    .map(|v| v != available)
+                    .unwrap_or(false);
+                let shown = installed
+                    .clone()
+                    .or_else(|| busybox_bundled.then(|| available.clone()));
+                (shown, Some(available.clone()), update)
+            } else if def.id == "@ra" {
+                (ra_bundled_version.clone(), None, false)
+            } else {
+                (None, None, false)
+            };
             let tools = def
                 .tools
                 .iter()
@@ -654,7 +408,7 @@ pub(crate) async fn components_list_core(
                 tool: def.tool.map(str::to_string),
                 tools,
                 required: def.required,
-                enabled,
+                enabled: setting.map(|m| m.enabled).unwrap_or(true),
                 env: env_from_setting(setting),
                 installed_version,
                 available_version,
@@ -665,12 +419,11 @@ pub(crate) async fn components_list_core(
 }
 
 /// Enable/disable a component. Refuses for `required` definitions — this is the
-/// "RecurAgent's own tools cannot be disabled" rule. The change is persisted and
-/// broadcast; binary components carry no PATH side effects.
+/// "RecurAgent's own tools cannot be disabled" rule. On success the agent PATH
+/// shims are re-synced so the change takes effect on the next launch.
 pub(crate) async fn components_set_enabled_core(
     db: &AppDatabase,
     emitter: &EventEmitter,
-    machinery: ComponentMachinery<'_>,
     id: &str,
     enabled: bool,
 ) -> Result<(), AppCommandError> {
@@ -680,35 +433,8 @@ pub(crate) async fn components_set_enabled_core(
     let def = definition_for(id)
         .ok_or_else(|| AppCommandError::not_found(format!("unknown component: {id}")))?;
     ensure_can_toggle(def, enabled)?;
-
-    // Flip the real machinery FIRST: a failed toggle must not leave a stored
-    // choice claiming it worked. Binary components need no pre-write action;
-    // their switch is the shim sync below.
-    match def.category {
-        CATEGORY_MCP => machinery
-            .mcp
-            .ok_or_else(|| {
-                AppCommandError::configuration_invalid(
-                    "rc-mcp runtime state is not available in this process",
-                )
-            })?
-            .set_enabled(&db.conn, emitter, enabled)
-            .await?,
-        CATEGORY_SKILL => machinery
-            .skill
-            .ok_or_else(|| {
-                AppCommandError::configuration_invalid(
-                    "generative-UI skill state is not available in this process",
-                )
-            })?
-            .set_enabled(enabled)
-            .await?,
-        _ => {}
-    }
-
-    // The row remains the record of the user's choice; the machinery above is
-    // what actually changed. A later read trusts the machinery over this row.
     component_setting_service::set_enabled(&db.conn, id, enabled).await?;
+    sync_component_shims(&db.conn).await?;
     emit_components_updated(emitter);
     Ok(())
 }
@@ -736,52 +462,20 @@ pub(crate) async fn components_set_env_core(
     Ok(())
 }
 
-/// Download/refresh the shared RecurBusyBox archive. Progress rides the same
-/// agent-install event stream the agent binary downloads use.
+/// Download/refresh the shared RecurBusyBox archive and re-write every enabled
+/// binary component's shim. Progress rides the same agent-install event stream
+/// the agent binary downloads use.
 pub(crate) async fn components_update_core(
     db: &AppDatabase,
     emitter: &EventEmitter,
-    machinery: ComponentMachinery<'_>,
     id: &str,
     task_id: &str,
 ) -> Result<(), AppCommandError> {
     let def = definition_for(id)
         .ok_or_else(|| AppCommandError::not_found(format!("unknown component: {id}")))?;
-
-    // Neither non-binary entry has a release asset. Their honest "update" is a
-    // refresh from what this RecurCode build already ships: rebind the broker
-    // for rc-mcp, rewrite the central skill copy from the bundled content.
-    match def.category {
-        CATEGORY_MCP => {
-            let result = machinery
-                .mcp
-                .ok_or_else(|| {
-                    AppCommandError::configuration_invalid(
-                        "rc-mcp runtime state is not available in this process",
-                    )
-                })?
-                .refresh()
-                .await;
-            return finish_component_refresh(emitter, task_id, def, result);
-        }
-        CATEGORY_SKILL => {
-            let result = machinery
-                .skill
-                .ok_or_else(|| {
-                    AppCommandError::configuration_invalid(
-                        "generative-UI skill state is not available in this process",
-                    )
-                })?
-                .refresh(&db.conn)
-                .await;
-            return finish_component_refresh(emitter, task_id, def, result);
-        }
-        _ => {}
-    }
-
     if def.category != CATEGORY_BINARY {
         return Err(AppCommandError::invalid_input(format!(
-            "{} has no refresh path",
+            "{} is not a binary component and cannot be downloaded",
             def.name
         )));
     }
@@ -831,6 +525,7 @@ pub(crate) async fn components_update_core(
 
     match result {
         Ok(_) => {
+            sync_component_shims(&db.conn).await?;
             crate::commands::acp::emit_agent_install_event(
                 emitter,
                 task_id,
@@ -852,33 +547,83 @@ pub(crate) async fn components_update_core(
     }
 }
 
-/// Report a non-binary refresh on the same install-event stream the binary
-/// downloads use, so the settings toast does not need a second mechanism.
-fn finish_component_refresh(
-    emitter: &EventEmitter,
-    task_id: &str,
-    def: &ComponentDef,
-    result: Result<(), AppCommandError>,
-) -> Result<(), AppCommandError> {
-    let (kind, message) = match &result {
-        Ok(()) => (
-            crate::commands::acp::AgentInstallEventKind::Completed,
-            format!("{} refreshed", def.name),
-        ),
-        Err(err) => (
-            crate::commands::acp::AgentInstallEventKind::Failed,
-            err.to_string(),
-        ),
-    };
-    crate::commands::acp::emit_agent_install_event(emitter, task_id, kind, message);
-    if result.is_ok() {
-        emit_components_updated(emitter);
-    }
-    result
-}
-
 fn emit_components_updated(emitter: &EventEmitter) {
     event_bridge::emit_event(emitter, COMPONENTS_UPDATED_EVENT, ());
+}
+
+/// Create/refresh one PATH shim per installed+enabled binary component and
+/// remove shims for disabled ones.
+///
+/// The shim name is the whole mechanism: `recurbusybox` picks its personality
+/// from `argv[0]`, so a hardlink/copy named `rg.exe` is what makes `rg` work.
+/// On Windows symlinks need elevation or developer mode, so a hardlink (falling
+/// back to a copy) is used; on unix a symlink is enough.
+pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<(), AppCommandError> {
+    let ids = all_setting_ids();
+    let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
+    component_setting_service::ensure_defaults(conn, &refs).await?;
+    let settings = component_setting_service::list(conn).await?;
+    let by_id: HashMap<&str, bool> = settings
+        .iter()
+        .map(|m| (m.component_id.as_str(), m.enabled))
+        .collect();
+
+    let source = busybox_executable();
+
+    let dir = binary_cache::components_bin_dir().map_err(|e| {
+        AppCommandError::io_error("Failed to resolve components bin directory")
+            .with_detail(e.to_string())
+    })?;
+    std::fs::create_dir_all(&dir).map_err(|e| {
+        AppCommandError::io_error("Failed to create components bin directory")
+            .with_detail(e.to_string())
+    })?;
+
+    // RecurBusyBox is the one component whose applets become PATH shims. The
+    // binary's switch is the only switch: on writes every applet shim, off
+    // removes them all.
+    let busybox_enabled = by_id.get(RECURBUSYBOX_TOOL_ID).copied().unwrap_or(true);
+    for tool in RECURBUSYBOX_TOOLS {
+        let shim = dir.join(binary_cache::executable_file_name(tool));
+        if busybox_enabled {
+            if let Some(source) = source.as_deref() {
+                if let Err(e) = create_shim(source, &shim) {
+                    tracing::warn!(
+                        "[components] failed to create shim {} -> {}: {e}",
+                        shim.display(),
+                        source.display()
+                    );
+                }
+            }
+        } else if shim.exists() {
+            if let Err(e) = std::fs::remove_file(&shim) {
+                tracing::warn!("[components] failed to remove shim {}: {e}", shim.display());
+            }
+        }
+    }
+    Ok(())
+}
+
+fn create_shim(source: &Path, shim: &Path) -> std::io::Result<()> {
+    // Always rebuild: the source may have moved to a new version directory
+    // since the last sync, and a stale hardlink would keep dispatching to the
+    // old binary.
+    if shim.exists() {
+        let _ = std::fs::remove_file(shim);
+    }
+    #[cfg(windows)]
+    {
+        // Hardlinks need no elevation and share the inode; a copy is the
+        // fallback when the filesystem (e.g. some network mounts) refuses.
+        if std::fs::hard_link(source, shim).is_err() {
+            std::fs::copy(source, shim)?;
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        std::os::unix::fs::symlink(source, shim)?;
+    }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -886,101 +631,23 @@ fn emit_components_updated(emitter: &EventEmitter) {
 // ---------------------------------------------------------------------------
 
 #[cfg(feature = "tauri-runtime")]
-fn tauri_machinery(
-    broker: &Arc<DelegationBroker>,
-    tokens: &Arc<TokenRegistry>,
-    feedback: &FeedbackRuntimeConfig,
-    question: &QuestionRuntimeConfig,
-    session_info: &SessionInfoRuntimeConfig,
-    authoring: &ChatAuthoringRuntimeConfig,
-    browser: &BrowserToolsRuntimeConfig,
-    computer: &ComputerToolsRuntimeConfig,
-) -> RuntimeMachinery {
-    RuntimeMachinery::new(
-        broker.clone(),
-        tokens.clone(),
-        feedback.clone(),
-        question.clone(),
-        session_info.clone(),
-        authoring.clone(),
-        browser.clone(),
-        computer.clone(),
-    )
-}
-
-#[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-#[allow(clippy::too_many_arguments)]
 pub async fn components_list(
     db: tauri::State<'_, AppDatabase>,
-    broker: tauri::State<'_, Arc<DelegationBroker>>,
-    tokens: tauri::State<'_, Arc<TokenRegistry>>,
-    feedback: tauri::State<'_, FeedbackRuntimeConfig>,
-    question: tauri::State<'_, QuestionRuntimeConfig>,
-    session_info: tauri::State<'_, SessionInfoRuntimeConfig>,
-    authoring: tauri::State<'_, ChatAuthoringRuntimeConfig>,
-    browser: tauri::State<'_, BrowserToolsRuntimeConfig>,
-    computer: tauri::State<'_, ComputerToolsRuntimeConfig>,
 ) -> Result<Vec<ComponentInfo>, AppCommandError> {
-    let machinery = tauri_machinery(
-        broker.inner(),
-        tokens.inner(),
-        feedback.inner(),
-        question.inner(),
-        session_info.inner(),
-        authoring.inner(),
-        browser.inner(),
-        computer.inner(),
-    );
-    components_list_core(
-        &db,
-        ComponentMachinery {
-            mcp: Some(&machinery),
-            skill: Some(&machinery),
-        },
-    )
-    .await
+    components_list_core(&db).await
 }
 
 #[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-#[allow(clippy::too_many_arguments)]
 pub async fn components_set_enabled(
     id: String,
     enabled: bool,
     db: tauri::State<'_, AppDatabase>,
     app: tauri::AppHandle,
-    broker: tauri::State<'_, Arc<DelegationBroker>>,
-    tokens: tauri::State<'_, Arc<TokenRegistry>>,
-    feedback: tauri::State<'_, FeedbackRuntimeConfig>,
-    question: tauri::State<'_, QuestionRuntimeConfig>,
-    session_info: tauri::State<'_, SessionInfoRuntimeConfig>,
-    authoring: tauri::State<'_, ChatAuthoringRuntimeConfig>,
-    browser: tauri::State<'_, BrowserToolsRuntimeConfig>,
-    computer: tauri::State<'_, ComputerToolsRuntimeConfig>,
 ) -> Result<(), AppCommandError> {
     let emitter = EventEmitter::Tauri(app);
-    let machinery = tauri_machinery(
-        broker.inner(),
-        tokens.inner(),
-        feedback.inner(),
-        question.inner(),
-        session_info.inner(),
-        authoring.inner(),
-        browser.inner(),
-        computer.inner(),
-    );
-    components_set_enabled_core(
-        &db,
-        &emitter,
-        ComponentMachinery {
-            mcp: Some(&machinery),
-            skill: Some(&machinery),
-        },
-        &id,
-        enabled,
-    )
-    .await
+    components_set_enabled_core(&db, &emitter, &id, enabled).await
 }
 
 #[cfg(feature = "tauri-runtime")]
@@ -995,51 +662,19 @@ pub async fn components_set_env(
 
 #[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-#[allow(clippy::too_many_arguments)]
 pub async fn components_update(
     id: String,
     task_id: String,
     db: tauri::State<'_, AppDatabase>,
     app: tauri::AppHandle,
-    broker: tauri::State<'_, Arc<DelegationBroker>>,
-    tokens: tauri::State<'_, Arc<TokenRegistry>>,
-    feedback: tauri::State<'_, FeedbackRuntimeConfig>,
-    question: tauri::State<'_, QuestionRuntimeConfig>,
-    session_info: tauri::State<'_, SessionInfoRuntimeConfig>,
-    authoring: tauri::State<'_, ChatAuthoringRuntimeConfig>,
-    browser: tauri::State<'_, BrowserToolsRuntimeConfig>,
-    computer: tauri::State<'_, ComputerToolsRuntimeConfig>,
 ) -> Result<(), AppCommandError> {
     let emitter = EventEmitter::Tauri(app);
-    let machinery = tauri_machinery(
-        broker.inner(),
-        tokens.inner(),
-        feedback.inner(),
-        question.inner(),
-        session_info.inner(),
-        authoring.inner(),
-        browser.inner(),
-        computer.inner(),
-    );
-    components_update_core(
-        &db,
-        &emitter,
-        ComponentMachinery {
-            mcp: Some(&machinery),
-            skill: Some(&machinery),
-        },
-        &id,
-        &task_id,
-    )
-    .await
+    components_update_core(&db, &emitter, &id, &task_id).await
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicBool, Ordering};
-
-    use crate::commands::mcp_service::RcMcpServiceState;
     use crate::db::test_helpers::fresh_in_memory_db;
 
     /// A `ComponentDef` with every field spelled out, so a test can exercise
@@ -1057,142 +692,10 @@ mod tests {
         }
     }
 
-    /// In-memory stand-in for the rc-mcp machinery. `enabled` is the live
-    /// group predicate the registry reads; the counters prove the core called
-    /// the real toggle instead of only writing a settings row.
-    #[derive(Default)]
-    struct FakeMcp {
-        enabled: AtomicBool,
-        set_calls: AtomicBool,
-        refresh_calls: AtomicBool,
-    }
-
-    impl FakeMcp {
-        fn new(enabled: bool) -> Self {
-            let fake = Self::default();
-            fake.enabled.store(enabled, Ordering::SeqCst);
-            fake
-        }
-
-        fn status(&self) -> RcMcpServiceStatus {
-            let enabled = self.enabled.load(Ordering::SeqCst);
-            RcMcpServiceStatus {
-                state: if enabled {
-                    RcMcpServiceState::Running
-                } else {
-                    RcMcpServiceState::Disabled
-                },
-                listening: true,
-                socket_path: "test-socket".to_string(),
-                binary_path: Some("rc-mcp".to_string()),
-                tool_groups: vec![crate::commands::mcp_service::RcMcpToolGroup {
-                    key: "delegation".to_string(),
-                    enabled,
-                    requires: None,
-                }],
-                companion_count: 0,
-                session_count: 0,
-                active_delegations: 0,
-                depth_limit: 1,
-                started_at: None,
-                last_error: None,
-                can_start: true,
-            }
-        }
-    }
-
-    #[async_trait::async_trait]
-    impl RcMcpComponent for FakeMcp {
-        async fn status(&self) -> RcMcpServiceStatus {
-            FakeMcp::status(self)
-        }
-
-        async fn set_enabled(
-            &self,
-            _conn: &DatabaseConnection,
-            _emitter: &EventEmitter,
-            enabled: bool,
-        ) -> Result<(), AppCommandError> {
-            self.enabled.store(enabled, Ordering::SeqCst);
-            self.set_calls.store(true, Ordering::SeqCst);
-            Ok(())
-        }
-
-        async fn refresh(&self) -> Result<(), AppCommandError> {
-            self.refresh_calls.store(true, Ordering::SeqCst);
-            Ok(())
-        }
-    }
-
-    /// In-memory stand-in for the bundled skill: no filesystem, just the link
-    /// aggregate and content hashes a real probe would return.
-    struct FakeSkill {
-        enabled: AtomicBool,
-        update_available: AtomicBool,
-        set_calls: AtomicBool,
-        refresh_calls: AtomicBool,
-    }
-
-    impl FakeSkill {
-        fn new(enabled: bool) -> Self {
-            Self {
-                enabled: AtomicBool::new(enabled),
-                update_available: AtomicBool::new(false),
-                set_calls: AtomicBool::new(false),
-                refresh_calls: AtomicBool::new(false),
-            }
-        }
-    }
-
-    #[async_trait::async_trait]
-    impl GenerativeUiComponent for FakeSkill {
-        async fn state(&self) -> Result<GenerativeUiComponentState, AppCommandError> {
-            Ok(GenerativeUiComponentState {
-                enabled: self.enabled.load(Ordering::SeqCst),
-                installed_version: Some("aabbccddeeff".to_string()),
-                available_version: Some("aabbccddeeff".to_string()),
-                update_available: self.update_available.load(Ordering::SeqCst),
-                conflict: false,
-            })
-        }
-
-        async fn set_enabled(&self, enable: bool) -> Result<(), AppCommandError> {
-            self.enabled.store(enable, Ordering::SeqCst);
-            self.set_calls.store(true, Ordering::SeqCst);
-            Ok(())
-        }
-
-        async fn refresh(&self, _conn: &DatabaseConnection) -> Result<(), AppCommandError> {
-            self.refresh_calls.store(true, Ordering::SeqCst);
-            self.update_available.store(false, Ordering::SeqCst);
-            Ok(())
-        }
-    }
-
-    fn machinery<'a>(mcp: &'a FakeMcp, skill: &'a FakeSkill) -> ComponentMachinery<'a> {
-        ComponentMachinery {
-            mcp: Some(mcp),
-            skill: Some(skill),
-        }
-    }
-
-    async fn list(
-        db: &AppDatabase,
-        machinery: ComponentMachinery<'_>,
-    ) -> Vec<ComponentInfo> {
-        components_list_core(db, machinery).await.expect("list")
-    }
-
-    fn find<'a>(rows: &'a [ComponentInfo], id: &str) -> &'a ComponentInfo {
-        rows.iter().find(|row| row.id == id).expect("row")
-    }
-
     #[tokio::test]
     async fn binary_category_is_the_two_executables_not_their_applets() {
         let db = fresh_in_memory_db().await;
-        let mcp = FakeMcp::new(true);
-        let skill = FakeSkill::new(true);
-        let list = list(&db, machinery(&mcp, &skill)).await;
+        let list = components_list_core(&db).await.expect("list");
 
         assert_eq!(list.len(), COMPONENTS.len(), "one row per registry entry");
         assert!(
@@ -1244,12 +747,9 @@ mod tests {
     async fn a_required_binary_cannot_be_disabled_and_applets_are_not_settings() {
         let db = fresh_in_memory_db().await;
         let emitter = EventEmitter::Noop;
-        let mcp = FakeMcp::new(true);
-        let skill = FakeSkill::new(true);
-        let view = machinery(&mcp, &skill);
 
         assert!(
-            components_set_enabled_core(&db, &emitter, view, "@ra", false)
+            components_set_enabled_core(&db, &emitter, "@ra", false)
                 .await
                 .is_err(),
             "RecurAgent is required"
@@ -1257,23 +757,20 @@ mod tests {
 
         // The applets are not individually switchable; the binary is the only
         // switch, and toggling it turns every shim on or off together.
-        components_set_enabled_core(&db, &emitter, view, RECURBUSYBOX_TOOL_ID, false)
+        components_set_enabled_core(&db, &emitter, RECURBUSYBOX_TOOL_ID, false)
             .await
             .expect("the binary toggles");
-        let rb = list(&db, view)
+        let rb = components_list_core(&db)
             .await
+            .expect("list")
             .into_iter()
             .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
             .unwrap();
         assert!(!rb.enabled);
-        assert!(
-            !mcp.set_calls.load(Ordering::SeqCst) && !skill.set_calls.load(Ordering::SeqCst),
-            "the binary path never touches the non-binary machinery"
-        );
 
         for unknown in ["@nope", "@recurbusybox:rg", "@recurbusybox:nope"] {
             assert!(
-                components_set_enabled_core(&db, &emitter, view, unknown, false)
+                components_set_enabled_core(&db, &emitter, unknown, false)
                     .await
                     .is_err(),
                 "{unknown} is refused"
@@ -1284,8 +781,6 @@ mod tests {
     #[tokio::test]
     async fn env_round_trips_for_components() {
         let db = fresh_in_memory_db().await;
-        let mcp = FakeMcp::new(true);
-        let skill = FakeSkill::new(true);
 
         let mut env = HashMap::new();
         env.insert(
@@ -1296,8 +791,9 @@ mod tests {
             .await
             .expect("set env on the binary");
 
-        let rb = list(&db, machinery(&mcp, &skill))
+        let rb = components_list_core(&db)
             .await
+            .expect("list")
             .into_iter()
             .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
             .unwrap();
@@ -1309,113 +805,6 @@ mod tests {
                 .await
                 .is_err());
         }
-    }
-
-    #[tokio::test]
-    async fn mcp_entry_reports_the_live_tool_group_state() {
-        let db = fresh_in_memory_db().await;
-        let emitter = EventEmitter::Noop;
-        let mcp = FakeMcp::new(false);
-        let skill = FakeSkill::new(true);
-        let view = machinery(&mcp, &skill);
-
-        // The machinery, not the persisted default (enabled=true), decides.
-        let before = list(&db, view).await;
-        let row = find(&before, "@rc-mcp");
-        assert!(!row.enabled, "all groups off means the component is off");
-        assert!(row.installed_version.is_none());
-        assert!(row.available_version.is_none(), "no invented version");
-        assert!(!row.update_available);
-
-        components_set_enabled_core(&db, &emitter, view, "@rc-mcp", true)
-            .await
-            .expect("enable rc-mcp");
-        assert!(mcp.set_calls.load(Ordering::SeqCst));
-        assert!(mcp.enabled.load(Ordering::SeqCst));
-        // The row records the user's choice; the live state matches it.
-        let stored = component_setting_service::get(&db.conn, "@rc-mcp")
-            .await
-            .unwrap()
-            .expect("choice row");
-        assert!(stored.enabled);
-        assert!(find(&list(&db, view).await, "@rc-mcp").enabled);
-
-        components_update_core(&db, &emitter, view, "@rc-mcp", "task")
-            .await
-            .expect("refresh repairs the service");
-        assert!(mcp.refresh_calls.load(Ordering::SeqCst));
-    }
-
-    #[tokio::test]
-    async fn skill_entry_reports_the_link_matrix() {
-        let db = fresh_in_memory_db().await;
-        let emitter = EventEmitter::Noop;
-        let mcp = FakeMcp::new(true);
-        let skill = FakeSkill::new(false);
-        let view = machinery(&mcp, &skill);
-
-        // Not linked into any agent yet: off, but a refresh would change the
-        // central copy. There is no release download to offer.
-        skill.update_available.store(true, Ordering::SeqCst);
-        let before = list(&db, view).await;
-        let row = find(&before, "@ui-render-skill");
-        assert!(!row.enabled);
-        assert_eq!(row.installed_version.as_deref(), Some("aabbccddeeff"));
-        assert_eq!(row.available_version.as_deref(), Some("aabbccddeeff"));
-        assert!(row.update_available);
-
-        components_set_enabled_core(&db, &emitter, view, "@ui-render-skill", true)
-            .await
-            .expect("link the skill for every agent");
-        assert!(skill.set_calls.load(Ordering::SeqCst));
-        assert!(skill.enabled.load(Ordering::SeqCst));
-        let stored = component_setting_service::get(&db.conn, "@ui-render-skill")
-            .await
-            .unwrap()
-            .expect("choice row");
-        assert!(stored.enabled);
-        assert!(find(&list(&db, view).await, "@ui-render-skill").enabled);
-
-        components_update_core(&db, &emitter, view, "@ui-render-skill", "task")
-            .await
-            .expect("refresh the bundled content");
-        assert!(skill.refresh_calls.load(Ordering::SeqCst));
-    }
-
-    #[tokio::test]
-    async fn disabling_a_component_records_the_choice_and_reports_the_machinery() {
-        let db = fresh_in_memory_db().await;
-        let emitter = EventEmitter::Noop;
-        let mcp = FakeMcp::new(true);
-        let skill = FakeSkill::new(true);
-        let view = machinery(&mcp, &skill);
-
-        components_set_enabled_core(&db, &emitter, view, "@rc-mcp", false)
-            .await
-            .expect("disable rc-mcp");
-        assert!(!mcp.enabled.load(Ordering::SeqCst));
-        assert!(!find(&list(&db, view).await, "@rc-mcp").enabled);
-        let stored = component_setting_service::get(&db.conn, "@rc-mcp")
-            .await
-            .unwrap()
-            .expect("choice row");
-        assert!(!stored.enabled);
-    }
-
-    #[test]
-    fn rc_mcp_enabled_ignores_dependent_switches() {
-        let mut status = FakeMcp::new(false).status();
-        status.tool_groups.push(crate::commands::mcp_service::RcMcpToolGroup {
-            key: "browser_eval".to_string(),
-            enabled: true,
-            requires: Some("browser".to_string()),
-        });
-        assert!(
-            !rc_mcp_component_enabled(&status),
-            "a dependent switch alone cannot make the component live"
-        );
-        status.tool_groups[0].enabled = true;
-        assert!(rc_mcp_component_enabled(&status));
     }
 
     #[test]
