@@ -52,6 +52,7 @@
       "science": "Science",
       "office_tools": "Office Tools",
       "skill_packs": "Skill Packs",
+      "components": "Components",
       "collaboration": "Collaboration",
       "browser": "Browser Use",
       "computer_use": "Computer Use",
@@ -1804,7 +1805,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "Loading agent settings...",
-    "skillPacksLoading": "Loading skill packs…"
+    "skillPacksLoading": "Loading skill packs…",
+    "componentsLoading": "Loading components…"
   },
   "CloseBehaviorSettings": {
     "title": "Close Button Behavior",
@@ -4653,6 +4655,47 @@
     "toasts": {
       "openFolderFailed": "Failed to open folder"
     }
+  },
+  "ComponentsSettings": {
+    "title": "Components",
+    "description": "Manage the tool-cache components bundled with the app — binaries, MCP servers and skills. Install or update them and configure their environment variables.",
+    "tabs": {
+      "binary": "Binaries",
+      "mcp": "MCP",
+      "skill": "Skills"
+    },
+    "notInstalled": "Not installed",
+    "installed": "Installed",
+    "updateAvailable": "Update available",
+    "install": "Install",
+    "update": "Update",
+    "updating": "Updating…",
+    "recheck": "Recheck",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "requiredNote": "This component is required and cannot be turned off.",
+    "envTitle": "Environment variables",
+    "envDescription": "Extra environment variables passed to this component when it runs.",
+    "envKey": "Key",
+    "envValue": "Value",
+    "envAdd": "Add variable",
+    "envRemove": "Remove variable",
+    "envHint": "No environment variables set.",
+    "envSave": "Save",
+    "componentId": "Component ID",
+    "versionInstalled": "Installed version",
+    "versionAvailable": "Available version",
+    "empty": "No components in this category.",
+    "selectPrompt": "Select a component to view its settings.",
+    "toasts": {
+      "saved": "Settings saved",
+      "saveFailed": "Failed to save settings",
+      "updated": "{name} updated",
+      "updateFailed": "Failed to update {name}",
+      "enabledOn": "{name} enabled",
+      "enabledOff": "{name} disabled"
+    },
+    "loadFailed": "Failed to load components"
   },
   "GenerativeUiSettings": {
     "loading": "Loading…",

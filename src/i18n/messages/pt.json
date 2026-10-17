@@ -52,6 +52,7 @@
       "science": "Ciência",
       "office_tools": "Ferramentas de escritório",
       "skill_packs": "Pacotes de habilidades",
+      "components": "Componentes",
       "collaboration": "Colaboração",
       "browser": "Uso do navegador",
       "computer_use": "Uso do computador",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "Carregando configurações de agentes...",
-    "skillPacksLoading": "Carregando pacotes de habilidades…"
+    "skillPacksLoading": "Carregando pacotes de habilidades…",
+    "componentsLoading": "Carregando componentes…"
   },
   "CloseBehaviorSettings": {
     "title": "Comportamento do botão Fechar",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "Falha ao abrir a pasta"
     }
+  },
+  "ComponentsSettings": {
+    "title": "Componentes",
+    "description": "Gerencie os componentes do cache de ferramentas incluídos no aplicativo: binários, servidores MCP e habilidades. Instale ou atualize e configure suas variáveis de ambiente.",
+    "tabs": {
+      "binary": "Binários",
+      "mcp": "MCP",
+      "skill": "Habilidades"
+    },
+    "notInstalled": "Não instalado",
+    "installed": "Instalado",
+    "updateAvailable": "Atualização disponível",
+    "install": "Instalar",
+    "update": "Atualizar",
+    "updating": "Atualizando…",
+    "recheck": "Verificar novamente",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
+    "requiredNote": "Este componente é obrigatório e não pode ser desativado.",
+    "envTitle": "Variáveis de ambiente",
+    "envDescription": "Variáveis de ambiente extras passadas a este componente durante a execução.",
+    "envKey": "Chave",
+    "envValue": "Valor",
+    "envAdd": "Adicionar variável",
+    "envRemove": "Remover variável",
+    "envHint": "Nenhuma variável de ambiente definida.",
+    "envSave": "Salvar",
+    "componentId": "ID do componente",
+    "versionInstalled": "Versão instalada",
+    "versionAvailable": "Versão disponível",
+    "empty": "Nenhum componente nesta categoria.",
+    "selectPrompt": "Selecione um componente para ver suas configurações.",
+    "toasts": {
+      "saved": "Configurações salvas",
+      "saveFailed": "Falha ao salvar as configurações",
+      "updated": "{name} atualizado",
+      "updateFailed": "Falha ao atualizar {name}",
+      "enabledOn": "{name} ativado",
+      "enabledOff": "{name} desativado"
+    },
+    "loadFailed": "Falha ao carregar os componentes"
   },
   "GenerativeUiSettings": {
     "loading": "Carregando…",

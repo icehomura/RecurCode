@@ -52,6 +52,7 @@
       "science": "Ciencia",
       "office_tools": "Herramientas de oficina",
       "skill_packs": "Paquetes de habilidades",
+      "components": "Componentes",
       "collaboration": "Colaboración",
       "browser": "Uso del navegador",
       "computer_use": "Uso del ordenador",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "Cargando configuración de agentes...",
-    "skillPacksLoading": "Cargando paquetes de habilidades…"
+    "skillPacksLoading": "Cargando paquetes de habilidades…",
+    "componentsLoading": "Cargando componentes…"
   },
   "CloseBehaviorSettings": {
     "title": "Comportamiento del botón de cerrar",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "Error al abrir la carpeta"
     }
+  },
+  "ComponentsSettings": {
+    "title": "Componentes",
+    "description": "Gestiona los componentes de la caché de herramientas incluidos en la aplicación: binarios, servidores MCP y habilidades. Instálalos o actualízalos y configura sus variables de entorno.",
+    "tabs": {
+      "binary": "Binarios",
+      "mcp": "MCP",
+      "skill": "Habilidades"
+    },
+    "notInstalled": "No instalado",
+    "installed": "Instalado",
+    "updateAvailable": "Actualización disponible",
+    "install": "Instalar",
+    "update": "Actualizar",
+    "updating": "Actualizando…",
+    "recheck": "Volver a comprobar",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "requiredNote": "Este componente es obligatorio y no se puede desactivar.",
+    "envTitle": "Variables de entorno",
+    "envDescription": "Variables de entorno adicionales que se pasan a este componente al ejecutarse.",
+    "envKey": "Clave",
+    "envValue": "Valor",
+    "envAdd": "Añadir variable",
+    "envRemove": "Eliminar variable",
+    "envHint": "No hay variables de entorno definidas.",
+    "envSave": "Guardar",
+    "componentId": "ID del componente",
+    "versionInstalled": "Versión instalada",
+    "versionAvailable": "Versión disponible",
+    "empty": "No hay componentes en esta categoría.",
+    "selectPrompt": "Selecciona un componente para ver su configuración.",
+    "toasts": {
+      "saved": "Configuración guardada",
+      "saveFailed": "No se pudo guardar la configuración",
+      "updated": "{name} actualizado",
+      "updateFailed": "No se pudo actualizar {name}",
+      "enabledOn": "{name} activado",
+      "enabledOff": "{name} desactivado"
+    },
+    "loadFailed": "No se pudieron cargar los componentes"
   },
   "GenerativeUiSettings": {
     "loading": "Cargando…",

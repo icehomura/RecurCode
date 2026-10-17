@@ -52,6 +52,7 @@
       "science": "Wissenschaft",
       "office_tools": "Office-Tools",
       "skill_packs": "Skill-Pakete",
+      "components": "Komponenten",
       "collaboration": "Zusammenarbeit",
       "browser": "Browsernutzung",
       "computer_use": "Computernutzung",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "Agent-Einstellungen werden geladen...",
-    "skillPacksLoading": "Skill-Pakete werden geladen…"
+    "skillPacksLoading": "Skill-Pakete werden geladen…",
+    "componentsLoading": "Komponenten werden geladen…"
   },
   "CloseBehaviorSettings": {
     "title": "Verhalten der Schließen-Schaltfläche",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "Ordner konnte nicht geöffnet werden"
     }
+  },
+  "ComponentsSettings": {
+    "title": "Komponenten",
+    "description": "Verwalte die mitgelieferten Tool-Cache-Komponenten: Binärdateien, MCP-Server und Skills. Installiere oder aktualisiere sie und konfiguriere ihre Umgebungsvariablen.",
+    "tabs": {
+      "binary": "Binärdateien",
+      "mcp": "MCP",
+      "skill": "Skills"
+    },
+    "notInstalled": "Nicht installiert",
+    "installed": "Installiert",
+    "updateAvailable": "Update verfügbar",
+    "install": "Installieren",
+    "update": "Aktualisieren",
+    "updating": "Wird aktualisiert…",
+    "recheck": "Erneut prüfen",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "requiredNote": "Diese Komponente ist erforderlich und kann nicht deaktiviert werden.",
+    "envTitle": "Umgebungsvariablen",
+    "envDescription": "Zusätzliche Umgebungsvariablen, die dieser Komponente bei der Ausführung übergeben werden.",
+    "envKey": "Schlüssel",
+    "envValue": "Wert",
+    "envAdd": "Variable hinzufügen",
+    "envRemove": "Variable entfernen",
+    "envHint": "Keine Umgebungsvariablen festgelegt.",
+    "envSave": "Speichern",
+    "componentId": "Komponenten-ID",
+    "versionInstalled": "Installierte Version",
+    "versionAvailable": "Verfügbare Version",
+    "empty": "In dieser Kategorie gibt es keine Komponenten.",
+    "selectPrompt": "Wähle eine Komponente aus, um ihre Einstellungen zu sehen.",
+    "toasts": {
+      "saved": "Einstellungen gespeichert",
+      "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+      "updated": "{name} aktualisiert",
+      "updateFailed": "{name} konnte nicht aktualisiert werden",
+      "enabledOn": "{name} aktiviert",
+      "enabledOff": "{name} deaktiviert"
+    },
+    "loadFailed": "Komponenten konnten nicht geladen werden"
   },
   "GenerativeUiSettings": {
     "loading": "Wird geladen…",

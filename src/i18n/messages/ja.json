@@ -52,6 +52,7 @@
       "science": "科学研究",
       "office_tools": "Officeツール",
       "skill_packs": "スキルパック",
+      "components": "コンポーネント",
       "collaboration": "コラボレーション",
       "browser": "ブラウザ操作",
       "computer_use": "コンピューター操作",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "エージェント設定を読み込み中...",
-    "skillPacksLoading": "スキルパックを読み込み中…"
+    "skillPacksLoading": "スキルパックを読み込み中…",
+    "componentsLoading": "コンポーネントを読み込み中…"
   },
   "CloseBehaviorSettings": {
     "title": "閉じるボタンの動作",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "フォルダを開けませんでした"
     }
+  },
+  "ComponentsSettings": {
+    "title": "コンポーネント",
+    "description": "アプリに同梱されるツールキャッシュのコンポーネント（バイナリ、MCP サーバー、スキル）を管理します。インストールや更新、環境変数の設定ができます。",
+    "tabs": {
+      "binary": "バイナリ",
+      "mcp": "MCP",
+      "skill": "スキル"
+    },
+    "notInstalled": "未インストール",
+    "installed": "インストール済み",
+    "updateAvailable": "更新あり",
+    "install": "インストール",
+    "update": "更新",
+    "updating": "更新中…",
+    "recheck": "再確認",
+    "enabled": "有効",
+    "disabled": "無効",
+    "requiredNote": "このコンポーネントは必須のため、無効にできません。",
+    "envTitle": "環境変数",
+    "envDescription": "このコンポーネントの実行時に渡される追加の環境変数です。",
+    "envKey": "キー",
+    "envValue": "値",
+    "envAdd": "変数を追加",
+    "envRemove": "変数を削除",
+    "envHint": "環境変数は設定されていません。",
+    "envSave": "保存",
+    "componentId": "コンポーネント ID",
+    "versionInstalled": "インストール済みバージョン",
+    "versionAvailable": "利用可能なバージョン",
+    "empty": "このカテゴリにコンポーネントはありません。",
+    "selectPrompt": "コンポーネントを選択すると設定が表示されます。",
+    "toasts": {
+      "saved": "設定を保存しました",
+      "saveFailed": "設定の保存に失敗しました",
+      "updated": "{name} を更新しました",
+      "updateFailed": "{name} の更新に失敗しました",
+      "enabledOn": "{name} を有効にしました",
+      "enabledOff": "{name} を無効にしました"
+    },
+    "loadFailed": "コンポーネントの読み込みに失敗しました"
   },
   "GenerativeUiSettings": {
     "loading": "読み込み中…",

@@ -52,6 +52,7 @@
       "science": "科學研究",
       "office_tools": "辦公工具",
       "skill_packs": "技能包",
+      "components": "組件管理",
       "collaboration": "協作",
       "browser": "瀏覽器操作",
       "computer_use": "電腦操作",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "載入 Agent 設定中...",
-    "skillPacksLoading": "正在載入技能包…"
+    "skillPacksLoading": "正在載入技能包…",
+    "componentsLoading": "正在載入組件…"
   },
   "CloseBehaviorSettings": {
     "title": "關閉按鈕行為",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "開啟目錄失敗"
     }
+  },
+  "ComponentsSettings": {
+    "title": "組件管理",
+    "description": "管理應用程式內建的工具快取組件——二進位、MCP 服務與技能。可安裝或更新組件，並設定其環境變數。",
+    "tabs": {
+      "binary": "二進位",
+      "mcp": "MCP",
+      "skill": "技能"
+    },
+    "notInstalled": "未安裝",
+    "installed": "已安裝",
+    "updateAvailable": "有可用更新",
+    "install": "安裝",
+    "update": "更新",
+    "updating": "更新中…",
+    "recheck": "重新檢查",
+    "enabled": "已啟用",
+    "disabled": "已停用",
+    "requiredNote": "此組件為必要組件，無法關閉。",
+    "envTitle": "環境變數",
+    "envDescription": "執行此組件時額外傳入的環境變數。",
+    "envKey": "鍵",
+    "envValue": "值",
+    "envAdd": "新增變數",
+    "envRemove": "移除變數",
+    "envHint": "尚未設定環境變數。",
+    "envSave": "儲存",
+    "componentId": "組件 ID",
+    "versionInstalled": "已安裝版本",
+    "versionAvailable": "可用版本",
+    "empty": "此分類中沒有組件。",
+    "selectPrompt": "請選擇一個組件以檢視其設定。",
+    "toasts": {
+      "saved": "設定已儲存",
+      "saveFailed": "儲存設定失敗",
+      "updated": "{name} 已更新",
+      "updateFailed": "更新 {name} 失敗",
+      "enabledOn": "已啟用 {name}",
+      "enabledOff": "已停用 {name}"
+    },
+    "loadFailed": "載入組件失敗"
   },
   "GenerativeUiSettings": {
     "loading": "載入中…",

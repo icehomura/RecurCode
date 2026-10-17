@@ -52,6 +52,7 @@
       "science": "科学研究",
       "office_tools": "办公工具",
       "skill_packs": "技能包",
+      "components": "组件管理",
       "collaboration": "协作",
       "browser": "浏览器操作",
       "computer_use": "电脑操作",
@@ -1804,7 +1805,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "加载 Agent 设置中...",
-    "skillPacksLoading": "正在加载技能包…"
+    "skillPacksLoading": "正在加载技能包…",
+    "componentsLoading": "正在加载组件…"
   },
   "CloseBehaviorSettings": {
     "title": "关闭按钮行为",
@@ -4653,6 +4655,47 @@
     "toasts": {
       "openFolderFailed": "打开目录失败"
     }
+  },
+  "ComponentsSettings": {
+    "title": "组件管理",
+    "description": "管理应用内置的工具缓存组件——二进制、MCP 服务和技能。可安装或更新组件，并配置其环境变量。",
+    "tabs": {
+      "binary": "二进制",
+      "mcp": "MCP",
+      "skill": "技能"
+    },
+    "notInstalled": "未安装",
+    "installed": "已安装",
+    "updateAvailable": "有可用更新",
+    "install": "安装",
+    "update": "更新",
+    "updating": "更新中…",
+    "recheck": "重新检查",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "requiredNote": "该组件为必需组件，无法关闭。",
+    "envTitle": "环境变量",
+    "envDescription": "运行该组件时额外传入的环境变量。",
+    "envKey": "键",
+    "envValue": "值",
+    "envAdd": "添加变量",
+    "envRemove": "删除变量",
+    "envHint": "尚未设置环境变量。",
+    "envSave": "保存",
+    "componentId": "组件 ID",
+    "versionInstalled": "已安装版本",
+    "versionAvailable": "可用版本",
+    "empty": "该分类下暂无组件。",
+    "selectPrompt": "请选择一个组件以查看其设置。",
+    "toasts": {
+      "saved": "设置已保存",
+      "saveFailed": "保存设置失败",
+      "updated": "{name} 已更新",
+      "updateFailed": "更新 {name} 失败",
+      "enabledOn": "已启用 {name}",
+      "enabledOff": "已禁用 {name}"
+    },
+    "loadFailed": "加载组件失败"
   },
   "GenerativeUiSettings": {
     "loading": "加载中…",

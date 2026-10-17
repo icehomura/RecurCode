@@ -52,6 +52,7 @@
       "science": "البحث العلمي",
       "office_tools": "أدوات المكتب",
       "skill_packs": "حزم المهارات",
+      "components": "المكوّنات",
       "collaboration": "التعاون",
       "browser": "استخدام المتصفح",
       "computer_use": "استخدام الحاسوب",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "جارٍ تحميل إعدادات الوكلاء...",
-    "skillPacksLoading": "جارٍ تحميل حزم المهارات…"
+    "skillPacksLoading": "جارٍ تحميل حزم المهارات…",
+    "componentsLoading": "جارٍ تحميل المكوّنات…"
   },
   "CloseBehaviorSettings": {
     "title": "سلوك زر الإغلاق",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "فشل فتح المجلد"
     }
+  },
+  "ComponentsSettings": {
+    "title": "المكوّنات",
+    "description": "أدر مكوّنات ذاكرة الأدوات المضمّنة في التطبيق: الملفات التنفيذية وخوادم MCP والمهارات. ثبّتها أو حدّثها واضبط متغيرات البيئة الخاصة بها.",
+    "tabs": {
+      "binary": "الملفات التنفيذية",
+      "mcp": "MCP",
+      "skill": "المهارات"
+    },
+    "notInstalled": "غير مثبّت",
+    "installed": "مثبّت",
+    "updateAvailable": "يتوفر تحديث",
+    "install": "تثبيت",
+    "update": "تحديث",
+    "updating": "جارٍ التحديث…",
+    "recheck": "إعادة الفحص",
+    "enabled": "مُمكّن",
+    "disabled": "معطّل",
+    "requiredNote": "هذا المكوّن مطلوب ولا يمكن تعطيله.",
+    "envTitle": "متغيرات البيئة",
+    "envDescription": "متغيرات بيئة إضافية تُمرَّر إلى هذا المكوّن عند تشغيله.",
+    "envKey": "المفتاح",
+    "envValue": "القيمة",
+    "envAdd": "إضافة متغير",
+    "envRemove": "إزالة المتغير",
+    "envHint": "لم يتم ضبط أي متغيرات بيئة.",
+    "envSave": "حفظ",
+    "componentId": "معرّف المكوّن",
+    "versionInstalled": "الإصدار المثبّت",
+    "versionAvailable": "الإصدار المتاح",
+    "empty": "لا توجد مكوّنات في هذه الفئة.",
+    "selectPrompt": "اختر مكوّنًا لعرض إعداداته.",
+    "toasts": {
+      "saved": "تم حفظ الإعدادات",
+      "saveFailed": "تعذّر حفظ الإعدادات",
+      "updated": "تم تحديث {name}",
+      "updateFailed": "تعذّر تحديث {name}",
+      "enabledOn": "تم تمكين {name}",
+      "enabledOff": "تم تعطيل {name}"
+    },
+    "loadFailed": "تعذّر تحميل المكوّنات"
   },
   "GenerativeUiSettings": {
     "loading": "جارٍ التحميل…",

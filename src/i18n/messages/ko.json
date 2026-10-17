@@ -52,6 +52,7 @@
       "science": "과학 연구",
       "office_tools": "오피스 도구",
       "skill_packs": "스킬 팩",
+      "components": "컴포넌트",
       "collaboration": "협업",
       "browser": "브라우저 사용",
       "computer_use": "컴퓨터 사용",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "에이전트 설정을 불러오는 중...",
-    "skillPacksLoading": "스킬 팩 로딩 중…"
+    "skillPacksLoading": "스킬 팩 로딩 중…",
+    "componentsLoading": "컴포넌트 불러오는 중…"
   },
   "CloseBehaviorSettings": {
     "title": "닫기 버튼 동작",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "폴더를 열지 못했습니다"
     }
+  },
+  "ComponentsSettings": {
+    "title": "컴포넌트",
+    "description": "앱에 포함된 도구 캐시 컴포넌트(바이너리, MCP 서버, 스킬)를 관리합니다. 설치 또는 업데이트하고 환경 변수를 설정할 수 있습니다.",
+    "tabs": {
+      "binary": "바이너리",
+      "mcp": "MCP",
+      "skill": "스킬"
+    },
+    "notInstalled": "설치되지 않음",
+    "installed": "설치됨",
+    "updateAvailable": "업데이트 있음",
+    "install": "설치",
+    "update": "업데이트",
+    "updating": "업데이트 중…",
+    "recheck": "다시 확인",
+    "enabled": "사용",
+    "disabled": "사용 안 함",
+    "requiredNote": "이 컴포넌트는 필수이므로 끌 수 없습니다.",
+    "envTitle": "환경 변수",
+    "envDescription": "이 컴포넌트를 실행할 때 추가로 전달되는 환경 변수입니다.",
+    "envKey": "키",
+    "envValue": "값",
+    "envAdd": "변수 추가",
+    "envRemove": "변수 제거",
+    "envHint": "설정된 환경 변수가 없습니다.",
+    "envSave": "저장",
+    "componentId": "컴포넌트 ID",
+    "versionInstalled": "설치된 버전",
+    "versionAvailable": "사용 가능한 버전",
+    "empty": "이 범주에 컴포넌트가 없습니다.",
+    "selectPrompt": "컴포넌트를 선택하면 설정이 표시됩니다.",
+    "toasts": {
+      "saved": "설정을 저장했습니다",
+      "saveFailed": "설정 저장에 실패했습니다",
+      "updated": "{name}을(를) 업데이트했습니다",
+      "updateFailed": "{name} 업데이트에 실패했습니다",
+      "enabledOn": "{name}을(를) 사용하도록 설정했습니다",
+      "enabledOff": "{name}을(를) 사용하지 않도록 설정했습니다"
+    },
+    "loadFailed": "컴포넌트를 불러오지 못했습니다"
   },
   "GenerativeUiSettings": {
     "loading": "불러오는 중…",

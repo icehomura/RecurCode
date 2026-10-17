@@ -52,6 +52,7 @@
       "science": "Science",
       "office_tools": "Outils bureautiques",
       "skill_packs": "Packs de compétences",
+      "components": "Composants",
       "collaboration": "Collaboration",
       "browser": "Utilisation du navigateur",
       "computer_use": "Utilisation de l'ordinateur",
@@ -1803,7 +1804,8 @@
   },
   "SettingsPages": {
     "agentsLoading": "Chargement des paramètres des agents...",
-    "skillPacksLoading": "Chargement des packs de compétences…"
+    "skillPacksLoading": "Chargement des packs de compétences…",
+    "componentsLoading": "Chargement des composants…"
   },
   "CloseBehaviorSettings": {
     "title": "Comportement du bouton Fermer",
@@ -4632,6 +4634,47 @@
     "toasts": {
       "openFolderFailed": "Échec de l'ouverture du dossier"
     }
+  },
+  "ComponentsSettings": {
+    "title": "Composants",
+    "description": "Gérez les composants du cache d'outils fournis avec l'application : binaires, serveurs MCP et compétences. Installez-les ou mettez-les à jour et configurez leurs variables d'environnement.",
+    "tabs": {
+      "binary": "Binaires",
+      "mcp": "MCP",
+      "skill": "Compétences"
+    },
+    "notInstalled": "Non installé",
+    "installed": "Installé",
+    "updateAvailable": "Mise à jour disponible",
+    "install": "Installer",
+    "update": "Mettre à jour",
+    "updating": "Mise à jour…",
+    "recheck": "Vérifier à nouveau",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "requiredNote": "Ce composant est requis et ne peut pas être désactivé.",
+    "envTitle": "Variables d'environnement",
+    "envDescription": "Variables d'environnement supplémentaires transmises à ce composant lors de son exécution.",
+    "envKey": "Clé",
+    "envValue": "Valeur",
+    "envAdd": "Ajouter une variable",
+    "envRemove": "Supprimer la variable",
+    "envHint": "Aucune variable d'environnement définie.",
+    "envSave": "Enregistrer",
+    "componentId": "ID du composant",
+    "versionInstalled": "Version installée",
+    "versionAvailable": "Version disponible",
+    "empty": "Aucun composant dans cette catégorie.",
+    "selectPrompt": "Sélectionnez un composant pour voir ses paramètres.",
+    "toasts": {
+      "saved": "Paramètres enregistrés",
+      "saveFailed": "Échec de l'enregistrement des paramètres",
+      "updated": "{name} mis à jour",
+      "updateFailed": "Échec de la mise à jour de {name}",
+      "enabledOn": "{name} activé",
+      "enabledOff": "{name} désactivé"
+    },
+    "loadFailed": "Échec du chargement des composants"
   },
   "GenerativeUiSettings": {
     "loading": "Chargement…",
