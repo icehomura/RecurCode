@@ -581,9 +581,11 @@ pub(crate) fn delete_profile_at(root: &Path, id: &str) -> Result<(), AcpError> {
         ));
     }
     if active_profile_id(root) == id {
-        return Err(AcpError::protocol(format!(
-            "profile `{id}` is active; switch to another profile before deleting it"
-        )));
+        // Deleting the active profile would leave the pointer dangling. Clear
+        // it so the next launch falls back to Ra's root `config.json` (the
+        // built-in `_main` profile) and the agent stays operational — no
+        // manual pre-switch required.
+        clear_active_profile_at(root)?;
     }
     let path = profile_path(root, id);
     if !path.is_file() {
@@ -614,6 +616,16 @@ pub(crate) fn set_active_profile_at(root: &Path, id: &str) -> Result<(), AcpErro
     // switch usable; a profile with its own LLM is left untouched.
     ensure_active_profile_llm(root)?;
     Ok(())
+}
+
+/// Clear the active-profile pointer. The next launch falls back to Ra's
+/// root `config.json` (the built-in `_main` profile). Used by
+/// `delete_profile_at` when the deleted profile is the current active one,
+/// so the agent keeps running instead of being stuck pointing at a deleted
+/// file.
+pub(crate) fn clear_active_profile_at(root: &Path) -> Result<(), AcpError> {
+    fs::write(root.join("default-profile"), "")
+        .map_err(|e| AcpError::protocol(format!("failed to clear active profile: {e}")))
 }
 
 /// Apply a patch to Ra's native config, preserving every unknown key
@@ -1001,6 +1013,45 @@ mod tests {
             hono["config"]["llm"]["primary"]["model_id"],
             json!("root-model")
         );
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn deleting_the_active_profile_clears_the_pointer_and_falls_back() {
+        let dir = fresh_dir("recur-delete-active");
+        // Root config defines the fallback the next launch will use.
+        fs::write(
+            config_path(&dir),
+            r#"{"provider":"openai","model":"root-model"}"#,
+        )
+        .unwrap();
+        // An active profile with its own LLM — deleting it must not lose the
+        // root model the next launch relies on.
+        fs::write(
+            profile_path(&dir, "dev"),
+            r#"{"id":"dev","config":{"llm":{"primary":{"family_id":"anthropic","model_id":"claude"}}}}"#,
+        )
+        .unwrap();
+        fs::write(dir.join("default-profile"), "dev").unwrap();
+        assert_eq!(active_profile_id(&dir), "dev");
+
+        // Deleting the active profile must not error: it clears the pointer
+        // so the agent falls back to the root `_main` (no `--profile`), and
+        // then removes the file. No manual pre-switch required.
+        delete_profile_at(&dir, "dev")
+            .expect("deleting the active profile must auto-switch, not refuse");
+        assert!(
+            !profile_path(&dir, "dev").is_file(),
+            "the active profile file must be removed"
+        );
+        assert_eq!(
+            active_profile_id(&dir),
+            "",
+            "the active pointer must be cleared so the next launch uses root `_main`"
+        );
+
+        // And `_main` itself remains undeletable.
+        assert!(delete_profile_at(&dir, "_main").is_err());
         let _ = fs::remove_dir_all(&dir);
     }
 
