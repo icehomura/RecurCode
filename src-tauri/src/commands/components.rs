@@ -287,7 +287,7 @@ fn installed_busybox_version() -> Option<String> {
 /// app executable; `tauri dev` runs from `target/debug`, so the build tree's
 /// `binaries/` directory — the one `prepare-sidecars.mjs` fills — is checked
 /// too, under its `<name>-<target-triple>` staging name.
-fn locate_sidecar(name: &str) -> Option<PathBuf> {
+pub(crate) fn locate_sidecar(name: &str) -> Option<PathBuf> {
     let filename = if cfg!(windows) {
         format!("{name}.exe")
     } else {
