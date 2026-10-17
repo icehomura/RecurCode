@@ -541,15 +541,16 @@ export function ComponentsSettings() {
                       </SettingCard>
 
                       {/* A multi-call binary's applets are toggled one by one;
-                          each enabled tool becomes a PATH shim. */}
-                      {selected.tools.length > 0 && (
+                          each enabled tool becomes a PATH shim. `?? []` because
+                          a backend built before this field omits it. */}
+                      {(selected.tools ?? []).length > 0 && (
                         <SettingCard>
                           <SettingRow
                             title={t("toolsTitle")}
                             description={t("toolsDescription")}
                           />
                           <div className="mt-1 space-y-0.5">
-                            {selected.tools.map((tool) => (
+                            {(selected.tools ?? []).map((tool) => (
                               <div
                                 key={tool.id}
                                 className="flex items-center justify-between gap-2 rounded-md px-1.5 py-1 hover:bg-muted/50"
