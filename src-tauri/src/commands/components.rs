@@ -13,7 +13,7 @@
 //! (see [`sync_component_shims`]) that points back at the one cached binary.
 
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
@@ -125,7 +125,7 @@ enum Target {
     /// A registry entry (`@ra`, `@recurbusybox`, …).
     Component(&'static ComponentDef),
     /// One tool of a multi-call binary (`@recurbusybox:rg`).
-    Tool(&'static ComponentDef, &'static str),
+    Tool,
 }
 
 /// Resolve an id the settings UI hands back — either a registry id or a
@@ -138,8 +138,8 @@ fn resolve_target(id: &str) -> Option<Target> {
     let def = definition_for(component_id)?;
     def.tools
         .iter()
-        .find(|t| **t == tool)
-        .map(|t| Target::Tool(def, t))
+        .any(|t| *t == tool)
+        .then_some(Target::Tool)
 }
 
 /// The whole built-in registry. Ordering is stable and drives the settings
@@ -152,8 +152,8 @@ pub static COMPONENTS: &[ComponentDef] = &[
     ComponentDef {
         id: "@ra",
         category: CATEGORY_BINARY,
-        name: "ra",
-        description: "RecurAgent — RecurCode's first-party coding agent (`ra acp`).",
+        name: "RecurAgent",
+        description: "RecurCode's first-party coding agent.",
         tool: Some("ra"),
         tools: &[],
         required: true,
@@ -165,8 +165,8 @@ pub static COMPONENTS: &[ComponentDef] = &[
     ComponentDef {
         id: RECURBUSYBOX_TOOL_ID,
         category: CATEGORY_BINARY,
-        name: "rb",
-        description: "rb — RecurBusyBox, one multi-call binary providing the search, edit and text toolset below.",
+        name: "RecurBusyBox",
+        description: "One multi-call binary providing the search, edit and text toolset.",
         tool: Some(RECURBUSYBOX_CMD),
         tools: RECURBUSYBOX_TOOLS,
         required: false,
@@ -282,6 +282,76 @@ fn installed_busybox_version() -> Option<String> {
         .and_then(|versions| versions.into_iter().next())
 }
 
+/// Where RecurCode finds a binary it ships as a Tauri sidecar
+/// (`bundle.externalBin`). An installed bundle puts the bare name beside the
+/// app executable; `tauri dev` runs from `target/debug`, so the build tree's
+/// `binaries/` directory — the one `prepare-sidecars.mjs` fills — is checked
+/// too, under its `<name>-<target-triple>` staging name.
+fn locate_sidecar(name: &str) -> Option<PathBuf> {
+    let filename = if cfg!(windows) {
+        format!("{name}.exe")
+    } else {
+        name.to_string()
+    };
+
+    let env_key = format!("RC_{}_BIN", name.to_uppercase());
+    if let Some(raw) = std::env::var_os(&env_key) {
+        let candidate = PathBuf::from(raw);
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+
+    if let Some(dir) = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(PathBuf::from))
+    {
+        let candidate = dir.join(&filename);
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+
+    let prefix = format!("{name}-");
+    if let Ok(entries) = std::fs::read_dir(Path::new(env!("CARGO_MANIFEST_DIR")).join("binaries")) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let staged = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.starts_with(&prefix));
+            if staged {
+                return Some(path);
+            }
+        }
+    }
+    None
+}
+
+/// `<binary> --version` → its first version-looking token. The bundled `ra` is
+/// whatever the rolling `latest` release held when RecurCode was built, so
+/// asking the binary itself is the only honest source for its version.
+fn probe_version(path: &Path) -> Option<String> {
+    let out = std::process::Command::new(path)
+        .arg("--version")
+        .output()
+        .ok()?;
+    let text = String::from_utf8_lossy(&out.stdout);
+    text.split_whitespace()
+        .find(|token| token.starts_with(|c: char| c.is_ascii_digit()))
+        .map(|token| token.trim_start_matches('v').to_string())
+}
+
+/// The `rb` to point shims at: the downloaded copy when one is installed, else
+/// the sidecar RecurCode ships.
+fn busybox_executable() -> Option<PathBuf> {
+    installed_busybox_version()
+        .and_then(|version| {
+            binary_cache::tool_binary_path(RECURBUSYBOX_TOOL_ID, &version, RECURBUSYBOX_CMD)
+        })
+        .or_else(|| locate_sidecar(RECURBUSYBOX_CMD))
+}
+
 pub(crate) async fn components_list_core(
     db: &AppDatabase,
 ) -> Result<Vec<ComponentInfo>, AppCommandError> {
@@ -299,17 +369,27 @@ pub(crate) async fn components_list_core(
 
     let installed = installed_busybox_version();
     let available = RECURBUSYBOX_VERSION.to_string();
+    // The bundled sidecars let the settings page show a version before anything
+    // is downloaded (`rb` uses the pinned release; `ra` is probed).
+    let busybox_bundled = locate_sidecar(RECURBUSYBOX_CMD).is_some();
+    let ra_bundled_version = locate_sidecar("ra").as_deref().and_then(probe_version);
 
     Ok(COMPONENTS
         .iter()
         .map(|def| {
             let setting = by_id.get(def.id).copied();
-            // Only RecurBusyBox is downloaded by this app right now, so only it
-            // carries a version/upgrade story. `ra` ships inside the installer.
+            // Only RecurBusyBox is downloaded by this app; `ra` ships inside
+            // the installer. `rb` therefore prefers the downloaded copy (which
+            // may be newer) and otherwise reports the bundled one.
             let is_busybox = def.id == RECURBUSYBOX_TOOL_ID;
             let (installed_version, available_version, update_available) = if is_busybox {
                 let update = installed.as_deref().map(|v| v != available).unwrap_or(false);
-                (installed.clone(), Some(available.clone()), update)
+                let shown = installed
+                    .clone()
+                    .or_else(|| busybox_bundled.then(|| available.clone()));
+                (shown, Some(available.clone()), update)
+            } else if def.id == "@ra" {
+                (ra_bundled_version.clone(), None, false)
             } else {
                 (None, None, false)
             };
@@ -365,7 +445,7 @@ pub(crate) async fn components_set_enabled_core(
         }
         // Only a parent binary can be pinned; a tool of one never is.
         Some(Target::Component(def)) => ensure_can_toggle(def, enabled)?,
-        Some(Target::Tool(..)) => {}
+        Some(Target::Tool) => {}
     }
     component_setting_service::set_enabled(&db.conn, id, enabled).await?;
     sync_component_shims(&db.conn).await?;
@@ -502,9 +582,7 @@ pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<()
         .map(|m| (m.component_id.as_str(), m.enabled))
         .collect();
 
-    let source = installed_busybox_version().and_then(|version| {
-        binary_cache::tool_binary_path(RECURBUSYBOX_TOOL_ID, &version, RECURBUSYBOX_CMD)
-    });
+    let source = busybox_executable();
 
     let dir = binary_cache::components_bin_dir().map_err(|e| {
         AppCommandError::io_error("Failed to resolve components bin directory")
