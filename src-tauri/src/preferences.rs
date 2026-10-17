@@ -14,10 +14,41 @@ use serde::{Deserialize, Serialize};
 const PREFERENCES_FILE_NAME: &str = "preferences.json";
 const RC_DIR_NAME: &str = ".rc";
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct AppPreferences {
     pub disable_hardware_acceleration: bool,
+    /// Bundled RecurBusyBox tools (rg/jq/fd/…) take precedence over a
+    /// same-named host binary. `true` keeps the long-standing behavior of
+    /// prepending the components shim dir to the agent child's PATH;
+    /// `false` turns the shims into a fallback that only resolves when the
+    /// host has no copy of the tool. Toggled from the Components settings page;
+    /// defaults to on so a fresh install inherits the current behavior.
+    #[serde(default = "default_prefer_bundled_tools")]
+    pub prefer_bundled_tools: bool,
+}
+
+/// Default for [`AppPreferences::prefer_bundled_tools`]. New users inherit the
+/// long-standing "bundled tools win" behavior — turning the toggle off is an
+/// explicit choice, never an accidental upgrade surprise. `pub(crate)` so the
+/// settings-page test can pin both the serde default and the in-memory
+/// default to the same value without re-declaring it.
+pub(crate) fn default_prefer_bundled_tools() -> bool {
+    true
+}
+
+/// Hand-written because `#[derive(Default)]` zero-initializes `bool`s, and the
+/// new field's default is `true`. Both the serde-default (for rows stored
+/// before this field existed) and `AppPreferences::default()` (used when the
+/// preferences file is missing) need to agree on the same value — otherwise a
+/// fresh install would read back `false` the moment any other field was saved.
+impl Default for AppPreferences {
+    fn default() -> Self {
+        Self {
+            disable_hardware_acceleration: false,
+            prefer_bundled_tools: default_prefer_bundled_tools(),
+        }
+    }
 }
 
 pub fn preferences_file_path() -> Option<PathBuf> {
