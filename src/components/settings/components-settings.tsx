@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import {
   ArrowDownToLine,
+  FolderOpen,
   Info,
   Loader2,
   Lock,
@@ -15,15 +16,40 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -38,16 +64,30 @@ import {
   componentsSetEnabled,
   componentsSetEnv,
   componentsUpdate,
+  raProfileCreate,
+  raProfileDelete,
+  raProfileList,
+  raProfileSetActive,
 } from "@/lib/api"
-import type { ComponentInfo, ToolInfo } from "@/lib/types"
+import type { ComponentInfo, RaProfileDetail, ToolInfo } from "@/lib/types"
 
 const LEFT_MIN_WIDTH = 280
 const RIGHT_MIN_WIDTH = 420
 
 type ComponentCategory = ComponentInfo["category"]
 
-function normalizeTab(raw: string | null): ComponentCategory {
-  return raw === "mcp" || raw === "skill" ? raw : "binary"
+/** The four sub-tabs: the three component categories plus the Ra profiles
+ *  manager, which is not a component category and is handled separately. */
+type SettingsTab = ComponentCategory | "profiles"
+
+/** Sentinel for the profile-create "clone from" select: Radix forbids the
+ *  empty string as an item value, so "current config" needs a real value. */
+const PROFILE_CLONE_CURRENT = "__current__"
+
+function normalizeTab(raw: string | null): SettingsTab {
+  return raw === "mcp" || raw === "skill" || raw === "profiles"
+    ? raw
+    : "binary"
 }
 
 // Radix emits `data-state="active"`, so the pill has to be re-declared — the
@@ -102,7 +142,7 @@ export function ComponentsSettings() {
 
   // Local state is the visual source of truth so the tab always switches; the
   // `?tab=` param is a best-effort deep-link mirror, seeded once from the URL.
-  const [tab, setTab] = useState<ComponentCategory>(() =>
+  const [tab, setTab] = useState<SettingsTab>(() =>
     normalizeTab(searchParams.get("tab"))
   )
 
@@ -114,6 +154,20 @@ export function ComponentsSettings() {
   const [updating, setUpdating] = useState(false)
   const [envRows, setEnvRows] = useState<EnvRow[]>([])
   const [savingEnv, setSavingEnv] = useState(false)
+
+  // Ra profiles (the fourth sub-tab). Loaded independently of the component
+  // list so a profile backend failure can't blank the whole panel.
+  const [profiles, setProfiles] = useState<RaProfileDetail[]>([])
+  const [profilesError, setProfilesError] = useState<string | null>(null)
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
+    null
+  )
+  const [profileBusy, setProfileBusy] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createName, setCreateName] = useState("")
+  const [cloneFrom, setCloneFrom] = useState(PROFILE_CLONE_CURRENT)
+  const [deleteTarget, setDeleteTarget] = useState<RaProfileDetail | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const panelContainerRef = useRef<HTMLDivElement | null>(null)
   const [panelContainerWidth, setPanelContainerWidth] = useState(0)
@@ -140,6 +194,22 @@ export function ComponentsSettings() {
       return null
     }
   }, [])
+
+  const refreshProfiles = useCallback(async () => {
+    try {
+      const list = await raProfileList()
+      setProfiles(list)
+      setProfilesError(null)
+      return list
+    } catch (err) {
+      setProfilesError(toErrorMessage(err))
+      return null
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshProfiles()
+  }, [refreshProfiles])
 
   useEffect(() => {
     let cancelled = false
@@ -170,6 +240,32 @@ export function ComponentsSettings() {
     () => inCategory.find((item) => item.id === selectedId) ?? null,
     [inCategory, selectedId]
   )
+
+  // `_main` is RecurAgent's internal profile and never appears in the list.
+  const visibleProfiles = useMemo(
+    () => profiles.filter((profile) => profile.id !== "_main"),
+    [profiles]
+  )
+
+  const selectedProfile = useMemo(
+    () =>
+      visibleProfiles.find((profile) => profile.id === selectedProfileId) ??
+      null,
+    [visibleProfiles, selectedProfileId]
+  )
+
+  // Mirror the component-selection rule: a freshly loaded profile list (or a
+  // deletion) picks the first remaining entry rather than leaving the detail
+  // pane blank.
+  useEffect(() => {
+    if (visibleProfiles.length === 0) {
+      if (selectedProfileId !== null) setSelectedProfileId(null)
+      return
+    }
+    if (!visibleProfiles.some((profile) => profile.id === selectedProfileId)) {
+      setSelectedProfileId(visibleProfiles[0].id)
+    }
+  }, [visibleProfiles, selectedProfileId])
 
   // Keep a selection per category: a fresh list (or a tab switch) picks the
   // first entry instead of leaving the detail pane empty.
@@ -312,6 +408,64 @@ export function ComponentsSettings() {
     }
   }, [selected, envRows, refresh, t])
 
+  const handleSetActiveProfile = useCallback(
+    async (profile: RaProfileDetail) => {
+      setProfileBusy(true)
+      try {
+        await raProfileSetActive(profile.id)
+        await refreshProfiles()
+        toast.success(t("toasts.profileActivated"))
+      } catch (err) {
+        toast.error(t("toasts.profileActionFailed"), {
+          description: toErrorMessage(err),
+        })
+      } finally {
+        setProfileBusy(false)
+      }
+    },
+    [refreshProfiles, t]
+  )
+
+  const handleCreateProfile = useCallback(async () => {
+    const name = createName.trim()
+    if (!name) return
+    setProfileBusy(true)
+    try {
+      await raProfileCreate({
+        name,
+        cloneFrom: cloneFrom === PROFILE_CLONE_CURRENT ? null : cloneFrom,
+      })
+      await refreshProfiles()
+      toast.success(t("toasts.profileCreated"))
+      setCreateOpen(false)
+      setCreateName("")
+      setCloneFrom(PROFILE_CLONE_CURRENT)
+    } catch (err) {
+      toast.error(t("toasts.profileActionFailed"), {
+        description: toErrorMessage(err),
+      })
+    } finally {
+      setProfileBusy(false)
+    }
+  }, [createName, cloneFrom, refreshProfiles, t])
+
+  const handleDeleteProfile = useCallback(async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await raProfileDelete(deleteTarget.id)
+      await refreshProfiles()
+      toast.success(t("toasts.profileDeleted"))
+      setDeleteTarget(null)
+    } catch (err) {
+      toast.error(t("toasts.profileActionFailed"), {
+        description: toErrorMessage(err),
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }, [deleteTarget, refreshProfiles, t])
+
   const safeContainerWidth =
     panelContainerWidth > 0 ? panelContainerWidth : 1200
   const leftMinSize = clamp(
@@ -341,7 +495,7 @@ export function ComponentsSettings() {
         <div>
           <h2 className="text-base font-semibold">{t("title")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("description")}
+            {tab === "profiles" ? t("profilesDescription") : t("description")}
           </p>
         </div>
         <Button
@@ -350,6 +504,9 @@ export function ComponentsSettings() {
           onClick={() => {
             refresh().catch((err) => {
               console.error("[ComponentsSettings] refresh failed:", err)
+            })
+            refreshProfiles().catch((err) => {
+              console.error("[ComponentsSettings] profile refresh failed:", err)
             })
           }}
         >
@@ -373,6 +530,9 @@ export function ComponentsSettings() {
           <TabsTrigger value="skill" className={TRIGGER_ACTIVE}>
             {t("tabs.skill")}
           </TabsTrigger>
+          <TabsTrigger value="profiles" className={TRIGGER_ACTIVE}>
+            {t("tabs.profiles")}
+          </TabsTrigger>
         </TabsList>
 
         {loadError && (
@@ -392,13 +552,80 @@ export function ComponentsSettings() {
               maxSize={leftMaxSize}
             >
               <div className="min-h-0 h-full min-w-0 rounded-lg border bg-card flex flex-col overflow-hidden lg:rounded-r-none">
-                <div className="border-b p-3">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t("title")}
-                  </span>
-                </div>
+                {tab === "profiles" ? (
+                  <div className="flex items-center justify-between gap-2 border-b p-3">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("profilesTitle")}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCreateOpen(true)}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {t("profilesCreate")}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-b p-3">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {t("title")}
+                    </span>
+                  </div>
+                )}
 
-                {inCategory.length === 0 ? (
+                {profilesError && tab === "profiles" && (
+                  <div className="border-b bg-destructive/5 px-3 py-2 text-2xs text-destructive">
+                    {t("loadFailed")}: {profilesError}
+                  </div>
+                )}
+
+                {tab === "profiles" ? (
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    {visibleProfiles.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground px-4 text-center">
+                        {t("profilesEmpty")}
+                      </div>
+                    ) : (
+                      <ScrollArea className="flex-1 min-h-0">
+                        <div className="space-y-1 p-2">
+                          {visibleProfiles.map((profile) => (
+                            <button
+                              key={profile.id}
+                              type="button"
+                              onClick={() => setSelectedProfileId(profile.id)}
+                              className={cn(
+                                "w-full rounded-md border px-2.5 py-2 text-left transition-colors",
+                                selectedProfileId === profile.id
+                                  ? "border-primary/40 bg-primary/5"
+                                  : "border-transparent hover:bg-muted/60"
+                              )}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="truncate text-sm font-medium">
+                                  {profile.name}
+                                </span>
+                                {profile.active && (
+                                  <Badge variant="secondary">
+                                    {t("profilesActive")}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="mt-0.5 truncate text-2xs text-muted-foreground">
+                                {[profile.provider, profile.model]
+                                  .filter(Boolean)
+                                  .join(" · ") || "—"}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    )}
+                    <p className="border-t px-3 py-2 text-2xs text-muted-foreground">
+                      {t("profilesMainHidden")}
+                    </p>
+                  </div>
+                ) : inCategory.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground px-4 text-center">
                     {t("empty")}
                   </div>
@@ -449,7 +676,89 @@ export function ComponentsSettings() {
 
             <ResizablePanel defaultSize={66} minSize={rightMinSize}>
               <div className="h-full flex-1 min-h-0 min-w-0 rounded-lg border bg-card overflow-hidden lg:rounded-l-none lg:border-l-0">
-                {selected ? (
+                {tab === "profiles" ? (
+                  selectedProfile ? (
+                    <div className="h-full flex flex-col">
+                      <ScrollArea className="flex-1 min-h-0">
+                        <div className="p-4 space-y-4">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-sm font-semibold">
+                                {selectedProfile.name}
+                              </h3>
+                              {selectedProfile.active && (
+                                <Badge variant="secondary">
+                                  {t("profilesActive")}
+                                </Badge>
+                              )}
+                            </div>
+                            <code className="mt-1 inline-block rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                              {selectedProfile.id}
+                            </code>
+                          </div>
+
+                          <SettingCard>
+                            <SettingRow icon={Info} title={t("profilesPath")}>
+                              <code className="block truncate rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                                {selectedProfile.path}
+                              </code>
+                            </SettingRow>
+                            {selectedProfile.dataDir && (
+                              <SettingRow
+                                icon={FolderOpen}
+                                title={t("profilesDataDir")}
+                              >
+                                <code className="block truncate rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                                  {selectedProfile.dataDir}
+                                </code>
+                              </SettingRow>
+                            )}
+                          </SettingCard>
+
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              disabled={selectedProfile.active || profileBusy}
+                              onClick={() => {
+                                handleSetActiveProfile(selectedProfile).catch(
+                                  (err) => {
+                                    console.error(
+                                      "[ComponentsSettings] set active failed:",
+                                      err
+                                    )
+                                  }
+                                )
+                              }}
+                            >
+                              {profileBusy ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : null}
+                              {t("profilesSetActive")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-destructive"
+                              disabled={
+                                selectedProfile.active ||
+                                selectedProfile.id === "_main" ||
+                                deleting
+                              }
+                              onClick={() => setDeleteTarget(selectedProfile)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              {t("profilesDelete")}
+                            </Button>
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center px-4 text-center text-xs text-muted-foreground">
+                      {t("selectPrompt")}
+                    </div>
+                  )
+                ) : selected ? (
                   <div className="h-full flex flex-col">
                     <ScrollArea className="flex-1 min-h-0">
                     <div className="p-4 space-y-4">
@@ -707,6 +1016,109 @@ export function ComponentsSettings() {
           </ResizablePanelGroup>
         </div>
       </Tabs>
+
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open)
+          if (!open) setCreateName("")
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("profilesCreateTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="ra-profile-name">{t("profilesName")}</Label>
+              <Input
+                id="ra-profile-name"
+                value={createName}
+                placeholder={t("profilesNamePlaceholder")}
+                onChange={(event) => setCreateName(event.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("profilesCloneFrom")}</Label>
+              <Select value={cloneFrom} onValueChange={setCloneFrom}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={PROFILE_CLONE_CURRENT}>
+                    {t("profilesCloneFromCurrent")}
+                  </SelectItem>
+                  {visibleProfiles.map((profile) => (
+                    <SelectItem key={profile.id} value={profile.id}>
+                      {profile.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              disabled={!createName.trim() || profileBusy}
+              onClick={() => {
+                handleCreateProfile().catch((err) => {
+                  console.error(
+                    "[ComponentsSettings] create profile failed:",
+                    err
+                  )
+                })
+              }}
+            >
+              {profileBusy ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : null}
+              {t("profilesCreate")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("profilesDeleteConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("profilesDeleteConfirmBody", {
+                name: deleteTarget?.name ?? "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>
+              {t("profilesCancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault()
+                handleDeleteProfile().catch((err) => {
+                  console.error(
+                    "[ComponentsSettings] delete profile failed:",
+                    err
+                  )
+                })
+              }}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : null}
+              {t("profilesDelete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
