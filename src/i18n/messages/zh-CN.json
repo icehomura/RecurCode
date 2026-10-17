@@ -4676,7 +4676,7 @@
     "disabled": "已禁用",
     "requiredNote": "该组件为必需组件，无法关闭。",
     "toolsTitle": "工具",
-    "toolsDescription": "此二进制提供的工具，通过其固定路径调用。它们随二进制一起启用或禁用。",
+    "toolsDescription": "此二进制在 PATH 上提供的工具。它们随二进制一起启用或禁用。",
     "envTitle": "环境变量",
     "envDescription": "运行该组件时额外传入的环境变量。",
     "envKey": "键",
