@@ -72,3 +72,4 @@ __pycache__/
 
 # local dev: Cranelift backend config (nightly-only)
 .cargo/config.toml
+rust-toolchain.toml
