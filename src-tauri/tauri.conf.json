@@ -30,7 +30,22 @@
     "resources": {
       "../out": "web/"
     },
-    "externalBin": ["binaries/rc-mcp", "binaries/rc-computer-helper", "binaries/ra", "binaries/rb"],
+    "externalBin": [
+      "binaries/rc-mcp",
+      "binaries/rc-computer-helper",
+      "binaries/ra",
+      "binaries/ra-sandbox",
+      "binaries/news_fetch",
+      "binaries/deep-search",
+      "binaries/deep_crawl",
+      "binaries/send_email",
+      "binaries/account_manager",
+      "binaries/voice",
+      "binaries/clock",
+      "binaries/weather",
+      "binaries/smart_home",
+      "binaries/rb"
+    ],
     "windows": {
       "nsis": {
         "installerHooks": "./windows/installer-hooks.nsh"
