@@ -4642,7 +4642,8 @@
       "binary": "Binärdateien",
       "mcp": "MCP",
       "skill": "Skills",
-      "profiles": "Profile"
+      "profiles": "Profile",
+      "multicall": "Werkzeug-Sätze"
     },
     "notInstalled": "Nicht installiert",
     "installed": "Installiert",
@@ -4654,8 +4655,6 @@
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
     "requiredNote": "Diese Komponente ist erforderlich und kann nicht deaktiviert werden.",
-    "toolsTitle": "Werkzeuge",
-    "toolsDescription": "Die Applets, die dieses Binary im PATH bereitstellt. Sie werden zusammen mit dem Binary aktiviert und deaktiviert.",
     "envTitle": "Umgebungsvariablen",
     "envDescription": "Zusätzliche Umgebungsvariablen, die dieser Komponente bei der Ausführung übergeben werden.",
     "envKey": "Schlüssel",
@@ -4679,7 +4678,9 @@
       "profileCreated": "Profil erstellt",
       "profileDeleted": "Profil gelöscht",
       "profileActivated": "Aktives Profil geändert",
-      "profileActionFailed": "Profilaktion fehlgeschlagen"
+      "profileActionFailed": "Profilaktion fehlgeschlagen",
+      "actionFailed": "Aktion fehlgeschlagen",
+      "skillRefreshed": "Skill aus dem Bundle neu installiert"
     },
     "loadFailed": "Komponenten konnten nicht geladen werden",
     "profilesTitle": "Profile",
@@ -4699,7 +4700,24 @@
     "profilesMainHidden": "Das in RecurAgent integrierte `_main` ist ausgeblendet",
     "profilesPath": "Pfad der Konfigurationsdatei",
     "profilesDataDir": "Datenverzeichnis",
-    "profilesCancel": "Abbrechen"
+    "profilesCancel": "Abbrechen",
+    "appletsTitle": "Applets",
+    "appletsDescription": "Die kleinen Werkzeuge, die der gemeinsame Multicall-Binärcode bereitstellt — jeder für sich schaltbar, aber nicht verfügbar, wenn die Binärdatei aus ist.",
+    "toolsPreferBundledLabel": "Mitgelieferte Werkzeuge bevorzugen",
+    "toolsPreferBundledDescription": "Überschreibt gleichnamige Systemwerkzeuge wie rg / jq / fd. Aus: die mitgelieferten Werkzeuge greifen nur ein, wenn das System keine Kopie hat.",
+    "skillCentral": "Zentrale Kopie",
+    "skillCentralPresent": "Installiert",
+    "skillCentralMissing": "Nicht installiert",
+    "skillCentralConflict": "Name vergeben",
+    "skillCentralHash": "SHA der zentralen Kopie",
+    "skillBundledHash": "SHA der mitgelieferten Kopie",
+    "skillStatus": "Update-Status",
+    "skillUpdateAvailable": "Update verfügbar",
+    "skillUpToDate": "Aktuell",
+    "skillRefresh": "Aus dem Bundle neu installieren",
+    "skillConflictCallout": "Im zentralen Verzeichnis liegt bereits ein Skill gleichen Namens. Benenne ihn auf dem Custom-Tab um und aktualisiere dann hier — bis dahin lässt sich nur die bestehende Kopie verlinken, nicht überschreiben.",
+    "skillAgentsTitle": "Verlinkte Agenten",
+    "skillAgentsDescription": "Wähle die Agenten aus, die eine Verknüpfung zum mitgelieferten Skill erhalten. Konflikte bleiben verlinkbar; Skill- und mcp-Schalter beeinflussen einander nicht."
   },
   "GenerativeUiSettings": {
     "loading": "Wird geladen…",

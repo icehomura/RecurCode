@@ -4642,7 +4642,8 @@
       "binary": "Binários",
       "mcp": "MCP",
       "skill": "Habilidades",
-      "profiles": "Perfis"
+      "profiles": "Perfis",
+      "multicall": "Kits de ferramentas"
     },
     "notInstalled": "Não instalado",
     "installed": "Instalado",
@@ -4654,8 +4655,6 @@
     "enabled": "Ativado",
     "disabled": "Desativado",
     "requiredNote": "Este componente é obrigatório e não pode ser desativado.",
-    "toolsTitle": "Ferramentas",
-    "toolsDescription": "Os applets que este binário fornece no PATH. São ativados e desativados junto com o binário.",
     "envTitle": "Variáveis de ambiente",
     "envDescription": "Variáveis de ambiente extras passadas a este componente durante a execução.",
     "envKey": "Chave",
@@ -4679,7 +4678,9 @@
       "profileCreated": "Perfil criado",
       "profileDeleted": "Perfil excluído",
       "profileActivated": "Perfil ativo alterado",
-      "profileActionFailed": "Falha na ação do perfil"
+      "profileActionFailed": "Falha na ação do perfil",
+      "actionFailed": "Falha na ação",
+      "skillRefreshed": "Skill reinstalado a partir do pacote"
     },
     "loadFailed": "Falha ao carregar os componentes",
     "profilesTitle": "Perfis",
@@ -4699,7 +4700,24 @@
     "profilesMainHidden": "O `_main` integrado do RecurAgent está oculto",
     "profilesPath": "Caminho do arquivo de configuração",
     "profilesDataDir": "Diretório de dados",
-    "profilesCancel": "Cancelar"
+    "profilesCancel": "Cancelar",
+    "appletsTitle": "Applets",
+    "appletsDescription": "Os applets fornecidos pelo binário multi-chamada compartilhado — cada um comutável, mas indisponível enquanto o binário estiver desligado.",
+    "toolsPreferBundledLabel": "Preferir ferramentas integradas",
+    "toolsPreferBundledDescription": "Sobrescreve ferramentas do sistema com o mesmo nome (rg / jq / fd). Desligado: só entram como fallback quando o sistema não as tem.",
+    "skillCentral": "Cópia central",
+    "skillCentralPresent": "Instalado",
+    "skillCentralMissing": "Não instalado",
+    "skillCentralConflict": "Nome já em uso",
+    "skillCentralHash": "SHA da cópia central",
+    "skillBundledHash": "SHA do pacote",
+    "skillStatus": "Estado de atualização",
+    "skillUpdateAvailable": "Atualização disponível",
+    "skillUpToDate": "Atualizado",
+    "skillRefresh": "Reinstalar do pacote",
+    "skillConflictCallout": "Já existe um skill com esse nome no diretório central. Renomeie-o na aba Custom e volte a atualizar aqui — até lá só é possível vincular a cópia existente, não sobrescrever.",
+    "skillAgentsTitle": "Agentes vinculados",
+    "skillAgentsDescription": "Marque os agentes que devem receber um link para o skill integrado. Mesmo em conflito o link é possível; os interruptores de skill e mcp não se cruzam."
   },
   "GenerativeUiSettings": {
     "loading": "Carregando…",

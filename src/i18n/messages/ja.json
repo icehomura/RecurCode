@@ -4642,7 +4642,8 @@
       "binary": "バイナリ",
       "mcp": "MCP",
       "skill": "スキル",
-      "profiles": "プロファイル"
+      "profiles": "プロファイル",
+      "multicall": "ツールスイート"
     },
     "notInstalled": "未インストール",
     "installed": "インストール済み",
@@ -4654,8 +4655,6 @@
     "enabled": "有効",
     "disabled": "無効",
     "requiredNote": "このコンポーネントは必須のため、無効にできません。",
-    "toolsTitle": "ツール",
-    "toolsDescription": "このバイナリが PATH に提供するアプレット。バイナリと一緒に有効・無効になります。",
     "envTitle": "環境変数",
     "envDescription": "このコンポーネントの実行時に渡される追加の環境変数です。",
     "envKey": "キー",
@@ -4679,7 +4678,9 @@
       "profileCreated": "プロファイルを作成しました",
       "profileDeleted": "プロファイルを削除しました",
       "profileActivated": "現在のプロファイルを変更しました",
-      "profileActionFailed": "プロファイルの操作に失敗しました"
+      "profileActionFailed": "プロファイルの操作に失敗しました",
+      "actionFailed": "操作に失敗しました",
+      "skillRefreshed": "同梱版からスキルを再インストールしました"
     },
     "loadFailed": "コンポーネントの読み込みに失敗しました",
     "profilesTitle": "プロファイル",
@@ -4699,7 +4700,24 @@
     "profilesMainHidden": "RecurAgent 内蔵の `_main` は非表示です",
     "profilesPath": "設定ファイルのパス",
     "profilesDataDir": "データディレクトリ",
-    "profilesCancel": "キャンセル"
+    "profilesCancel": "キャンセル",
+    "appletsTitle": "アプレット",
+    "appletsDescription": "共有のマルチコールバイナリが提供するアプレット。バイナリ本体のスイッチとは独立ですが、バイナリがオフのときは使えません。",
+    "toolsPreferBundledLabel": "同梱ツールを優先",
+    "toolsPreferBundledDescription": "システム上の同名ツール（rg / jq / fd など）を上書きします。オフのときはホストに無い場合のみフォールバックします。",
+    "skillCentral": "中央コピー",
+    "skillCentralPresent": "インストール済み",
+    "skillCentralMissing": "未インストール",
+    "skillCentralConflict": "名前が使用中",
+    "skillCentralHash": "中央コピー SHA",
+    "skillBundledHash": "同梱 SHA",
+    "skillStatus": "更新状態",
+    "skillUpdateAvailable": "更新あり",
+    "skillUpToDate": "最新",
+    "skillRefresh": "同梱版から再インストール",
+    "skillConflictCallout": "中央ディレクトリに同名のスキルがあります。カスタムタブでリネームしてから再読込してください — リネームするまでは既存コピーへのリンクのみで、上書きできません。",
+    "skillAgentsTitle": "リンク済みエージェント",
+    "skillAgentsDescription": "同梱スキルへリンクしたいエージェントを選択してください。競合状態でもリンクは可能で、スキルと mcp のスイッチは相互に影響しません。"
   },
   "GenerativeUiSettings": {
     "loading": "読み込み中…",

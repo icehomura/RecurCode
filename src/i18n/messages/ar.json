@@ -4642,7 +4642,8 @@
       "binary": "الملفات التنفيذية",
       "mcp": "MCP",
       "skill": "المهارات",
-      "profiles": "الملفات الشخصية"
+      "profiles": "الملفات الشخصية",
+      "multicall": "حزم الأدوات"
     },
     "notInstalled": "غير مثبّت",
     "installed": "مثبّت",
@@ -4654,8 +4655,6 @@
     "enabled": "مُمكّن",
     "disabled": "معطّل",
     "requiredNote": "هذا المكوّن مطلوب ولا يمكن تعطيله.",
-    "toolsTitle": "الأدوات",
-    "toolsDescription": "التطبيقات الصغيرة التي يوفّرها هذا الثنائي في PATH. يتم تمكينها وتعطيلها مع الثنائي.",
     "envTitle": "متغيرات البيئة",
     "envDescription": "متغيرات بيئة إضافية تُمرَّر إلى هذا المكوّن عند تشغيله.",
     "envKey": "المفتاح",
@@ -4679,7 +4678,9 @@
       "profileCreated": "تم إنشاء الملف الشخصي",
       "profileDeleted": "تم حذف الملف الشخصي",
       "profileActivated": "تم تغيير الملف الشخصي النشط",
-      "profileActionFailed": "فشلت عملية الملف الشخصي"
+      "profileActionFailed": "فشلت عملية الملف الشخصي",
+      "actionFailed": "فشل الإجراء",
+      "skillRefreshed": "تمت إعادة تثبيت المهارة من الحزمة"
     },
     "loadFailed": "تعذّر تحميل المكوّنات",
     "profilesTitle": "الملفات الشخصية",
@@ -4699,7 +4700,24 @@
     "profilesMainHidden": "تم إخفاء `_main` المدمج في RecurAgent",
     "profilesPath": "مسار ملف الإعداد",
     "profilesDataDir": "دليل البيانات",
-    "profilesCancel": "إلغاء"
+    "profilesCancel": "إلغاء",
+    "appletsTitle": "التطبيقات الصغيرة",
+    "appletsDescription": "التطبيقات الصغيرة التي يوفّرها الملف التنفيذي متعدد الاستدعاءات المشترك — كلٌ منها قابل للتبديل، لكنه لا يعمل حين يكون الملف التنفيذي مغلقًا.",
+    "toolsPreferBundledLabel": "تفضيل الأدوات المضمّنة",
+    "toolsPreferBundledDescription": "تستبدل أدوات النظام التي تحمل الاسم نفسه (rg / jq / fd). عند الإيقاف لا تعمل إلا حين يفتقدها النظام.",
+    "skillCentral": "النسخة المركزية",
+    "skillCentralPresent": "مثبَّت",
+    "skillCentralMissing": "غير مثبَّت",
+    "skillCentralConflict": "الاسم مستخدم",
+    "skillCentralHash": "SHA للنسخة المركزية",
+    "skillBundledHash": "SHA للحزمة المضمّنة",
+    "skillStatus": "حالة التحديث",
+    "skillUpdateAvailable": "يتوفّر تحديث",
+    "skillUpToDate": "حتى الآن",
+    "skillRefresh": "إعادة التثبيت من الحزمة",
+    "skillConflictCallout": "يوجد مهارة بنفس الاسم في المجلد المركزي. أعد تسميتها في تبويب Custom ثم عُد إلى هنا للتحديث — قبل ذلك يمكنك ربط النسخة الموجودة فقط دون استبدال.",
+    "skillAgentsTitle": "الوكلاء المربوطون",
+    "skillAgentsDescription": "اختر الوكلاء الذين يحصلون على ربط بالمهارة المضمّنة. حتى في حالة التعارض يبقى الربط ممكنًا؛ مفاتيح المهارة وmcp لا تتداخل."
   },
   "GenerativeUiSettings": {
     "loading": "جارٍ التحميل…",
