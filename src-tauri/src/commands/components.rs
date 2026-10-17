@@ -342,7 +342,10 @@ pub(crate) async fn components_list_core(
             // may be newer) and otherwise reports the bundled one.
             let is_busybox = def.id == RECURBUSYBOX_TOOL_ID;
             let (installed_version, available_version, update_available) = if is_busybox {
-                let update = installed.as_deref().map(|v| v != available).unwrap_or(false);
+                let update = installed
+                    .as_deref()
+                    .map(|v| v != available)
+                    .unwrap_or(false);
                 let shown = installed
                     .clone()
                     .or_else(|| busybox_bundled.then(|| available.clone()));
@@ -389,9 +392,8 @@ pub(crate) async fn components_set_enabled_core(
     // Only a registry entry is switchable. An applet id (`@recurbusybox:rg`)
     // is not a component, so it is refused like any unknown id — enabling the
     // parent binary is what turns applets on.
-    let def = definition_for(id).ok_or_else(|| {
-        AppCommandError::not_found(format!("unknown component: {id}"))
-    })?;
+    let def = definition_for(id)
+        .ok_or_else(|| AppCommandError::not_found(format!("unknown component: {id}")))?;
     ensure_can_toggle(def, enabled)?;
     component_setting_service::set_enabled(&db.conn, id, enabled).await?;
     sync_component_shims(&db.conn).await?;
@@ -542,10 +544,7 @@ pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<()
     // RecurBusyBox is the one component whose applets become PATH shims. The
     // binary's switch is the only switch: on writes every applet shim, off
     // removes them all.
-    let busybox_enabled = by_id
-        .get(RECURBUSYBOX_TOOL_ID)
-        .copied()
-        .unwrap_or(true);
+    let busybox_enabled = by_id.get(RECURBUSYBOX_TOOL_ID).copied().unwrap_or(true);
     for tool in RECURBUSYBOX_TOOLS {
         let shim = dir.join(binary_cache::executable_file_name(tool));
         if busybox_enabled {
@@ -661,7 +660,10 @@ mod tests {
         let list = components_list_core(&db).await.expect("list");
 
         assert_eq!(list.len(), COMPONENTS.len(), "one row per registry entry");
-        assert!(list.iter().all(|c| c.enabled), "built-ins default to enabled");
+        assert!(
+            list.iter().all(|c| c.enabled),
+            "built-ins default to enabled"
+        );
         for category in [CATEGORY_BINARY, CATEGORY_MCP, CATEGORY_SKILL] {
             assert!(
                 list.iter().any(|c| c.category == category),
@@ -684,10 +686,16 @@ mod tests {
         // it therefore has no downloadable version of its own.
         let ra = binaries.iter().find(|c| c.id == "@ra").unwrap();
         assert!(ra.required, "RecurAgent cannot be disabled");
-        assert!(ra.available_version.is_none(), "ra is bundled, not downloaded");
+        assert!(
+            ra.available_version.is_none(),
+            "ra is bundled, not downloaded"
+        );
 
         // `recurbusybox` is the one multi-call binary; its applets ride along.
-        let rb = binaries.iter().find(|c| c.id == RECURBUSYBOX_TOOL_ID).unwrap();
+        let rb = binaries
+            .iter()
+            .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
+            .unwrap();
         assert_eq!(rb.tools.len(), RECURBUSYBOX_TOOLS.len());
         assert_eq!(rb.available_version.as_deref(), Some(RECURBUSYBOX_VERSION));
         // The applets are listed for information, not switched individually.
@@ -737,7 +745,10 @@ mod tests {
         let db = fresh_in_memory_db().await;
 
         let mut env = HashMap::new();
-        env.insert("HTTP_PROXY".to_string(), "http://127.0.0.1:8080".to_string());
+        env.insert(
+            "HTTP_PROXY".to_string(),
+            "http://127.0.0.1:8080".to_string(),
+        );
         components_set_env_core(&db, RECURBUSYBOX_TOOL_ID, env.clone())
             .await
             .expect("set env on the binary");
@@ -752,11 +763,9 @@ mod tests {
 
         // Applet ids are not settings, so they are refused like any unknown id.
         for unknown in ["@nope", "@recurbusybox:jq"] {
-            assert!(
-                components_set_env_core(&db, unknown, env.clone())
-                    .await
-                    .is_err()
-            );
+            assert!(components_set_env_core(&db, unknown, env.clone())
+                .await
+                .is_err());
         }
     }
 
