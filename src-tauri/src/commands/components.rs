@@ -966,7 +966,6 @@ pub(crate) async fn components_list_core(
 /// the rg/jq/fd applet rows it had never touched). Replaced by
 /// [`components_apply_core`] with a typed `BinaryEnabled` / `ToolEnabled`
 /// action, each of which writes only its own row.
-
 /// Persist a component's env overrides. Rejects ids the registry does not know
 /// and rejects mcp/skill rows: env only makes sense for the binary/mechanism
 /// pair RecurCode actually launches, and those categories are the only ones
