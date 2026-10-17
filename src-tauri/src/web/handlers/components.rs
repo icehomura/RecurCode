@@ -61,28 +61,6 @@ pub struct ComponentsApplyParams {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ComponentsSetEnabledParams {
-    pub id: String,
-    pub enabled: bool,
-}
-
-pub async fn components_set_enabled(
-    Extension(state): Extension<Arc<AppState>>,
-    Json(params): Json<ComponentsSetEnabledParams>,
-) -> Result<Json<()>, AppCommandError> {
-    let emitter = state.emitter.clone();
-    component_commands::components_set_enabled_core(
-        &state.db,
-        &emitter,
-        &params.id,
-        params.enabled,
-    )
-    .await?;
-    Ok(Json(()))
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ComponentsSetEnvParams {
     pub id: String,
     #[serde(default)]

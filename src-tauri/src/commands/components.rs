@@ -960,35 +960,30 @@ pub(crate) async fn components_list_core(
 /// "RecurAgent's own tools cannot be disabled" rule. On success the agent PATH
 /// shims are re-synced so the change takes effect on the next launch.
 ///
-/// Deprecated in favour of [`components_apply_core`]; kept until the frontend
-/// migrates and removed in the final step.
-pub(crate) async fn components_set_enabled_core(
-    db: &AppDatabase,
-    emitter: &EventEmitter,
-    id: &str,
-    enabled: bool,
-) -> Result<(), AppCommandError> {
-    // Only a registry entry is switchable. An applet id (`@recurbusybox:rg`)
-    // is not a component, so it is refused like any unknown id — enabling the
-    // parent binary is what turns applets on.
-    let def = definition_for(id)
-        .ok_or_else(|| AppCommandError::not_found(format!("unknown component: {id}")))?;
-    ensure_can_toggle(def, enabled)?;
-    component_setting_service::set_enabled(&db.conn, id, enabled).await?;
-    sync_component_shims(&db.conn).await?;
-    emit_components_updated(emitter);
-    Ok(())
-}
+/// Deprecated in favour of [`components_apply_core`]; removed. The flat bool
+/// model was structurally dishonest about mcp/skill, and a single bool
+/// blanket-write could wipe unrelated settings (`@recurbusybox` off clearing
+/// the rg/jq/fd applet rows it had never touched). Replaced by
+/// [`components_apply_core`] with a typed `BinaryEnabled` / `ToolEnabled`
+/// action, each of which writes only its own row.
 
-/// Persist a component's env overrides. Rejects ids the registry does not know.
+/// Persist a component's env overrides. Rejects ids the registry does not know
+/// and rejects mcp/skill rows: env only makes sense for the binary/mechanism
+/// pair RecurCode actually launches, and those categories are the only ones
+/// that own a `component_setting` row to begin with.
 pub(crate) async fn components_set_env_core(
     db: &AppDatabase,
     id: &str,
     env: HashMap<String, String>,
 ) -> Result<(), AppCommandError> {
-    if definition_for(id).is_none() {
-        return Err(AppCommandError::not_found(format!(
-            "unknown component: {id}"
+    let def = definition_for(id).ok_or_else(|| {
+        AppCommandError::not_found(format!("unknown component: {id}"))
+    })?;
+    // mcp/skill have no env: the setting would write somewhere nothing reads.
+    if def.category != CATEGORY_BINARY {
+        return Err(AppCommandError::invalid_input(format!(
+            "{} does not support env overrides",
+            def.name
         )));
     }
     let serialized = if env.is_empty() {
@@ -1353,18 +1348,6 @@ pub async fn components_list(
 
 #[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
-pub async fn components_set_enabled(
-    id: String,
-    enabled: bool,
-    db: tauri::State<'_, AppDatabase>,
-    app: tauri::AppHandle,
-) -> Result<(), AppCommandError> {
-    let emitter = EventEmitter::Tauri(app);
-    components_set_enabled_core(&db, &emitter, &id, enabled).await
-}
-
-#[cfg(feature = "tauri-runtime")]
-#[cfg_attr(feature = "tauri-runtime", tauri::command)]
 pub async fn components_set_env(
     id: String,
     env: HashMap<String, String>,
@@ -1662,6 +1645,23 @@ mod tests {
             assert!(components_set_env_core(&db, unknown, env.clone())
                 .await
                 .is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn env_rejects_mcp_and_skill() {
+        // env is a binary-only concept: mcp/skill have no mechanism that
+        // reads it, so the setter must refuse rather than no-op.
+        let db = fresh_in_memory_db().await;
+        let env = HashMap::new();
+        for id in ["@rc-mcp", "@ui-render-skill"] {
+            let err = components_set_env_core(&db, id, env.clone())
+                .await
+                .expect_err("mcp/skill must refuse env overrides");
+            assert!(
+                err.to_string().contains("does not support env overrides"),
+                "{id} error must name the cause: {err}"
+            );
         }
     }
 

@@ -6500,16 +6500,10 @@ export async function componentsApply(
 }
 
 /**
- * @deprecated use `componentsApply` with a typed action. Will be removed
- * with the legacy `components_set_enabled` route.
+ * Persist env overrides for a binary/multicall component. mcp/skill refuse
+ * their own env through a separate write path; the env setting only applies
+ * to the binary categories.
  */
-export async function componentsSetEnabled(
-  id: string,
-  enabled: boolean
-): Promise<void> {
-  return getTransport().call("components_set_enabled", { id, enabled })
-}
-
 export async function componentsSetEnv(
   id: string,
   env: Record<string, string>
