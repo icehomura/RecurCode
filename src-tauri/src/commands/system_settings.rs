@@ -16,10 +16,9 @@ use crate::models::{
 };
 use crate::models::{
     AvailableTerminalShells, SystemLanguageSettings, SystemProxySettings, SystemTerminalSettings,
-    TerminalShellOption,
+    SystemToolsSettings, TerminalShellOption,
 };
 use crate::network::proxy;
-#[cfg(feature = "tauri-runtime")]
 use crate::preferences;
 use crate::terminal::manager::resolve_shell;
 
@@ -812,6 +811,57 @@ pub async fn update_system_rendering_settings(
             .with_detail(err.to_string())
     })?;
     Ok(settings)
+}
+
+/// Read the bundled-tools preference off the preferences file.
+///
+/// This is read on every agent-child spawn — kept unconditional (no
+/// `#[cfg(feature = "tauri-runtime")]`) so the server-mode web handler and the
+/// desktop Tauri command share one path. Tauri commands additionally expose the
+/// same payload as a deserialized model so the frontend never has to know
+/// which backing store it came from.
+pub fn get_system_tools_settings_core() -> SystemToolsSettings {
+    SystemToolsSettings {
+        prefer_bundled_tools: preferences::load().prefer_bundled_tools,
+    }
+}
+
+/// Persist the bundled-tools preference. Merges into the existing preferences
+/// row rather than overwriting — `disable_hardware_acceleration` lives on the
+/// same struct and the same panel already toggles both, so a save that wipes
+/// the other field would let one panel's edit undo the other's.
+///
+/// The choice is not broadcast: each agent launch reads the preference
+/// itself on its next spawn, and there is no in-flight spawn that needs to be
+/// rerouted mid-flight. (ACP `terminal/create` events would be the one place
+/// a "live" change could matter; they capture the shim dir once at the call
+/// site, so a flip is observed on the next terminal tab — which is the
+/// documented behaviour for every other preferences-backed setting read at
+/// spawn time.)
+pub fn update_system_tools_settings_core(
+    settings: SystemToolsSettings,
+) -> Result<SystemToolsSettings, AppCommandError> {
+    let mut prefs = preferences::load();
+    prefs.prefer_bundled_tools = settings.prefer_bundled_tools;
+    preferences::save(&prefs).map_err(|err| {
+        AppCommandError::io_error("Failed to persist bundled-tools preference")
+            .with_detail(err.to_string())
+    })?;
+    Ok(settings)
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn get_system_tools_settings() -> Result<SystemToolsSettings, AppCommandError> {
+    Ok(get_system_tools_settings_core())
+}
+
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+pub async fn update_system_tools_settings(
+    settings: SystemToolsSettings,
+) -> Result<SystemToolsSettings, AppCommandError> {
+    update_system_tools_settings_core(settings)
 }
 
 /// Reach for the manager through `try_state` rather than the plugin's
@@ -1876,5 +1926,21 @@ mod close_behavior_tests {
         mark_close_prompt_listener_ready();
 
         assert!(close_prompt_listener_ready());
+    }
+
+    /// New users inherit the bundled-tools-wins behavior: without ever opening
+    /// the settings page, `AppPreferences::default()` (used by `preferences::load`
+    /// on a missing file) must report `prefer_bundled_tools = true`. Asserting
+    /// here pins the contract — if a future refactor re-introduces the
+    /// derived `Default` and zero-initializes the bool, this turns red before
+    /// the change ever reaches a release.
+    #[test]
+    fn default_prefer_bundled_tools_is_true() {
+        assert!(super::preferences::default_prefer_bundled_tools());
+        assert!(super::preferences::AppPreferences::default().prefer_bundled_tools);
+        // The core accessor mirrors the same default when the preferences
+        // file is missing — `get_system_tools_settings_core` is what every
+        // UI consumer actually calls.
+        assert!(super::get_system_tools_settings_core().prefer_bundled_tools);
     }
 }
