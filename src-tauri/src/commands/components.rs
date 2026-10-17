@@ -259,6 +259,10 @@ pub struct MulticallTool {
 #[serde(rename_all = "camelCase")]
 pub struct BinaryState {
     pub tool: String,
+    /// The user's whole-binary switch, read back from `component_setting`.
+    /// Always `true` for a `required` component — the registry pins those on
+    /// (`@ra`), and the switch renders disabled.
+    pub enabled: bool,
     pub installed_version: Option<String>,
     pub available_version: Option<String>,
     pub update_available: bool,
@@ -347,50 +351,6 @@ pub struct ComponentsListResult {
     pub components: Vec<ComponentInfo>,
 }
 
-/// Deprecated flat mirror of a [`ComponentState`], kept only until the frontend
-/// reads `state` directly (removed in the final step).
-struct FlatCompat {
-    enabled: bool,
-    installed_version: Option<String>,
-    available_version: Option<String>,
-    update_available: bool,
-}
-
-fn short_hash(hash: &str) -> String {
-    hash.chars().take(12).collect()
-}
-
-impl ComponentState {
-    fn flat(&self) -> FlatCompat {
-        match self {
-            ComponentState::Binary(binary) => FlatCompat {
-                enabled: true,
-                installed_version: binary.installed_version.clone(),
-                available_version: binary.available_version.clone(),
-                update_available: binary.update_available,
-            },
-            ComponentState::Multicall(multicall) => FlatCompat {
-                enabled: true,
-                installed_version: multicall.binary.installed_version.clone(),
-                available_version: multicall.binary.available_version.clone(),
-                update_available: multicall.binary.update_available,
-            },
-            ComponentState::Mcp(status) => FlatCompat {
-                enabled: rc_mcp_component_enabled(status),
-                installed_version: None,
-                available_version: None,
-                update_available: false,
-            },
-            ComponentState::Skill(skill) => FlatCompat {
-                enabled: !skill.linked_agents.is_empty(),
-                installed_version: skill.central_hash.as_deref().map(short_hash),
-                available_version: skill.bundled_hash.as_deref().map(short_hash),
-                update_available: skill.update_available,
-            },
-        }
-    }
-}
-
 /// Registry joined with persisted state, shaped for the settings UI.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -401,15 +361,11 @@ pub struct ComponentInfo {
     pub description: String,
     pub required: bool,
     pub env: HashMap<String, String>,
+/// The category-specific state. There is deliberately no flat `enabled` /
+    /// `installedVersion` mirror beside it: a single boolean cannot describe
+    /// rc-mcp (socket + binary + nine groups) or the skill (central copy +
+    /// per-agent links), so every consumer reads this instead.
     pub state: ComponentState,
-    // ── Deprecated flat mirrors, kept until the frontend migrates (step 5). ──
-    pub tool: Option<String>,
-    #[serde(default)]
-    pub tools: Vec<ToolInfo>,
-    pub enabled: bool,
-    pub installed_version: Option<String>,
-    pub available_version: Option<String>,
-    pub update_available: bool,
 }
 
 /// The hygienic status used when this process has no rc-mcp runtime at all.
@@ -432,13 +388,6 @@ fn unavailable_mcp_status() -> RcMcpServiceStatus {
 
 /// Whether rc-mcp should read as live: at least one group proper is enabled.
 /// A dependent switch (`browser_eval`) cannot answer this on its own.
-fn rc_mcp_component_enabled(status: &RcMcpServiceStatus) -> bool {
-    status
-        .tool_groups
-        .iter()
-        .any(|group| group.requires.is_none() && group.enabled)
-}
-
 /// The live machinery behind the non-binary registry entries. Wrapping the
 /// real functions in a trait lets the registry report and act on the actual
 /// mechanism while tests supply a fake, without teaching the binary path
@@ -634,7 +583,7 @@ async fn purge_legacy_setting_rows(conn: &DatabaseConnection) -> Result<(), AppC
 /// Run the legacy-setting purge once, on startup. The same wipe is run on
 /// every `components_list_core` as a belt-and-braces safety net, but doing it
 /// here means a fresh launch never even reads a stale row before it is asked.
-pub(crate) async fn purge_legacy_component_settings_on_startup(
+pub async fn purge_legacy_component_settings_on_startup(
     db: &AppDatabase,
 ) -> Result<(), AppCommandError> {
     purge_legacy_setting_rows(&db.conn).await
@@ -860,6 +809,8 @@ pub(crate) async fn components_list_core(
                 );
                 let binary = BinaryState {
                     tool: def.tool.unwrap_or("").to_string(),
+                    // A `required` component is pinned on whatever the row says.
+                    enabled: def.required || stored_choice,
                     installed_version,
                     available_version,
                     update_available,
@@ -930,7 +881,6 @@ pub(crate) async fn components_list_core(
             if def.category == CATEGORY_BINARY && def.id == RECURBUSYBOX_TOOL_ID && !stored_choice {
                 tracing::debug!("[components] {} is switched off by the user", def.id);
             }
-            let flat = state.flat();
             ComponentInfo {
                 id: def.id.to_string(),
                 category,
@@ -938,18 +888,6 @@ pub(crate) async fn components_list_core(
                 description: def.description.to_string(),
                 required: def.required,
                 env: env_from_setting(setting),
-                tool: def.tool.map(str::to_string),
-                tools: def
-                    .tools
-                    .iter()
-                    .map(|tool| ToolInfo {
-                        name: (*tool).to_string(),
-                    })
-                    .collect(),
-                enabled: flat.enabled,
-                installed_version: flat.installed_version,
-                available_version: flat.available_version,
-                update_available: flat.update_available,
                 state,
             }
         })
@@ -1672,14 +1610,18 @@ mod tests {
             .await
             .expect("list");
         let row = find(&list, "@rc-mcp");
-        assert!(!rc_mcp_component_enabled(mcp_state(row)));
+        // The status' OWN verdict is the single source of truth; a separate
+        // "any group on" helper would be a second implementation of it.
         assert_eq!(mcp_state(row).state, RcMcpServiceState::Disabled);
 
         mcp.enabled.store(true, Ordering::SeqCst);
         let list = components_list_core(&db, Some(&mcp), Some(&skill))
             .await
             .expect("list");
-        assert!(rc_mcp_component_enabled(mcp_state(find(&list, "@rc-mcp"))));
+        assert_ne!(
+            mcp_state(find(&list, "@rc-mcp")).state,
+            RcMcpServiceState::Disabled
+        );
     }
 
 
