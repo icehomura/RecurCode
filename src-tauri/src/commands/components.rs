@@ -297,9 +297,21 @@ pub(crate) fn locate_sidecar(name: &str) -> Option<PathBuf> {
 /// 0-byte placeholder in the `ra-sandbox` case, which fails with `os error 193:
 /// %1 is not a valid Win32 application`.
 fn is_staged_sidecar_name(prefix: &str, file_name: &str) -> bool {
-    file_name
-        .strip_prefix(prefix)
-        .is_some_and(|rest| STAGED_TARGET_TRIPLES.contains(&rest.trim_end_matches(".exe")))
+    let Some(rest) = file_name.strip_prefix(prefix) else {
+        return false;
+    };
+    // A Windows target stages `<name>-<triple>.exe`; every other target stages
+    // the bare `<name>-<triple>`. Accepting both spellings for a Windows triple
+    // would also match a name that cannot exist, and it hid the bug this guards:
+    // a `.exe`-less file was treated as a usable sidecar and RecurCode then
+    // launched a 0-byte placeholder.
+    STAGED_TARGET_TRIPLES.iter().any(|triple| {
+        if triple.contains("windows") {
+            rest == format!("{triple}.exe")
+        } else {
+            rest == *triple
+        }
+    })
 }
 
 /// A sidecar only counts when it is a real, non-empty file. `build.rs` writes a
