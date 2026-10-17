@@ -173,6 +173,24 @@ pub struct RaConfigUpdate {
     pub active_profile: Option<String>,
 }
 
+impl RaConfigUpdate {
+    /// Whether this patch names any model or MCP field, as opposed to only
+    /// switching the active profile. A model save is authoritative for the
+    /// active profile; a bare switch must not overwrite one already configured.
+    fn touches_llm(&self) -> bool {
+        let m = &self.model;
+        m.provider.is_some()
+            || m.model.is_some()
+            || m.base_url.is_some()
+            || m.api_key_env.is_some()
+            || m.api_type.is_some()
+            || m.context_window.is_some()
+            || m.max_iterations.is_some()
+            || m.format_after_edit.is_some()
+            || self.mcp_servers.is_some()
+    }
+}
+
 fn read_json_object_or_empty(path: &Path) -> serde_json::Map<String, serde_json::Value> {
     match fs::read_to_string(path) {
         Ok(s) => match serde_json::from_str::<serde_json::Value>(&s) {
@@ -465,6 +483,68 @@ fn seed_config_from_root(root: &Path) -> serde_json::Value {
     serde_json::Value::Object(config)
 }
 
+/// Mirror the root `config.json`'s flat LLM selection into the ACTIVE profile's
+/// structured `config.llm.primary` contract.
+///
+/// `ra acp --profile <id>` reads only the NAMED profile's `config.llm`, never
+/// the root flat pair, while RecurCode's settings panel writes the flat pair to
+/// the root. Without this mirror a saved provider never reached the active
+/// profile, leaving it LLM-less — which is how a profile the user had just
+/// configured still failed to start. Only `llm.primary` and `env_vars` are
+/// touched; every other profile key (sandbox, channels, other `llm` routes) is
+/// preserved. A no-op when there is no active profile or it has no file.
+pub(crate) fn sync_active_profile_from_root(root: &Path) -> Result<(), AcpError> {
+    let active = active_profile_id(root);
+    write_profile_llm_from_root(root, &active)
+}
+
+/// Seed the active profile from the root ONLY when it has no LLM selection yet —
+/// the adopt case for a legacy/foreign profile — without clobbering a profile a
+/// user has already configured for its own model. A no-op when there is no
+/// active profile.
+pub(crate) fn ensure_active_profile_llm(root: &Path) -> Result<(), AcpError> {
+    let active = active_profile_id(root);
+    if active.is_empty() || profile_has_llm_selection(root, &active) {
+        return Ok(());
+    }
+    write_profile_llm_from_root(root, &active)
+}
+
+fn write_profile_llm_from_root(root: &Path, id: &str) -> Result<(), AcpError> {
+    if id.is_empty() {
+        return Ok(());
+    }
+    let path = profile_path(root, id);
+    if !path.is_file() {
+        return Ok(());
+    }
+    let seed = seed_config_from_root(root);
+    let seed = seed.as_object();
+    let mut profile = read_json_object_or_empty(&path);
+    let config = profile
+        .entry("config".to_string())
+        .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+    let config = config
+        .as_object_mut()
+        .ok_or_else(|| AcpError::protocol("recur profile `config` must be an object"))?;
+    if let Some(primary) = seed
+        .and_then(|s| s.get("llm"))
+        .and_then(|llm| llm.as_object())
+        .and_then(|llm| llm.get("primary"))
+    {
+        let llm = config
+            .entry("llm".to_string())
+            .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+        if let Some(llm) = llm.as_object_mut() {
+            llm.insert("primary".to_string(), primary.clone());
+        }
+    }
+    if let Some(env_vars) = seed.and_then(|s| s.get("env_vars")) {
+        config.insert("env_vars".to_string(), env_vars.clone());
+    }
+    write_json_object_pretty(&path, &profile)
+}
+
 /// Whether `id` names a profile that can actually drive a runtime: its
 /// structured `config.llm.primary` carries a provider or a model.
 ///
@@ -527,6 +607,12 @@ pub(crate) fn set_active_profile_at(root: &Path, id: &str) -> Result<(), AcpErro
     let pointer = root.join("default-profile");
     fs::write(&pointer, id)
         .map_err(|e| AcpError::protocol(format!("failed to set active profile: {e}")))?;
+    // Adopt the profile RecurCode is about to use: a legacy/foreign profile
+    // (an `ra init` multi-tenant one, say) carries no LLM selection, so a
+    // switch to it would spawn `ra acp --profile` into an immediate
+    // "no LLM provider configured" exit. Seeding it from the root keeps the
+    // switch usable; a profile with its own LLM is left untouched.
+    ensure_active_profile_llm(root)?;
     Ok(())
 }
 
@@ -550,7 +636,9 @@ pub(crate) fn write_provider_to_ra_config(
     api_url: &str,
     api_key: &str,
 ) -> Result<(), AcpError> {
-    write_provider_to_ra_config_at(&config_path(&ra_data_root()), api_url, api_key)
+    let root = ra_data_root();
+    write_provider_to_ra_config_at(&config_path(&root), api_url, api_key)?;
+    sync_active_profile_from_root(&root)
 }
 
 fn write_provider_to_ra_config_at(
@@ -581,6 +669,8 @@ fn write_provider_to_ra_config_at(
 }
 
 pub(crate) fn update_ra_config_at(root: &Path, update: RaConfigUpdate) -> Result<(), AcpError> {
+    // Read before `mcp_servers` is moved out below.
+    let touches_llm = update.touches_llm();
     let path = config_path(root);
     let mut map = read_json_object_or_empty(&path);
 
@@ -627,6 +717,14 @@ pub(crate) fn update_ra_config_at(root: &Path, update: RaConfigUpdate) -> Result
             fs::write(&pointer, id)
                 .map_err(|e| AcpError::protocol(format!("failed to set active profile: {e}")))?;
         }
+    }
+    // The panel writes only the root flat config; keep the profile `ra acp`
+    // actually reads in step with it. A model/MCP save overwrites the active
+    // profile; a bare active-profile switch only adopts an LLM-less one.
+    if touches_llm {
+        sync_active_profile_from_root(root)?;
+    } else {
+        ensure_active_profile_llm(root)?;
     }
     Ok(())
 }
@@ -813,6 +911,96 @@ mod tests {
         // Unknown / unrelated keys survive the write.
         assert_eq!(map["model"], json!("gpt-4o"));
         assert!(map["mcp_servers"].is_array());
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn updating_the_root_config_maintains_the_active_profile() {
+        let dir = fresh_dir("recur-active-sync");
+        fs::write(
+            config_path(&dir),
+            r#"{"provider":"openai","model":"x-preview-f","base_url":"http://127.0.0.1:8188/v1","api_key_env":"RC_MODEL_API_KEY","env_vars":{"RC_MODEL_API_KEY":"sk-x"}}"#,
+        )
+        .unwrap();
+        // A legacy profile RecurCode did not create: no LLM selection, but its
+        // own non-LLM keys must survive the sync.
+        fs::write(
+            profile_path(&dir, "hono"),
+            r#"{"id":"hono","name":"hono","config":{"sandbox":{"enabled":true}}}"#,
+        )
+        .unwrap();
+        fs::write(dir.join("default-profile"), "hono").unwrap();
+
+        assert!(!profile_has_llm_selection(&dir, "hono"));
+        update_ra_config_at(&dir, RaConfigUpdate::default()).expect("sync active profile");
+
+        let profile = read_json_object_or_empty(&profile_path(&dir, "hono"));
+        let primary = &profile["config"]["llm"]["primary"];
+        assert_eq!(primary["family_id"], json!("openai"));
+        assert_eq!(primary["model_id"], json!("x-preview-f"));
+        assert_eq!(
+            primary["route"]["base_url"],
+            json!("http://127.0.0.1:8188/v1")
+        );
+        assert_eq!(
+            profile["config"]["env_vars"]["RC_MODEL_API_KEY"],
+            json!("sk-x")
+        );
+        assert_eq!(
+            profile["config"]["sandbox"]["enabled"],
+            json!(true),
+            "non-LLM profile keys are preserved"
+        );
+        assert!(profile_has_llm_selection(&dir, "hono"));
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_bare_profile_switch_adopts_an_empty_profile_but_not_a_configured_one() {
+        let dir = fresh_dir("recur-active-adopt");
+        fs::write(
+            config_path(&dir),
+            r#"{"provider":"openai","model":"root-model"}"#,
+        )
+        .unwrap();
+        fs::write(profile_path(&dir, "hono"), r#"{"id":"hono","config":{}}"#).unwrap();
+        fs::write(
+            profile_path(&dir, "dev"),
+            r#"{"id":"dev","config":{"llm":{"primary":{"family_id":"anthropic","model_id":"claude"}}}}"#,
+        )
+        .unwrap();
+        fs::write(dir.join("default-profile"), "hono").unwrap();
+
+        // Switching to a profile that already owns a model leaves it alone.
+        update_ra_config_at(
+            &dir,
+            RaConfigUpdate {
+                active_profile: Some("dev".into()),
+                ..Default::default()
+            },
+        )
+        .expect("switch to dev");
+        let dev = read_json_object_or_empty(&profile_path(&dir, "dev"));
+        assert_eq!(
+            dev["config"]["llm"]["primary"]["model_id"],
+            json!("claude"),
+            "a configured profile is not overwritten by a bare switch"
+        );
+
+        // Switching to an empty profile adopts the root model.
+        update_ra_config_at(
+            &dir,
+            RaConfigUpdate {
+                active_profile: Some("hono".into()),
+                ..Default::default()
+            },
+        )
+        .expect("switch to hono");
+        let hono = read_json_object_or_empty(&profile_path(&dir, "hono"));
+        assert_eq!(
+            hono["config"]["llm"]["primary"]["model_id"],
+            json!("root-model")
+        );
         let _ = fs::remove_dir_all(&dir);
     }
 
