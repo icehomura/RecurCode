@@ -90,7 +90,28 @@ fn ensure_sidecar_placeholder() {
     };
     let dir = PathBuf::from("binaries");
 
-    for name in ["rc-mcp", "rc-computer-helper"] {
+    // Kept in step with `bundle.externalBin` (`tauri.conf.json`). The
+    // externally-built sidecars (`ra`, its `tools/` helpers, `rb`) are staged
+    // by `prepare-sidecars.mjs`; without a placeholder a fresh checkout could
+    // not even `cargo check`. A placeholder is always zero bytes, so the
+    // release workflow's `[ ! -s "$file" ]` check still rejects a bundle that
+    // shipped one.
+    for name in [
+        "rc-mcp",
+        "rc-computer-helper",
+        "ra",
+        "ra-sandbox",
+        "news_fetch",
+        "deep-search",
+        "deep_crawl",
+        "send_email",
+        "account_manager",
+        "voice",
+        "clock",
+        "weather",
+        "smart_home",
+        "rb",
+    ] {
         let path = dir.join(format!("{name}-{triple}{ext}"));
 
         println!("cargo:rerun-if-changed={}", path.display());
