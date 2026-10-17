@@ -51,7 +51,7 @@ fn profile_path(root: &Path, id: &str) -> PathBuf {
 /// The active profile id: `RA_PROFILE` if set, else the `default-profile`
 /// pointer file, else empty. The ONE resolution shared by the config
 /// projection and the profile manager.
-fn active_profile_id(root: &Path) -> String {
+pub(crate) fn active_profile_id(root: &Path) -> String {
     std::env::var("RA_PROFILE")
         .ok()
         .filter(|s| !s.trim().is_empty())
@@ -463,6 +463,29 @@ fn seed_config_from_root(root: &Path) -> serde_json::Value {
         config.insert("env_vars".into(), env_vars.clone());
     }
     serde_json::Value::Object(config)
+}
+
+/// Whether `id` names a profile that can actually drive a runtime: its
+/// structured `config.llm.primary` carries a provider or a model.
+///
+/// The profile store tolerates an LLM-less profile — `ra doctor` reports one as
+/// "no LLM selection saved" — but `ra acp --profile <id>` on one exits
+/// immediately with "no LLM provider configured". Since the active pointer may
+/// name such a leftover, RecurCode only passes the flag when the profile can
+/// really be used, and the root `config.json` stays the fallback.
+pub(crate) fn profile_has_llm_selection(root: &Path, id: &str) -> bool {
+    let map = read_json_object_or_empty(&profile_path(root, id));
+    let primary = map
+        .get("config")
+        .and_then(|config| config.get("llm"))
+        .and_then(|llm| llm.get("primary"));
+    let filled = |key: &str| {
+        primary
+            .and_then(|p| p.get(key))
+            .and_then(|v| v.as_str())
+            .is_some_and(|s| !s.trim().is_empty())
+    };
+    filled("family_id") || filled("model_id")
 }
 
 /// Delete a profile file. The synthetic `_main` (RecurAgent's internal
