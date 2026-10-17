@@ -1,7 +1,21 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "bundle": {
-    "externalBin": ["binaries/rc-mcp"],
+    "externalBin": [
+      "binaries/rc-mcp",
+      "binaries/ra",
+      "binaries/ra-sandbox",
+      "binaries/news_fetch",
+      "binaries/deep-search",
+      "binaries/deep_crawl",
+      "binaries/send_email",
+      "binaries/account_manager",
+      "binaries/voice",
+      "binaries/clock",
+      "binaries/weather",
+      "binaries/smart_home",
+      "binaries/rb"
+    ],
     "macOS": {
       "files": {
         "Helpers/rc-computer-helper.app": "binaries/rc-computer-helper.app"
