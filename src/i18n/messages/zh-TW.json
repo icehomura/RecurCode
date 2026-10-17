@@ -4655,7 +4655,7 @@
     "disabled": "已停用",
     "requiredNote": "此組件為必要組件，無法關閉。",
     "toolsTitle": "工具",
-    "toolsDescription": "此二進位檔在 PATH 上提供的工具。關閉某個即移除對應命令。",
+    "toolsDescription": "此二進位檔在 PATH 上提供的工具。它們隨二進位檔一起啟用或停用。",
     "envTitle": "環境變數",
     "envDescription": "執行此組件時額外傳入的環境變數。",
     "envKey": "鍵",

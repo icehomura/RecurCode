@@ -4655,7 +4655,7 @@
     "disabled": "Desactivado",
     "requiredNote": "Este componente es obligatorio y no se puede desactivar.",
     "toolsTitle": "Herramientas",
-    "toolsDescription": "Los applets que este binario ofrece en el PATH. Desactiva uno para eliminar su comando.",
+    "toolsDescription": "Los applets que este binario ofrece en el PATH. Se activan y desactivan junto con el binario.",
     "envTitle": "Variables de entorno",
     "envDescription": "Variables de entorno adicionales que se pasan a este componente al ejecutarse.",
     "envKey": "Clave",

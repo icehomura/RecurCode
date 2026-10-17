@@ -4655,7 +4655,7 @@
     "disabled": "無効",
     "requiredNote": "このコンポーネントは必須のため、無効にできません。",
     "toolsTitle": "ツール",
-    "toolsDescription": "このバイナリが PATH に提供するアプレット。オフにすると対応するコマンドが削除されます。",
+    "toolsDescription": "このバイナリが PATH に提供するアプレット。バイナリと一緒に有効・無効になります。",
     "envTitle": "環境変数",
     "envDescription": "このコンポーネントの実行時に渡される追加の環境変数です。",
     "envKey": "キー",
