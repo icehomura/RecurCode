@@ -981,6 +981,50 @@ pub struct AcpUpdateRaConfigParams {
     pub update: crate::commands::ra_config::RaConfigUpdate,
 }
 
+pub async fn ra_profile_list(
+    Extension(_state): Extension<Arc<AppState>>,
+) -> Result<Json<Vec<crate::commands::ra_config::RaProfileDetail>>, AppCommandError> {
+    Ok(Json(crate::commands::ra_config::list_profile_details()))
+}
+
+/// Mirrors the desktop `ra_profile_create(req)` argument name.
+#[derive(serde::Deserialize)]
+pub struct RaProfileCreateParams {
+    pub req: crate::commands::ra_config::RaProfileCreate,
+}
+
+pub async fn ra_profile_create(
+    Extension(_state): Extension<Arc<AppState>>,
+    Json(params): Json<RaProfileCreateParams>,
+) -> Result<Json<crate::commands::ra_config::RaProfileDetail>, AppCommandError> {
+    crate::commands::ra_config::create_profile(params.req)
+        .map(Json)
+        .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))
+}
+
+#[derive(serde::Deserialize)]
+pub struct RaProfileIdParams {
+    pub id: String,
+}
+
+pub async fn ra_profile_delete(
+    Extension(_state): Extension<Arc<AppState>>,
+    Json(params): Json<RaProfileIdParams>,
+) -> Result<Json<()>, AppCommandError> {
+    crate::commands::ra_config::delete_profile(&params.id)
+        .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
+    Ok(Json(()))
+}
+
+pub async fn ra_profile_set_active(
+    Extension(_state): Extension<Arc<AppState>>,
+    Json(params): Json<RaProfileIdParams>,
+) -> Result<Json<()>, AppCommandError> {
+    crate::commands::ra_config::set_active_profile(&params.id)
+        .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
+    Ok(Json(()))
+}
+
 pub async fn acp_list_pi_model_capabilities(
     Extension(state): Extension<Arc<AppState>>,
 ) -> Result<Json<acp_commands::PiModelCatalog>, AppCommandError> {

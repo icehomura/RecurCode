@@ -1071,6 +1071,22 @@ pub fn build_router(
             post(handlers::acp::acp_update_ra_config),
         )
         .route(
+            "/ra_profile_list",
+            post(handlers::acp::ra_profile_list),
+        )
+        .route(
+            "/ra_profile_create",
+            post(handlers::acp::ra_profile_create),
+        )
+        .route(
+            "/ra_profile_delete",
+            post(handlers::acp::ra_profile_delete),
+        )
+        .route(
+            "/ra_profile_set_active",
+            post(handlers::acp::ra_profile_set_active),
+        )
+        .route(
             "/acp_list_pi_model_capabilities",
             post(handlers::acp::acp_list_pi_model_capabilities),
         )
