@@ -15,8 +15,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use serde::{Deserialize, Serialize};
 use sea_orm::DatabaseConnection;
+use serde::{Deserialize, Serialize};
 
 use crate::acp::binary_cache;
 use crate::acp::registry;
@@ -40,7 +40,12 @@ pub struct ComponentDef {
     pub description: &'static str,
     /// The executable this component provides on PATH (binary category only).
     pub tool: Option<&'static str>,
-    /// `true` = cannot be disabled (RecurAgent's own tools).
+    /// Tools a multi-call binary exposes (binary category only). Each is a
+    /// switchable face of the ONE executable in `tool`: enabling it writes a
+    /// shim named after the tool, which is how `recurbusybox` picks its
+    /// personality from `argv[0]`. Empty for single-purpose binaries (`ra`).
+    pub tools: &'static [&'static str],
+    /// `true` = cannot be disabled (the agent RecurCode depends on).
     pub required: bool,
     /// Env vars applied when the component is run/installed.
     pub default_env: &'static [(&'static str, &'static str)],
@@ -52,9 +57,9 @@ pub const CATEGORY_SKILL: &str = "skill";
 
 /// Pinned RecurBusyBox release. One version drives every platform asset and the
 /// component list's `available_version`.
-pub(crate) const RECURBUSYBOX_VERSION: &str = "0.1.5";
+pub(crate) const RECURBUSYBOX_VERSION: &str = "0.2.0";
 /// The multi-call executable inside every RecurBusyBox archive.
-pub(crate) const RECURBUSYBOX_CMD: &str = "recurbusybox";
+pub(crate) const RECURBUSYBOX_CMD: &str = "rb";
 /// Cache key for the ONE shared RecurBusyBox copy. Every binary component's
 /// shim points at this single cached executable rather than duplicating the
 /// archive per tool.
@@ -68,11 +73,11 @@ const RECURBUSYBOX_RELEASE_BASE: &str =
 /// the match in [`recur_busybox_archive_url`] is the only place platform
 /// strings and asset names meet.
 const RECURBUSYBOX_ASSETS: &[(&str, &str)] = &[
-    ("windows-x86_64", "recurbusybox-windows-x86_64.zip"),
-    ("linux-x86_64", "recurbusybox-linux-x86_64.tar.gz"),
-    ("linux-aarch64", "recurbusybox-linux-aarch64.tar.gz"),
-    ("darwin-x86_64", "recurbusybox-darwin-x86_64.tar.gz"),
-    ("darwin-aarch64", "recurbusybox-darwin-aarch64.tar.gz"),
+    ("windows-x86_64", "rb-windows-x86_64.zip"),
+    ("linux-x86_64", "rb-linux-x86_64.tar.gz"),
+    ("linux-aarch64", "rb-linux-aarch64.tar.gz"),
+    ("darwin-x86_64", "rb-darwin-x86_64.tar.gz"),
+    ("darwin-aarch64", "rb-darwin-aarch64.tar.gz"),
 ];
 
 fn recur_busybox_archive_url() -> Option<String> {
@@ -95,42 +100,78 @@ fn recur_busybox_sha256_url() -> Option<String> {
 }
 
 /// One RecurBusyBox tool entry, all served by the shared archive above.
-macro_rules! busybox_entry {
-    ($name:ident) => {
-        ComponentDef {
-            id: concat!("@", stringify!($name)),
-            category: CATEGORY_BINARY,
-            name: stringify!($name),
-            description: concat!(
-                stringify!($name),
-                " — provided by the shared RecurBusyBox multi-call binary"
-            ),
-            tool: Some(stringify!($name)),
-            required: false,
-            default_env: &[],
-        }
-    };
+///
+/// The tools are applets INSIDE the one `recurbusybox` binary — they are not
+/// binaries of their own, so they are not registry entries. Their enable state
+/// is persisted under a derived id (`@recurbusybox:rg`) so the same
+/// `component_setting` table can carry it.
+const RECURBUSYBOX_TOOLS: &[&str] = &[
+    "rg", "fd", "sd", "astgrep", "jq", "tokei", "fzf", "xsv", "tree", "extract", "tar", "zip",
+    "zcat", "ps", "dust",
+];
+
+/// Separates a tool's derived setting id from its parent component:
+/// `@recurbusybox:rg`.
+pub(crate) const TOOL_ID_SEP: char = ':';
+
+/// The derived `component_setting.component_id` for one tool of a multi-call
+/// binary.
+pub(crate) fn tool_setting_id(component_id: &str, tool: &str) -> String {
+    format!("{component_id}{TOOL_ID_SEP}{tool}")
+}
+
+/// What a `components_set_enabled` id actually names.
+enum Target {
+    /// A registry entry (`@ra`, `@recurbusybox`, …).
+    Component(&'static ComponentDef),
+    /// One tool of a multi-call binary (`@recurbusybox:rg`).
+    Tool(&'static ComponentDef, &'static str),
+}
+
+/// Resolve an id the settings UI hands back — either a registry id or a
+/// derived tool id. `None` for anything the registry does not know.
+fn resolve_target(id: &str) -> Option<Target> {
+    if let Some(def) = definition_for(id) {
+        return Some(Target::Component(def));
+    }
+    let (component_id, tool) = id.split_once(TOOL_ID_SEP)?;
+    let def = definition_for(component_id)?;
+    def.tools
+        .iter()
+        .find(|t| **t == tool)
+        .map(|t| Target::Tool(def, t))
 }
 
 /// The whole built-in registry. Ordering is stable and drives the settings
 /// page's list order.
 pub static COMPONENTS: &[ComponentDef] = &[
-    // --- binary: RecurBusyBox (shared archive) ---------------------------
-    busybox_entry!(rg),
-    busybox_entry!(fd),
-    busybox_entry!(sd),
-    busybox_entry!(astgrep),
-    busybox_entry!(jq),
-    busybox_entry!(tokei),
-    busybox_entry!(fzf),
-    busybox_entry!(xsv),
-    busybox_entry!(tree),
-    busybox_entry!(extract),
-    busybox_entry!(tar),
-    busybox_entry!(zip),
-    busybox_entry!(zcat),
-    busybox_entry!(ps),
-    busybox_entry!(dust),
+    // --- binary: the two executables RecurCode manages -------------------
+    // RecurAgent is RecurCode's first-party agent; it is the one component that
+    // may never be switched off, hence `required`. It ships inside RecurCode's
+    // installer, so it has no self-update URL of its own today.
+    ComponentDef {
+        id: "@ra",
+        category: CATEGORY_BINARY,
+        name: "ra",
+        description: "RecurAgent — RecurCode's first-party coding agent (`ra acp`).",
+        tool: Some("ra"),
+        tools: &[],
+        required: true,
+        default_env: &[],
+    },
+    // RecurBusyBox: ONE binary that dispatches to the toolset in
+    // `RECURBUSYBOX_TOOLS` by `argv[0]`. The tools are listed in its detail
+    // pane and toggled individually; the row itself governs the binary.
+    ComponentDef {
+        id: RECURBUSYBOX_TOOL_ID,
+        category: CATEGORY_BINARY,
+        name: "rb",
+        description: "rb — RecurBusyBox, one multi-call binary providing the search, edit and text toolset below.",
+        tool: Some(RECURBUSYBOX_CMD),
+        tools: RECURBUSYBOX_TOOLS,
+        required: false,
+        default_env: &[],
+    },
     // --- mcp / skill placeholders ----------------------------------------
     // These are honest placeholders: they describe components RecurCode will
     // install, but the install path is NOT the binary-cache machinery below —
@@ -142,6 +183,7 @@ pub static COMPONENTS: &[ComponentDef] = &[
         name: "rc-mcp",
         description: "RecurCode's collaboration MCP server for sub-agent delegation.",
         tool: None,
+        tools: &[],
         required: false,
         default_env: &[],
     },
@@ -151,6 +193,7 @@ pub static COMPONENTS: &[ComponentDef] = &[
         name: "ui-render",
         description: "Bundled generative-UI skill pack kept up to date by RecurCode.",
         tool: None,
+        tools: &[],
         required: false,
         default_env: &[],
     },
@@ -162,6 +205,32 @@ fn definition_for(id: &str) -> Option<&'static ComponentDef> {
     COMPONENTS.iter().find(|def| def.id == id)
 }
 
+/// Whether `def` may be flipped to `enabled`. Split out of the command so the
+/// "a required component cannot be turned off" rule — the RecurAgent-style
+/// keep-alive guarantee — is unit-testable without a registry entry that
+/// happens to be required today.
+fn ensure_can_toggle(def: &ComponentDef, enabled: bool) -> Result<(), AppCommandError> {
+    if def.required && !enabled {
+        return Err(AppCommandError::invalid_input(format!(
+            "{} is required and cannot be disabled",
+            def.name
+        )));
+    }
+    Ok(())
+}
+
+/// One tool of a multi-call binary, as the settings detail pane renders it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ToolInfo {
+    /// Derived setting id (`@recurbusybox:rg`) — what the toggle round-trips.
+    pub id: String,
+    pub name: String,
+    pub enabled: bool,
+    /// The shared binary is installed, so this tool is runnable now.
+    pub installed: bool,
+}
+
 /// Registry joined with persisted state, shaped for the settings UI.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -171,6 +240,9 @@ pub struct ComponentInfo {
     pub name: String,
     pub description: String,
     pub tool: Option<String>,
+    /// Tools this binary dispatches to (empty for single-purpose binaries).
+    #[serde(default)]
+    pub tools: Vec<ToolInfo>,
     pub required: bool,
     pub enabled: bool,
     pub env: HashMap<String, String>,
@@ -179,7 +251,23 @@ pub struct ComponentInfo {
     pub update_available: bool,
 }
 
-fn env_from_setting(model: Option<&crate::db::entities::component_setting::Model>) -> HashMap<String, String> {
+/// Every `component_setting.component_id` the registry implies: each registry
+/// entry plus each tool of every multi-call binary. Kept in ONE place so
+/// `ensure_defaults` and the shim sync cannot drift apart.
+fn all_setting_ids() -> Vec<String> {
+    let mut ids = Vec::new();
+    for def in COMPONENTS {
+        ids.push(def.id.to_string());
+        for tool in def.tools {
+            ids.push(tool_setting_id(def.id, tool));
+        }
+    }
+    ids
+}
+
+fn env_from_setting(
+    model: Option<&crate::db::entities::component_setting::Model>,
+) -> HashMap<String, String> {
     model
         .and_then(|m| m.env_json.as_deref())
         .and_then(|raw| serde_json::from_str(raw).ok())
@@ -198,9 +286,11 @@ pub(crate) async fn components_list_core(
     db: &AppDatabase,
 ) -> Result<Vec<ComponentInfo>, AppCommandError> {
     // The registry is the source of truth for which ids exist; make sure every
-    // built-in has a row (enabled = true) before reading the joined view.
-    let ids: Vec<&str> = COMPONENTS.iter().map(|def| def.id).collect();
-    component_setting_service::ensure_defaults(&db.conn, &ids).await?;
+    // built-in — and every tool of every multi-call binary — has a row
+    // (enabled = true) before reading the joined view.
+    let ids = all_setting_ids();
+    let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
+    component_setting_service::ensure_defaults(&db.conn, &refs).await?;
     let settings = component_setting_service::list(&db.conn).await?;
     let by_id: HashMap<&str, &crate::db::entities::component_setting::Model> = settings
         .iter()
@@ -214,22 +304,39 @@ pub(crate) async fn components_list_core(
         .iter()
         .map(|def| {
             let setting = by_id.get(def.id).copied();
-            let is_binary = def.category == CATEGORY_BINARY;
-            let (installed_version, available_version, update_available) = if is_binary {
-                let update = installed
-                    .as_deref()
-                    .map(|v| v != available)
-                    .unwrap_or(false);
+            // Only RecurBusyBox is downloaded by this app right now, so only it
+            // carries a version/upgrade story. `ra` ships inside the installer.
+            let is_busybox = def.id == RECURBUSYBOX_TOOL_ID;
+            let (installed_version, available_version, update_available) = if is_busybox {
+                let update = installed.as_deref().map(|v| v != available).unwrap_or(false);
                 (installed.clone(), Some(available.clone()), update)
             } else {
                 (None, None, false)
             };
+            let tools = def
+                .tools
+                .iter()
+                .map(|tool| {
+                    let id = tool_setting_id(def.id, tool);
+                    let enabled = by_id
+                        .get(id.as_str())
+                        .map(|m| m.enabled)
+                        .unwrap_or(true);
+                    ToolInfo {
+                        id,
+                        name: (*tool).to_string(),
+                        enabled,
+                        installed: installed.is_some(),
+                    }
+                })
+                .collect();
             ComponentInfo {
                 id: def.id.to_string(),
                 category: def.category.to_string(),
                 name: def.name.to_string(),
                 description: def.description.to_string(),
                 tool: def.tool.map(str::to_string),
+                tools,
                 required: def.required,
                 enabled: setting.map(|m| m.enabled).unwrap_or(true),
                 env: env_from_setting(setting),
@@ -250,13 +357,15 @@ pub(crate) async fn components_set_enabled_core(
     id: &str,
     enabled: bool,
 ) -> Result<(), AppCommandError> {
-    let def = definition_for(id)
-        .ok_or_else(|| AppCommandError::not_found(format!("unknown component: {id}")))?;
-    if def.required && !enabled {
-        return Err(AppCommandError::invalid_input(format!(
-            "{} is required by RecurAgent and cannot be disabled",
-            def.name
-        )));
+    match resolve_target(id) {
+        None => {
+            return Err(AppCommandError::not_found(format!(
+                "unknown component: {id}"
+            )));
+        }
+        // Only a parent binary can be pinned; a tool of one never is.
+        Some(Target::Component(def)) => ensure_can_toggle(def, enabled)?,
+        Some(Target::Tool(..)) => {}
     }
     component_setting_service::set_enabled(&db.conn, id, enabled).await?;
     sync_component_shims(&db.conn).await?;
@@ -270,8 +379,11 @@ pub(crate) async fn components_set_env_core(
     id: &str,
     env: HashMap<String, String>,
 ) -> Result<(), AppCommandError> {
-    definition_for(id)
-        .ok_or_else(|| AppCommandError::not_found(format!("unknown component: {id}")))?;
+    if resolve_target(id).is_none() {
+        return Err(AppCommandError::not_found(format!(
+            "unknown component: {id}"
+        )));
+    }
     let serialized = if env.is_empty() {
         None
     } else {
@@ -298,6 +410,15 @@ pub(crate) async fn components_update_core(
     if def.category != CATEGORY_BINARY {
         return Err(AppCommandError::invalid_input(format!(
             "{} is not a binary component and cannot be downloaded",
+            def.name
+        )));
+    }
+    // `ra` is shipped inside RecurCode's own installer, so there is no release
+    // asset to fetch. Say so plainly instead of 404-ing on a URL that does not
+    // exist (the RecurBusyBox release path below only applies to that binary).
+    if def.id != RECURBUSYBOX_TOOL_ID {
+        return Err(AppCommandError::invalid_input(format!(
+            "{} is bundled with RecurCode and has no separate download",
             def.name
         )));
     }
@@ -372,16 +493,18 @@ fn emit_components_updated(emitter: &EventEmitter) {
 /// On Windows symlinks need elevation or developer mode, so a hardlink (falling
 /// back to a copy) is used; on unix a symlink is enough.
 pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<(), AppCommandError> {
-    let ids: Vec<&str> = COMPONENTS.iter().map(|def| def.id).collect();
-    component_setting_service::ensure_defaults(conn, &ids).await?;
+    let ids = all_setting_ids();
+    let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
+    component_setting_service::ensure_defaults(conn, &refs).await?;
     let settings = component_setting_service::list(conn).await?;
     let by_id: HashMap<&str, bool> = settings
         .iter()
         .map(|m| (m.component_id.as_str(), m.enabled))
         .collect();
 
-    let source = installed_busybox_version()
-        .and_then(|version| binary_cache::tool_binary_path(RECURBUSYBOX_TOOL_ID, &version, RECURBUSYBOX_CMD));
+    let source = installed_busybox_version().and_then(|version| {
+        binary_cache::tool_binary_path(RECURBUSYBOX_TOOL_ID, &version, RECURBUSYBOX_CMD)
+    });
 
     let dir = binary_cache::components_bin_dir().map_err(|e| {
         AppCommandError::io_error("Failed to resolve components bin directory")
@@ -392,10 +515,16 @@ pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<()
             .with_detail(e.to_string())
     })?;
 
-    for def in COMPONENTS.iter().filter(|d| d.category == CATEGORY_BINARY) {
-        let Some(tool) = def.tool else { continue };
+    // RecurBusyBox is the one component whose tools become PATH shims. Turning
+    // the binary itself off removes every shim regardless of the tool toggles.
+    let busybox_enabled = by_id
+        .get(RECURBUSYBOX_TOOL_ID)
+        .copied()
+        .unwrap_or(true);
+    for tool in RECURBUSYBOX_TOOLS {
         let shim = dir.join(binary_cache::executable_file_name(tool));
-        let enabled = by_id.get(def.id).copied().unwrap_or(true);
+        let tool_id = tool_setting_id(RECURBUSYBOX_TOOL_ID, tool);
+        let enabled = busybox_enabled && by_id.get(tool_id.as_str()).copied().unwrap_or(true);
         if enabled {
             if let Some(source) = source.as_deref() {
                 if let Err(e) = create_shim(source, &shim) {
@@ -481,4 +610,140 @@ pub async fn components_update(
 ) -> Result<(), AppCommandError> {
     let emitter = EventEmitter::Tauri(app);
     components_update_core(&db, &emitter, &id, &task_id).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::db::test_helpers::fresh_in_memory_db;
+
+    /// A `ComponentDef` with every field spelled out, so a test can exercise
+    /// branches (`required`) the shipped registry may not cover today.
+    fn def(id: &'static str, required: bool) -> ComponentDef {
+        ComponentDef {
+            id,
+            category: CATEGORY_BINARY,
+            name: "x",
+            description: "d",
+            tool: Some("x"),
+            tools: &[],
+            required,
+            default_env: &[],
+        }
+    }
+
+    #[tokio::test]
+    async fn binary_category_is_the_two_executables_not_their_applets() {
+        let db = fresh_in_memory_db().await;
+        let list = components_list_core(&db).await.expect("list");
+
+        assert_eq!(list.len(), COMPONENTS.len(), "one row per registry entry");
+        assert!(list.iter().all(|c| c.enabled), "built-ins default to enabled");
+        for category in [CATEGORY_BINARY, CATEGORY_MCP, CATEGORY_SKILL] {
+            assert!(
+                list.iter().any(|c| c.category == category),
+                "category {category} has no components"
+            );
+        }
+
+        let binaries: Vec<_> = list
+            .iter()
+            .filter(|c| c.category == CATEGORY_BINARY)
+            .collect();
+        let ids: Vec<&str> = binaries.iter().map(|c| c.id.as_str()).collect();
+        assert_eq!(
+            ids,
+            vec!["@ra", "@recurbusybox"],
+            "the binary tab lists the executables, not the 15 applets"
+        );
+
+        // `ra` ships inside RecurCode's installer and may never be switched off;
+        // it therefore has no downloadable version of its own.
+        let ra = binaries.iter().find(|c| c.id == "@ra").unwrap();
+        assert!(ra.required, "RecurAgent cannot be disabled");
+        assert!(ra.available_version.is_none(), "ra is bundled, not downloaded");
+
+        // `recurbusybox` is the one multi-call binary; its applets ride along.
+        let rb = binaries.iter().find(|c| c.id == RECURBUSYBOX_TOOL_ID).unwrap();
+        assert_eq!(rb.tools.len(), RECURBUSYBOX_TOOLS.len());
+        assert!(rb.tools.iter().all(|t| t.enabled));
+        assert_eq!(rb.available_version.as_deref(), Some(RECURBUSYBOX_VERSION));
+        // A tool's id is derived and namespaced under its parent.
+        assert_eq!(
+            rb.tools[0].id,
+            tool_setting_id(RECURBUSYBOX_TOOL_ID, rb.tools[0].name.as_str())
+        );
+    }
+
+    #[tokio::test]
+    async fn a_required_binary_cannot_be_disabled_but_a_tool_can() {
+        let db = fresh_in_memory_db().await;
+        let emitter = EventEmitter::Noop;
+
+        assert!(
+            components_set_enabled_core(&db, &emitter, "@ra", false)
+                .await
+                .is_err(),
+            "RecurAgent is required"
+        );
+
+        let rg = tool_setting_id(RECURBUSYBOX_TOOL_ID, "rg");
+        components_set_enabled_core(&db, &emitter, &rg, false)
+            .await
+            .expect("a tool toggles on its own");
+
+        let rb = components_list_core(&db)
+            .await
+            .expect("list")
+            .into_iter()
+            .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
+            .unwrap();
+        assert!(!rb.tools.iter().find(|t| t.name == "rg").unwrap().enabled);
+        assert!(
+            rb.tools.iter().find(|t| t.name == "fd").unwrap().enabled,
+            "sibling tools are untouched"
+        );
+
+        for unknown in ["@nope", "@recurbusybox:nope"] {
+            assert!(
+                components_set_enabled_core(&db, &emitter, unknown, false)
+                    .await
+                    .is_err(),
+                "{unknown} is refused"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn env_round_trips_for_components_and_tools() {
+        let db = fresh_in_memory_db().await;
+
+        let mut env = HashMap::new();
+        env.insert("HTTP_PROXY".to_string(), "http://127.0.0.1:8080".to_string());
+        components_set_env_core(&db, RECURBUSYBOX_TOOL_ID, env.clone())
+            .await
+            .expect("set env on the binary");
+
+        let rb = components_list_core(&db)
+            .await
+            .expect("list")
+            .into_iter()
+            .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
+            .unwrap();
+        assert_eq!(rb.env, env);
+
+        // A tool id is a valid env target too, and unknown ids are refused.
+        components_set_env_core(&db, &tool_setting_id(RECURBUSYBOX_TOOL_ID, "jq"), env.clone())
+            .await
+            .expect("set env on a tool");
+        assert!(components_set_env_core(&db, "@nope", env).await.is_err());
+    }
+
+    #[test]
+    fn a_required_component_cannot_be_disabled() {
+        let required = def("@keep", true);
+        assert!(ensure_can_toggle(&required, false).is_err());
+        assert!(ensure_can_toggle(&required, true).is_ok());
+        assert!(ensure_can_toggle(&def("@free", false), false).is_ok());
+    }
 }
