@@ -759,6 +759,17 @@ mod tauri_app {
                     app_version,
                 ))
                 .map_err(|e| e.to_string())?;
+
+                // Purge the rows the rebuilt mcp/skill machinery no longer
+                // reads. Idempotent; no-op once a launch has run it once.
+                // Non-fatal on failure: the same purge runs on every
+                // `components_list_core` call as a backstop.
+                if let Err(err) = tauri::async_runtime::block_on(
+                    component_commands::purge_legacy_component_settings_on_startup(&database),
+                ) {
+                    tracing::warn!("[components] legacy purge failed: {err}");
+                }
+
                 app.manage(database);
 
                 // Restore and apply saved system proxy settings before any network operation.

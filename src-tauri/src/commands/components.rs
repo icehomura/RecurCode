@@ -606,14 +606,22 @@ fn all_setting_ids() -> Vec<String> {
 
 /// Drop the setting rows mcp/skill used to own. Their state now comes from the
 /// mechanism, so a stale row must never read back as a choice. One-shot and
-/// idempotent: deleting a row that is not there is a no-op.
+/// idempotent: deleting a row that is not there is a no-op. The legacy
+/// `json-render` skill id is included for the same reason — it never had its
+/// own registry row, but a row written before the rename would still be there.
 async fn purge_legacy_setting_rows(conn: &DatabaseConnection) -> Result<(), AppCommandError> {
-    for def in COMPONENTS {
-        if def.category == CATEGORY_BINARY {
-            continue;
-        }
-        if let Some(model) = component_setting_service::get(conn, def.id).await? {
-            use sea_orm::EntityTrait;
+    use sea_orm::EntityTrait;
+    let mut legacy_ids: Vec<&str> = COMPONENTS
+        .iter()
+        .filter(|def| def.category != CATEGORY_BINARY)
+        .map(|def| def.id)
+        .collect();
+    // `json-render` was the pre-0.36 name for the ui-render skill. A row
+    // written under it predates the registry entry and so would not be picked
+    // up by the loop above; clear it explicitly.
+    legacy_ids.push("json-render");
+    for id in legacy_ids {
+        if let Some(model) = component_setting_service::get(conn, id).await? {
             crate::db::entities::component_setting::Entity::delete_by_id(model.id)
                 .exec(conn)
                 .await
@@ -621,6 +629,15 @@ async fn purge_legacy_setting_rows(conn: &DatabaseConnection) -> Result<(), AppC
         }
     }
     Ok(())
+}
+
+/// Run the legacy-setting purge once, on startup. The same wipe is run on
+/// every `components_list_core` as a belt-and-braces safety net, but doing it
+/// here means a fresh launch never even reads a stale row before it is asked.
+pub(crate) async fn purge_legacy_component_settings_on_startup(
+    db: &AppDatabase,
+) -> Result<(), AppCommandError> {
+    purge_legacy_setting_rows(&db.conn).await
 }
 
 fn env_from_setting(
@@ -1837,6 +1854,67 @@ mod tests {
         // pre-write values.
         assert!(!rg.enabled, "rg stays off the user put it that way");
         assert!(!jq.enabled, "jq stays off the user put it that way");
+    }
+
+    #[test]
+    fn all_setting_ids_omits_mcp_and_skill() {
+        // The mechanism is the source of truth for mcp/skill; their setting
+        // rows must never be re-created, never read back.
+        let ids = all_setting_ids();
+        assert!(
+            !ids.iter().any(|id| id == "@rc-mcp"),
+            "mcp id must not appear in all_setting_ids"
+        );
+        assert!(
+            !ids.iter().any(|id| id == "@ui-render-skill"),
+            "skill id must not appear in all_setting_ids"
+        );
+        assert!(
+            !ids.iter().any(|id| id == "json-render"),
+            "legacy skill id must not appear in all_setting_ids"
+        );
+        // The binary side of the registry still owns its row per applet.
+        for required in [RECURBUSYBOX_TOOL_ID, "@ra"] {
+            assert!(
+                ids.iter().any(|id| id == required),
+                "{required} must remain in all_setting_ids"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn purge_legacy_setting_rows_removes_mcp_and_skill_rows() {
+        // A row written by a pre-rework build must be wiped on the next
+        // startup, regardless of the value it carries.
+        let db = fresh_in_memory_db().await;
+        for legacy in ["@rc-mcp", "@ui-render-skill", "json-render"] {
+            component_setting_service::set_enabled(&db.conn, legacy, true)
+                .await
+                .expect("seed legacy row");
+            // Re-confirm the seed landed.
+            assert!(
+                component_setting_service::get(&db.conn, legacy)
+                    .await
+                    .expect("get legacy")
+                    .is_some()
+            );
+        }
+        purge_legacy_setting_rows(&db.conn)
+            .await
+            .expect("purge");
+        for legacy in ["@rc-mcp", "@ui-render-skill", "json-render"] {
+            assert!(
+                component_setting_service::get(&db.conn, legacy)
+                    .await
+                    .expect("get legacy after")
+                    .is_none(),
+                "{legacy} must be gone after the purge"
+            );
+        }
+        // Calling it again is a no-op — the migration is idempotent.
+        purge_legacy_setting_rows(&db.conn)
+            .await
+            .expect("purge again");
     }
 
 
