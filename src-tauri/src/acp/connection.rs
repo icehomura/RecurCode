@@ -2091,20 +2091,51 @@ async fn build_agent(
                     (path, Some(cached_version))
                 }
                 None => {
-                    let system =
-                        crate::commands::acp::resolve_system_agent_binary_for(agent_type, cmd)
-                        .ok_or_else(|| {
-                            AcpError::SdkNotInstalled(format!(
-                                "{} is not installed. Please install it in Agent Settings.",
-                                meta.name
-                            ))
-                        })?;
-                    tracing::info!(
-                        "[ACP][{}] No cached binary; using system {} from PATH",
-                        meta.name,
-                        system.display()
-                    );
-                    (system, None)
+                    // Ra is the one binary agent that must NOT use the PATH
+                    // fallback. It ships with RecurCode as a Tauri sidecar, and
+                    // `prepare-sidecars.mjs` stages the HEADLESS bundle
+                    // (`ra-headless-bundle-*`): kernel + tools, built with
+                    // `--no-default-features --features api`, so no TUI code is
+                    // linked in at all.
+                    //
+                    // RecurCode drives Ra over ACP — a JSON-RPC stream on the
+                    // child's stdin/stdout. A `ra` on PATH is whatever the user
+                    // built or installed, typically the full/TUI variant; one
+                    // non-JSON line it writes to stdout (a banner, a splash, a
+                    // stray log on the wrong stream) corrupts a frame and the
+                    // session dies mid-parse. The only durable guarantee is to
+                    // never launch a TUI-capable Ra, so Ra skips PATH entirely.
+                    // Every other binary agent keeps its PATH fallback.
+                    if agent_type == AgentType::Ra {
+                        let bundled = crate::commands::components::locate_sidecar(cmd)
+                            .ok_or_else(|| {
+                                AcpError::SdkNotInstalled(format!(
+                                    "{} is not installed. Please install it in Agent Settings.",
+                                    meta.name
+                                ))
+                            })?;
+                        tracing::info!(
+                            "[ACP][{}] No cached binary; using bundled headless sidecar {}",
+                            meta.name,
+                            bundled.display()
+                        );
+                        (bundled, None)
+                    } else {
+                        let system =
+                            crate::commands::acp::resolve_system_agent_binary_for(agent_type, cmd)
+                            .ok_or_else(|| {
+                                AcpError::SdkNotInstalled(format!(
+                                    "{} is not installed. Please install it in Agent Settings.",
+                                    meta.name
+                                ))
+                            })?;
+                        tracing::info!(
+                            "[ACP][{}] No cached binary; using system {} from PATH",
+                            meta.name,
+                            system.display()
+                        );
+                        (system, None)
+                    }
                 }
             };
 
