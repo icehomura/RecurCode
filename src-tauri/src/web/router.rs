@@ -1163,6 +1163,10 @@ pub fn build_router(
             post(handlers::components::components_list),
         )
         .route(
+            "/components_apply",
+            post(handlers::components::components_apply),
+        )
+        .route(
             "/components_set_enabled",
             post(handlers::components::components_set_enabled),
         )

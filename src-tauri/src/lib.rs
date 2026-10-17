@@ -2259,6 +2259,7 @@ mod tauri_app {
                 web::update_web_service_config,
                 web::probe_web_service_port,
                 component_commands::components_list,
+                component_commands::components_apply,
                 component_commands::components_set_enabled,
                 component_commands::components_set_env,
                 component_commands::components_update,

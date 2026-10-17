@@ -308,6 +308,45 @@ pub enum ComponentState {
     Skill(SkillState),
 }
 
+/// A typed write against the components list.
+///
+/// Every variant lands on the real mechanism behind that category — none of
+/// them touch `component_setting` for mcp or skill. The flat
+/// [`crate::commands::components::components_set_enabled_core`] survives only
+/// until the frontend migrates, and is removed with the final step.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum ComponentsAction {
+    /// Whole-binary user switch (single-purpose binary or multi-call parent).
+    BinaryEnabled { id: String, enabled: bool },
+    /// One applet of a multi-call binary. `id` is the applet setting id
+    /// (e.g. `@recurbusybox:rg`).
+    ToolEnabled { id: String, tool: String, enabled: bool },
+    /// Toggle a single rc-mcp tool group via
+    /// [`crate::commands::mcp_service::set_rc_mcp_tool_group_core`].
+    McpToolGroup { group: String, enabled: bool },
+    /// Bind the rc-mcp broker socket via
+    /// [`crate::commands::mcp_service::start_rc_mcp_service_core`]; failures
+    /// propagate to the caller.
+    McpStartService,
+    /// Link or unlink the bundled generative-UI skill to one agent by its
+    /// wire slug.
+    SkillLink { agent: String, linked: bool },
+    /// Re-fetch the bundled binary/multicall, re-bind the broker, or
+    /// re-install the skill from the bundled content. mcp/skill and rb
+    /// reuse the existing refresh paths.
+    Refresh { id: String, task_id: Option<String> },
+}
+
+/// The full result of a `ComponentsAction`: the freshly built list the
+/// frontend should swap into place atomically. Returning the whole list avoids
+/// the read-after-write race of `apply()` then `list()`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentsListResult {
+    pub components: Vec<ComponentInfo>,
+}
+
 /// Deprecated flat mirror of a [`ComponentState`], kept only until the frontend
 /// reads `state` directly (removed in the final step).
 struct FlatCompat {
@@ -947,6 +986,132 @@ pub(crate) async fn components_set_env_core(
     Ok(())
 }
 
+/// Apply a typed [`ComponentsAction`] to the real mechanism behind it, then
+/// return the rebuilt list so the frontend can swap it in atomically. Every
+/// variant lands on the function that owns the underlying state — no
+/// `component_setting` is written for mcp or skill, no broker start is
+/// swallowed, and one switch can no longer blank seven unrelated groups.
+#[allow(clippy::too_many_arguments)]
+pub(crate) async fn components_apply_core(
+    db: &AppDatabase,
+    emitter: &EventEmitter,
+    mcp: Option<&dyn McpController>,
+    skill: Option<&dyn SkillController>,
+    action: ComponentsAction,
+) -> Result<ComponentsListResult, AppCommandError> {
+    match action {
+        ComponentsAction::BinaryEnabled { id, enabled } => {
+            // Only a registry entry is switchable. An applet id is not a
+            // component, so it is refused like any unknown id — the parent's
+            // switch is what gates applets.
+            let def = definition_for(&id).ok_or_else(|| {
+                AppCommandError::not_found(format!("unknown component: {id}"))
+            })?;
+            ensure_can_toggle(def, enabled)?;
+            component_setting_service::set_enabled(&db.conn, &id, enabled).await?;
+            sync_component_shims(&db.conn).await?;
+            emit_components_updated(emitter);
+        }
+        ComponentsAction::ToolEnabled { id, tool, enabled } => {
+            // An applet lives by its colon-suffixed setting id; the request
+            // supplies both the parent registry id and the applet name to
+            // route around any future id-decomposition change. The flat
+            // registry id itself is not a switchable row.
+            if definition_for(&id).is_none() {
+                return Err(AppCommandError::not_found(format!(
+                    "unknown component: {id}"
+                )));
+            }
+            // The applet id is fixed by the helper; refuse anything else to
+            // avoid writing to a row someone constructed by hand.
+            let canonical = applet_setting_id(&tool);
+            if canonical != id {
+                return Err(AppCommandError::invalid_input(format!(
+                    "applet id mismatch: expected {canonical}, got {id}"
+                )));
+            }
+            component_setting_service::set_enabled(&db.conn, &canonical, enabled).await?;
+            sync_component_shims(&db.conn).await?;
+            emit_components_updated(emitter);
+        }
+        ComponentsAction::McpToolGroup { group, enabled } => {
+            let mcp = mcp.ok_or_else(|| {
+                AppCommandError::configuration_invalid(
+                    "rc-mcp runtime is not available in this process",
+                )
+            })?;
+            mcp.set_group(&db.conn, emitter, &group, enabled).await?;
+            emit_components_updated(emitter);
+        }
+        ComponentsAction::McpStartService => {
+            let mcp = mcp.ok_or_else(|| {
+                AppCommandError::configuration_invalid(
+                    "rc-mcp runtime is not available in this process",
+                )
+            })?;
+            // Intentional: the caller sees the failure verbatim. Swallowing
+            // it here would re-introduce the "Started!" toast on a dead socket.
+            mcp.start().await?;
+            emit_components_updated(emitter);
+        }
+        ComponentsAction::SkillLink { agent, linked } => {
+            let skill = skill.ok_or_else(|| {
+                AppCommandError::configuration_invalid(
+                    "skill runtime is not available in this process",
+                )
+            })?;
+            skill.link_agent(&agent, linked).await?;
+            emit_components_updated(emitter);
+        }
+        ComponentsAction::Refresh { id, task_id } => {
+            let def = definition_for(&id).ok_or_else(|| {
+                AppCommandError::not_found(format!("unknown component: {id}"))
+            })?;
+            match def.category {
+                CATEGORY_BINARY => {
+                    // Refresh only the shared RecurBusyBox archive today;
+                    // `ra` has no separate download path so the legacy
+                    // helper responds with a clear message of its own.
+                    let task_id = task_id.ok_or_else(|| {
+                        AppCommandError::invalid_input(
+                            "refresh requires a task_id for binary components",
+                        )
+                    })?;
+                    components_update_core(db, emitter, &id, &task_id).await?;
+                }
+                CATEGORY_MCP => {
+                    let mcp = mcp.ok_or_else(|| {
+                        AppCommandError::configuration_invalid(
+                            "rc-mcp runtime is not available in this process",
+                        )
+                    })?;
+                    // The action that re-binds the broker from the UI is
+                    // identical to its "start it" action; the two share one
+                    // failure mode and one error surface.
+                    mcp.start().await?;
+                    emit_components_updated(emitter);
+                }
+                CATEGORY_SKILL => {
+                    let skill = skill.ok_or_else(|| {
+                        AppCommandError::configuration_invalid(
+                            "skill runtime is not available in this process",
+                        )
+                    })?;
+                    skill.refresh(&db.conn).await?;
+                    emit_components_updated(emitter);
+                }
+                other => {
+                    return Err(AppCommandError::invalid_input(format!(
+                        "unknown category: {other}"
+                    )));
+                }
+            }
+        }
+    }
+    let components = components_list_core(db, mcp, skill).await?;
+    Ok(ComponentsListResult { components })
+}
+
 /// Download/refresh the shared RecurBusyBox archive and re-write every enabled
 /// binary component's shim. Progress rides the same agent-install event stream
 /// the agent binary downloads use.
@@ -1203,10 +1368,41 @@ pub async fn components_update(
     components_update_core(&db, &emitter, &id, &task_id).await
 }
 
+#[cfg(feature = "tauri-runtime")]
+#[cfg_attr(feature = "tauri-runtime", tauri::command)]
+#[allow(clippy::too_many_arguments)]
+pub async fn components_apply(
+    action: ComponentsAction,
+    db: tauri::State<'_, AppDatabase>,
+    broker: tauri::State<'_, Arc<DelegationBroker>>,
+    tokens: tauri::State<'_, Arc<TokenRegistry>>,
+    feedback: tauri::State<'_, FeedbackRuntimeConfig>,
+    question: tauri::State<'_, QuestionRuntimeConfig>,
+    session_info: tauri::State<'_, SessionInfoRuntimeConfig>,
+    authoring: tauri::State<'_, ChatAuthoringRuntimeConfig>,
+    browser: tauri::State<'_, BrowserToolsRuntimeConfig>,
+    computer: tauri::State<'_, ComputerToolsRuntimeConfig>,
+    app: tauri::AppHandle,
+) -> Result<ComponentsListResult, AppCommandError> {
+    let runtime = tauri_runtime(
+        broker.inner(),
+        tokens.inner(),
+        feedback.inner(),
+        question.inner(),
+        session_info.inner(),
+        authoring.inner(),
+        browser.inner(),
+        computer.inner(),
+    );
+    let emitter = EventEmitter::Tauri(app);
+    components_apply_core(&db, &emitter, Some(&runtime), Some(&runtime), action).await
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicBool, Mutex, Ordering};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Mutex;
 
     use crate::db::test_helpers::fresh_in_memory_db;
 
@@ -1491,6 +1687,156 @@ mod tests {
             skill_state(find(&list, "@ui-render-skill")).central,
             SkillCentral::Conflict
         );
+    }
+
+    #[tokio::test]
+    async fn apply_start_mcp_service_propagates_failure() {
+        // `start` MUST bubble a bind failure to the caller; swallow it here
+        // and the toast goes "Started!" against a dead socket.
+        let db = fresh_in_memory_db().await;
+        let mcp = FakeMcp::new(true);
+        mcp.start_result.store(false, Ordering::SeqCst);
+        let skill = FakeSkill::new(&[]);
+
+        let emitter = EventEmitter::test_web_only(Arc::new(
+            crate::web::event_bridge::WebEventBroadcaster::new(),
+        ));
+        let err = components_apply_core(
+            &db,
+            &emitter,
+            Some(&mcp),
+            Some(&skill),
+            ComponentsAction::McpStartService,
+        )
+        .await
+        .expect_err("McpStartService must surface the bind failure");
+        assert!(err.to_string().contains("bind failed"));
+    }
+
+    #[tokio::test]
+    async fn apply_mcp_tool_group_touches_only_the_one_it_names() {
+        // One switch one group: a single ComponentsAction must never blanket
+        // toggle the others. This is the regression test for the legacy
+        // "turn one off, blank seven" bug.
+        let db = fresh_in_memory_db().await;
+        let mcp = FakeMcp::new(true);
+        let skill = FakeSkill::new(&[]);
+
+        let emitter = EventEmitter::test_web_only(Arc::new(
+            crate::web::event_bridge::WebEventBroadcaster::new(),
+        ));
+        let result = components_apply_core(
+            &db,
+            &emitter,
+            Some(&mcp),
+            Some(&skill),
+            ComponentsAction::McpToolGroup {
+                group: "delegation".to_string(),
+                enabled: false,
+            },
+        )
+        .await
+        .expect("apply");
+
+        let writes = mcp.writes.lock().unwrap();
+        assert_eq!(
+            writes.as_slice(),
+            &[("delegation".to_string(), false)],
+            "exactly one group was written"
+        );
+        // The rebuilt list reflects the post-toggle state, so the frontend
+        // can replace its copy in one shot.
+        let _ = result.components;
+    }
+
+    #[tokio::test]
+    async fn apply_skill_link_touches_only_the_one_agent() {
+        let db = fresh_in_memory_db().await;
+        let mcp = FakeMcp::new(true);
+        let skill = FakeSkill::new(&["codex", "claude-code"]);
+
+        let emitter = EventEmitter::test_web_only(Arc::new(
+            crate::web::event_bridge::WebEventBroadcaster::new(),
+        ));
+        components_apply_core(
+            &db,
+            &emitter,
+            Some(&mcp),
+            Some(&skill),
+            ComponentsAction::SkillLink {
+                agent: "gemini".to_string(),
+                linked: true,
+            },
+        )
+        .await
+        .expect("apply");
+
+        let writes = skill.link_writes.lock().unwrap();
+        assert_eq!(
+            writes.as_slice(),
+            &[("gemini".to_string(), true)],
+            "SkillLink must only write the named agent"
+        );
+        // Neither of the pre-linked agents was disturbed.
+        let linked = skill.linked.lock().unwrap();
+        assert!(linked.iter().any(|a| a == "codex"));
+        assert!(linked.iter().any(|a| a == "claude-code"));
+    }
+
+    #[tokio::test]
+    async fn apply_disabling_binary_does_not_clear_unrelated_settings() {
+        // The legacy `components_set_enabled` used to take down every binary
+        // row whenever the multi-call parent flipped. Tools must keep their
+        // own switches.
+        let db = fresh_in_memory_db().await;
+
+        let rg_id = applet_setting_id("rg");
+        let jq_id = applet_setting_id("jq");
+        crate::db::service::component_setting_service::set_enabled(
+            &db.conn,
+            &rg_id,
+            false,
+        )
+        .await
+        .expect("preset rg off");
+        crate::db::service::component_setting_service::set_enabled(
+            &db.conn,
+            &jq_id,
+            false,
+        )
+        .await
+        .expect("preset jq off");
+        let mcp = FakeMcp::new(true);
+        let skill = FakeSkill::new(&[]);
+
+        let emitter = EventEmitter::test_web_only(Arc::new(
+            crate::web::event_bridge::WebEventBroadcaster::new(),
+        ));
+        components_apply_core(
+            &db,
+            &emitter,
+            Some(&mcp),
+            Some(&skill),
+            ComponentsAction::BinaryEnabled {
+                id: RECURBUSYBOX_TOOL_ID.to_string(),
+                enabled: false,
+            },
+        )
+        .await
+        .expect("apply disable rb");
+
+        let rg = component_setting_service::get(&db.conn, &rg_id)
+            .await
+            .expect("get rg")
+            .expect("rg row exists");
+        let jq = component_setting_service::get(&db.conn, &jq_id)
+            .await
+            .expect("get jq")
+            .expect("jq row exists");
+        // Both rows still exist (no caller-side delete) and hold their
+        // pre-write values.
+        assert!(!rg.enabled, "rg stays off the user put it that way");
+        assert!(!jq.enabled, "jq stays off the user put it that way");
     }
 
 

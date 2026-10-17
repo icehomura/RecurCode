@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::app_error::AppCommandError;
 use crate::app_state::AppState;
 use crate::commands::components as component_commands;
-use crate::commands::components::{ComponentInfo, RuntimeComponents};
+use crate::commands::components::{ComponentInfo, ComponentsAction, ComponentsListResult, RuntimeComponents};
 
 /// Build the live mcp/skill machinery from the shared `AppState`.
 fn runtime(state: &AppState) -> RuntimeComponents {
@@ -30,6 +30,33 @@ pub async fn components_list(
     let result =
         component_commands::components_list_core(&state.db, Some(&runtime), Some(&runtime)).await?;
     Ok(Json(result))
+}
+
+/// Apply a typed [`ComponentsAction`] to the real mechanism and return the
+/// freshly built list so the frontend can swap it in atomically.
+pub async fn components_apply(
+    Extension(state): Extension<Arc<AppState>>,
+    Json(params): Json<ComponentsApplyParams>,
+) -> Result<Json<ComponentsListResult>, AppCommandError> {
+    let runtime = runtime(&state);
+    let emitter = state.emitter.clone();
+    let result = component_commands::components_apply_core(
+        &state.db,
+        &emitter,
+        Some(&runtime),
+        Some(&runtime),
+        params.action,
+    )
+    .await?;
+    Ok(Json(result))
+}
+
+/// Wrapper to match Tauri's named-parameter convention: the desktop command
+/// takes `action` positionally while the web body arrives wrapped.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentsApplyParams {
+    pub action: ComponentsAction,
 }
 
 #[derive(Deserialize)]
