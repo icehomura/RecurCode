@@ -256,7 +256,7 @@ pub(crate) fn locate_sidecar(name: &str) -> Option<PathBuf> {
     let env_key = format!("RC_{}_BIN", name.to_uppercase());
     if let Some(raw) = std::env::var_os(&env_key) {
         let candidate = PathBuf::from(raw);
-        if candidate.is_file() {
+        if is_usable_sidecar(&candidate) {
             return Some(candidate);
         }
     }
@@ -266,7 +266,7 @@ pub(crate) fn locate_sidecar(name: &str) -> Option<PathBuf> {
         .and_then(|p| p.parent().map(PathBuf::from))
     {
         let candidate = dir.join(&filename);
-        if candidate.is_file() {
+        if is_usable_sidecar(&candidate) {
             return Some(candidate);
         }
     }
@@ -278,14 +278,52 @@ pub(crate) fn locate_sidecar(name: &str) -> Option<PathBuf> {
             let staged = path
                 .file_name()
                 .and_then(|n| n.to_str())
-                .is_some_and(|n| n.starts_with(&prefix));
-            if staged {
+                .is_some_and(|n| is_staged_sidecar_name(&prefix, n));
+            if staged && is_usable_sidecar(&path) {
                 return Some(path);
             }
         }
     }
     None
 }
+
+/// Whether `file_name` is the staged name of the sidecar whose `prefix` is
+/// `<name>-`: `<name>-<target-triple>` plus an optional platform executable
+/// suffix.
+///
+/// The match is anchored to the CLOSED triple set, not a bare `starts_with`:
+/// a prefix match also matched a DIFFERENT sidecar (`ra` matched
+/// `ra-sandbox-<triple>`), and RecurCode then launched the wrong binary — a
+/// 0-byte placeholder in the `ra-sandbox` case, which fails with `os error 193:
+/// %1 is not a valid Win32 application`.
+fn is_staged_sidecar_name(prefix: &str, file_name: &str) -> bool {
+    file_name
+        .strip_prefix(prefix)
+        .is_some_and(|rest| STAGED_TARGET_TRIPLES.contains(&rest.trim_end_matches(".exe")))
+}
+
+/// A sidecar only counts when it is a real, non-empty file. `build.rs` writes a
+/// zero-byte placeholder for any sidecar a plain `cargo check` did not stage,
+/// and treating that as "found" made RecurCode launch a 0-byte executable
+/// (`os error 193: %1 is not a valid Win32 application`) instead of reporting
+/// the component as not installed.
+fn is_usable_sidecar(path: &Path) -> bool {
+    std::fs::metadata(path)
+        .map(|m| m.is_file() && m.len() > 0)
+        .unwrap_or(false)
+}
+
+/// The target triples `prepare-sidecars.mjs` stages sidecars for. Matching
+/// against this closed set is what distinguishes `ra-<triple>` from an
+/// unrelated `ra-sandbox-<triple>`.
+const STAGED_TARGET_TRIPLES: &[&str] = &[
+    "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+];
 
 /// `<binary> --version` → its first version-looking token. The bundled `ra` is
 /// whatever the rolling `latest` release held when RecurCode was built, so
@@ -775,5 +813,30 @@ mod tests {
         assert!(ensure_can_toggle(&required, false).is_err());
         assert!(ensure_can_toggle(&required, true).is_ok());
         assert!(ensure_can_toggle(&def("@free", false), false).is_ok());
+    }
+
+    #[test]
+    fn a_staged_sidecar_name_matches_only_its_own_binary() {
+        // The actual bug: `ra`'s prefix also matched `ra-sandbox`'s staged
+        // file, so RecurCode launched the (0-byte) sandbox helper as the agent.
+        assert!(is_staged_sidecar_name(
+            "ra-",
+            "ra-x86_64-pc-windows-msvc.exe"
+        ));
+        assert!(is_staged_sidecar_name("ra-", "ra-aarch64-apple-darwin"));
+        assert!(!is_staged_sidecar_name(
+            "ra-",
+            "ra-sandbox-x86_64-pc-windows-msvc.exe"
+        ));
+
+        // The helper resolves under its OWN, longer name.
+        assert!(is_staged_sidecar_name(
+            "ra-sandbox-",
+            "ra-sandbox-x86_64-pc-windows-msvc.exe"
+        ));
+
+        // A tool that is not a staged sidecar name at all is rejected.
+        assert!(!is_staged_sidecar_name("ra-", "ra-x86_64-pc-windows-msvc"));
+        assert!(!is_staged_sidecar_name("rb-", "rb-linux-x86_64.tar.gz"));
     }
 }
