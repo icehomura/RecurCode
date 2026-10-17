@@ -11,7 +11,11 @@
 //   3. Copies each produced binary to
 //      `src-tauri/binaries/<bin>-<triple>{.exe}` so Tauri's externalBin
 //      bundler picks it up under its bare name at install time.
-//   4. For a macOS target, also wraps the helper in an app of its own,
+//   4. Stages the sidecars built in other repositories (`ra`, `rb`) from their
+//      published GitHub releases, and — for `ra` — flattens the headless
+//      bundle's `tools/` helpers into `binaries/` too, so `ra` finds them
+//      beside its own executable.
+//   5. For a macOS target, also wraps the helper in an app of its own,
 //      `src-tauri/binaries/rc-computer-helper.app`, which the bundle
 //      carries as `Contents/Helpers/rc-computer-helper.app` (see
 //      `tauri.macos.conf.json`). macOS charges an executable's permissions to
@@ -46,6 +50,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs"
 import { dirname, basename, join, resolve } from "node:path"
@@ -62,6 +67,27 @@ const BIN_NAMES = ["rc-mcp", "rc-computer-helper"]
 const FEATURES = "mcp-bin,computer-helper"
 const HELPER = "rc-computer-helper"
 const HELPER_APP = join(BINARIES_DIR, `${HELPER}.app`)
+
+// The helper binaries a headless `ra` bundle carries under its `tools/` folder.
+// They must ship FLAT beside `ra`: `ra` probes `<exe_dir>/<name>` first and
+// `<exe_dir>/tools/<name>` second (ra-agent `helper_binaries`), and Tauri's
+// `externalBin` cannot carry a directory — which is why the archive's `tools/`
+// is flattened here. Kept in sync with RecurAgent's
+// `scripts/bundle-release.sh` TOOLS list and with `bundle.externalBin` in
+// `tauri.conf.json` / `tauri.macos.conf.json` (externalBin is static, so a
+// helper missing from either list is simply never bundled).
+const RA_TOOLS = [
+  "ra-sandbox",
+  "news_fetch",
+  "deep-search",
+  "deep_crawl",
+  "send_email",
+  "account_manager",
+  "voice",
+  "clock",
+  "weather",
+  "smart_home",
+]
 
 // RecurCode's spelling of a rust target triple, matching the platform keys the
 // RecurBusyBox release publishes (`rb-<platform>.*`).
@@ -103,6 +129,9 @@ const EXTERNAL = [
       `ra-headless-bundle-${triple}${triple.includes("windows") ? ".zip" : ".tar.gz"}`,
     // Executable name inside the archive (before the `.exe` suffix).
     inner: "ra",
+    // Helper binaries carried in the archive's `tools/` folder, staged flat
+    // beside the sidecar so `ra` finds them (see `RA_TOOLS`).
+    tools: RA_TOOLS,
   },
   {
     name: "rb",
@@ -289,9 +318,46 @@ function stageExternalSpec(spec, target, isWindows) {
     copyFileSync(found, dest)
     if (!isWindows) chmodSync(dest, 0o755)
     log(`${spec.name} ${tag}: ${asset} → ${dest}`)
+
+    stageAttachedTools(spec, work, target, isWindows)
   } finally {
     rmSync(work, { recursive: true, force: true })
   }
+}
+
+/**
+ * Stage a bundle's helper binaries as flat Tauri `externalBin` siblings.
+ *
+ * The archive keeps them under `tools/` (older rolling releases carried them
+ * at the archive root), so both layouts are accepted. Each staged file uses
+ * Tauri's `<name>-<target-triple>` convention, which is what makes the bundler
+ * install it beside `ra` under its bare name.
+ *
+ * A helper missing from the archive is a warning, not a hard failure: an
+ * upstream release that predates the `tools/` layout must not block a
+ * RecurCode build. The release workflow's "Verify sidecars landed" step is
+ * where an incomplete set is meant to fail loudly.
+ */
+function stageAttachedTools(spec, work, target, isWindows) {
+  if (!spec.tools?.length) return
+  const nested = join(work, "tools")
+  const dir = existsSync(nested) ? nested : work
+  const ext = isWindows ? ".exe" : ""
+  let staged = 0
+  for (const tool of spec.tools) {
+    const src = [join(dir, tool), join(dir, `${tool}.exe`)].find(
+      (p) => existsSync(p) && statSync(p).isFile()
+    )
+    if (!src) {
+      log(`${spec.name}: helper ${tool} not in the archive — skipped`)
+      continue
+    }
+    const dest = join(BINARIES_DIR, `${tool}-${target}${ext}`)
+    copyFileSync(src, dest)
+    if (!isWindows) chmodSync(dest, 0o755)
+    staged += 1
+  }
+  log(`${spec.name}: staged ${staged}/${spec.tools.length} helpers beside the sidecar`)
 }
 
 function main() {
