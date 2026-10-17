@@ -66,5 +66,5 @@ pub use system::{
 pub use system::{
     AvailableTerminalShells, GitCredentials, GitDetectResult, GitHubAccount,
     GitHubAccountsSettings, GitHubTokenValidation, GitSettings, SystemLanguageSettings,
-    SystemProxySettings, SystemTerminalSettings, TerminalShellOption,
+    SystemProxySettings, SystemTerminalSettings, SystemToolsSettings, TerminalShellOption,
 };

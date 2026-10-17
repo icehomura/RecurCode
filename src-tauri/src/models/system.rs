@@ -146,6 +146,23 @@ pub struct SystemRenderingSettings {
     pub disable_hardware_acceleration: bool,
 }
 
+/// Whether bundled RecurBusyBox tools (`rg`/`jq`/`fd`/…) win on PATH.
+///
+/// ON (the long-standing default): every agent child is spawned with the
+/// components shim dir PREPENDED, so a bundled tool shadows any same-named
+/// host binary. OFF: the shim dir is APPENDED, so the host's tools win when
+/// present and the shims remain a fallback for whatever the host does not
+/// provide. Stored as a per-user preference (see `crate::preferences`),
+/// not in the database, because it is read on the ACP spawn hot path
+/// synchronously every launch and shares a tiny keyspace with the
+/// rendering settings toggle the same panel already toggles. `camelCase`
+/// rename matches the rendering-settings struct alongside it.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct SystemToolsSettings {
+    pub prefer_bundled_tools: bool,
+}
+
 /// "Launch at login". The OS registration itself is the source of truth
 /// (registry Run value / LaunchAgent plist / XDG autostart entry), so there is
 /// no mirrored copy in the database — the toggle always reflects what the
