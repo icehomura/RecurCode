@@ -22,6 +22,8 @@ pub mod computer;
 /// The computer-use switches. Like `browser_tools`, compiled in both runtimes:
 /// the shared rc-mcp plumbing reads them.
 pub mod computer_tools;
+/// Built-in component registry (binary / MCP / skill) and its settings commands.
+pub mod components;
 pub mod config_sync;
 pub mod conversation_tags;
 pub mod conversations;

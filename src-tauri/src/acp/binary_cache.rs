@@ -53,6 +53,16 @@ pub(crate) fn legacy_cache_dir() -> Option<PathBuf> {
     (legacy != current && legacy.is_dir()).then_some(legacy)
 }
 
+/// Directory holding the cut-through PATH shims for enabled `binary`
+/// components. Each shim is named after the tool (`rg.exe`, `rg`, …) and points
+/// at the shared `recurbusybox` executable, which dispatches on `argv[0]`.
+/// Injected FIRST on every spawned agent's PATH (see
+/// `acp::connection::prepend_components_bin_path`) so a bundled tool wins over
+/// whatever the host happens to have installed.
+pub(crate) fn components_bin_dir() -> Result<PathBuf, AcpError> {
+    Ok(cache_dir()?.join("components-bin"))
+}
+
 /// Directory where RecurCode caches a managed `uv` toolchain (`uv` + `uvx`),
 /// downloaded on demand when the user has no system `uv` (used to launch
 /// custom Python ACP agents). Layout:

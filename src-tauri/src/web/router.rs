@@ -1135,6 +1135,22 @@ pub fn build_router(
             post(handlers::acp::acp_download_agent_binary),
         )
         .route(
+            "/components_list",
+            post(handlers::components::components_list),
+        )
+        .route(
+            "/components_set_enabled",
+            post(handlers::components::components_set_enabled),
+        )
+        .route(
+            "/components_set_env",
+            post(handlers::components::components_set_env),
+        )
+        .route(
+            "/components_update",
+            post(handlers::components::components_update),
+        )
+        .route(
             "/acp_install_uv_tool",
             post(handlers::acp::acp_install_uv_tool),
         )

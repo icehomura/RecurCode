@@ -93,6 +93,7 @@ mod tauri_app {
         automation as automation_commands, background as background_commands, backup,
         browser as browser_commands,
         canvas as canvas_commands,
+        components as component_commands,
         chat_authoring as chat_authoring_commands, chat_channel as chat_channel_commands,
         clipboard as clipboard_commands,
         config_sync,
@@ -2251,6 +2252,10 @@ mod tauri_app {
                 web::get_web_service_config,
                 web::update_web_service_config,
                 web::probe_web_service_port,
+                component_commands::components_list,
+                component_commands::components_set_enabled,
+                component_commands::components_set_env,
+                component_commands::components_update,
             ])
             .build(context)
             .expect("error while building tauri application")

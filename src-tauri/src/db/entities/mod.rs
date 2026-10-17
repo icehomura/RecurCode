@@ -9,6 +9,7 @@ pub mod chat_channel;
 pub mod chat_channel_message_log;
 pub mod chat_channel_sender_context;
 pub mod chat_channel_thread_binding;
+pub mod component_setting;
 pub mod conversation;
 pub mod conversation_tag;
 pub mod conversation_tag_link;

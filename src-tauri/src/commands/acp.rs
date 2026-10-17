@@ -72,7 +72,7 @@ pub(crate) struct AgentInstallEvent {
     pub payload: String,
 }
 
-fn emit_agent_install_event(
+pub(crate) fn emit_agent_install_event(
     emitter: &EventEmitter,
     task_id: &str,
     kind: AgentInstallEventKind,
