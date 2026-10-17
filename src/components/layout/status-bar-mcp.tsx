@@ -69,6 +69,228 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 /**
+ * Props shared by every rc-mcp surface. Two callers feed it today: the
+ * popover in the bottom-right of the workspace (live status, polls the
+ * backend), and the Components settings detail pane (already-fresh data from
+ * `components_list`). Both need the same 4-state color/label mapping and the
+ * same "write one group at a time" rule, so the chart lives in one place and
+ * the data fetch lives at each call site.
+ */
+export interface RcMcpPanelProps {
+  /** The current status snapshot; `null` while the caller is still loading. */
+  status: RcMcpServiceStatus | null
+  /** Loading the status failed. Distinct from the service being down. */
+  loadError?: string | null
+  /** Re-fetch the status. Called when the user clicks the refresh icon. */
+  onRefresh: () => void
+  /** Toggle one tool group. Receives the backend `key`, not the UI label. */
+  onToggleGroup: (key: string, next: boolean) => Promise<void> | void
+  /** Group keys whose in-flight write should keep their switch disabled. */
+  pendingGroups: Record<string, boolean>
+  /** Try to (re)bind the broker socket. */
+  onStart: () => Promise<void> | void
+  /** A start is currently in flight; disables the button. */
+  starting: boolean
+  /** The most recent action error, if any — outranks stale `last_error`. */
+  actionError?: string | null
+  /** Optional handler for the "open full settings" link. Omit for surfaces
+   *  that ARE the full settings surface. */
+  onOpenFullSettings?: () => void
+}
+
+/**
+ * The shared rc-mcp renderer: 4-state badge, stat strip, per-group switches,
+ * start button when the broker is repairable, and an "open full settings"
+ * link that callers may hide. Additive: it does the same job the
+ * `StatusBarMcp` popover always did, but with the data fetch hoisted out so
+ * the Components settings pane can drive it from `componentsList`.
+ */
+export function RcMcpPanel({
+  status,
+  loadError,
+  onRefresh,
+  onToggleGroup,
+  pendingGroups,
+  onStart,
+  starting,
+  actionError,
+  onOpenFullSettings,
+}: RcMcpPanelProps) {
+  // Translations live on the rc-mcp namespace (`Folder.statusBar.mcp`) and
+  // the tools catalog (`AgentTools`). The component owns its own translators
+  // rather than having callers thread the functions through, since every
+  // surface already calls into them.
+  const t = useTranslations("Folder.statusBar.mcp")
+  const tools = useTranslations(AGENT_TOOLS_NAMESPACE)
+
+  const state: IndicatorState = loadError
+    ? "unknown"
+    : (status?.state ?? "unknown")
+  // Only the socket is repairable from here; a missing binary needs a
+  // reinstall and switched-off groups are the switches below.
+  const canStart = state === "stopped" && !!status?.can_start
+
+  const pathsTitle = status
+    ? [
+        `${t("socketPath")}: ${status.socket_path || "—"}`,
+        `${t("binary")}: ${status.binary_path ?? t("binaryMissing")}`,
+      ].join("\n")
+    : undefined
+
+  const errorBanner = actionError
+    ? t("actionFailed", { message: actionError })
+    : !loadError && status?.last_error
+      ? t("lastError", { message: status.last_error })
+      : null
+
+  return (
+    <div className="w-full gap-2 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-xs font-medium">{t("title")}</span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span
+            title={pathsTitle}
+            className={cn(
+              "flex items-center gap-1 rounded-full px-1.5 py-0.5 text-3xs font-medium",
+              BADGE_TONE[state]
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cn("size-1.5 rounded-full", DOT_TONE[state])}
+            />
+            {t(`state.${state}`)}
+          </span>
+          <button
+            type="button"
+            onClick={() => void onRefresh()}
+            title={t("refresh")}
+            aria-label={t("refresh")}
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <RotateCw className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+
+      <p className="truncate text-2xs text-muted-foreground">
+        {loadError
+          ? t("loadFailed", { message: loadError })
+          : t(`hint.${state}`)}
+      </p>
+
+      {status && !loadError && (
+        // No status column: `stopped` is exactly `not listening`, so the
+        // badge above already carries that reading. These three are the ones
+        // it does not.
+        <div className="grid grid-cols-3 rounded-lg border bg-muted/30 py-2">
+          <Stat label={t("sessions")} value={String(status.session_count)} />
+          <Stat
+            label={t("activeDelegations")}
+            value={String(status.active_delegations)}
+          />
+          <Stat label={t("depthLimit")} value={String(status.depth_limit)} />
+        </div>
+      )}
+
+      {status && !loadError && (
+        // One bordered, divided block rather than six floating rows: the
+        // switches are a single control surface and read as one.
+        <div className="divide-y overflow-hidden rounded-lg border">
+          {status.tool_groups.map((group) => {
+            const meta = AGENT_TOOL_GROUPS[group.key]
+            const label = meta ? tools(meta.label) : group.key
+            const Icon = meta?.icon ?? Plug
+            // A switch that lives inside another is shown off and left
+            // untouchable until its parent is on — the same treatment the
+            // settings panel gives it. Turning it on from here while the
+            // group is off would write a `true` that nothing acts on, and
+            // show an agent a tool it cannot call. Not indented for it,
+            // though: the settings list draws its rows on one rail, and a
+            // single stepped-in row here read as a misaligned one rather
+            // than as a nested one. Being off and untouchable while the
+            // group is off already says where it belongs.
+            const parent = group.requires
+            const available =
+              !parent ||
+              (pendingGroups[parent] ??
+                status.tool_groups.find((g) => g.key === parent)?.enabled ??
+                false)
+            const checked =
+              available && (pendingGroups[group.key] ?? group.enabled)
+            return (
+              <label
+                key={group.key}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1.5 transition-colors",
+                  available
+                    ? "cursor-pointer hover:bg-accent/40"
+                    : "cursor-not-allowed opacity-55"
+                )}
+              >
+                {/* One tile tint for every row — the theme's accent, so the
+                    list follows whatever `[data-theme]` is on. An unmapped
+                    slug gets the same tile, keeping the column even. */}
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon className="size-3.5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-2xs font-medium">
+                    {label}
+                  </span>
+                  {meta && (
+                    <span className="block text-3xs leading-snug text-muted-foreground">
+                      {tools(meta.short)}
+                    </span>
+                  )}
+                </span>
+                <Switch
+                  checked={checked}
+                  disabled={!available || group.key in pendingGroups}
+                  aria-label={label}
+                  onCheckedChange={(next) =>
+                    void onToggleGroup(group.key, next)
+                  }
+                />
+              </label>
+            )
+          })}
+        </div>
+      )}
+
+      {errorBanner && (
+        <div className="rounded-md border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-2xs break-words text-red-400">
+          {errorBanner}
+        </div>
+      )}
+
+      {canStart && (
+        <Button
+          size="sm"
+          className="w-full"
+          onClick={() => void onStart()}
+          disabled={starting}
+        >
+          <Plug className="h-3.5 w-3.5" />
+          {starting ? t("starting") : t("start")}
+        </Button>
+      )}
+      {onOpenFullSettings && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full"
+          onClick={onOpenFullSettings}
+        >
+          <Settings2 className="h-3.5 w-3.5" />
+          {t("openSettings")}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+/**
  * rc-mcp service indicator, bottom-right of the workspace.
  *
  * The companion is what carries RecurCode's own tools into an agent session —
@@ -84,7 +306,6 @@ function Stat({ label, value }: { label: string; value: string }) {
  */
 export function StatusBarMcp() {
   const t = useTranslations("Folder.statusBar.mcp")
-  const tools = useTranslations(AGENT_TOOLS_NAMESPACE)
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState<RcMcpServiceStatus | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -171,29 +392,6 @@ export function StatusBarMcp() {
     ? "unknown"
     : (status?.state ?? "unknown")
   const down = state === "stopped" || state === "unavailable"
-  // Only the socket is repairable from here; a missing binary needs a
-  // reinstall and switched-off groups are the switches below.
-  const canStart = state === "stopped" && !!status?.can_start
-
-  // The two paths are the evidence behind the headline, and the thing people
-  // copy out of here. They hang off the state badge — which is the socket
-  // verdict — rather than spending a column each.
-  const pathsTitle = status
-    ? [
-        `${t("socketPath")}: ${status.socket_path || "—"}`,
-        `${t("binary")}: ${status.binary_path ?? t("binaryMissing")}`,
-      ].join("\n")
-    : undefined
-
-  // A failed action outranks a recorded bind error — it is the newer fact, and
-  // it is the one the user just caused. A stale `last_error` is suppressed
-  // while the status itself is unreadable, since `status` is then whatever the
-  // last successful poll happened to say.
-  const errorBanner = actionError
-    ? t("actionFailed", { message: actionError })
-    : !loadError && status?.last_error
-      ? t("lastError", { message: status.last_error })
-      : null
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -215,141 +413,17 @@ export function StatusBarMcp() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent side="top" align="end" className="w-88 gap-2 p-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-xs font-medium">{t("title")}</span>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <span
-              title={pathsTitle}
-              className={cn(
-                "flex items-center gap-1 rounded-full px-1.5 py-0.5 text-3xs font-medium",
-                BADGE_TONE[state]
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={cn("size-1.5 rounded-full", DOT_TONE[state])}
-              />
-              {t(`state.${state}`)}
-            </span>
-            <button
-              type="button"
-              onClick={() => void refresh()}
-              title={t("refresh")}
-              aria-label={t("refresh")}
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <RotateCw className="h-3 w-3" />
-            </button>
-          </div>
-        </div>
-
-        <p className="truncate text-2xs text-muted-foreground">
-          {loadError
-            ? t("loadFailed", { message: loadError })
-            : t(`hint.${state}`)}
-        </p>
-
-        {status && !loadError && (
-          // No status column: `stopped` is exactly `not listening`, so the
-          // badge above already carries that reading. These three are the ones
-          // it does not.
-          <div className="grid grid-cols-3 rounded-lg border bg-muted/30 py-2">
-            <Stat label={t("sessions")} value={String(status.session_count)} />
-            <Stat
-              label={t("activeDelegations")}
-              value={String(status.active_delegations)}
-            />
-            <Stat label={t("depthLimit")} value={String(status.depth_limit)} />
-          </div>
-        )}
-
-        {status && !loadError && (
-          // One bordered, divided block rather than six floating rows: the
-          // switches are a single control surface and read as one.
-          <div className="divide-y overflow-hidden rounded-lg border">
-            {status.tool_groups.map((group) => {
-              const meta = AGENT_TOOL_GROUPS[group.key]
-              const label = meta ? tools(meta.label) : group.key
-              const Icon = meta?.icon ?? Plug
-              // A switch that lives inside another is shown off and left
-              // untouchable until its parent is on — the same treatment the
-              // settings panel gives it. Turning it on from here while the
-              // group is off would write a `true` that nothing acts on, and
-              // show an agent a tool it cannot call. Not indented for it,
-              // though: the settings list draws its rows on one rail, and a
-              // single stepped-in row here read as a misaligned one rather
-              // than as a nested one. Being off and untouchable while the
-              // group is off already says where it belongs.
-              const parent = group.requires
-              const available =
-                !parent ||
-                (pending[parent] ??
-                  status.tool_groups.find((g) => g.key === parent)?.enabled ??
-                  false)
-              const checked = available && (pending[group.key] ?? group.enabled)
-              return (
-                <label
-                  key={group.key}
-                  className={cn(
-                    "flex items-center gap-2 px-2 py-1.5 transition-colors",
-                    available
-                      ? "cursor-pointer hover:bg-accent/40"
-                      : "cursor-not-allowed opacity-55"
-                  )}
-                >
-                  {/* One tile tint for every row — the theme's accent, so the
-                      list follows whatever `[data-theme]` is on. An unmapped
-                      slug gets the same tile, keeping the column even. */}
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="size-3.5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-2xs font-medium">
-                      {label}
-                    </span>
-                    {meta && (
-                      <span className="block text-3xs leading-snug text-muted-foreground">
-                        {tools(meta.short)}
-                      </span>
-                    )}
-                  </span>
-                  <Switch
-                    checked={checked}
-                    disabled={!available || group.key in pending}
-                    aria-label={label}
-                    onCheckedChange={(next) =>
-                      void handleToggle(group.key, next)
-                    }
-                  />
-                </label>
-              )
-            })}
-          </div>
-        )}
-
-        {errorBanner && (
-          <div className="rounded-md border border-red-500/30 bg-red-500/5 px-2 py-1.5 text-2xs break-words text-red-400">
-            {errorBanner}
-          </div>
-        )}
-
-        {canStart && (
-          <Button
-            size="sm"
-            className="w-full"
-            onClick={() => void handleStart()}
-            disabled={starting}
-          >
-            <Plug className="h-3.5 w-3.5" />
-            {starting ? t("starting") : t("start")}
-          </Button>
-        )}
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full"
-          onClick={() => {
+      <PopoverContent side="top" align="end" className="w-88 p-2.5">
+        <RcMcpPanel
+          status={status}
+          loadError={loadError}
+          onRefresh={() => void refresh()}
+          onToggleGroup={handleToggle}
+          pendingGroups={pending}
+          onStart={handleStart}
+          starting={starting}
+          actionError={actionError}
+          onOpenFullSettings={() => {
             // The Collaboration page is where these same switches live in
             // full, with the depth limit and the per-agent defaults beside
             // them.
@@ -357,10 +431,7 @@ export function StatusBarMcp() {
               console.error("[StatusBarMcp] failed to open settings:", err)
             })
           }}
-        >
-          <Settings2 className="h-3.5 w-3.5" />
-          {t("openSettings")}
-        </Button>
+        />
       </PopoverContent>
     </Popover>
   )
