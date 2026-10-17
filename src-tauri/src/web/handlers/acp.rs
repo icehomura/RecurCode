@@ -99,6 +99,11 @@ pub async fn acp_connect(
         .await
         .map_err(|e| AppCommandError::task_execution_failed(e.to_string()))?;
 
+    // Re-sync the bundled-tool PATH shims at launch. Best-effort: a shim write
+    // failure must not block connecting, and `set_enabled`/`components_update`
+    // already sync at the moment of change.
+    let _ = crate::commands::components::sync_component_shims(&state.db.conn).await;
+
     let emitter = state.emitter.clone();
     let connection_id = manager
         .spawn_agent(

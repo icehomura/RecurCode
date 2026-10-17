@@ -11278,6 +11278,11 @@ pub async fn acp_connect(
     // can prompt the user to install it from Agent Settings.
     verify_agent_installed(agent_type).await?;
 
+    // Re-sync the bundled-tool PATH shims at launch. Best-effort: a shim write
+    // failure must not block connecting, and `set_enabled`/`components_update`
+    // already sync at the moment of change.
+    let _ = crate::commands::components::sync_component_shims(&db.conn).await;
+
     let emitter = EventEmitter::Tauri(app_handle);
     manager
         .spawn_agent(
