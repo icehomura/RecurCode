@@ -5549,8 +5549,12 @@ pub struct DelegationInjection {
 ///    `rc-server`), Docker image (`/usr/local/bin/rc-mcp` next to
 ///    `rc-server`), and `cargo build` dev output
 ///    (`target/<profile>/rc-mcp`).
-/// 3. `PATH` lookup — last-resort for atypical layouts where ops moved the
-///    two binaries apart but kept both reachable on `PATH`.
+///
+/// Deliberately NOT resolved on `PATH`: `rc-mcp` is one of RecurCode's own
+/// built-in components, so it must be the copy that shipped with — or was
+/// explicitly pointed at for — THIS RecurCode. A name match on `PATH` could
+/// hand an unrelated binary to the agent's MCP spawn loop, the exact mismatch
+/// the injection path exists to prevent.
 ///
 /// Returns `None` when no candidate is an executable file. Callers MUST
 /// treat `None` as "delegation is unavailable at this site" and skip
@@ -5581,9 +5585,7 @@ pub fn locate_rc_mcp_binary() -> Option<PathBuf> {
         }
     }
 
-    which::which(filename)
-        .ok()
-        .filter(|p| is_executable_file(p))
+    None
 }
 
 fn is_executable_file(path: &Path) -> bool {
