@@ -4655,7 +4655,7 @@
     "disabled": "Désactivé",
     "requiredNote": "Ce composant est requis et ne peut pas être désactivé.",
     "toolsTitle": "Outils",
-    "toolsDescription": "Les applets que ce binaire expose dans le PATH. Ils sont activés et désactivés avec le binaire.",
+    "toolsDescription": "Les applets que ce binaire fournit, invoqués via ce binaire à son chemin fixe. Ils sont activés et désactivés avec le binaire.",
     "envTitle": "Variables d'environnement",
     "envDescription": "Variables d'environnement supplémentaires transmises à ce composant lors de son exécution.",
     "envKey": "Clé",

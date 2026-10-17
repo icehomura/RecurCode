@@ -4676,7 +4676,7 @@
     "disabled": "Disabled",
     "requiredNote": "This component is required and cannot be turned off.",
     "toolsTitle": "Tools",
-    "toolsDescription": "The applets this binary provides on PATH. They are enabled and disabled together with the binary.",
+    "toolsDescription": "The applets this binary provides, invoked through it at its fixed path. They are enabled and disabled together with the binary.",
     "envTitle": "Environment variables",
     "envDescription": "Extra environment variables passed to this component when it runs.",
     "envKey": "Key",
