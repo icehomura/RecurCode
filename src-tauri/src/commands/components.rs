@@ -3,29 +3,49 @@
 //!
 //! The registry is intentionally compiled in and has NO create/delete API: a
 //! component is something RecurCode owns, not something the user authors. The
-//! only user-mutable state lives in `component_setting` (enabled / env), and
-//! the `required` flag on a definition is the escape hatch that makes a
-//! RecurAgent-owned component non-disableable.
+//! only user-mutable state for binaries lives in `component_setting`
+//! (enabled / env), and the `required` flag on a definition is the escape hatch
+//! that makes a RecurAgent-owned component non-disableable.
 //!
 //! The `binary` category is served by ONE shared multi-call executable: the
 //! `recurbusybox` archive. It dispatches on `argv[0]`, so enabling the binary
 //! is a matter of giving every applet it provides a shim named after the tool
 //! (see [`sync_component_shims`]) that points back at the one cached binary.
+//! Applets can also be switched off individually; the parent binary's switch
+//! still gates them all.
 //!
-//! Applets are NOT independently configurable: the multi-call binary's switch
-//! is the only switch, so turning it off removes every applet shim at once.
+//! mcp and skill are NOT booleans. rc-mcp is a socket + binary + nine tool
+//! groups, and the skill is a central copy plus one link per agent. Their
+//! `ComponentState` carries the real mechanism's status rather than a made-up
+//! flag, and their actions land on the mechanism's own functions.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
 
 use crate::acp::binary_cache;
+use crate::acp::browser_tools::BrowserToolsRuntimeConfig;
+use crate::acp::chat_authoring::ChatAuthoringRuntimeConfig;
+use crate::acp::computer_tools::ComputerToolsRuntimeConfig;
+use crate::acp::delegation::broker::DelegationBroker;
+use crate::acp::delegation::listener::TokenRegistry;
+use crate::acp::feedback::FeedbackRuntimeConfig;
+use crate::acp::question::QuestionRuntimeConfig;
 use crate::acp::registry;
+use crate::acp::session_info::SessionInfoRuntimeConfig;
 use crate::app_error::AppCommandError;
+use crate::commands::experts::LinkOp;
+use crate::commands::generative_ui::{self, GenerativeUiSkillSnapshot};
+use crate::commands::mcp_service::{
+    rc_mcp_service_status_core, set_rc_mcp_tool_group_core, start_rc_mcp_service_core,
+    RcMcpServiceState, RcMcpServiceStatus, RcMcpStatusSources, RcMcpToolGroupTargets,
+};
 use crate::db::service::component_setting_service;
 use crate::db::AppDatabase;
+use crate::models::agent::AgentType;
 use crate::web::event_bridge::{self, EventEmitter};
 
 /// One built-in component. All fields are `'static` because the whole registry
@@ -35,7 +55,9 @@ pub struct ComponentDef {
     /// Tool-cache id. MUST start with `@` (see `binary_cache::is_tool_cache_id`)
     /// so it can never collide with an agent's registry id.
     pub id: &'static str,
-    /// `"binary" | "mcp" | "skill"`.
+    /// `"binary" | "mcp" | "skill"`. `"binary"` covers both single-purpose
+    /// binaries and multi-call binaries; [`ComponentInfo::category`] splits
+    /// those two apart for the UI by looking at `tools`.
     pub category: &'static str,
     /// Display name, e.g. `"rg"`.
     pub name: &'static str,
@@ -43,11 +65,9 @@ pub struct ComponentDef {
     pub description: &'static str,
     /// The executable this component provides on PATH (binary category only).
     pub tool: Option<&'static str>,
-    /// Applets a multi-call binary exposes (binary category only), listed in
-    /// the detail pane for information only. They are not switched on their
-    /// own: enabling the ONE executable in `tool` writes a shim per applet,
-    /// which is how `recurbusybox` picks its personality from `argv[0]`.
-    /// Empty for single-purpose binaries (`ra`).
+    /// Applets a multi-call binary exposes (binary category only). Each is
+    /// listed and switchable on its own; the parent binary's switch gates them
+    /// all. Empty for single-purpose binaries (`ra`).
     pub tools: &'static [&'static str],
     /// `true` = cannot be disabled (the agent RecurCode depends on).
     pub required: bool,
@@ -68,6 +88,13 @@ pub(crate) const RECURBUSYBOX_CMD: &str = "rb";
 /// shim points at this single cached executable rather than duplicating the
 /// archive per tool.
 pub(crate) const RECURBUSYBOX_TOOL_ID: &str = "@recurbusybox";
+
+/// The stable setting id for one applet of the multi-call binary, e.g.
+/// `@recurbusybox:rg`. A single colon keeps it distinct from every registry id
+/// (which is just `@name`).
+fn applet_setting_id(tool: &str) -> String {
+    format!("{RECURBUSYBOX_TOOL_ID}:{tool}")
+}
 
 const RECURBUSYBOX_RELEASE_BASE: &str =
     "https://github.com/icehomura/RecurBusyBox/releases/download";
@@ -104,8 +131,9 @@ fn recur_busybox_sha256_url() -> Option<String> {
 }
 
 /// The applets INSIDE the one `recurbusybox` binary. They are not binaries of
-/// their own, so they are neither registry entries nor settings of their own:
-/// enabling RecurBusyBox enables every applet, disabling it removes them all.
+/// their own, so they are neither registry entries nor cache ids: enabling
+/// RecurBusyBox writes a shim per applet, and an applet can be switched off on
+/// its own.
 const RECURBUSYBOX_TOOLS: &[&str] = &[
     "rg", "fd", "sd", "astgrep", "jq", "tokei", "fzf", "xsv", "tree", "extract", "tar", "zip",
     "zcat", "ps", "dust",
@@ -144,7 +172,7 @@ pub static COMPONENTS: &[ComponentDef] = &[
     // --- mcp / skill placeholders ----------------------------------------
     // These are honest placeholders: they describe components RecurCode will
     // install, but the install path is NOT the binary-cache machinery below —
-    // it will reuse the existing MCP-server and skill-pack plumbing. They are
+    // it reuses the existing MCP-server and skill-pack plumbing. They are
     // listed so the three sub-tabs are not empty and the UI can render them.
     ComponentDef {
         id: "@rc-mcp",
@@ -170,6 +198,9 @@ pub static COMPONENTS: &[ComponentDef] = &[
 
 pub(crate) const COMPONENTS_UPDATED_EVENT: &str = "app://components-updated";
 
+/// The skill whose central copy and per-agent links the skill category reports.
+const SKILL_ID: &str = generative_ui::SKILL_ID;
+
 fn definition_for(id: &str) -> Option<&'static ComponentDef> {
     COMPONENTS.iter().find(|def| def.id == id)
 }
@@ -188,12 +219,137 @@ fn ensure_can_toggle(def: &ComponentDef, enabled: bool) -> Result<(), AppCommand
     Ok(())
 }
 
+/// Component category as the UI sees it. `multicall` is split out of the
+/// internal `binary` storage category by whether the definition declares
+/// applets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ComponentCategory {
+    Binary,
+    Multicall,
+    Mcp,
+    Skill,
+}
+
 /// One applet of a multi-call binary, as the settings detail pane renders it.
-/// Purely informational: every applet follows its parent binary's switch.
+/// Kept for the flat compatibility mirror only.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolInfo {
     pub name: String,
+}
+
+/// One applet of a multi-call binary, as the settings detail pane renders it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MulticallTool {
+    /// Stable setting id, e.g. `@recurbusybox:rg`.
+    pub id: String,
+    /// The applet name, e.g. `rg`.
+    pub name: String,
+    /// The user's choice for this applet; `true` unless switched off.
+    pub enabled: bool,
+    /// Whether the shared multi-call binary that provides this applet is
+    /// actually present on disk — an observation, not a user choice.
+    pub installed: bool,
+}
+
+/// Version facts for a single-purpose binary.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BinaryState {
+    pub tool: String,
+    pub installed_version: Option<String>,
+    pub available_version: Option<String>,
+    pub update_available: bool,
+}
+
+/// Version facts for a multi-call binary plus its applets.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MulticallState {
+    pub binary: BinaryState,
+    pub tools: Vec<MulticallTool>,
+}
+
+/// Where the skill's central copy stands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SkillCentral {
+    /// Our marked copy is present.
+    Present,
+    /// No copy under that name.
+    Missing,
+    /// A skill of the user's own holds the name; RecurCode must not touch it.
+    Conflict,
+}
+
+/// The generative-UI skill's real state.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillState {
+    pub central: SkillCentral,
+    /// Wire slugs of the agents linked to our central copy.
+    pub linked_agents: Vec<String>,
+    pub bundled_hash: Option<String>,
+    pub central_hash: Option<String>,
+    pub update_available: bool,
+}
+
+/// Category-tagged state union. A flat `enabled` boolean would lie about
+/// rc-mcp (socket + binary + nine groups) and the skill (central copy + per
+/// agent links), so each category carries its own real shape.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum ComponentState {
+    Binary(BinaryState),
+    Multicall(MulticallState),
+    Mcp(Box<RcMcpServiceStatus>),
+    Skill(SkillState),
+}
+
+/// Deprecated flat mirror of a [`ComponentState`], kept only until the frontend
+/// reads `state` directly (removed in the final step).
+struct FlatCompat {
+    enabled: bool,
+    installed_version: Option<String>,
+    available_version: Option<String>,
+    update_available: bool,
+}
+
+fn short_hash(hash: &str) -> String {
+    hash.chars().take(12).collect()
+}
+
+impl ComponentState {
+    fn flat(&self) -> FlatCompat {
+        match self {
+            ComponentState::Binary(binary) => FlatCompat {
+                enabled: true,
+                installed_version: binary.installed_version.clone(),
+                available_version: binary.available_version.clone(),
+                update_available: binary.update_available,
+            },
+            ComponentState::Multicall(multicall) => FlatCompat {
+                enabled: true,
+                installed_version: multicall.binary.installed_version.clone(),
+                available_version: multicall.binary.available_version.clone(),
+                update_available: multicall.binary.update_available,
+            },
+            ComponentState::Mcp(status) => FlatCompat {
+                enabled: rc_mcp_component_enabled(status),
+                installed_version: None,
+                available_version: None,
+                update_available: false,
+            },
+            ComponentState::Skill(skill) => FlatCompat {
+                enabled: !skill.linked_agents.is_empty(),
+                installed_version: skill.central_hash.as_deref().map(short_hash),
+                available_version: skill.bundled_hash.as_deref().map(short_hash),
+                update_available: skill.update_available,
+            },
+        }
+    }
 }
 
 /// Registry joined with persisted state, shaped for the settings UI.
@@ -201,27 +357,231 @@ pub struct ToolInfo {
 #[serde(rename_all = "camelCase")]
 pub struct ComponentInfo {
     pub id: String,
-    pub category: String,
+    pub category: ComponentCategory,
     pub name: String,
     pub description: String,
+    pub required: bool,
+    pub env: HashMap<String, String>,
+    pub state: ComponentState,
+    // ── Deprecated flat mirrors, kept until the frontend migrates (step 5). ──
     pub tool: Option<String>,
-    /// Tools this binary dispatches to (empty for single-purpose binaries).
     #[serde(default)]
     pub tools: Vec<ToolInfo>,
-    pub required: bool,
     pub enabled: bool,
-    pub env: HashMap<String, String>,
     pub installed_version: Option<String>,
     pub available_version: Option<String>,
     pub update_available: bool,
 }
 
-/// Every `component_setting.component_id` the registry implies — one per
-/// registry entry. Applets are NOT settings: they ride their parent binary,
-/// so they never get a row. Kept in ONE place so `ensure_defaults` and the
+/// The hygienic status used when this process has no rc-mcp runtime at all.
+fn unavailable_mcp_status() -> RcMcpServiceStatus {
+    RcMcpServiceStatus {
+        state: RcMcpServiceState::Unavailable,
+        listening: false,
+        socket_path: String::new(),
+        binary_path: None,
+        tool_groups: Vec::new(),
+        companion_count: 0,
+        session_count: 0,
+        active_delegations: 0,
+        depth_limit: 0,
+        started_at: None,
+        last_error: None,
+        can_start: false,
+    }
+}
+
+/// Whether rc-mcp should read as live: at least one group proper is enabled.
+/// A dependent switch (`browser_eval`) cannot answer this on its own.
+fn rc_mcp_component_enabled(status: &RcMcpServiceStatus) -> bool {
+    status
+        .tool_groups
+        .iter()
+        .any(|group| group.requires.is_none() && group.enabled)
+}
+
+/// The live machinery behind the non-binary registry entries. Wrapping the
+/// real functions in a trait lets the registry report and act on the actual
+/// mechanism while tests supply a fake, without teaching the binary path
+/// anything about either mechanism.
+#[async_trait::async_trait]
+pub(crate) trait McpController: Send + Sync {
+    async fn status(&self) -> RcMcpServiceStatus;
+    async fn set_group(
+        &self,
+        conn: &DatabaseConnection,
+        emitter: &EventEmitter,
+        group: &str,
+        enabled: bool,
+    ) -> Result<(), AppCommandError>;
+    /// Bind the broker socket. Failure MUST propagate to the caller.
+    async fn start(&self) -> Result<(), AppCommandError>;
+}
+
+#[async_trait::async_trait]
+pub(crate) trait SkillController: Send + Sync {
+    async fn snapshot(&self) -> Result<GenerativeUiSkillSnapshot, AppCommandError>;
+    /// Link/unlink the central copy for one agent by its wire slug.
+    async fn link_agent(&self, agent: &str, linked: bool) -> Result<(), AppCommandError>;
+    /// Rewrite the central copy from the bundled content.
+    async fn refresh(&self, conn: &DatabaseConnection) -> Result<(), AppCommandError>;
+}
+
+/// The production implementation. It owns cheap clones of the same runtime
+/// handles `AppState` holds, so both transports construct it the same way and
+/// the `_core` helpers never see a Tauri type.
+pub(crate) struct RuntimeComponents {
+    broker: Arc<DelegationBroker>,
+    tokens: Arc<TokenRegistry>,
+    feedback: FeedbackRuntimeConfig,
+    question: QuestionRuntimeConfig,
+    session_info: SessionInfoRuntimeConfig,
+    authoring: ChatAuthoringRuntimeConfig,
+    browser: BrowserToolsRuntimeConfig,
+    computer: ComputerToolsRuntimeConfig,
+}
+
+impl RuntimeComponents {
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn new(
+        broker: Arc<DelegationBroker>,
+        tokens: Arc<TokenRegistry>,
+        feedback: FeedbackRuntimeConfig,
+        question: QuestionRuntimeConfig,
+        session_info: SessionInfoRuntimeConfig,
+        authoring: ChatAuthoringRuntimeConfig,
+        browser: BrowserToolsRuntimeConfig,
+        computer: ComputerToolsRuntimeConfig,
+    ) -> Self {
+        Self {
+            broker,
+            tokens,
+            feedback,
+            question,
+            session_info,
+            authoring,
+            browser,
+            computer,
+        }
+    }
+
+    fn mcp_sources(&self) -> RcMcpStatusSources<'_> {
+        RcMcpStatusSources {
+            broker: &self.broker,
+            tokens: &self.tokens,
+            feedback: &self.feedback,
+            question: &self.question,
+            session_info: &self.session_info,
+            authoring: &self.authoring,
+            browser: &self.browser,
+            computer: &self.computer,
+        }
+    }
+
+    fn mcp_targets(&self) -> RcMcpToolGroupTargets<'_> {
+        RcMcpToolGroupTargets {
+            broker: &self.broker,
+            feedback: &self.feedback,
+            question: &self.question,
+            session_info: &self.session_info,
+            authoring: &self.authoring,
+            browser: &self.browser,
+            computer: &self.computer,
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl McpController for RuntimeComponents {
+    async fn status(&self) -> RcMcpServiceStatus {
+        rc_mcp_service_status_core(self.mcp_sources()).await
+    }
+
+    async fn set_group(
+        &self,
+        conn: &DatabaseConnection,
+        emitter: &EventEmitter,
+        group: &str,
+        enabled: bool,
+    ) -> Result<(), AppCommandError> {
+        set_rc_mcp_tool_group_core(conn, self.mcp_targets(), emitter, group, enabled).await
+    }
+
+    async fn start(&self) -> Result<(), AppCommandError> {
+        // Deliberately not swallowed: the caller must see a failed bind.
+        start_rc_mcp_service_core().await
+    }
+}
+
+#[async_trait::async_trait]
+impl SkillController for RuntimeComponents {
+    async fn snapshot(&self) -> Result<GenerativeUiSkillSnapshot, AppCommandError> {
+        generative_ui::generative_ui_skill_snapshot().await
+    }
+
+    async fn link_agent(&self, agent: &str, linked: bool) -> Result<(), AppCommandError> {
+        let agent_type = AgentType::from_wire(agent)
+            .ok_or_else(|| AppCommandError::invalid_input(format!("unknown agent: {agent}")))?;
+        let results = generative_ui::generative_ui_apply_links(vec![LinkOp {
+            expert_id: SKILL_ID.to_string(),
+            agent_type,
+            enable: linked,
+        }])
+        .await?;
+        match results.into_iter().next() {
+            Some(result) if result.ok => Ok(()),
+            Some(result) => Err(AppCommandError::task_execution_failed(
+                result
+                    .error
+                    .unwrap_or_else(|| "skill link failed".to_string()),
+            )),
+            None => Err(AppCommandError::task_execution_failed(
+                "skill link produced no result",
+            )),
+        }
+    }
+
+    async fn refresh(&self, conn: &DatabaseConnection) -> Result<(), AppCommandError> {
+        generative_ui::install_generative_ui_skill(conn).await;
+        Ok(())
+    }
+}
+
+/// Every `component_setting.component_id` a binary component implies — one per
+/// registry binary and one per applet. mcp/skill have no setting row: their
+/// mechanism is the only truth. Kept in ONE place so `ensure_defaults` and the
 /// shim sync cannot drift apart.
 fn all_setting_ids() -> Vec<String> {
-    COMPONENTS.iter().map(|def| def.id.to_string()).collect()
+    let mut ids = Vec::new();
+    for def in COMPONENTS {
+        if def.category != CATEGORY_BINARY {
+            continue;
+        }
+        ids.push(def.id.to_string());
+        for tool in def.tools {
+            ids.push(applet_setting_id(tool));
+        }
+    }
+    ids
+}
+
+/// Drop the setting rows mcp/skill used to own. Their state now comes from the
+/// mechanism, so a stale row must never read back as a choice. One-shot and
+/// idempotent: deleting a row that is not there is a no-op.
+async fn purge_legacy_setting_rows(conn: &DatabaseConnection) -> Result<(), AppCommandError> {
+    for def in COMPONENTS {
+        if def.category == CATEGORY_BINARY {
+            continue;
+        }
+        if let Some(model) = component_setting_service::get(conn, def.id).await? {
+            use sea_orm::EntityTrait;
+            crate::db::entities::component_setting::Entity::delete_by_id(model.id)
+                .exec(conn)
+                .await
+                .map_err(crate::db::error::DbError::from)?;
+        }
+    }
+    Ok(())
 }
 
 fn env_from_setting(
@@ -361,12 +721,37 @@ fn busybox_executable() -> Option<PathBuf> {
         .or_else(|| locate_sidecar(RECURBUSYBOX_CMD))
 }
 
+/// The version facts a binary reports, shared by `binary` and the inner
+/// `binary` of a multicall.
+fn binary_versions(
+    def: &ComponentDef,
+    installed: Option<&str>,
+    available: &str,
+    bundled: bool,
+    ra_bundled_version: &Option<String>,
+) -> (Option<String>, Option<String>, bool) {
+    if def.id == RECURBUSYBOX_TOOL_ID {
+        let update = installed.map(|v| v != available).unwrap_or(false);
+        let shown = installed
+            .map(str::to_string)
+            .or_else(|| bundled.then(|| available.to_string()));
+        (shown, Some(available.to_string()), update)
+    } else if def.id == "@ra" {
+        (ra_bundled_version.clone(), None, false)
+    } else {
+        (None, None, false)
+    }
+}
+
 pub(crate) async fn components_list_core(
     db: &AppDatabase,
+    mcp: Option<&dyn McpController>,
+    skill: Option<&dyn SkillController>,
 ) -> Result<Vec<ComponentInfo>, AppCommandError> {
     // The registry is the source of truth for which ids exist; make sure every
-    // built-in — and every tool of every multi-call binary — has a row
+    // built-in — and every applet of every multi-call binary — has a row
     // (enabled = true) before reading the joined view.
+    purge_legacy_setting_rows(&db.conn).await?;
     let ids = all_setting_ids();
     let refs: Vec<&str> = ids.iter().map(String::as_str).collect();
     component_setting_service::ensure_defaults(&db.conn, &refs).await?;
@@ -375,6 +760,16 @@ pub(crate) async fn components_list_core(
         .iter()
         .map(|m| (m.component_id.as_str(), m))
         .collect();
+
+    // Probe each non-binary mechanism once, then report what it actually says.
+    let mcp_status = match mcp {
+        Some(mcp) => Some(mcp.status().await),
+        None => None,
+    };
+    let skill_snapshot = match skill {
+        Some(skill) => Some(skill.snapshot().await?),
+        None => None,
+    };
 
     let installed = installed_busybox_version();
     let available = RECURBUSYBOX_VERSION.to_string();
@@ -387,44 +782,119 @@ pub(crate) async fn components_list_core(
         .iter()
         .map(|def| {
             let setting = by_id.get(def.id).copied();
-            // Only RecurBusyBox is downloaded by this app; `ra` ships inside
-            // the installer. `rb` therefore prefers the downloaded copy (which
-            // may be newer) and otherwise reports the bundled one.
-            let is_busybox = def.id == RECURBUSYBOX_TOOL_ID;
-            let (installed_version, available_version, update_available) = if is_busybox {
-                let update = installed
-                    .as_deref()
-                    .map(|v| v != available)
-                    .unwrap_or(false);
-                let shown = installed
-                    .clone()
-                    .or_else(|| busybox_bundled.then(|| available.clone()));
-                (shown, Some(available.clone()), update)
-            } else if def.id == "@ra" {
-                (ra_bundled_version.clone(), None, false)
+            let stored_choice = setting.map(|m| m.enabled).unwrap_or(true);
+            let category = if def.category == CATEGORY_BINARY {
+                if def.tools.is_empty() {
+                    ComponentCategory::Binary
+                } else {
+                    ComponentCategory::Multicall
+                }
+            } else if def.category == CATEGORY_MCP {
+                ComponentCategory::Mcp
             } else {
-                (None, None, false)
+                ComponentCategory::Skill
             };
-            let tools = def
-                .tools
-                .iter()
-                .map(|tool| ToolInfo {
-                    name: (*tool).to_string(),
+            let state = if def.category == CATEGORY_BINARY {
+                let (installed_version, available_version, update_available) = binary_versions(
+                    def,
+                    installed.as_deref(),
+                    &available,
+                    busybox_bundled,
+                    &ra_bundled_version,
+                );
+                let binary = BinaryState {
+                    tool: def.tool.unwrap_or("").to_string(),
+                    installed_version,
+                    available_version,
+                    update_available,
+                };
+                if def.tools.is_empty() {
+                    ComponentState::Binary(binary)
+                } else {
+                    let binary_present = installed.is_some() || busybox_bundled;
+                    let tools = def
+                        .tools
+                        .iter()
+                        .map(|tool| {
+                            let tool_id = applet_setting_id(tool);
+                            let enabled = by_id
+                                .get(tool_id.as_str())
+                                .map(|m| m.enabled)
+                                .unwrap_or(true);
+                            MulticallTool {
+                                id: tool_id,
+                                name: (*tool).to_string(),
+                                enabled,
+                                installed: binary_present,
+                            }
+                        })
+                        .collect();
+                    ComponentState::Multicall(MulticallState { binary, tools })
+                }
+            } else if def.category == CATEGORY_MCP {
+                let status = mcp_status
+                    .clone()
+                    .unwrap_or_else(unavailable_mcp_status);
+                ComponentState::Mcp(Box::new(status))
+            } else {
+                let (central, linked_agents, bundled_hash, central_hash, update_available) =
+                    match skill_snapshot.as_ref() {
+                        Some(snapshot) => {
+                            let central = if snapshot.conflict {
+                                SkillCentral::Conflict
+                            } else if snapshot.central_hash.is_some() {
+                                SkillCentral::Present
+                            } else {
+                                SkillCentral::Missing
+                            };
+                            let update = !snapshot.conflict
+                                && snapshot.central_hash.as_deref()
+                                    != Some(snapshot.bundled_hash.as_str());
+                            (
+                                central,
+                                snapshot.linked_agents.clone(),
+                                Some(snapshot.bundled_hash.clone()),
+                                snapshot.central_hash.clone(),
+                                update,
+                            )
+                        }
+                        None => (SkillCentral::Missing, Vec::new(), None, None, false),
+                    };
+                ComponentState::Skill(SkillState {
+                    central,
+                    linked_agents,
+                    bundled_hash,
+                    central_hash,
+                    update_available,
                 })
-                .collect();
+            };
+            // The stored row records the user's choice for binaries only; for
+            // mcp/skill the mechanism is the source of truth. Say when a
+            // binary choice and its state would ever diverge.
+            if def.category == CATEGORY_BINARY && def.id == RECURBUSYBOX_TOOL_ID && !stored_choice {
+                tracing::debug!("[components] {} is switched off by the user", def.id);
+            }
+            let flat = state.flat();
             ComponentInfo {
                 id: def.id.to_string(),
-                category: def.category.to_string(),
+                category,
                 name: def.name.to_string(),
                 description: def.description.to_string(),
-                tool: def.tool.map(str::to_string),
-                tools,
                 required: def.required,
-                enabled: setting.map(|m| m.enabled).unwrap_or(true),
                 env: env_from_setting(setting),
-                installed_version,
-                available_version,
-                update_available,
+                tool: def.tool.map(str::to_string),
+                tools: def
+                    .tools
+                    .iter()
+                    .map(|tool| ToolInfo {
+                        name: (*tool).to_string(),
+                    })
+                    .collect(),
+                enabled: flat.enabled,
+                installed_version: flat.installed_version,
+                available_version: flat.available_version,
+                update_available: flat.update_available,
+                state,
             }
         })
         .collect())
@@ -433,6 +903,9 @@ pub(crate) async fn components_list_core(
 /// Enable/disable a component. Refuses for `required` definitions — this is the
 /// "RecurAgent's own tools cannot be disabled" rule. On success the agent PATH
 /// shims are re-synced so the change takes effect on the next launch.
+///
+/// Deprecated in favour of [`components_apply_core`]; kept until the frontend
+/// migrates and removed in the final step.
 pub(crate) async fn components_set_enabled_core(
     db: &AppDatabase,
     emitter: &EventEmitter,
@@ -563,8 +1036,8 @@ fn emit_components_updated(emitter: &EventEmitter) {
     event_bridge::emit_event(emitter, COMPONENTS_UPDATED_EVENT, ());
 }
 
-/// Create/refresh one PATH shim per installed+enabled binary component and
-/// remove shims for disabled ones.
+/// Create/refresh one PATH shim per installed+enabled binary applet and remove
+/// shims for disabled ones.
 ///
 /// The shim name is the whole mechanism: `recurbusybox` picks its personality
 /// from `argv[0]`, so a hardlink/copy named `rg.exe` is what makes `rg` work.
@@ -592,12 +1065,15 @@ pub(crate) async fn sync_component_shims(conn: &DatabaseConnection) -> Result<()
     })?;
 
     // RecurBusyBox is the one component whose applets become PATH shims. The
-    // binary's switch is the only switch: on writes every applet shim, off
-    // removes them all.
+    // binary's switch gates them all; each applet also has its own switch.
     let busybox_enabled = by_id.get(RECURBUSYBOX_TOOL_ID).copied().unwrap_or(true);
     for tool in RECURBUSYBOX_TOOLS {
+        let applet_enabled = by_id
+            .get(applet_setting_id(tool).as_str())
+            .copied()
+            .unwrap_or(true);
         let shim = dir.join(binary_cache::executable_file_name(tool));
-        if busybox_enabled {
+        if busybox_enabled && applet_enabled {
             if let Some(source) = source.as_deref() {
                 if let Err(e) = create_shim(source, &shim) {
                     tracing::warn!(
@@ -643,11 +1119,54 @@ fn create_shim(source: &Path, shim: &Path) -> std::io::Result<()> {
 // ---------------------------------------------------------------------------
 
 #[cfg(feature = "tauri-runtime")]
+#[allow(clippy::too_many_arguments)]
+fn tauri_runtime(
+    broker: &Arc<DelegationBroker>,
+    tokens: &Arc<TokenRegistry>,
+    feedback: &FeedbackRuntimeConfig,
+    question: &QuestionRuntimeConfig,
+    session_info: &SessionInfoRuntimeConfig,
+    authoring: &ChatAuthoringRuntimeConfig,
+    browser: &BrowserToolsRuntimeConfig,
+    computer: &ComputerToolsRuntimeConfig,
+) -> RuntimeComponents {
+    RuntimeComponents::new(
+        broker.clone(),
+        tokens.clone(),
+        feedback.clone(),
+        question.clone(),
+        session_info.clone(),
+        authoring.clone(),
+        browser.clone(),
+        computer.clone(),
+    )
+}
+
+#[cfg(feature = "tauri-runtime")]
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
+#[allow(clippy::too_many_arguments)]
 pub async fn components_list(
     db: tauri::State<'_, AppDatabase>,
+    broker: tauri::State<'_, Arc<DelegationBroker>>,
+    tokens: tauri::State<'_, Arc<TokenRegistry>>,
+    feedback: tauri::State<'_, FeedbackRuntimeConfig>,
+    question: tauri::State<'_, QuestionRuntimeConfig>,
+    session_info: tauri::State<'_, SessionInfoRuntimeConfig>,
+    authoring: tauri::State<'_, ChatAuthoringRuntimeConfig>,
+    browser: tauri::State<'_, BrowserToolsRuntimeConfig>,
+    computer: tauri::State<'_, ComputerToolsRuntimeConfig>,
 ) -> Result<Vec<ComponentInfo>, AppCommandError> {
-    components_list_core(&db).await
+    let runtime = tauri_runtime(
+        broker.inner(),
+        tokens.inner(),
+        feedback.inner(),
+        question.inner(),
+        session_info.inner(),
+        authoring.inner(),
+        browser.inner(),
+        computer.inner(),
+    );
+    components_list_core(&db, Some(&runtime), Some(&runtime)).await
 }
 
 #[cfg(feature = "tauri-runtime")]
@@ -687,6 +1206,8 @@ pub async fn components_update(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicBool, Mutex, Ordering};
+
     use crate::db::test_helpers::fresh_in_memory_db;
 
     /// A `ComponentDef` with every field spelled out, so a test can exercise
@@ -704,91 +1225,203 @@ mod tests {
         }
     }
 
+    /// In-memory rc-mcp stand-in. Records every group write so a test can prove
+    /// an action touched exactly the group it named, and lets `start` be forced
+    /// to fail.
+    #[derive(Default)]
+    struct FakeMcp {
+        enabled: AtomicBool,
+        start_result: AtomicBool,
+        writes: Mutex<Vec<(String, bool)>>,
+    }
+
+    impl FakeMcp {
+        fn new(enabled: bool) -> Self {
+            let fake = Self::default();
+            fake.enabled.store(enabled, Ordering::SeqCst);
+            fake.start_result.store(true, Ordering::SeqCst);
+            fake
+        }
+
+        fn status(&self) -> RcMcpServiceStatus {
+            let enabled = self.enabled.load(Ordering::SeqCst);
+            RcMcpServiceStatus {
+                state: if enabled {
+                    RcMcpServiceState::Running
+                } else {
+                    RcMcpServiceState::Disabled
+                },
+                listening: true,
+                socket_path: "test-socket".to_string(),
+                binary_path: Some("rc-mcp".to_string()),
+                tool_groups: vec![crate::commands::mcp_service::RcMcpToolGroup {
+                    key: "delegation".to_string(),
+                    enabled,
+                    requires: None,
+                }],
+                companion_count: 0,
+                session_count: 0,
+                active_delegations: 0,
+                depth_limit: 1,
+                started_at: None,
+                last_error: None,
+                can_start: true,
+            }
+        }
+    }
+
+
+    #[async_trait::async_trait]
+    impl McpController for FakeMcp {
+        async fn status(&self) -> RcMcpServiceStatus {
+            FakeMcp::status(self)
+        }
+
+        async fn set_group(
+            &self,
+            _conn: &DatabaseConnection,
+            _emitter: &EventEmitter,
+            group: &str,
+            enabled: bool,
+        ) -> Result<(), AppCommandError> {
+            self.writes.lock().unwrap().push((group.to_string(), enabled));
+            self.enabled.store(enabled, Ordering::SeqCst);
+            Ok(())
+        }
+
+        async fn start(&self) -> Result<(), AppCommandError> {
+            if self.start_result.load(Ordering::SeqCst) {
+                Ok(())
+            } else {
+                Err(AppCommandError::configuration_invalid("bind failed"))
+            }
+        }
+    }
+
+    /// In-memory generative-UI skill stand-in: records the (agent, linked)
+    /// pairs it was asked to move.
+    #[derive(Default)]
+    struct FakeSkill {
+        conflict: AtomicBool,
+        linked: Mutex<Vec<String>>,
+        link_writes: Mutex<Vec<(String, bool)>>,
+    }
+
+    impl FakeSkill {
+        fn new(linked: &[&str]) -> Self {
+            let fake = Self::default();
+            *fake.linked.lock().unwrap() = linked.iter().map(|s| s.to_string()).collect();
+            fake
+        }
+
+        fn snapshot(&self) -> GenerativeUiSkillSnapshot {
+            GenerativeUiSkillSnapshot {
+                conflict: self.conflict.load(Ordering::SeqCst),
+                linked_agents: self.linked.lock().unwrap().clone(),
+                bundled_hash: "bundled".to_string(),
+                central_hash: Some("bundled".to_string()),
+            }
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl SkillController for FakeSkill {
+        async fn snapshot(&self) -> Result<GenerativeUiSkillSnapshot, AppCommandError> {
+            Ok(FakeSkill::snapshot(self))
+        }
+
+        async fn link_agent(&self, agent: &str, linked: bool) -> Result<(), AppCommandError> {
+            self.link_writes
+                .lock()
+                .unwrap()
+                .push((agent.to_string(), linked));
+            let mut current = self.linked.lock().unwrap();
+            current.retain(|a| a != agent);
+            if linked {
+                current.push(agent.to_string());
+            }
+            Ok(())
+        }
+
+        async fn refresh(&self, _conn: &DatabaseConnection) -> Result<(), AppCommandError> {
+            Ok(())
+        }
+    }
+
+
+    fn find<'a>(rows: &'a [ComponentInfo], id: &str) -> &'a ComponentInfo {
+        rows.iter().find(|row| row.id == id).expect("row")
+    }
+
+    fn multicall_tools(row: &ComponentInfo) -> &[MulticallTool] {
+        match &row.state {
+            ComponentState::Multicall(state) => &state.tools,
+            other => panic!("expected multicall, got {other:?}"),
+        }
+    }
+
+    fn mcp_state(row: &ComponentInfo) -> &RcMcpServiceStatus {
+        match &row.state {
+            ComponentState::Mcp(status) => status,
+            other => panic!("expected mcp, got {other:?}"),
+        }
+    }
+
+    fn skill_state(row: &ComponentInfo) -> &SkillState {
+        match &row.state {
+            ComponentState::Skill(state) => state,
+            other => panic!("expected skill, got {other:?}"),
+        }
+    }
+
     #[tokio::test]
     async fn binary_category_is_the_two_executables_not_their_applets() {
         let db = fresh_in_memory_db().await;
-        let list = components_list_core(&db).await.expect("list");
+        let list = components_list_core(&db, None, None).await.expect("list");
 
         assert_eq!(list.len(), COMPONENTS.len(), "one row per registry entry");
-        assert!(
-            list.iter().all(|c| c.enabled),
-            "built-ins default to enabled"
-        );
-        for category in [CATEGORY_BINARY, CATEGORY_MCP, CATEGORY_SKILL] {
+        for category in [
+            ComponentCategory::Binary,
+            ComponentCategory::Mcp,
+            ComponentCategory::Skill,
+        ] {
             assert!(
                 list.iter().any(|c| c.category == category),
-                "category {category} has no components"
+                "category {category:?} has no components"
             );
         }
 
         let binaries: Vec<_> = list
             .iter()
-            .filter(|c| c.category == CATEGORY_BINARY)
+            .filter(|c| c.category == ComponentCategory::Binary)
             .collect();
         let ids: Vec<&str> = binaries.iter().map(|c| c.id.as_str()).collect();
         assert_eq!(
             ids,
-            vec!["@ra", "@recurbusybox"],
-            "the binary tab lists the executables, not the 15 applets"
+            vec!["@ra"],
+            "only the single-purpose binary is `binary`; rb is `multicall`"
         );
 
-        // `ra` ships inside RecurCode's installer and may never be switched off;
-        // it therefore has no downloadable version of its own.
-        let ra = binaries.iter().find(|c| c.id == "@ra").unwrap();
+        let ra = find(&list, "@ra");
         assert!(ra.required, "RecurAgent cannot be disabled");
-        assert!(
-            ra.available_version.is_none(),
-            "ra is bundled, not downloaded"
-        );
-
-        // `recurbusybox` is the one multi-call binary; its applets ride along.
-        let rb = binaries
-            .iter()
-            .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
-            .unwrap();
-        assert_eq!(rb.tools.len(), RECURBUSYBOX_TOOLS.len());
-        assert_eq!(rb.available_version.as_deref(), Some(RECURBUSYBOX_VERSION));
-        // The applets are listed for information, not switched individually.
-        assert_eq!(
-            rb.tools.iter().map(|t| t.name.as_str()).collect::<Vec<_>>(),
-            RECURBUSYBOX_TOOLS
-        );
-    }
-
-    #[tokio::test]
-    async fn a_required_binary_cannot_be_disabled_and_applets_are_not_settings() {
-        let db = fresh_in_memory_db().await;
-        let emitter = EventEmitter::Noop;
-
-        assert!(
-            components_set_enabled_core(&db, &emitter, "@ra", false)
-                .await
-                .is_err(),
-            "RecurAgent is required"
-        );
-
-        // The applets are not individually switchable; the binary is the only
-        // switch, and toggling it turns every shim on or off together.
-        components_set_enabled_core(&db, &emitter, RECURBUSYBOX_TOOL_ID, false)
-            .await
-            .expect("the binary toggles");
-        let rb = components_list_core(&db)
-            .await
-            .expect("list")
-            .into_iter()
-            .find(|c| c.id == RECURBUSYBOX_TOOL_ID)
-            .unwrap();
-        assert!(!rb.enabled);
-
-        for unknown in ["@nope", "@recurbusybox:rg", "@recurbusybox:nope"] {
-            assert!(
-                components_set_enabled_core(&db, &emitter, unknown, false)
-                    .await
-                    .is_err(),
-                "{unknown} is refused"
-            );
+        match &ra.state {
+            ComponentState::Binary(state) => {
+                assert!(state.available_version.is_none(), "ra is bundled, not downloaded");
+            }
+            other => panic!("expected binary, got {other:?}"),
         }
+
+        let rb = find(&list, RECURBUSYBOX_TOOL_ID);
+        assert_eq!(rb.category, ComponentCategory::Multicall);
+        assert_eq!(multicall_tools(rb).len(), RECURBUSYBOX_TOOLS.len());
+        let names: Vec<&str> = multicall_tools(rb)
+            .iter()
+            .map(|tool| tool.name.as_str())
+            .collect();
+        assert_eq!(names, RECURBUSYBOX_TOOLS);
+        assert!(multicall_tools(rb).iter().all(|tool| tool.enabled));
     }
+
 
     #[tokio::test]
     async fn env_round_trips_for_components() {
@@ -803,7 +1436,7 @@ mod tests {
             .await
             .expect("set env on the binary");
 
-        let rb = components_list_core(&db)
+        let rb = components_list_core(&db, None, None)
             .await
             .expect("list")
             .into_iter()
@@ -811,13 +1444,55 @@ mod tests {
             .unwrap();
         assert_eq!(rb.env, env);
 
-        // Applet ids are not settings, so they are refused like any unknown id.
+        // Applet ids are not components, so they are refused like any unknown id.
         for unknown in ["@nope", "@recurbusybox:jq"] {
             assert!(components_set_env_core(&db, unknown, env.clone())
                 .await
                 .is_err());
         }
     }
+
+    #[tokio::test]
+    async fn mcp_state_comes_from_the_live_service_not_a_switch() {
+        let db = fresh_in_memory_db().await;
+        let mcp = FakeMcp::new(false);
+        let skill = FakeSkill::new(&[]);
+
+        // A stopped service must not read as on, even though the legacy setting
+        // row still defaults to enabled.
+        let list = components_list_core(&db, Some(&mcp), Some(&skill))
+            .await
+            .expect("list");
+        let row = find(&list, "@rc-mcp");
+        assert!(!rc_mcp_component_enabled(mcp_state(row)));
+        assert_eq!(mcp_state(row).state, RcMcpServiceState::Disabled);
+
+        mcp.enabled.store(true, Ordering::SeqCst);
+        let list = components_list_core(&db, Some(&mcp), Some(&skill))
+            .await
+            .expect("list");
+        assert!(rc_mcp_component_enabled(mcp_state(find(&list, "@rc-mcp"))));
+    }
+
+
+
+
+    #[tokio::test]
+    async fn skill_conflict_is_reported_not_hidden() {
+        let db = fresh_in_memory_db().await;
+        let mcp = FakeMcp::new(true);
+        let skill = FakeSkill::new(&[]);
+        skill.conflict.store(true, Ordering::SeqCst);
+
+        let list = components_list_core(&db, Some(&mcp), Some(&skill))
+            .await
+            .expect("list");
+        assert_eq!(
+            skill_state(find(&list, "@ui-render-skill")).central,
+            SkillCentral::Conflict
+        );
+    }
+
 
     #[test]
     fn a_required_component_cannot_be_disabled() {

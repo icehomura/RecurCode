@@ -88,6 +88,29 @@ pub struct GenerativeUiSkillInfo {
     pub conflict: bool,
 }
 
+/// Read-only snapshot of the skill for the Components settings panel. Additive:
+/// it reuses the same probes the link matrix already runs (central-copy
+/// ownership and per-agent link state), so it changes no behavior. Hashes are
+/// hex SHA-256 of the bundled vs. the central `SKILL.md`.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerativeUiSkillSnapshot {
+    /// A `ui-render` directory in the central store RecurCode did not write.
+    pub conflict: bool,
+    /// Wire slugs of the agents whose preferred dir links to our copy.
+    pub linked_agents: Vec<String>,
+    /// Hex SHA-256 of the bundled `SKILL.md`.
+    pub bundled_hash: String,
+    /// Hex SHA-256 of the central copy's `SKILL.md`, when ours is present.
+    pub central_hash: Option<String>,
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(bytes);
+    digest.iter().map(|b| format!("{b:02x}")).collect()
+}
+
 // ─── Where things live ──────────────────────────────────────────────────
 
 /// Where the central copies go and where each agent looks for skills. The
@@ -649,6 +672,34 @@ impl GenerativeUi {
             .map_err(|err| AppCommandError::task_execution_failed(err.to_string()))
     }
 
+    async fn skill_snapshot(&self) -> Result<GenerativeUiSkillSnapshot, AppCommandError> {
+        let home = self.home.clone();
+        tokio::task::spawn_blocking(move || {
+            let central = home.central_copy();
+            let conflict = is_foreign(&central);
+            let central_hash = if is_ours(&central) {
+                fs::read(central.join("SKILL.md"))
+                    .ok()
+                    .map(|bytes| sha256_hex(&bytes))
+            } else {
+                None
+            };
+            let linked_agents = install_statuses(&home)
+                .into_iter()
+                .filter(|status| status.state == ExpertLinkState::LinkedToRecurCode)
+                .map(|status| status.agent_type.as_wire().to_string())
+                .collect();
+            GenerativeUiSkillSnapshot {
+                conflict,
+                linked_agents,
+                bundled_hash: sha256_hex(SKILL_MD.as_bytes()),
+                central_hash,
+            }
+        })
+        .await
+        .map_err(|err| AppCommandError::task_execution_failed(err.to_string()))
+    }
+
     async fn skill_info(&self) -> Result<GenerativeUiSkillInfo, AppCommandError> {
         let central = self.home.central_copy();
         let conflict = tokio::task::spawn_blocking(move || is_foreign(&central))
@@ -716,6 +767,14 @@ fn reserved_ids_in(home: &SkillHome) -> Vec<String> {
 #[cfg_attr(feature = "tauri-runtime", tauri::command)]
 pub async fn generative_ui_skill_info() -> Result<GenerativeUiSkillInfo, AppCommandError> {
     GENERATIVE_UI.skill_info().await
+}
+
+/// Read-only probe for the Components panel: central-copy ownership, the
+/// agents linked to it, and the bundled/central content hashes. Additive —
+/// exposes the same link/conflict state the settings matrix already reads.
+pub async fn generative_ui_skill_snapshot() -> Result<GenerativeUiSkillSnapshot, AppCommandError>
+{
+    GENERATIVE_UI.skill_snapshot().await
 }
 
 /// One state per agent with a skill store: the matrix in one round trip.

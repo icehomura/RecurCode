@@ -7,12 +7,28 @@ use serde::Deserialize;
 use crate::app_error::AppCommandError;
 use crate::app_state::AppState;
 use crate::commands::components as component_commands;
-use crate::commands::components::ComponentInfo;
+use crate::commands::components::{ComponentInfo, RuntimeComponents};
+
+/// Build the live mcp/skill machinery from the shared `AppState`.
+fn runtime(state: &AppState) -> RuntimeComponents {
+    RuntimeComponents::new(
+        state.delegation_broker.clone(),
+        state.delegation_tokens.clone(),
+        state.feedback_config.clone(),
+        state.question_config.clone(),
+        state.session_info_config.clone(),
+        state.chat_authoring_config.clone(),
+        state.browser_tools_config.clone(),
+        state.computer_tools_config.clone(),
+    )
+}
 
 pub async fn components_list(
     Extension(state): Extension<Arc<AppState>>,
 ) -> Result<Json<Vec<ComponentInfo>>, AppCommandError> {
-    let result = component_commands::components_list_core(&state.db).await?;
+    let runtime = runtime(&state);
+    let result =
+        component_commands::components_list_core(&state.db, Some(&runtime), Some(&runtime)).await?;
     Ok(Json(result))
 }
 
