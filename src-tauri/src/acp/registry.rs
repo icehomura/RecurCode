@@ -4299,16 +4299,16 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
         },
         AgentType::Ra => AcpAgentMeta {
             agent_type,
-            // Ra's ACP server IGNORES `session/new`'s `mcpServers`: its
-            // ACP entry point never builds an MCP client, so neither the built-in
-            // rc-mcp companion nor a user's own servers ever reach its model
-            // (probed: a server handed to `session/new` is never spawned).
-            // Declaring `false` is what keeps RecurCode from injecting a companion
-            // whose `delegate_to_agent` / live-feedback tools the agent can never
-            // call — and from steering a prompt at tools that do not exist. Same
-            // posture as OpenClaw, and stricter than pi's `agent_delivers_wire_mcp`
-            // gate, because Ra does not even consume the field.
-            supports_mcp: false,
+            // Ra's `ra acp` consumes `session/new`'s `mcpServers` for the
+            // session-scoped runtime (stdio + streamable HTTP), so the built-in
+            // rc-mcp companion reaches the model and `delegate_to_agent` /
+            // live-feedback work. User-configured servers still arrive through
+            // Ra's own `~/.ra/config.json` — `load_mcp_servers_for_agent` keeps
+            // Ra out of the wire path to avoid double-mounting — while rc-mcp
+            // is injected by `inject_rc_mcp` regardless of that skip. Requires
+            // a Ra build that reads the field; keep `distribution.version` at
+            // or above it.
+            supports_mcp: true,
             name: "RecurAgent",
             description: "Rust-native headless coding agent speaking ACP directly (ra acp)",
             // Ra ships one binary (`ra`) in two build variants: the full
@@ -4846,12 +4846,10 @@ mod tests {
 
     // OpenClaw rejects MCP server entries inside `mcpServers` (the empty `[]`
     // field is still serialized and tolerated) and fails session/new on any
-    // entry, so it opts out of `supports_mcp`. So does RecurAgent: its self-
-    // managed `ra acp` never builds an MCP client (session/new errors on any
-    // non-empty `mcpServers`), so forwarding our companion would be futile —
-    // RecurCode must not inject it. These two are the ONLY built-in opt-outs.
-    // Every other built-in keeps it `true`, so a newly added agent that wrongly
-    // opts out — or a regression flipping one back on — trips this assert.
+    // entry, so it is the ONLY built-in that opts out. Every other built-in
+    // keeps it `true` — including RecurAgent, whose `ra acp` now consumes the
+    // field — so a newly added agent that wrongly opts out, or a regression
+    // flipping one back on, trips this assert.
     // Custom agents are deliberately out of
     // scope: their flag is a stored, user-set declaration
     // (`CustomAgentDef::supports_mcp`), so a registry hydrated by another test
@@ -4862,7 +4860,7 @@ mod tests {
             let meta = get_agent_meta(agent_type);
             assert_eq!(
                 meta.supports_mcp,
-                !matches!(agent_type, AgentType::OpenClaw | AgentType::Ra),
+                !matches!(agent_type, AgentType::OpenClaw),
                 "unexpected supports_mcp for {agent_type:?}"
             );
         }

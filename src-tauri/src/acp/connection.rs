@@ -2192,12 +2192,25 @@ async fn build_agent(
             // leaves `config_home` at the brand dir) makes `config_home` track the
             // data dir, guaranteeing one source of truth.
             if agent_type == AgentType::Ra {
-                cmd_args.extend([
-                    "--data-dir".to_string(),
-                    crate::commands::ra_config::ra_data_root()
-                        .display()
-                        .to_string(),
-                ]);
+                let root = crate::commands::ra_config::ra_data_root();
+                cmd_args.extend(["--data-dir".to_string(), root.display().to_string()]);
+                // `ra acp` applies a profile only when one is NAMED: the
+                // `default-profile` pointer is honoured by the config watcher
+                // (so a switch hot-reloads), but not at startup. Without this a
+                // freshly spawned process ran the root `config.json` until the
+                // first reload, so the active profile looked ignored after a
+                // restart.
+                let active = crate::commands::ra_config::active_profile_id(&root);
+                // Skip an LLM-less profile: `ra acp --profile <id>` on one
+                // exits with "no LLM provider configured", and the pointer can
+                // legitimately name such a leftover (an old multi-tenant
+                // profile, say). Falling back to `config.json` keeps the launch
+                // working.
+                if !active.is_empty()
+                    && crate::commands::ra_config::profile_has_llm_selection(&root, &active)
+                {
+                    cmd_args.extend(["--profile".to_string(), active]);
+                }
             }
             let cmd_args_for_log = cmd_args.clone();
             if !cmd_args.is_empty() {
@@ -5371,6 +5384,14 @@ fn load_mcp_servers_for_agent(agent_type: AgentType) -> Vec<McpServer> {
     // winning — so forwarding would not actually double-mount. It is skipped
     // anyway because defining one server through two channels is noise, and
     // because the `rc-mcp` companion is injected separately regardless.
+    //
+    // RecurAgent (Ra) joins the skip set for the same reason: RecurCode's MCP
+    // settings UI writes user servers into `~/.ra/config.json` (Ra's native
+    // store), and `ra acp` reads them at profile bootstrap. Forwarding the same
+    // servers on the wire would double-register them. The built-in `rc-mcp`
+    // companion is NOT in that store, so `inject_rc_mcp` still forwards it over
+    // the wire — and `ra acp` now consumes it (that is what `supports_mcp: true`
+    // enables for Ra).
     if matches!(
         agent_type,
         AgentType::Hermes
@@ -5379,6 +5400,7 @@ fn load_mcp_servers_for_agent(agent_type: AgentType) -> Vec<McpServer> {
             | AgentType::Cursor
             | AgentType::Qoder
             | AgentType::Antigravity
+            | AgentType::Ra
     ) {
         return Vec::new();
     }
