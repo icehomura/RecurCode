@@ -71,7 +71,7 @@ enum ComponentSetting {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sea_orm_migration::sea_orm::{ConnectionTrait, DbBackend, Database, Statement};
+    use sea_orm_migration::sea_orm::{ConnectionTrait, Database, DbBackend, Statement};
 
     #[tokio::test]
     async fn up_creates_component_setting_table() {

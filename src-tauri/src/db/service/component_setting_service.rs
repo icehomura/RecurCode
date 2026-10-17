@@ -70,7 +70,9 @@ pub async fn set_enabled(
         .filter(component_setting::Column::ComponentId.eq(component_id))
         .one(conn)
         .await?
-        .ok_or_else(|| DbError::Migration(format!("component setting not found: {component_id}")))?;
+        .ok_or_else(|| {
+            DbError::Migration(format!("component setting not found: {component_id}"))
+        })?;
     let mut active = model.into_active_model();
     active.enabled = Set(enabled);
     active.updated_at = Set(Utc::now());
@@ -89,7 +91,9 @@ pub async fn set_env(
         .filter(component_setting::Column::ComponentId.eq(component_id))
         .one(conn)
         .await?
-        .ok_or_else(|| DbError::Migration(format!("component setting not found: {component_id}")))?;
+        .ok_or_else(|| {
+            DbError::Migration(format!("component setting not found: {component_id}"))
+        })?;
     let mut active = model.into_active_model();
     active.env_json = Set(env_json);
     active.updated_at = Set(Utc::now());
