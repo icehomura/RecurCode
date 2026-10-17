@@ -69,3 +69,6 @@ __pycache__/
 
 # ra coding-agent workspace file (runtime artifact)
 .ra-workspace.toml
+
+# local dev: Cranelift backend config (nightly-only)
+.cargo/config.toml
