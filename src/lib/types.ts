@@ -5428,3 +5428,28 @@ export interface ProjectCallEdge {
   to_path: string
   kind: "calls" | "imports" | "extends" | "implements"
 }
+
+// ---------------------------------------------------------------------------
+// Component management (Settings → Components)
+// ---------------------------------------------------------------------------
+
+/**
+ * One tool-cache entry the backend knows about (a bundled binary, an MCP
+ * server or a skill pack). The list itself is fixed by the backend — the
+ * frontend can only toggle, configure and update an entry, never create or
+ * delete one.
+ */
+export interface ComponentInfo {
+  /** Stable tool-cache id, e.g. `@rg`; also what the operator sees in the UI. */
+  id: string
+  category: "binary" | "mcp" | "skill"
+  name: string
+  description: string
+  enabled: boolean
+  /** `true` locks the enable switch on — turning it off would break the app. */
+  required: boolean
+  installedVersion: string | null
+  availableVersion: string | null
+  updateAvailable: boolean
+  env: Record<string, string>
+}

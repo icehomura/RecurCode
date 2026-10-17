@@ -1066,6 +1066,7 @@ export type SettingsSection =
   | "agents"
   | "mcp"
   | "skills"
+  | "components"
   | "shortcuts"
   | "system"
 

@@ -1,0 +1,624 @@
+"use client"
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
+import {
+  ArrowDownToLine,
+  Info,
+  Loader2,
+  Lock,
+  Plus,
+  RefreshCw,
+  Terminal,
+  Trash2,
+} from "lucide-react"
+import { toast } from "sonner"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  SettingCard,
+  SettingNote,
+  SettingRow,
+} from "@/components/shared/setting-card"
+import { cn, randomUUID } from "@/lib/utils"
+import { toErrorMessage } from "@/lib/app-error"
+import {
+  componentsList,
+  componentsSetEnabled,
+  componentsSetEnv,
+  componentsUpdate,
+} from "@/lib/api"
+import type { ComponentInfo } from "@/lib/types"
+
+const LEFT_MIN_WIDTH = 280
+const RIGHT_MIN_WIDTH = 420
+
+type ComponentCategory = ComponentInfo["category"]
+
+function normalizeTab(raw: string | null): ComponentCategory {
+  return raw === "mcp" || raw === "skill" ? raw : "binary"
+}
+
+// Radix emits `data-state="active"`, so the pill has to be re-declared — the
+// Tabs primitive's own `data-active:` variant never matches (see
+// skill-packs-settings.tsx, which documents the same workaround).
+const TRIGGER_ACTIVE =
+  "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value))
+}
+
+function toPercent(pixels: number, totalPixels: number): number {
+  if (totalPixels <= 0) return 0
+  return (pixels / totalPixels) * 100
+}
+
+/** The env editor works on an ordered row list so a key can be typed (and a
+ *  row emptied) before it is a valid `Record` entry; it is folded back into the
+ *  record only on save. */
+interface EnvRow {
+  key: string
+  value: string
+}
+
+function envToRows(env: Record<string, string>): EnvRow[] {
+  return Object.entries(env).map(([key, value]) => ({ key, value }))
+}
+
+function rowsToEnv(rows: EnvRow[]): Record<string, string> {
+  const env: Record<string, string> = {}
+  for (const row of rows) {
+    const key = row.key.trim()
+    if (!key) continue
+    env[key] = row.value
+  }
+  return env
+}
+
+function rowsEqual(a: EnvRow[], b: EnvRow[]): boolean {
+  if (a.length !== b.length) return false
+  return a.every(
+    (row, index) => row.key === b[index].key && row.value === b[index].value
+  )
+}
+
+export function ComponentsSettings() {
+  const t = useTranslations("ComponentsSettings")
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Local state is the visual source of truth so the tab always switches; the
+  // `?tab=` param is a best-effort deep-link mirror, seeded once from the URL.
+  const [tab, setTab] = useState<ComponentCategory>(() =>
+    normalizeTab(searchParams.get("tab"))
+  )
+
+  const [components, setComponents] = useState<ComponentInfo[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const [envRows, setEnvRows] = useState<EnvRow[]>([])
+  const [savingEnv, setSavingEnv] = useState(false)
+
+  const panelContainerRef = useRef<HTMLDivElement | null>(null)
+  const [panelContainerWidth, setPanelContainerWidth] = useState(0)
+
+  useEffect(() => {
+    const element = panelContainerRef.current
+    if (!element || typeof ResizeObserver === "undefined") return
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0
+      setPanelContainerWidth(width)
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  const refresh = useCallback(async () => {
+    try {
+      const list = await componentsList()
+      setComponents(list)
+      setLoadError(null)
+      return list
+    } catch (err) {
+      setLoadError(toErrorMessage(err))
+      return null
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const list = await componentsList()
+        if (cancelled) return
+        setComponents(list)
+        setLoadError(null)
+      } catch (err) {
+        if (cancelled) return
+        setLoadError(toErrorMessage(err))
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const inCategory = useMemo(
+    () => components.filter((item) => item.category === tab),
+    [components, tab]
+  )
+
+  const selected = useMemo(
+    () => inCategory.find((item) => item.id === selectedId) ?? null,
+    [inCategory, selectedId]
+  )
+
+  // Keep a selection per category: a fresh list (or a tab switch) picks the
+  // first entry instead of leaving the detail pane empty.
+  useEffect(() => {
+    if (inCategory.length === 0) {
+      if (selectedId !== null) setSelectedId(null)
+      return
+    }
+    if (!inCategory.some((item) => item.id === selectedId)) {
+      setSelectedId(inCategory[0].id)
+    }
+  }, [inCategory, selectedId])
+
+  // The env editor reseeds from the selected component so it never shows the
+  // previous component's rows.
+  useEffect(() => {
+    setEnvRows(envToRows(selected?.env ?? {}))
+  }, [selected?.id, selected?.env])
+
+  const handleTabChange = useCallback(
+    (next: string) => {
+      const value = normalizeTab(next)
+      setTab(value)
+      // Preserve every other param (esp. ?remoteConnectionId=N) when mirroring
+      // the active tab into the URL.
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("tab", value)
+      router.replace(`${pathname}?${params.toString()}`)
+    },
+    [router, pathname, searchParams]
+  )
+
+  const handleToggleEnabled = useCallback(
+    async (component: ComponentInfo, enabled: boolean) => {
+      if (component.required) return
+      setBusy(true)
+      // Optimistic: the switch must not lag behind the finger.
+      setComponents((prev) =>
+        prev.map((item) =>
+          item.id === component.id ? { ...item, enabled } : item
+        )
+      )
+      try {
+        await componentsSetEnabled(component.id, enabled)
+        await refresh()
+        toast.success(
+          enabled
+            ? t("toasts.enabledOn", { name: component.name })
+            : t("toasts.enabledOff", { name: component.name })
+        )
+      } catch (err) {
+        toast.error(t("toasts.saveFailed"), {
+          description: toErrorMessage(err),
+        })
+        await refresh()
+      } finally {
+        setBusy(false)
+      }
+    },
+    [refresh, t]
+  )
+
+  const handleUpdate = useCallback(
+    async (component: ComponentInfo) => {
+      setUpdating(true)
+      try {
+        // The backend streams agent-install progress events keyed by this id;
+        // the panel only needs the completion, so it re-reads the list after.
+        await componentsUpdate(component.id, randomUUID())
+        await refresh()
+        toast.success(t("toasts.updated", { name: component.name }))
+      } catch (err) {
+        toast.error(t("toasts.updateFailed", { name: component.name }), {
+          description: toErrorMessage(err),
+        })
+        await refresh()
+      } finally {
+        setUpdating(false)
+      }
+    },
+    [refresh, t]
+  )
+
+  const seedRows = useMemo(
+    () => envToRows(selected?.env ?? {}),
+    [selected?.env]
+  )
+  const envDirty = !rowsEqual(envRows, seedRows)
+
+  const handleSaveEnv = useCallback(async () => {
+    if (!selected) return
+    setSavingEnv(true)
+    try {
+      await componentsSetEnv(selected.id, rowsToEnv(envRows))
+      await refresh()
+      toast.success(t("toasts.saved"))
+    } catch (err) {
+      toast.error(t("toasts.saveFailed"), {
+        description: toErrorMessage(err),
+      })
+    } finally {
+      setSavingEnv(false)
+    }
+  }, [selected, envRows, refresh, t])
+
+  const safeContainerWidth =
+    panelContainerWidth > 0 ? panelContainerWidth : 1200
+  const leftMinSize = clamp(
+    toPercent(LEFT_MIN_WIDTH, safeContainerWidth),
+    5,
+    95
+  )
+  const rightMinSize = clamp(
+    toPercent(RIGHT_MIN_WIDTH, safeContainerWidth),
+    5,
+    95
+  )
+  const leftMaxSize = Math.max(leftMinSize, 100 - rightMinSize)
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        {t("title")}
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-full flex flex-col p-3 md:p-4">
+      <div className="flex items-center justify-between gap-3 pb-4">
+        <div>
+          <h2 className="text-base font-semibold">{t("title")}</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("description")}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            refresh().catch((err) => {
+              console.error("[ComponentsSettings] refresh failed:", err)
+            })
+          }}
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          {t("recheck")}
+        </Button>
+      </div>
+
+      <Tabs
+        value={tab}
+        onValueChange={handleTabChange}
+        className="flex flex-col flex-1 min-h-0"
+      >
+        <TabsList className="w-fit shrink-0">
+          <TabsTrigger value="binary" className={TRIGGER_ACTIVE}>
+            {t("tabs.binary")}
+          </TabsTrigger>
+          <TabsTrigger value="mcp" className={TRIGGER_ACTIVE}>
+            {t("tabs.mcp")}
+          </TabsTrigger>
+          <TabsTrigger value="skill" className={TRIGGER_ACTIVE}>
+            {t("tabs.skill")}
+          </TabsTrigger>
+        </TabsList>
+
+        {loadError && (
+          <div className="mt-3 rounded-md border border-red-500/30 bg-red-500/5 px-3 py-2 text-xs text-red-400">
+            {t("loadFailed")}: {loadError}
+          </div>
+        )}
+
+        <div ref={panelContainerRef} className="mt-3 flex-1 min-h-0 min-w-0">
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="h-full min-h-0 min-w-0"
+          >
+            <ResizablePanel
+              defaultSize={34}
+              minSize={leftMinSize}
+              maxSize={leftMaxSize}
+            >
+              <div className="min-h-0 h-full min-w-0 rounded-lg border bg-card flex flex-col overflow-hidden lg:rounded-r-none">
+                <div className="border-b p-3">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {t("title")}
+                  </span>
+                </div>
+
+                {inCategory.length === 0 ? (
+                  <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground px-4 text-center">
+                    {t("empty")}
+                  </div>
+                ) : (
+                  <div className="flex-1 min-h-0 overflow-y-auto space-y-1 p-2">
+                    {inCategory.map((component) => (
+                      <button
+                        key={component.id}
+                        type="button"
+                        onClick={() => setSelectedId(component.id)}
+                        className={cn(
+                          "w-full rounded-md border px-2.5 py-2 text-left transition-colors",
+                          selectedId === component.id
+                            ? "border-primary/40 bg-primary/5"
+                            : "border-transparent hover:bg-muted/60"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm font-medium">
+                            {component.name}
+                          </span>
+                          {component.updateAvailable && (
+                            <Badge variant="secondary">
+                              {t("updateAvailable")}
+                            </Badge>
+                          )}
+                        </div>
+                        {component.description && (
+                          <div className="mt-0.5 truncate text-2xs text-muted-foreground">
+                            {component.description}
+                          </div>
+                        )}
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <Badge variant="outline">
+                            {component.installedVersion ?? t("notInstalled")}
+                          </Badge>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </ResizablePanel>
+
+            <ResizableHandle withHandle />
+
+            <ResizablePanel defaultSize={66} minSize={rightMinSize}>
+              <div className="h-full flex-1 min-h-0 min-w-0 rounded-lg border bg-card overflow-hidden lg:rounded-l-none lg:border-l-0">
+                {selected ? (
+                  <div className="h-full flex flex-col">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                      <div>
+                        <h3 className="text-sm font-semibold">
+                          {selected.name}
+                        </h3>
+                        {selected.description && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {selected.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <SettingCard>
+                        <SettingRow
+                          title={t("enabled")}
+                          control={
+                            <Switch
+                              checked={selected.required || selected.enabled}
+                              disabled={selected.required || busy}
+                              onCheckedChange={(checked) => {
+                                handleToggleEnabled(selected, checked).catch(
+                                  (err) => {
+                                    console.error(
+                                      "[ComponentsSettings] toggle failed:",
+                                      err
+                                    )
+                                  }
+                                )
+                              }}
+                              aria-label={t("enabled")}
+                            />
+                          }
+                        />
+                        <SettingRow
+                          icon={Info}
+                          title={t("componentId")}
+                          control={
+                            <code className="rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                              {selected.id}
+                            </code>
+                          }
+                        />
+                        <SettingRow
+                          icon={Terminal}
+                          title={t("versionInstalled")}
+                          control={
+                            <span className="text-xs text-muted-foreground">
+                              {selected.installedVersion ?? t("notInstalled")}
+                            </span>
+                          }
+                        />
+                        <SettingRow
+                          icon={Terminal}
+                          title={t("versionAvailable")}
+                          control={
+                            <span className="text-xs text-muted-foreground">
+                              {selected.availableVersion ?? "—"}
+                            </span>
+                          }
+                        >
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              disabled={updating}
+                              onClick={() => {
+                                handleUpdate(selected).catch((err) => {
+                                  console.error(
+                                    "[ComponentsSettings] update failed:",
+                                    err
+                                  )
+                                })
+                              }}
+                            >
+                              {updating ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <ArrowDownToLine className="h-3.5 w-3.5" />
+                              )}
+                              {updating
+                                ? t("updating")
+                                : selected.installedVersion
+                                  ? t("update")
+                                  : t("install")}
+                            </Button>
+                          </div>
+                        </SettingRow>
+                      </SettingCard>
+
+                      {selected.required && (
+                        <SettingNote icon={Lock}>
+                          {t("requiredNote")}
+                        </SettingNote>
+                      )}
+
+                      <SettingCard>
+                        <SettingRow
+                          title={t("envTitle")}
+                          description={t("envDescription")}
+                          control={
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  setEnvRows((prev) => [
+                                    ...prev,
+                                    { key: "", value: "" },
+                                  ])
+                                }
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                                {t("envAdd")}
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={!envDirty || savingEnv}
+                                onClick={() => {
+                                  handleSaveEnv().catch((err) => {
+                                    console.error(
+                                      "[ComponentsSettings] env save failed:",
+                                      err
+                                    )
+                                  })
+                                }}
+                              >
+                                {savingEnv ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : null}
+                                {t("envSave")}
+                              </Button>
+                            </div>
+                          }
+                        >
+                          <div className="space-y-2">
+                            {envRows.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                {t("envHint")}
+                              </p>
+                            ) : (
+                              envRows.map((row, index) => (
+                                <div
+                                  // Rows are positional and may be empty, so the
+                                  // index is the only stable identity here.
+                                  key={index}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Input
+                                    value={row.key}
+                                    placeholder={t("envKey")}
+                                    aria-label={t("envKey")}
+                                    className="h-8 flex-1 font-mono text-xs"
+                                    onChange={(event) => {
+                                      const next = event.target.value
+                                      setEnvRows((prev) =>
+                                        prev.map((item, i) =>
+                                          i === index
+                                            ? { ...item, key: next }
+                                            : item
+                                        )
+                                      )
+                                    }}
+                                  />
+                                  <Input
+                                    value={row.value}
+                                    placeholder={t("envValue")}
+                                    aria-label={t("envValue")}
+                                    className="h-8 flex-[2] font-mono text-xs"
+                                    onChange={(event) => {
+                                      const next = event.target.value
+                                      setEnvRows((prev) =>
+                                        prev.map((item, i) =>
+                                          i === index
+                                            ? { ...item, value: next }
+                                            : item
+                                        )
+                                      )
+                                    }}
+                                  />
+                                  <Button
+                                    size="icon-sm"
+                                    variant="ghost"
+                                    aria-label={t("envRemove")}
+                                    onClick={() =>
+                                      setEnvRows((prev) =>
+                                        prev.filter((_, i) => i !== index)
+                                      )
+                                    }
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </SettingRow>
+                      </SettingCard>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center px-4 text-center text-xs text-muted-foreground">
+                    {t("selectPrompt")}
+                  </div>
+                )}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
+      </Tabs>
+    </div>
+  )
+}

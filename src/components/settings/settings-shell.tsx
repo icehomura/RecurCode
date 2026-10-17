@@ -21,6 +21,7 @@ import {
   Menu,
   MessageSquareText,
   MonitorCog,
+  Package,
   SendHorizontal,
   Palette,
   PlugZap,
@@ -55,6 +56,7 @@ interface SettingsNavItem {
     | "mcp"
     | "skills"
     | "skill_packs"
+    | "components"
     | "collaboration"
     | "browser"
     | "computer_use"
@@ -99,6 +101,11 @@ const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     href: "/settings/skill-packs",
     labelKey: "skill_packs",
     icon: Boxes,
+  },
+  {
+    href: "/settings/components",
+    labelKey: "components",
+    icon: Package,
   },
   {
     href: "/settings/agents",

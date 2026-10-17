@@ -21,6 +21,7 @@ import type {
   LeakedTempReclaim,
   LeakedTempScan,
   AgentType,
+  ComponentInfo,
   AgentDelegationDefaults,
   AgentOptionsSnapshot,
   Automation,
@@ -3394,6 +3395,7 @@ export type SettingsSection =
   | "agents"
   | "mcp"
   | "skills"
+  | "components"
   | "experts"
   | "science"
   | "office-tools"
@@ -6462,4 +6464,37 @@ export async function projectStructureDeleteAll(
   folderId: number
 ): Promise<void> {
   return getTransport().call("project_structure_delete_all", { folderId })
+}
+
+// ── Component Management ───────────────────────────────────────
+
+export async function componentsList(): Promise<ComponentInfo[]> {
+  return getTransport().call("components_list")
+}
+
+export async function componentsSetEnabled(
+  id: string,
+  enabled: boolean
+): Promise<void> {
+  return getTransport().call("components_set_enabled", { id, enabled })
+}
+
+export async function componentsSetEnv(
+  id: string,
+  env: Record<string, string>
+): Promise<void> {
+  return getTransport().call("components_set_env", { id, env })
+}
+
+/**
+ * Install or upgrade one component. The backend streams the same
+ * `app://agent-install` progress events the agent-binary download emits, keyed
+ * by `taskId`; this panel only needs the completion signal, so callers pass a
+ * fresh id and re-read the list afterwards.
+ */
+export async function componentsUpdate(
+  id: string,
+  taskId: string
+): Promise<void> {
+  return getTransport().call("components_update", { id, taskId })
 }
