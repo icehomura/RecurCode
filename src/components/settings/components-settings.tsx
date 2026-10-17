@@ -57,36 +57,55 @@ import {
   SettingNote,
   SettingRow,
 } from "@/components/shared/setting-card"
+import { RcMcpPanel } from "@/components/layout/status-bar-mcp"
 import { cn, randomUUID } from "@/lib/utils"
 import { toErrorMessage } from "@/lib/app-error"
 import {
+  componentsApply,
   componentsList,
-  componentsSetEnabled,
   componentsSetEnv,
   componentsUpdate,
+  getSystemToolsSettings,
+  setSystemToolsSettings,
   raProfileCreate,
   raProfileDelete,
   raProfileList,
   raProfileSetActive,
 } from "@/lib/api"
-import type { ComponentInfo, RaProfileDetail } from "@/lib/types"
+import type {
+  ComponentInfo,
+  ComponentsAction,
+  MulticallTool,
+  RcMcpComponentState,
+  RaProfileDetail,
+  SkillState,
+  SystemToolsSettings,
+} from "@/lib/types"
 
 const LEFT_MIN_WIDTH = 280
 const RIGHT_MIN_WIDTH = 420
 
-type ComponentCategory = ComponentInfo["category"]
+/** The four sub-tabs. `multicall` is a UI-only flavor of `binary` for the
+ *  picker — categories that mirror the registry fill the rest. The profile
+ *  manager is its own thing and never appears here. */
+type SettingsTab = "binary" | "multicall" | "mcp" | "skill" | "profiles"
 
-/** The four sub-tabs: the three component categories plus the Ra profiles
- *  manager, which is not a component category and is handled separately. */
-type SettingsTab = ComponentCategory | "profiles"
+const TAB_ORDER: SettingsTab[] = [
+  "binary",
+  "multicall",
+  "mcp",
+  "skill",
+  "profiles",
+]
 
 /** Sentinel for the profile-create "clone from" select: Radix forbids the
  *  empty string as an item value, so "current config" needs a real value. */
 const PROFILE_CLONE_CURRENT = "__current__"
 
 function normalizeTab(raw: string | null): SettingsTab {
-  return raw === "mcp" || raw === "skill" || raw === "profiles"
-    ? raw
+  if (!raw) return "binary"
+  return (TAB_ORDER as string[]).includes(raw)
+    ? (raw as SettingsTab)
     : "binary"
 }
 
@@ -134,6 +153,52 @@ function rowsEqual(a: EnvRow[], b: EnvRow[]): boolean {
   )
 }
 
+/** Flat view of the binary/multicall inputs the detail pane shows: every
+ *  binary detail surfaces `tool` + version facts, and multicall extends with
+ *  per-applet rows. Mapping a single-purpose binary onto the same shape
+ *  means the JSX never branches on `state.kind` to read a version. */
+interface BinaryLike {
+  kind: "binary" | "multicall"
+  tool: string
+  installedVersion: string | null
+  availableVersion: string | null
+  updateAvailable: boolean
+  /** Present only on multicall. */
+  appletTools?: readonly MulticallTool[]
+}
+
+function asBinaryLike(component: ComponentInfo): BinaryLike | null {
+  const state = component.state
+  if (state.kind === "binary") {
+    return {
+      kind: "binary",
+      tool: state.tool,
+      installedVersion: state.installedVersion,
+      availableVersion: state.availableVersion,
+      updateAvailable: state.updateAvailable,
+    }
+  }
+  if (state.kind === "multicall") {
+    return {
+      kind: "multicall",
+      tool: state.binary.tool,
+      installedVersion: state.binary.installedVersion,
+      availableVersion: state.binary.availableVersion,
+      updateAvailable: state.binary.updateAvailable,
+      appletTools: state.tools,
+    }
+  }
+  return null
+}
+
+function asMcpStatus(component: ComponentInfo): RcMcpComponentState | null {
+  return component.state.kind === "mcp" ? component.state : null
+}
+
+function asSkill(component: ComponentInfo): SkillState | null {
+  return component.state.kind === "skill" ? component.state : null
+}
+
 export function ComponentsSettings() {
   const t = useTranslations("ComponentsSettings")
   const router = useRouter()
@@ -153,9 +218,21 @@ export function ComponentsSettings() {
   const [busy, setBusy] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [envRows, setEnvRows] = useState<EnvRow[]>([])
-  const [savingEnv, setSavingEnv] = useState(false)
 
-  // Ra profiles (the fourth sub-tab). Loaded independently of the component
+  // Per-request state only: keeps mcp/skill switches and the multicall
+  // applets from snapping back to stale state during the round trip.
+  const [pendingMcpGroups, setPendingMcpGroups] = useState<
+    Record<string, boolean>
+  >({})
+  const [mcpStarting, setMcpStarting] = useState(false)
+  const [mcpActionError, setMcpActionError] = useState<string | null>(null)
+
+  // The bundled-tools toggle lives on the RecurBusyBox detail panel.
+  const [toolsSettings, setToolsSettings] =
+    useState<SystemToolsSettings | null>(null)
+  const [savingToolsSettings, setSavingToolsSettings] = useState(false)
+
+  // Ra profiles (the fifth sub-tab). Loaded independently of the component
   // list so a profile backend failure can't blank the whole panel.
   const [profiles, setProfiles] = useState<RaProfileDetail[]>([])
   const [profilesError, setProfilesError] = useState<string | null>(null)
@@ -182,6 +259,27 @@ export function ComponentsSettings() {
     observer.observe(element)
     return () => observer.disconnect()
   }, [])
+
+  // Apply an action and replace the entire local list with the backend's
+  // freshly built one. Every typed action lands here so the UI is always in
+  // sync with the mechanism without the read-after-write race of
+  // `apply(); list();`.
+  const dispatchAction = useCallback(
+    async (action: ComponentsAction): Promise<ComponentInfo[] | null> => {
+      try {
+        const result = await componentsApply(action)
+        setComponents(result.components)
+        setLoadError(null)
+        return result.components
+      } catch (err) {
+        toast.error(t("toasts.actionFailed"), {
+          description: toErrorMessage(err),
+        })
+        return null
+      }
+    },
+    [t]
+  )
 
   const refresh = useCallback(async () => {
     try {
@@ -219,6 +317,8 @@ export function ComponentsSettings() {
         if (cancelled) return
         setComponents(list)
         setLoadError(null)
+        const toolsSettingsValue = await getSystemToolsSettings()
+        if (!cancelled) setToolsSettings(toolsSettingsValue)
       } catch (err) {
         if (cancelled) return
         setLoadError(toErrorMessage(err))
@@ -298,34 +398,85 @@ export function ComponentsSettings() {
     [router, pathname, searchParams]
   )
 
-  const handleToggleEnabled = useCallback(
+  const handleBinaryToggle = useCallback(
     async (component: ComponentInfo, enabled: boolean) => {
       if (component.required) return
       setBusy(true)
-      // Optimistic: the switch must not lag behind the finger.
-      setComponents((prev) =>
-        prev.map((item) =>
-          item.id === component.id ? { ...item, enabled } : item
-        )
-      )
-      try {
-        await componentsSetEnabled(component.id, enabled)
-        await refresh()
-        toast.success(
-          enabled
-            ? t("toasts.enabledOn", { name: component.name })
-            : t("toasts.enabledOff", { name: component.name })
-        )
-      } catch (err) {
-        toast.error(t("toasts.saveFailed"), {
-          description: toErrorMessage(err),
-        })
-        await refresh()
-      } finally {
-        setBusy(false)
-      }
+      await dispatchAction({
+        kind: "binary_enabled",
+        id: component.id,
+        enabled,
+      })
+      setBusy(false)
     },
-    [refresh, t]
+    [dispatchAction]
+  )
+
+  const handleAppletToggle = useCallback(
+    async (_component: ComponentInfo, tool: MulticallTool, enabled: boolean) => {
+      setBusy(true)
+      await dispatchAction({
+        kind: "tool_enabled",
+        id: tool.id,
+        tool: tool.name,
+        enabled,
+      })
+      setBusy(false)
+    },
+    [dispatchAction]
+  )
+
+  const handleMcpToggleGroup = useCallback(
+    async (key: string, enabled: boolean) => {
+      setPendingMcpGroups((prev) => ({ ...prev, [key]: enabled }))
+      setMcpActionError(null)
+      const next = await dispatchAction({
+        kind: "mcp_tool_group",
+        group: key,
+        enabled,
+      })
+      setPendingMcpGroups((prev) => {
+        const copy = { ...prev }
+        delete copy[key]
+        return copy
+      })
+      void next
+    },
+    [dispatchAction]
+  )
+
+  const handleMcpStartService = useCallback(async () => {
+    setMcpStarting(true)
+    setMcpActionError(null)
+    await dispatchAction({ kind: "mcp_start_service" })
+    setMcpStarting(false)
+  }, [dispatchAction])
+
+  const handleSkillLinkToggle = useCallback(
+    async (_component: ComponentInfo, agent: string, linked: boolean) => {
+      setBusy(true)
+      await dispatchAction({
+        kind: "skill_link",
+        agent,
+        linked,
+      })
+      setBusy(false)
+    },
+    [dispatchAction]
+  )
+
+  const handleSkillRefresh = useCallback(
+    async (component: ComponentInfo) => {
+      setBusy(true)
+      const next = await dispatchAction({
+        kind: "refresh",
+        id: component.id,
+        taskId: null,
+      })
+      setBusy(false)
+      if (next) toast.success(t("toasts.skillRefreshed"))
+    },
+    [dispatchAction, t]
   )
 
   const handleUpdate = useCallback(
@@ -357,7 +508,7 @@ export function ComponentsSettings() {
 
   const handleSaveEnv = useCallback(async () => {
     if (!selected) return
-    setSavingEnv(true)
+    setBusy(true)
     try {
       await componentsSetEnv(selected.id, rowsToEnv(envRows))
       await refresh()
@@ -367,9 +518,41 @@ export function ComponentsSettings() {
         description: toErrorMessage(err),
       })
     } finally {
-      setSavingEnv(false)
+      setBusy(false)
     }
   }, [selected, envRows, refresh, t])
+
+  const handleToolsSettingToggle = useCallback(
+    async (next: boolean) => {
+      // Optimistic: the toggle must not lag behind the finger.
+      setToolsSettings((prev) =>
+        prev
+          ? { ...prev, preferBundledTools: next }
+          : { preferBundledTools: next }
+      )
+      setSavingToolsSettings(true)
+      try {
+        const saved = await setSystemToolsSettings({
+          preferBundledTools: next,
+        })
+        setToolsSettings(saved)
+      } catch (err) {
+        // Roll the optimistic value back to whatever the backend holds now.
+        try {
+          const fresh = await getSystemToolsSettings()
+          setToolsSettings(fresh)
+        } catch {
+          /* leave the optimistic value; the toast is the more useful signal */
+        }
+        toast.error(t("toasts.saveFailed"), {
+          description: toErrorMessage(err),
+        })
+      } finally {
+        setSavingToolsSettings(false)
+      }
+    },
+    [t]
+  )
 
   const handleSetActiveProfile = useCallback(
     async (profile: RaProfileDetail) => {
@@ -443,6 +626,432 @@ export function ComponentsSettings() {
   )
   const leftMaxSize = Math.max(leftMinSize, 100 - rightMinSize)
 
+  const renderMcpDetail = (component: ComponentInfo) => {
+    const status = asMcpStatus(component)
+    return (
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">{component.name}</h3>
+          {component.description && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {component.description}
+            </p>
+          )}
+        </div>
+        <SettingCard>
+          <RcMcpPanel
+            status={status}
+            loadError={null}
+            onRefresh={() => {
+              // The settings list is rebuilt by every `componentsApply`, so
+              // an explicit refresh is the same as re-reading the list.
+              void refresh()
+            }}
+            onToggleGroup={(key, value) =>
+              void handleMcpToggleGroup(key, value)
+            }
+            pendingGroups={pendingMcpGroups}
+            onStart={() => void handleMcpStartService()}
+            starting={mcpStarting}
+            actionError={mcpActionError}
+          />
+        </SettingCard>
+      </div>
+    )
+  }
+
+  const renderSkillDetail = (component: ComponentInfo) => {
+    const skill = asSkill(component)
+    if (!skill) return null
+    const centralLabel =
+      skill.central === "present"
+        ? t("skillCentralPresent")
+        : skill.central === "conflict"
+          ? t("skillCentralConflict")
+          : t("skillCentralMissing")
+    const isConflict = skill.central === "conflict"
+    const updateLabel = skill.updateAvailable
+      ? t("skillUpdateAvailable")
+      : t("skillUpToDate")
+    // The link matrix uses a fixed agent set driven from the linked list:
+    // any agent already linked is shown checked; everything else unchecked.
+    // A conflict means we cannot install, but linking the existing user
+    // copy is still possible and is what the matrix shows.
+    const linkedSet = new Set(skill.linkedAgents)
+    return (
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">{component.name}</h3>
+          {component.description && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {component.description}
+            </p>
+          )}
+        </div>
+
+        <SettingCard>
+          <SettingRow
+            title={t("skillCentral")}
+            control={
+              <Badge variant={isConflict ? "destructive" : "outline"}>
+                {centralLabel}
+              </Badge>
+            }
+          />
+          {skill.centralHash && (
+            <SettingRow
+              title={t("skillCentralHash")}
+              control={
+                <code className="rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                  {skill.centralHash}
+                </code>
+              }
+            />
+          )}
+          {skill.bundledHash && (
+            <SettingRow
+              title={t("skillBundledHash")}
+              control={
+                <code className="rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                  {skill.bundledHash}
+                </code>
+              }
+            />
+          )}
+          <SettingRow
+            title={t("skillStatus")}
+            control={
+              <span className="text-xs text-muted-foreground">{updateLabel}</span>
+            }
+          >
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busy || isConflict}
+              onClick={() => {
+                handleSkillRefresh(component).catch((err) => {
+                  console.error("[ComponentsSettings] skill refresh failed:", err)
+                })
+              }}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              {t("skillRefresh")}
+            </Button>
+          </SettingRow>
+        </SettingCard>
+
+        {isConflict && (
+          <SettingNote icon={Info}>
+            {t("skillConflictCallout")}
+          </SettingNote>
+        )}
+
+        <SettingCard>
+          <SettingRow
+            title={t("skillAgentsTitle")}
+            description={t("skillAgentsDescription")}
+          />
+          <div className="mt-2 space-y-2">
+            {KNOWN_AGENTS.map((agent) => {
+              const checked = linkedSet.has(agent.id)
+              return (
+                <label
+                  key={agent.id}
+                  className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5"
+                >
+                  <div>
+                    <div className="text-xs font-medium">{agent.name}</div>
+                    <div className="text-2xs text-muted-foreground">
+                      {agent.id}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={checked}
+                    disabled={busy}
+                    onCheckedChange={(next) => {
+                      handleSkillLinkToggle(component, agent.id, next).catch(
+                        (err) => {
+                          console.error(
+                            "[ComponentsSettings] skill link failed:",
+                            err
+                          )
+                        }
+                      )
+                    }}
+                    aria-label={agent.name}
+                  />
+                </label>
+              )
+            })}
+          </div>
+        </SettingCard>
+      </div>
+    )
+  }
+
+  const renderBinaryDetail = (component: ComponentInfo) => {
+    const state = asBinaryLike(component)
+    if (!state) return null
+    const appletTools = state.appletTools ?? []
+    return (
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold">{component.name}</h3>
+          {component.description && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {component.description}
+            </p>
+          )}
+        </div>
+        <SettingCard>
+          <SettingRow
+            title={t("enabled")}
+            control={
+              <Switch
+                checked={component.required}
+                disabled={component.required || busy}
+                onCheckedChange={(checked) => {
+                  handleBinaryToggle(component, checked).catch((err) => {
+                    console.error(
+                      "[ComponentsSettings] binary toggle failed:",
+                      err
+                    )
+                  })
+                }}
+                aria-label={t("enabled")}
+              />
+            }
+          />
+          <SettingRow
+            icon={Info}
+            title={t("componentId")}
+            control={
+              <code className="rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+                {component.id}
+              </code>
+            }
+          />
+          <SettingRow
+            icon={Terminal}
+            title={t("versionInstalled")}
+            control={
+              <span className="text-xs text-muted-foreground">
+                {state.installedVersion ?? t("notInstalled")}
+              </span>
+            }
+          />
+          <SettingRow
+            icon={Terminal}
+            title={t("versionAvailable")}
+            control={
+              <span className="text-xs text-muted-foreground">
+                {state.availableVersion ?? "—"}
+              </span>
+            }
+          >
+            {(state.kind === "binary" ||
+              (state.kind === "multicall" &&
+                component.id === "@recurbusybox")) && (
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  disabled={updating}
+                  onClick={() => {
+                    handleUpdate(component).catch((err) => {
+                      console.error(
+                        "[ComponentsSettings] update failed:",
+                        err
+                      )
+                    })
+                  }}
+                >
+                  {updating ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ArrowDownToLine className="h-3.5 w-3.5" />
+                  )}
+                  {updating
+                    ? t("updating")
+                    : state.installedVersion
+                      ? t("update")
+                      : t("install")}
+                </Button>
+              </div>
+            )}
+          </SettingRow>
+        </SettingCard>
+
+        {appletTools.length > 0 && (
+          <SettingCard>
+            <SettingRow
+              title={t("appletsTitle")}
+              description={t("appletsDescription")}
+            />
+            <div className="mt-2 space-y-1">
+              {appletTools.map((tool) => (
+                <label
+                  key={tool.id}
+                  className={cn(
+                    "flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5",
+                    !tool.installed && "opacity-60"
+                  )}
+                >
+                  <div>
+                    <div className="font-mono text-xs">{tool.name}</div>
+                    <div className="text-2xs text-muted-foreground">
+                      {tool.id}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={tool.enabled}
+                    disabled={busy || !tool.installed}
+                    onCheckedChange={(next) => {
+                      handleAppletToggle(component, tool, next).catch((err) => {
+                        console.error(
+                          "[ComponentsSettings] applet toggle failed:",
+                          err
+                        )
+                      })
+                    }}
+                    aria-label={tool.name}
+                  />
+                </label>
+              ))}
+            </div>
+          </SettingCard>
+        )}
+
+        {state.kind === "multicall" && component.id === "@recurbusybox" && (
+          <SettingCard>
+            <SettingRow
+              title={t("toolsPreferBundledLabel")}
+              description={t("toolsPreferBundledDescription")}
+              control={
+                <Switch
+                  checked={toolsSettings?.preferBundledTools ?? true}
+                  disabled={savingToolsSettings}
+                  onCheckedChange={(next) => {
+                    handleToolsSettingToggle(next).catch((err) => {
+                      console.error(
+                        "[ComponentsSettings] tools preference failed:",
+                        err
+                      )
+                    })
+                  }}
+                  aria-label={t("toolsPreferBundledLabel")}
+                />
+              }
+            />
+          </SettingCard>
+        )}
+
+        {component.required && (
+          <SettingNote icon={Lock}>
+            {t("requiredNote")}
+          </SettingNote>
+        )}
+
+        <SettingCard>
+          <SettingRow
+            title={t("envTitle")}
+            description={t("envDescription")}
+            control={
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setEnvRows((prev) => [...prev, { key: "", value: "" }])
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {t("envAdd")}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={!envDirty || savingToolsSettings}
+                  onClick={() => {
+                    handleSaveEnv().catch((err) => {
+                      console.error(
+                        "[ComponentsSettings] env save failed:",
+                        err
+                      )
+                    })
+                  }}
+                >
+                  {t("envSave")}
+                </Button>
+              </div>
+            }
+          >
+            <div className="space-y-2">
+              {envRows.length === 0 ? (
+                <p className="text-xs text-muted-foreground">{t("envHint")}</p>
+              ) : (
+                envRows.map((row, index) => (
+                  <div
+                    // Rows are positional and may be empty, so the
+                    // index is the only stable identity here.
+                    key={index}
+                    className="flex items-center gap-2"
+                  >
+                    <Input
+                      value={row.key}
+                      placeholder={t("envKey")}
+                      aria-label={t("envKey")}
+                      className="h-8 flex-1 font-mono text-xs"
+                      onChange={(event) => {
+                        const next = event.target.value
+                        setEnvRows((prev) =>
+                          prev.map((item, i) =>
+                            i === index ? { ...item, key: next } : item
+                          )
+                        )
+                      }}
+                    />
+                    <Input
+                      value={row.value}
+                      placeholder={t("envValue")}
+                      aria-label={t("envValue")}
+                      className="h-8 flex-[2] font-mono text-xs"
+                      onChange={(event) => {
+                        const next = event.target.value
+                        setEnvRows((prev) =>
+                          prev.map((item, i) =>
+                            i === index ? { ...item, value: next } : item
+                          )
+                        )
+                      }}
+                    />
+                    <Button
+                      size="icon-sm"
+                      variant="ghost"
+                      aria-label={t("envRemove")}
+                      onClick={() =>
+                        setEnvRows((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        )
+                      }
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </SettingRow>
+        </SettingCard>
+      </div>
+    )
+  }
+
+  const renderDetail = (component: ComponentInfo) => {
+    const kind = component.state.kind
+    if (kind === "mcp") return renderMcpDetail(component)
+    if (kind === "skill") return renderSkillDetail(component)
+    return renderBinaryDetail(component)
+  }
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
@@ -486,6 +1095,9 @@ export function ComponentsSettings() {
         <TabsList className="w-fit shrink-0">
           <TabsTrigger value="binary" className={TRIGGER_ACTIVE}>
             {t("tabs.binary")}
+          </TabsTrigger>
+          <TabsTrigger value="multicall" className={TRIGGER_ACTIVE}>
+            {t("tabs.multicall")}
           </TabsTrigger>
           <TabsTrigger value="mcp" className={TRIGGER_ACTIVE}>
             {t("tabs.mcp")}
@@ -595,40 +1207,46 @@ export function ComponentsSettings() {
                 ) : (
                   <ScrollArea className="flex-1 min-h-0">
                     <div className="space-y-1 p-2">
-                    {inCategory.map((component) => (
-                      <button
-                        key={component.id}
-                        type="button"
-                        onClick={() => setSelectedId(component.id)}
-                        className={cn(
-                          "w-full rounded-md border px-2.5 py-2 text-left transition-colors",
-                          selectedId === component.id
-                            ? "border-primary/40 bg-primary/5"
-                            : "border-transparent hover:bg-muted/60"
-                        )}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium">
-                            {component.name}
-                          </span>
-                          {component.updateAvailable && (
-                            <Badge variant="secondary">
-                              {t("updateAvailable")}
-                            </Badge>
+                    {inCategory.map((component) => {
+                      const version = asBinaryLike(component)?.installedVersion ?? null
+                      return (
+                        <button
+                          key={component.id}
+                          type="button"
+                          onClick={() => setSelectedId(component.id)}
+                          className={cn(
+                            "w-full rounded-md border px-2.5 py-2 text-left transition-colors",
+                            selectedId === component.id
+                              ? "border-primary/40 bg-primary/5"
+                              : "border-transparent hover:bg-muted/60"
                           )}
-                        </div>
-                        {component.description && (
-                          <div className="mt-0.5 truncate text-2xs text-muted-foreground">
-                            {component.description}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-sm font-medium">
+                              {component.name}
+                            </span>
+                            {component.state.kind !== "mcp" &&
+                              component.state.kind !== "skill" &&
+                              "updateAvailable" in component.state &&
+                              component.state.updateAvailable && (
+                                <Badge variant="secondary">
+                                  {t("updateAvailable")}
+                                </Badge>
+                              )}
                           </div>
-                        )}
-                        <div className="mt-1 flex items-center gap-1.5">
-                          <Badge variant="outline">
-                            {component.installedVersion ?? t("notInstalled")}
-                          </Badge>
-                        </div>
-                      </button>
-                    ))}
+                          {component.description && (
+                            <div className="mt-0.5 truncate text-2xs text-muted-foreground">
+                              {component.description}
+                            </div>
+                          )}
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <Badge variant="outline">
+                              {version ?? t("notInstalled")}
+                            </Badge>
+                          </div>
+                        </button>
+                      )
+                    })}
                     </div>
                   </ScrollArea>
                 )}
@@ -724,230 +1342,7 @@ export function ComponentsSettings() {
                 ) : selected ? (
                   <div className="h-full flex flex-col">
                     <ScrollArea className="flex-1 min-h-0">
-                    <div className="p-4 space-y-4">
-                      <div>
-                        <h3 className="text-sm font-semibold">
-                          {selected.name}
-                        </h3>
-                        {selected.description && (
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {selected.description}
-                          </p>
-                        )}
-                      </div>
-
-                      <SettingCard>
-                        <SettingRow
-                          title={t("enabled")}
-                          control={
-                            <Switch
-                              checked={selected.required || selected.enabled}
-                              disabled={selected.required || busy}
-                              onCheckedChange={(checked) => {
-                                handleToggleEnabled(selected, checked).catch(
-                                  (err) => {
-                                    console.error(
-                                      "[ComponentsSettings] toggle failed:",
-                                      err
-                                    )
-                                  }
-                                )
-                              }}
-                              aria-label={t("enabled")}
-                            />
-                          }
-                        />
-                        <SettingRow
-                          icon={Info}
-                          title={t("componentId")}
-                          control={
-                            <code className="rounded bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
-                              {selected.id}
-                            </code>
-                          }
-                        />
-                        <SettingRow
-                          icon={Terminal}
-                          title={t("versionInstalled")}
-                          control={
-                            <span className="text-xs text-muted-foreground">
-                              {selected.installedVersion ?? t("notInstalled")}
-                            </span>
-                          }
-                        />
-                        <SettingRow
-                          icon={Terminal}
-                          title={t("versionAvailable")}
-                          control={
-                            <span className="text-xs text-muted-foreground">
-                              {selected.availableVersion ?? "—"}
-                            </span>
-                          }
-                        >
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              disabled={updating}
-                              onClick={() => {
-                                handleUpdate(selected).catch((err) => {
-                                  console.error(
-                                    "[ComponentsSettings] update failed:",
-                                    err
-                                  )
-                                })
-                              }}
-                            >
-                              {updating ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <ArrowDownToLine className="h-3.5 w-3.5" />
-                              )}
-                              {updating
-                                ? t("updating")
-                                : selected.installedVersion
-                                  ? t("update")
-                                  : t("install")}
-                            </Button>
-                          </div>
-                        </SettingRow>
-                      </SettingCard>
-
-                      {/* A multi-call binary's applets are listed for
-                          information only — the binary's switch above enables
-                          or disables them all. `?? []` because a backend built
-                          before this field omits it. */}
-                      {(selected.tools ?? []).length > 0 && (
-                        <SettingCard>
-                          <SettingRow
-                            title={t("toolsTitle")}
-                            description={t("toolsDescription")}
-                          />
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {(selected.tools ?? []).map((tool) => (
-                              <Badge
-                                key={tool.name}
-                                variant="outline"
-                                className={cn(
-                                  "font-mono text-2xs",
-                                  !selected.enabled && "opacity-50"
-                                )}
-                              >
-                                {tool.name}
-                              </Badge>
-                            ))}
-                          </div>
-                        </SettingCard>
-                      )}
-
-                      {selected.required && (
-                        <SettingNote icon={Lock}>
-                          {t("requiredNote")}
-                        </SettingNote>
-                      )}
-
-                      <SettingCard>
-                        <SettingRow
-                          title={t("envTitle")}
-                          description={t("envDescription")}
-                          control={
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  setEnvRows((prev) => [
-                                    ...prev,
-                                    { key: "", value: "" },
-                                  ])
-                                }
-                              >
-                                <Plus className="h-3.5 w-3.5" />
-                                {t("envAdd")}
-                              </Button>
-                              <Button
-                                size="sm"
-                                disabled={!envDirty || savingEnv}
-                                onClick={() => {
-                                  handleSaveEnv().catch((err) => {
-                                    console.error(
-                                      "[ComponentsSettings] env save failed:",
-                                      err
-                                    )
-                                  })
-                                }}
-                              >
-                                {savingEnv ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                ) : null}
-                                {t("envSave")}
-                              </Button>
-                            </div>
-                          }
-                        >
-                          <div className="space-y-2">
-                            {envRows.length === 0 ? (
-                              <p className="text-xs text-muted-foreground">
-                                {t("envHint")}
-                              </p>
-                            ) : (
-                              envRows.map((row, index) => (
-                                <div
-                                  // Rows are positional and may be empty, so the
-                                  // index is the only stable identity here.
-                                  key={index}
-                                  className="flex items-center gap-2"
-                                >
-                                  <Input
-                                    value={row.key}
-                                    placeholder={t("envKey")}
-                                    aria-label={t("envKey")}
-                                    className="h-8 flex-1 font-mono text-xs"
-                                    onChange={(event) => {
-                                      const next = event.target.value
-                                      setEnvRows((prev) =>
-                                        prev.map((item, i) =>
-                                          i === index
-                                            ? { ...item, key: next }
-                                            : item
-                                        )
-                                      )
-                                    }}
-                                  />
-                                  <Input
-                                    value={row.value}
-                                    placeholder={t("envValue")}
-                                    aria-label={t("envValue")}
-                                    className="h-8 flex-[2] font-mono text-xs"
-                                    onChange={(event) => {
-                                      const next = event.target.value
-                                      setEnvRows((prev) =>
-                                        prev.map((item, i) =>
-                                          i === index
-                                            ? { ...item, value: next }
-                                            : item
-                                        )
-                                      )
-                                    }}
-                                  />
-                                  <Button
-                                    size="icon-sm"
-                                    variant="ghost"
-                                    aria-label={t("envRemove")}
-                                    onClick={() =>
-                                      setEnvRows((prev) =>
-                                        prev.filter((_, i) => i !== index)
-                                      )
-                                    }
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </SettingRow>
-                      </SettingCard>
-                    </div>
+                      <div className="p-4">{renderDetail(selected)}</div>
                     </ScrollArea>
                   </div>
                 ) : (
@@ -1066,3 +1461,18 @@ export function ComponentsSettings() {
     </div>
   )
 }
+
+// Skill agents the matrix can show. The backend only sends back the
+// currently-linked subset, but the UI needs a fixed column list so a user
+// can link to an agent they have not used before. The `id` is the wire slug
+// the backend parses via `AgentType::from_wire`, which is snake_case.
+const KNOWN_AGENTS: ReadonlyArray<{ id: string; name: string }> = [
+  { id: "claude_code", name: "Claude Code" },
+  { id: "codex", name: "Codex" },
+  { id: "open_code", name: "OpenCode" },
+  { id: "gemini", name: "Gemini CLI" },
+  { id: "cline", name: "Cline" },
+  { id: "open_claw", name: "OpenClaw" },
+  { id: "pi", name: "Pi" },
+  { id: "ra", name: "RecurAgent" },
+]
