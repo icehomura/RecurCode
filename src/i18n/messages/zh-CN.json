@@ -4662,7 +4662,8 @@
     "tabs": {
       "binary": "二进制",
       "mcp": "MCP",
-      "skill": "技能"
+      "skill": "技能",
+      "profiles": "配置档"
     },
     "notInstalled": "未安装",
     "installed": "已安装",
@@ -4695,9 +4696,31 @@
       "updated": "{name} 已更新",
       "updateFailed": "更新 {name} 失败",
       "enabledOn": "已启用 {name}",
-      "enabledOff": "已禁用 {name}"
+      "enabledOff": "已禁用 {name}",
+      "profileCreated": "配置档已创建",
+      "profileDeleted": "配置档已删除",
+      "profileActivated": "已切换当前配置档",
+      "profileActionFailed": "操作失败"
     },
-    "loadFailed": "加载组件失败"
+    "loadFailed": "加载组件失败",
+    "profilesTitle": "配置档",
+    "profilesDescription": "管理 RecurAgent 的配置档：每个配置档都有独立的模型、数据目录与配置文件。",
+    "profilesEmpty": "暂无配置档。",
+    "profilesActive": "当前",
+    "profilesSetActive": "设为当前",
+    "profilesDelete": "删除",
+    "profilesDeleteConfirmTitle": "删除配置档",
+    "profilesDeleteConfirmBody": "确定要删除配置档「{name}」吗？此操作无法撤销。",
+    "profilesCreate": "新建",
+    "profilesCreateTitle": "新建配置档",
+    "profilesName": "名称",
+    "profilesNamePlaceholder": "输入配置档名称",
+    "profilesCloneFrom": "克隆自",
+    "profilesCloneFromCurrent": "当前配置",
+    "profilesMainHidden": "RecurAgent 内置的 `_main` 已隐藏",
+    "profilesPath": "配置文件路径",
+    "profilesDataDir": "数据目录",
+    "profilesCancel": "取消"
   },
   "GenerativeUiSettings": {
     "loading": "加载中…",

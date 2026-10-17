@@ -4641,7 +4641,8 @@
     "tabs": {
       "binary": "二進位",
       "mcp": "MCP",
-      "skill": "技能"
+      "skill": "技能",
+      "profiles": "設定檔"
     },
     "notInstalled": "未安裝",
     "installed": "已安裝",
@@ -4674,9 +4675,31 @@
       "updated": "{name} 已更新",
       "updateFailed": "更新 {name} 失敗",
       "enabledOn": "已啟用 {name}",
-      "enabledOff": "已停用 {name}"
+      "enabledOff": "已停用 {name}",
+      "profileCreated": "設定檔已建立",
+      "profileDeleted": "設定檔已刪除",
+      "profileActivated": "已切換目前設定檔",
+      "profileActionFailed": "操作失敗"
     },
-    "loadFailed": "載入組件失敗"
+    "loadFailed": "載入組件失敗",
+    "profilesTitle": "設定檔",
+    "profilesDescription": "管理 RecurAgent 的設定檔：每個設定檔都有獨立的模型、資料目錄與設定檔。",
+    "profilesEmpty": "尚無設定檔。",
+    "profilesActive": "目前",
+    "profilesSetActive": "設為目前",
+    "profilesDelete": "刪除",
+    "profilesDeleteConfirmTitle": "刪除設定檔",
+    "profilesDeleteConfirmBody": "確定要刪除設定檔「{name}」嗎？此操作無法復原。",
+    "profilesCreate": "新建",
+    "profilesCreateTitle": "新建設定檔",
+    "profilesName": "名稱",
+    "profilesNamePlaceholder": "輸入設定檔名稱",
+    "profilesCloneFrom": "複製自",
+    "profilesCloneFromCurrent": "目前設定",
+    "profilesMainHidden": "RecurAgent 內建的 `_main` 已隱藏",
+    "profilesPath": "設定檔路徑",
+    "profilesDataDir": "資料目錄",
+    "profilesCancel": "取消"
   },
   "GenerativeUiSettings": {
     "loading": "載入中…",

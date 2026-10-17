@@ -4641,7 +4641,8 @@
     "tabs": {
       "binary": "바이너리",
       "mcp": "MCP",
-      "skill": "스킬"
+      "skill": "스킬",
+      "profiles": "프로필"
     },
     "notInstalled": "설치되지 않음",
     "installed": "설치됨",
@@ -4674,9 +4675,31 @@
       "updated": "{name}을(를) 업데이트했습니다",
       "updateFailed": "{name} 업데이트에 실패했습니다",
       "enabledOn": "{name}을(를) 사용하도록 설정했습니다",
-      "enabledOff": "{name}을(를) 사용하지 않도록 설정했습니다"
+      "enabledOff": "{name}을(를) 사용하지 않도록 설정했습니다",
+      "profileCreated": "프로필을 만들었습니다",
+      "profileDeleted": "프로필을 삭제했습니다",
+      "profileActivated": "현재 프로필을 변경했습니다",
+      "profileActionFailed": "프로필 작업에 실패했습니다"
     },
-    "loadFailed": "컴포넌트를 불러오지 못했습니다"
+    "loadFailed": "컴포넌트를 불러오지 못했습니다",
+    "profilesTitle": "프로필",
+    "profilesDescription": "RecurAgent 프로필을 관리합니다. 각 프로필은 자체 모델, 데이터 디렉터리, 설정 파일을 가집니다.",
+    "profilesEmpty": "프로필이 없습니다.",
+    "profilesActive": "현재",
+    "profilesSetActive": "현재로 설정",
+    "profilesDelete": "삭제",
+    "profilesDeleteConfirmTitle": "프로필 삭제",
+    "profilesDeleteConfirmBody": "프로필 \"{name}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "profilesCreate": "새로 만들기",
+    "profilesCreateTitle": "새 프로필",
+    "profilesName": "이름",
+    "profilesNamePlaceholder": "프로필 이름",
+    "profilesCloneFrom": "복제 원본",
+    "profilesCloneFromCurrent": "현재 설정",
+    "profilesMainHidden": "RecurAgent 내장 `_main`은(는) 숨겨져 있습니다",
+    "profilesPath": "설정 파일 경로",
+    "profilesDataDir": "데이터 디렉터리",
+    "profilesCancel": "취소"
   },
   "GenerativeUiSettings": {
     "loading": "불러오는 중…",

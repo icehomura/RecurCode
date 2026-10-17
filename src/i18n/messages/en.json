@@ -4662,7 +4662,8 @@
     "tabs": {
       "binary": "Binaries",
       "mcp": "MCP",
-      "skill": "Skills"
+      "skill": "Skills",
+      "profiles": "Profiles"
     },
     "notInstalled": "Not installed",
     "installed": "Installed",
@@ -4695,9 +4696,31 @@
       "updated": "{name} updated",
       "updateFailed": "Failed to update {name}",
       "enabledOn": "{name} enabled",
-      "enabledOff": "{name} disabled"
+      "enabledOff": "{name} disabled",
+      "profileCreated": "Profile created",
+      "profileDeleted": "Profile deleted",
+      "profileActivated": "Active profile changed",
+      "profileActionFailed": "Profile action failed"
     },
-    "loadFailed": "Failed to load components"
+    "loadFailed": "Failed to load components",
+    "profilesTitle": "Profiles",
+    "profilesDescription": "Manage RecurAgent profiles — each keeps its own model, data directory and config file.",
+    "profilesEmpty": "No profiles yet.",
+    "profilesActive": "Current",
+    "profilesSetActive": "Set as current",
+    "profilesDelete": "Delete",
+    "profilesDeleteConfirmTitle": "Delete profile",
+    "profilesDeleteConfirmBody": "Delete the profile \"{name}\"? This cannot be undone.",
+    "profilesCreate": "New",
+    "profilesCreateTitle": "New profile",
+    "profilesName": "Name",
+    "profilesNamePlaceholder": "Profile name",
+    "profilesCloneFrom": "Clone from",
+    "profilesCloneFromCurrent": "Current config",
+    "profilesMainHidden": "RecurAgent's built-in `_main` is hidden",
+    "profilesPath": "Config file path",
+    "profilesDataDir": "Data directory",
+    "profilesCancel": "Cancel"
   },
   "GenerativeUiSettings": {
     "loading": "Loading…",

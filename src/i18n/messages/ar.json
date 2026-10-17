@@ -4641,7 +4641,8 @@
     "tabs": {
       "binary": "الملفات التنفيذية",
       "mcp": "MCP",
-      "skill": "المهارات"
+      "skill": "المهارات",
+      "profiles": "الملفات الشخصية"
     },
     "notInstalled": "غير مثبّت",
     "installed": "مثبّت",
@@ -4674,9 +4675,31 @@
       "updated": "تم تحديث {name}",
       "updateFailed": "تعذّر تحديث {name}",
       "enabledOn": "تم تمكين {name}",
-      "enabledOff": "تم تعطيل {name}"
+      "enabledOff": "تم تعطيل {name}",
+      "profileCreated": "تم إنشاء الملف الشخصي",
+      "profileDeleted": "تم حذف الملف الشخصي",
+      "profileActivated": "تم تغيير الملف الشخصي النشط",
+      "profileActionFailed": "فشلت عملية الملف الشخصي"
     },
-    "loadFailed": "تعذّر تحميل المكوّنات"
+    "loadFailed": "تعذّر تحميل المكوّنات",
+    "profilesTitle": "الملفات الشخصية",
+    "profilesDescription": "إدارة ملفات RecurAgent الشخصية — لكل ملف نموذجه ودليل بياناته وملف إعداده الخاص.",
+    "profilesEmpty": "لا توجد ملفات شخصية بعد.",
+    "profilesActive": "الحالي",
+    "profilesSetActive": "تعيين كحالي",
+    "profilesDelete": "حذف",
+    "profilesDeleteConfirmTitle": "حذف الملف الشخصي",
+    "profilesDeleteConfirmBody": "هل تريد حذف الملف الشخصي \"{name}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+    "profilesCreate": "جديد",
+    "profilesCreateTitle": "ملف شخصي جديد",
+    "profilesName": "الاسم",
+    "profilesNamePlaceholder": "اسم الملف الشخصي",
+    "profilesCloneFrom": "استنساخ من",
+    "profilesCloneFromCurrent": "الإعداد الحالي",
+    "profilesMainHidden": "تم إخفاء `_main` المدمج في RecurAgent",
+    "profilesPath": "مسار ملف الإعداد",
+    "profilesDataDir": "دليل البيانات",
+    "profilesCancel": "إلغاء"
   },
   "GenerativeUiSettings": {
     "loading": "جارٍ التحميل…",

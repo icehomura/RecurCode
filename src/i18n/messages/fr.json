@@ -4641,7 +4641,8 @@
     "tabs": {
       "binary": "Binaires",
       "mcp": "MCP",
-      "skill": "Compétences"
+      "skill": "Compétences",
+      "profiles": "Profils"
     },
     "notInstalled": "Non installé",
     "installed": "Installé",
@@ -4674,9 +4675,31 @@
       "updated": "{name} mis à jour",
       "updateFailed": "Échec de la mise à jour de {name}",
       "enabledOn": "{name} activé",
-      "enabledOff": "{name} désactivé"
+      "enabledOff": "{name} désactivé",
+      "profileCreated": "Profil créé",
+      "profileDeleted": "Profil supprimé",
+      "profileActivated": "Profil actif modifié",
+      "profileActionFailed": "Échec de l'action sur le profil"
     },
-    "loadFailed": "Échec du chargement des composants"
+    "loadFailed": "Échec du chargement des composants",
+    "profilesTitle": "Profils",
+    "profilesDescription": "Gérez les profils RecurAgent — chacun a son propre modèle, répertoire de données et fichier de configuration.",
+    "profilesEmpty": "Aucun profil pour l'instant.",
+    "profilesActive": "Actuel",
+    "profilesSetActive": "Définir comme actuel",
+    "profilesDelete": "Supprimer",
+    "profilesDeleteConfirmTitle": "Supprimer le profil",
+    "profilesDeleteConfirmBody": "Supprimer le profil « {name} » ? Cette action est irréversible.",
+    "profilesCreate": "Nouveau",
+    "profilesCreateTitle": "Nouveau profil",
+    "profilesName": "Nom",
+    "profilesNamePlaceholder": "Nom du profil",
+    "profilesCloneFrom": "Cloner depuis",
+    "profilesCloneFromCurrent": "Configuration actuelle",
+    "profilesMainHidden": "Le `_main` intégré de RecurAgent est masqué",
+    "profilesPath": "Chemin du fichier de configuration",
+    "profilesDataDir": "Répertoire de données",
+    "profilesCancel": "Annuler"
   },
   "GenerativeUiSettings": {
     "loading": "Chargement…",

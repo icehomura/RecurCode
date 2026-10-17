@@ -4641,7 +4641,8 @@
     "tabs": {
       "binary": "バイナリ",
       "mcp": "MCP",
-      "skill": "スキル"
+      "skill": "スキル",
+      "profiles": "プロファイル"
     },
     "notInstalled": "未インストール",
     "installed": "インストール済み",
@@ -4674,9 +4675,31 @@
       "updated": "{name} を更新しました",
       "updateFailed": "{name} の更新に失敗しました",
       "enabledOn": "{name} を有効にしました",
-      "enabledOff": "{name} を無効にしました"
+      "enabledOff": "{name} を無効にしました",
+      "profileCreated": "プロファイルを作成しました",
+      "profileDeleted": "プロファイルを削除しました",
+      "profileActivated": "現在のプロファイルを変更しました",
+      "profileActionFailed": "プロファイルの操作に失敗しました"
     },
-    "loadFailed": "コンポーネントの読み込みに失敗しました"
+    "loadFailed": "コンポーネントの読み込みに失敗しました",
+    "profilesTitle": "プロファイル",
+    "profilesDescription": "RecurAgent のプロファイルを管理します。各プロファイルは独自のモデル・データディレクトリ・設定ファイルを持ちます。",
+    "profilesEmpty": "プロファイルがありません。",
+    "profilesActive": "現在",
+    "profilesSetActive": "現在に設定",
+    "profilesDelete": "削除",
+    "profilesDeleteConfirmTitle": "プロファイルを削除",
+    "profilesDeleteConfirmBody": "プロファイル「{name}」を削除しますか？この操作は元に戻せません。",
+    "profilesCreate": "新規",
+    "profilesCreateTitle": "新規プロファイル",
+    "profilesName": "名前",
+    "profilesNamePlaceholder": "プロファイル名",
+    "profilesCloneFrom": "複製元",
+    "profilesCloneFromCurrent": "現在の設定",
+    "profilesMainHidden": "RecurAgent 内蔵の `_main` は非表示です",
+    "profilesPath": "設定ファイルのパス",
+    "profilesDataDir": "データディレクトリ",
+    "profilesCancel": "キャンセル"
   },
   "GenerativeUiSettings": {
     "loading": "読み込み中…",

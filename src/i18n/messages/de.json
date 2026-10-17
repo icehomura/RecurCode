@@ -4641,7 +4641,8 @@
     "tabs": {
       "binary": "Binärdateien",
       "mcp": "MCP",
-      "skill": "Skills"
+      "skill": "Skills",
+      "profiles": "Profile"
     },
     "notInstalled": "Nicht installiert",
     "installed": "Installiert",
@@ -4674,9 +4675,31 @@
       "updated": "{name} aktualisiert",
       "updateFailed": "{name} konnte nicht aktualisiert werden",
       "enabledOn": "{name} aktiviert",
-      "enabledOff": "{name} deaktiviert"
+      "enabledOff": "{name} deaktiviert",
+      "profileCreated": "Profil erstellt",
+      "profileDeleted": "Profil gelöscht",
+      "profileActivated": "Aktives Profil geändert",
+      "profileActionFailed": "Profilaktion fehlgeschlagen"
     },
-    "loadFailed": "Komponenten konnten nicht geladen werden"
+    "loadFailed": "Komponenten konnten nicht geladen werden",
+    "profilesTitle": "Profile",
+    "profilesDescription": "RecurAgent-Profile verwalten – jedes hat sein eigenes Modell, Datenverzeichnis und seine eigene Konfigurationsdatei.",
+    "profilesEmpty": "Noch keine Profile.",
+    "profilesActive": "Aktuell",
+    "profilesSetActive": "Als aktuell festlegen",
+    "profilesDelete": "Löschen",
+    "profilesDeleteConfirmTitle": "Profil löschen",
+    "profilesDeleteConfirmBody": "Profil \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+    "profilesCreate": "Neu",
+    "profilesCreateTitle": "Neues Profil",
+    "profilesName": "Name",
+    "profilesNamePlaceholder": "Profilname",
+    "profilesCloneFrom": "Klonen von",
+    "profilesCloneFromCurrent": "Aktuelle Konfiguration",
+    "profilesMainHidden": "Das in RecurAgent integrierte `_main` ist ausgeblendet",
+    "profilesPath": "Pfad der Konfigurationsdatei",
+    "profilesDataDir": "Datenverzeichnis",
+    "profilesCancel": "Abbrechen"
   },
   "GenerativeUiSettings": {
     "loading": "Wird geladen…",
