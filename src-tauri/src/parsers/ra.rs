@@ -340,9 +340,14 @@ impl AgentParser for RaParser {
                 if !is_session_file(path) {
                     continue;
                 }
-                // Match the header `session_key` (the exact id); a file whose
+                // Match the header `session_key`. Ra prefixes it with the
+                // profile and channel (`_main:acp:ra-<uuid>`) while the id
+                // RecurCode holds is only the trailing session id, so
+                // [`session_key_matches`] also accepts that suffix. A file whose
                 // header is unreadable can still be reached by its decoded stem.
-                if session_id_of(path).as_deref() == Some(conversation_id) {
+                if session_id_of(path)
+                    .is_some_and(|key| session_key_matches(&key, conversation_id))
+                {
                     return self.parse_detail(path, conversation_id);
                 }
             }
@@ -767,6 +772,20 @@ fn note_ts(sp: &mut SessionParse, ts_raw: Option<DateTime<Utc>>) -> DateTime<Utc
         sp.last_ts = Some(sp.last_ts.map_or(ts, |last| last.max(ts)));
     }
     ts_raw.or(sp.last_ts).unwrap_or_else(Utc::now)
+}
+
+/// Whether a session file's `session_key` denotes the requested conversation
+/// id.
+///
+/// Ra's on-disk key is `<profile_id>:<channel>:<session_id>` (for an ACP
+/// session, `_main:acp:ra-<uuid>`), but the id RecurCode receives in the
+/// `session/new` / `session/load` response — and therefore the one it stores as
+/// the conversation's `external_id` — is only the trailing `<session_id>
+/// (`ra-<uuid>`). The two spellings must resolve to the same file, so a match
+/// is either exact or the requested id as the key's final `:`-separated
+/// segment. Legacy keys with no profile prefix (`acp:<id>`) match the same way.
+fn session_key_matches(key: &str, requested: &str) -> bool {
+    key == requested || key.rsplit_once(':').is_some_and(|(_, tail)| tail == requested)
 }
 
 /// Read just a session file's conversation id without parsing the whole file:
@@ -1531,6 +1550,42 @@ mod tests {
         let summaries = parser.list_conversations().expect("list");
         assert_eq!(summaries[0].id, "the-real-key");
         assert!(parser.get_conversation("the-real-key").is_ok());
+    }
+
+    /// Ra prefixes the on-disk `session_key` with the profile and channel
+    /// (`_main:acp:ra-<uuid>`), but the ACP session id RecurCode stores as the
+    /// conversation's `external_id` is only the trailing `ra-<uuid>`. Asking for
+    /// that bare id must still open the file, or a restart renders the
+    /// conversation empty with no error.
+    #[test]
+    fn get_conversation_matches_a_bare_acp_id_against_a_prefixed_key() {
+        let dir = tempdir().expect("tempdir");
+        let session_key = "_main:acp:ra-6805d235-1cfd-4f66-8ec9-4b78fc60d742";
+        write_session(
+            dir.path(),
+            "sessions/_main%3Aacp%3Ara-6805d235-1cfd-4f66-8ec9-4b78fc60d742.jsonl",
+            &[
+                header(session_key),
+                user("hello", "2026-06-27T10:00:01.000Z"),
+                assistant("hi", "2026-06-27T10:00:02.000Z"),
+            ],
+        );
+        let parser = RaParser::with_base_dir(dir.path().to_path_buf());
+
+        let detail = parser
+            .get_conversation("ra-6805d235-1cfd-4f66-8ec9-4b78fc60d742")
+            .expect("the bare ACP id resolves the prefixed file");
+        assert_eq!(
+            detail.summary.id, "ra-6805d235-1cfd-4f66-8ec9-4b78fc60d742",
+            "parse_detail echoes the requested id so the DB alias stays stable"
+        );
+        assert!(
+            !detail.turns.is_empty(),
+            "the turns are read, not empty"
+        );
+
+        // The full on-disk key remains reachable too.
+        assert!(parser.get_conversation(session_key).is_ok());
     }
 
     /// With no readable header id the decoded stem is still a usable fallback —
