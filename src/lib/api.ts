@@ -1939,6 +1939,23 @@ export async function probeTerminalShellPath(path: string): Promise<boolean> {
   return getTransport().call("probe_terminal_shell_path", { path })
 }
 
+/** Bundled-tools preference: whether RecurBusyBox tools (`rg`/`jq`/…) win
+ *  on PATH over a same-named host binary. Toggled from the RecurBusyBox detail
+ *  panel in Components settings. */
+export interface SystemToolsSettings {
+  preferBundledTools: boolean
+}
+
+export async function getSystemToolsSettings(): Promise<SystemToolsSettings> {
+  return getTransport().call("get_system_tools_settings")
+}
+
+export async function setSystemToolsSettings(
+  settings: SystemToolsSettings
+): Promise<SystemToolsSettings> {
+  return getTransport().call("update_system_tools_settings", { settings })
+}
+
 export async function getSystemRenderingSettings(): Promise<SystemRenderingSettings> {
   return getTransport().call("get_system_rendering_settings")
 }
@@ -6472,6 +6489,20 @@ export async function componentsList(): Promise<ComponentInfo[]> {
   return getTransport().call("components_list")
 }
 
+/**
+ * Apply a typed {@link ComponentsAction} to the real mechanism behind it.
+ * Returns the freshly built list so callers can swap it into place in one shot.
+ */
+export async function componentsApply(
+  action: import("./types").ComponentsAction
+): Promise<import("./types").ComponentsApplyResult> {
+  return getTransport().call("components_apply", { action })
+}
+
+/**
+ * @deprecated use `componentsApply` with a typed action. Will be removed
+ * with the legacy `components_set_enabled` route.
+ */
 export async function componentsSetEnabled(
   id: string,
   enabled: boolean
