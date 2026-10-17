@@ -808,7 +808,7 @@ export function ComponentsSettings() {
             title={t("enabled")}
             control={
               <Switch
-                checked={component.required}
+                checked={component.enabled}
                 disabled={component.required || busy}
                 onCheckedChange={(checked) => {
                   handleBinaryToggle(component, checked).catch((err) => {

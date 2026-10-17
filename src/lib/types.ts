@@ -5456,6 +5456,11 @@ export interface ComponentInfo {
   description: string
   /** `true` locks the enable switch on — turning it off would break the app. */
   required: boolean
+  /** The binary/multicall parent enable choice (sourced from the persisted
+   *  `component_setting.enabled`). Unused for `mcp` and `skill` (their state
+   *  is the live mechanism, never a flat boolean). A `required` component
+   *  renders its switch disabled. */
+  enabled: boolean
   /** Per-component env overrides (binary/multicall only). */
   env: Record<string, string>
   /** The category-specific state, mirroring the backend's `ComponentState`. */
