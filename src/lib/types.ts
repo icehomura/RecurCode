@@ -5468,3 +5468,24 @@ export interface ComponentInfo {
   updateAvailable: boolean
   env: Record<string, string>
 }
+
+/**
+ * A RecurAgent serve-profile as the profile manager renders it.
+ *
+ * `_main` is RecurAgent's internal profile and is hidden from the list; the
+ * backend still returns it, so callers must filter it out themselves.
+ */
+export interface RaProfileDetail {
+  /** Stable profile id, e.g. `_main` or a slug. */
+  id: string
+  name: string
+  /** `true` for the single active profile. */
+  active: boolean
+  /** Provider/model the profile is pinned to, when set. */
+  provider: string | null
+  model: string | null
+  /** Profile-specific data directory, when set. */
+  dataDir: string | null
+  /** Absolute path of the profile's config file. */
+  path: string
+}

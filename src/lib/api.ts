@@ -6498,3 +6498,30 @@ export async function componentsUpdate(
 ): Promise<void> {
   return getTransport().call("components_update", { id, taskId })
 }
+
+// ── Ra Profile Management ───────────────────────────────────────
+
+/** Every RecurAgent profile, including the hidden internal `_main`. */
+export async function raProfileList(): Promise<
+  import("./types").RaProfileDetail[]
+> {
+  return getTransport().call("ra_profile_list")
+}
+
+/** Create a profile, optionally cloning an existing one (or the active config). */
+export async function raProfileCreate(req: {
+  name: string
+  cloneFrom?: string | null
+}): Promise<import("./types").RaProfileDetail> {
+  return getTransport().call("ra_profile_create", { req })
+}
+
+/** Delete a profile. The active profile and `_main` cannot be deleted. */
+export async function raProfileDelete(id: string): Promise<void> {
+  return getTransport().call("ra_profile_delete", { id })
+}
+
+/** Make one profile the active RecurAgent serve profile. */
+export async function raProfileSetActive(id: string): Promise<void> {
+  return getTransport().call("ra_profile_set_active", { id })
+}
