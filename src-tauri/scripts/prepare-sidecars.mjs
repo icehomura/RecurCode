@@ -43,11 +43,12 @@ import {
   copyFileSync,
   mkdirSync,
   chmodSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs"
-import { dirname, join, resolve } from "node:path"
+import { dirname, basename, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import process from "node:process"
 
@@ -61,6 +62,47 @@ const BIN_NAMES = ["rc-mcp", "rc-computer-helper"]
 const FEATURES = "mcp-bin,computer-helper"
 const HELPER = "rc-computer-helper"
 const HELPER_APP = join(BINARIES_DIR, `${HELPER}.app`)
+
+// RecurCode's spelling of a rust target triple, matching the platform keys the
+// RecurBusyBox release publishes (`rb-<platform>.*`).
+const RB_PLATFORM = {
+  "x86_64-pc-windows-msvc": "windows-x86_64",
+  "x86_64-unknown-linux-gnu": "linux-x86_64",
+  "aarch64-unknown-linux-gnu": "linux-aarch64",
+  "x86_64-apple-darwin": "darwin-x86_64",
+  "aarch64-apple-darwin": "darwin-aarch64",
+}
+
+// Sidecars built in OTHER repositories and published as their own GitHub
+// releases. They are fetched here (never compiled in this repo) so the app
+// ships them, and — on macOS — signs and notarizes them together with
+// RecurCode: an executable beside the app in `Contents/MacOS/` is covered by
+// the app's own signature only if it is inside the bundle at signing time.
+//
+// `asset` returns null for a triple the upstream does not publish, which is
+// skipped with a warning rather than failing the build.
+const EXTERNAL = [
+  {
+    name: "ra",
+    repo: "icehomura/RecurAgent",
+    // `ra-bundle-<triple>.{zip,tar.gz}`
+    asset: (triple) =>
+      `ra-bundle-${triple}${triple.includes("windows") ? ".zip" : ".tar.gz"}`,
+    // Executable name inside the archive (before the `.exe` suffix).
+    inner: "ra",
+  },
+  {
+    name: "rb",
+    repo: "icehomura/RecurBusyBox",
+    // `rb-<platform>.{zip,tar.gz}`; the platform spelling is RecurCode's own.
+    asset: (triple) => {
+      const platform = RB_PLATFORM[triple]
+      if (!platform) return null
+      return `rb-${platform}${triple.includes("windows") ? ".zip" : ".tar.gz"}`
+    },
+    inner: "rb",
+  },
+]
 
 function log(msg) {
   console.log(`[prepare-sidecars] ${msg}`)
@@ -129,6 +171,116 @@ function stageHelperApp(built) {
   log(`helper app staged at ${HELPER_APP}`)
 }
 
+// ── Externally-built sidecars ──────────────────────────────────────────────
+
+/** The tag whose assets we stage: the rolling `latest` pre-release, else the
+ *  newest official release. `latest` is where every main push lands, so a dev
+ *  build picks up the newest binaries without waiting for a version tag. */
+function resolveExternalTag(repo) {
+  const api = `https://api.github.com/repos/${repo}/releases`
+  // Node-only fetch (no curl/wget): the script must run identically on every
+  // runner. `redirect: follow` settles the api.github.com → codeload hop.
+  const json = execFileSync(
+    process.execPath,
+    ["-e", `fetch(${JSON.stringify(api)}, {headers: {'User-Agent': 'recurcode-prepare-sidecars'}}).then(r => r.text()).then(t => process.stdout.write(t))`],
+    { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 }
+  )
+  const releases = JSON.parse(json)
+  if (!Array.isArray(releases) || releases.length === 0) return null
+  const latest = releases.find((r) => r.tag_name === "latest")
+  return (latest ?? releases[0]).tag_name
+}
+
+/** Download `<repo>`'s `asset` at `tag` into `dest`. Returns false on 404. */
+function downloadAsset(repo, tag, asset, dest) {
+  const url = `https://github.com/${repo}/releases/download/${tag}/${asset}`
+  const script = `fetch(${JSON.stringify(url)}, {redirect: 'follow'}).then(async r => { if (!r.ok) { process.exit(3) } const b = Buffer.from(await r.arrayBuffer()); require('fs').writeFileSync(${JSON.stringify(dest)}, b) })`
+  try {
+    execFileSync(process.execPath, ["-e", script], { stdio: ["ignore", "ignore", "inherit"] })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Extract `archive` into `dir`.
+ *
+ *  The extractor is chosen by format, not by platform ethno-centrism:
+ *  - `.zip` → PowerShell's `Expand-Archive`. A Windows PATH also carries GNU
+ *    tar (git's), which cannot read zip at all; `Expand-Archive` is the one
+ *    extractor guaranteed present.
+ *  - `.tar.gz` → the system `tar`, run from `dir` with a BARE name because GNU
+ *    tar reads the `D:` of an absolute Windows path as a remote host
+ *    (`Cannot connect to D:`). Assets are `.zip` only on Windows. */
+function extractArchive(archive, dir) {
+  if (archive.endsWith(".zip")) {
+    const q = (s) => `'${s.replaceAll("'", "''")}'`
+    execFileSync(
+      "powershell",
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `Expand-Archive -LiteralPath ${q(archive)} -DestinationPath ${q(dir)} -Force`,
+      ],
+      { stdio: "inherit" }
+    )
+  } else {
+    execFileSync("tar", ["-xzf", basename(archive)], {
+      cwd: dir,
+      stdio: "inherit",
+    })
+  }
+}
+
+function stageExternalSpec(spec, target, isWindows) {
+  const asset = spec.asset(target)
+  if (!asset) {
+    log(`${spec.name}: no published asset for ${target} — skipped`)
+    return
+  }
+  const tag = resolveExternalTag(spec.repo)
+  if (!tag) {
+    log(`${spec.name}: ${spec.repo} has no releases yet — skipped`)
+    return
+  }
+
+  const work = join(BINARIES_DIR, `.tmp-${spec.name}`)
+  rmSync(work, { recursive: true, force: true })
+  mkdirSync(work, { recursive: true })
+  try {
+    const archive = join(work, asset)
+    if (!downloadAsset(spec.repo, tag, asset, archive)) {
+      log(`${spec.name}: ${tag}/${asset} not found — skipped`)
+      return
+    }
+    extractArchive(archive, work)
+
+    const exe = isWindows ? `${spec.inner}.exe` : spec.inner
+    // The archive is flat today; search one level down too, so a future layout
+    // change does not silently stage nothing.
+    const candidates = [join(work, exe)]
+    for (const entry of readdirSync(work)) {
+      candidates.push(join(work, entry, exe))
+    }
+    const found = candidates.find((p) => existsSync(p))
+    if (!found) {
+      log(`${spec.name}: no ${exe} inside ${asset} — skipped`)
+      return
+    }
+
+    const dest = join(
+      BINARIES_DIR,
+      `${spec.name}-${target}${isWindows ? ".exe" : ""}`
+    )
+    copyFileSync(found, dest)
+    if (!isWindows) chmodSync(dest, 0o755)
+    log(`${spec.name} ${tag}: ${asset} → ${dest}`)
+  } finally {
+    rmSync(work, { recursive: true, force: true })
+  }
+}
+
 function main() {
   if (process.env.RC_SKIP_SIDECAR === "1") {
     log("RC_SKIP_SIDECAR=1 — skipping sidecar preparation")
@@ -188,6 +340,18 @@ function main() {
     log(`sidecar staged at ${dest}`)
     if (name === HELPER && target.includes("apple-darwin")) {
       stageHelperApp(built)
+    }
+  }
+
+  // Then the sidecars built in their own repositories.
+  for (const spec of EXTERNAL) {
+    try {
+      stageExternalSpec(spec, target, isWindows)
+    } catch (e) {
+      // Never fail the build over an upstream that is unreachable or not yet
+      // published: a RecurCode without `ra`/`rb` still runs, it just has
+      // fewer components installed.
+      log(`${spec.name}: staging failed (${e.message}) — skipped`)
     }
   }
 }

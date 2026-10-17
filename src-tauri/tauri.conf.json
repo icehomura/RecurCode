@@ -30,7 +30,7 @@
     "resources": {
       "../out": "web/"
     },
-    "externalBin": ["binaries/rc-mcp", "binaries/rc-computer-helper"],
+    "externalBin": ["binaries/rc-mcp", "binaries/rc-computer-helper", "binaries/ra", "binaries/rb"],
     "windows": {
       "nsis": {
         "installerHooks": "./windows/installer-hooks.nsh"
