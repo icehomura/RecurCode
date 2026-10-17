@@ -42,7 +42,7 @@ fn config_path(root: &Path) -> PathBuf {
 /// infer one from) — the one thing `ra acp` insists on before it will start.
 ///
 /// RecurCode preflights this so a first-run user is offered a friendly
-/// "configure Recur Agent" prompt instead of the raw process-exit error the
+/// "configure RecurAgent" prompt instead of the raw process-exit error the
 /// ACP handshake would otherwise surface. Deliberately narrow: only `provider`
 /// or `model` counts, mirroring the two fields `ra`'s factory consults
 /// (`config.provider`, else `detect_provider(config.model)`). A `--provider`
@@ -384,7 +384,7 @@ mod tests {
     #[test]
     fn llm_configured_requires_provider_or_model() {
         // RecurCode's connect pre-check reads this to decide whether to block
-        // with a "configure Recur Agent" prompt, so it must only say
+        // with a "configure RecurAgent" prompt, so it must only say
         // "configured" for the two fields `ra acp` itself consults.
         let dir = std::env::temp_dir().join(format!("recur-cfg-llm-{}", std::process::id()));
         let _ = fs::create_dir_all(&dir);

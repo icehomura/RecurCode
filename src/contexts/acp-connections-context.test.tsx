@@ -6392,8 +6392,8 @@ describe("connect failures land on the surface that asked", () => {
     ).toEqual(["actions.openAgentsSettings"])
   })
 
-  it("blocks an installed Recur Agent with no provider configured", async () => {
-    // Recur Agent ships without an LLM provider, so the preflight must stop it
+  it("blocks an installed RecurAgent with no provider configured", async () => {
+    // RecurAgent ships without an LLM provider, so the preflight must stop it
     // before `ra acp` spawns and exits — the user gets a configure prompt that
     // opens its settings panel, not the agent's raw process-exit error.
     h.acpGetAgentStatus.mockResolvedValue({

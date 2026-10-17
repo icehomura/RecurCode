@@ -4309,7 +4309,7 @@ pub fn get_agent_meta(agent_type: AgentType) -> AcpAgentMeta {
             // posture as OpenClaw, and stricter than pi's `agent_delivers_wire_mcp`
             // gate, because Ra does not even consume the field.
             supports_mcp: false,
-            name: "Recur Agent",
+            name: "RecurAgent",
             description: "Rust-native headless coding agent speaking ACP directly (ra acp)",
             // Ra ships one binary (`ra`) in two build variants: the full
             // bundle links the TUI, the `ra-headless` bundle is kernel + tools with

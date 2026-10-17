@@ -48,7 +48,7 @@ fn mcp_i18n_params<const N: usize>(pairs: [(&str, &str); N]) -> BTreeMap<String,
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum McpAppType {
-    /// Recur Agent. Serializes as `ra`, matching `AgentType::as_wire`.
+    /// RecurAgent. Serializes as `ra`, matching `AgentType::as_wire`.
     #[serde(rename = "ra")]
     Ra,
     ClaudeCode,
@@ -2766,7 +2766,7 @@ fn read_qoder_servers() -> Result<BTreeMap<String, Value>, AppCommandError> {
     read_qoder_servers_at(&qoder_settings_path())
 }
 
-// ── Recur Agent (`ra`) — MCP servers live in `~/.ra/config.json` as a
+// ── RecurAgent (`ra`) — MCP servers live in `~/.ra/config.json` as a
 // positional `mcp_servers` array of objects with NO name/id field (RecurAgent
 // derives display via command/url). RecurCode assigns by identity (方案 A): a
 // server is keyed by its `url`, else its `command`. Ra hot-reloads this file, so

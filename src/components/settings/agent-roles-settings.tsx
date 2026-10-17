@@ -65,7 +65,7 @@ type AgentTypeEntry =
 
 const AGENT_TYPES: AgentTypeEntry[] = [
   { value: "", labelKey: "anyAgent" },
-  { value: "ra", label: "Recur Agent" },
+  { value: "ra", label: "RecurAgent" },
   { value: "claude_code", label: "Claude Code" },
   { value: "codex", label: "Codex CLI" },
   { value: "open_code", label: "OpenCode" },

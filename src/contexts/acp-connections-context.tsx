@@ -3716,7 +3716,7 @@ export function AcpConnectionsProvider({ children }: { children: ReactNode }) {
       }
 
       if (agent.installed_version) {
-        // Installed but not yet usable: Recur Agent ships without an LLM
+        // Installed but not yet usable: RecurAgent ships without an LLM
         // provider, so it cannot start until the user configures one. Block
         // with a "configure it" prompt (the connect path opens its settings
         // panel) instead of spawning and surfacing the raw process-exit error.

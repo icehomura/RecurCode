@@ -1633,8 +1633,8 @@
       "runtimeTooOld": "Dieses Pi ist zu alt: RecurCode benötigt Pi {min} oder neuer, um eine Sitzung zu öffnen. Aktualisiere es zuerst."
     },
     "ra": {
-      "configManagement": "Recur Agent-Konfiguration",
-      "configDescription": "Recur Agent authentifiziert sich mit dem API-Schlüssel deines Modell-Anbieters. Anbieter und Modell werden in ~/.ra/config.json geschrieben.",
+      "configManagement": "RecurAgent-Konfiguration",
+      "configDescription": "RecurAgent authentifiziert sich mit dem API-Schlüssel deines Modell-Anbieters. Anbieter und Modell werden in ~/.ra/config.json geschrieben.",
       "providerLabel": "Anbieter",
       "modelLabel": "Modell",
       "thinkingLabel": "Denken",
@@ -1649,7 +1649,7 @@
       "apiKeyLabel": "API-Schlüssel",
       "apiKeyHint": "Wird in ~/.pi/agent/auth.json für den ausgewählten Anbieter gespeichert.",
       "apiKeySetPlaceholder": "•••••• (gespeichert – leer lassen zum Beibehalten)",
-      "saveConfig": "Recur Agent-Konfiguration speichern",
+      "saveConfig": "RecurAgent-Konfiguration speichern",
       "providerModelRequired": "Anbieter und Modell sind erforderlich",
       "runtimeTitle": "Laufzeit",
       "runtimeDescription": "Wähle, welches pi-Binary läuft. Standard verwenden oder auf deinen eigenen pi-Build verweisen.",
@@ -1679,7 +1679,7 @@
       "binaryInstalled": "Installiert",
       "binaryMissing": "Nicht installiert",
       "binaryChecking": "Wird geprüft…",
-      "installBinary": "Recur Agent installieren",
+      "installBinary": "RecurAgent installieren",
       "installing": "Wird installiert…",
       "recheck": "Erneut prüfen",
       "configDirSkillsNote": "Mit einem benutzerdefinierten Konfigurationsverzeichnis gelten die in den Einstellungen verwalteten Skills, Experten und Office-Tools nicht für dieses pi — verwalte seine Skills direkt in diesem Ordner.",

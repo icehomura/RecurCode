@@ -4187,7 +4187,7 @@ export function buildVersionCheck(
   }
   if (supportsCustomInstall) footerFixes.push(customInstallFix)
 
-  // Recur Agent is RecurCode's own first-party agent — built and shipped
+  // RecurAgent is RecurCode's own first-party agent — built and shipped
   // alongside the app — so the registry's pinned version is not a real upgrade
   // target and "Recommended: X · Upgrade available" is pure noise. Report it
   // up to date (pass) against its LOCAL version alone, offering only Uninstall.

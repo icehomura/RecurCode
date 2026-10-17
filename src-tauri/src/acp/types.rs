@@ -1935,7 +1935,7 @@ pub struct AcpAgentStatus {
     pub is_acp_adapter: bool,
     /// True when the agent is installed but cannot start until the user
     /// supplies configuration RecurCode does not manage for it — today
-    /// exactly Recur Agent with no LLM provider in its own `config.json`.
+    /// exactly RecurAgent with no LLM provider in its own `config.json`.
     /// The connect pre-check blocks with a "configure it" prompt that opens
     /// the agent's settings panel, rather than spawning the agent and
     /// surfacing its raw process-exit error.

@@ -462,7 +462,7 @@ const CursorMonoIcon = memo(function CursorMonoIcon({
 })
 
 const RaColorIcon = memo(function RaColorIcon({ size = "1em" }: IconProps) {
-  // Recur Agent — BlueStacks-style blue squircle with a stack of rhombus
+  // RecurAgent — BlueStacks-style blue squircle with a stack of rhombus
   // (diamond) plates. Three isometric diamonds read bottom-to-top (the back
   // ones peek out at the bottom); the front diamond is the code face, marked
   // `</>` in the brand blue.
@@ -474,7 +474,7 @@ const RaColorIcon = memo(function RaColorIcon({ size = "1em" }: IconProps) {
       width={size}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <title>Recur Agent</title>
+      <title>RecurAgent</title>
       <defs>
         <linearGradient id="raTile" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#4A90FF" />

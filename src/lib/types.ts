@@ -1121,7 +1121,7 @@ export function compareAgentType(a: AgentType, b: AgentType): number {
 }
 
 export const ALL_AGENT_TYPES: BuiltinAgentType[] = [
-  // Recur Agent pinned first here too, so filter/dropdown lists built from this
+  // RecurAgent pinned first here too, so filter/dropdown lists built from this
   // array (import-sessions, conversation-manage, delegation cards) lead with it.
   "ra",
   "claude_code",
@@ -1453,7 +1453,7 @@ export const AGENT_LABELS: Record<BuiltinAgentType, string> = {
   deepseek: "DeepSeek Harness",
   qoder: "Qoder",
   antigravity: "Google Antigravity",
-  ra: "Recur Agent",
+  ra: "RecurAgent",
 }
 
 export const AGENT_COLORS: Record<BuiltinAgentType, string> = {
@@ -3754,7 +3754,7 @@ export interface AcpAgentStatus {
   /** See AcpAgentInfo.is_acp_adapter. */
   is_acp_adapter: boolean
   /** Installed, but missing configuration RecurCode cannot supply for it —
-   *  today exactly Recur Agent with no LLM provider in its own config.json.
+   *  today exactly RecurAgent with no LLM provider in its own config.json.
    *  Mirrors the Rust AcpAgentStatus.needs_configuration. */
   needs_configuration: boolean
 }

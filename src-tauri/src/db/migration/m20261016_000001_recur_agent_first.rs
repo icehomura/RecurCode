@@ -7,7 +7,7 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // RecurCode rebrands and pins Recur Agent (`ra`) as the first, default
+        // RecurCode rebrands and pins RecurAgent (`ra`) as the first, default
         // agent. `agent_setting.sort_order` is seeded only at first insert
         // (`ensure_defaults`), so a database created before the rebrand still
         // has the OLD order (Claude Code = 0, `ra` last). The settings drag-

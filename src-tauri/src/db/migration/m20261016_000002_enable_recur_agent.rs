@@ -8,10 +8,10 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // `default_enabled` omitted `AgentType::Ra`, so every database that
-        // seeded its `agent_setting` row before the rebrand created Recur Agent
+        // seeded its `agent_setting` row before the rebrand created RecurAgent
         // DISABLED. A disabled agent is filtered out of the picker and can
         // never be the default, which is the opposite of the rebrand's intent
-        // (Recur Agent is now the pinned-first default). Turn it on; the two
+        // (RecurAgent is now the pinned-first default). Turn it on; the two
         // other `Ra`-first migrations pin its sort order. Custom agents and
         // every other row keep whatever the user chose.
         let sql = "UPDATE agent_setting SET enabled = 1 WHERE agent_type = '\"ra\"'";
