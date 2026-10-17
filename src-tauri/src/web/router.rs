@@ -929,6 +929,14 @@ pub fn build_router(
             "/update_system_terminal_settings",
             post(handlers::system_settings::update_system_terminal_settings),
         )
+        .route(
+            "/get_system_tools_settings",
+            post(handlers::system_settings::get_system_tools_settings),
+        )
+        .route(
+            "/update_system_tools_settings",
+            post(handlers::system_settings::update_system_tools_settings),
+        )
         // ─── Logging ───
         .route(
             "/get_log_settings",

@@ -32,6 +32,11 @@ pub struct UpdateTerminalSettingsParams {
     pub settings: SystemTerminalSettings,
 }
 
+#[derive(Deserialize)]
+pub struct UpdateToolsSettingsParams {
+    pub settings: SystemToolsSettings,
+}
+
 // ---------------------------------------------------------------------------
 // Read handlers
 // ---------------------------------------------------------------------------
@@ -67,6 +72,12 @@ pub async fn get_available_terminal_shells(
     Ok(Json(settings_commands::build_available_terminal_shells(
         settings.default_shell.as_deref(),
     )))
+}
+
+pub async fn get_system_tools_settings(
+    Extension(_state): Extension<Arc<AppState>>,
+) -> Result<Json<SystemToolsSettings>, AppCommandError> {
+    Ok(Json(settings_commands::get_system_tools_settings_core()))
 }
 
 #[derive(Deserialize)]
@@ -150,5 +161,13 @@ pub async fn update_system_terminal_settings(
         params.settings,
     )
     .await?;
+    Ok(Json(settings))
+}
+
+pub async fn update_system_tools_settings(
+    Extension(_state): Extension<Arc<AppState>>,
+    Json(params): Json<UpdateToolsSettingsParams>,
+) -> Result<Json<SystemToolsSettings>, AppCommandError> {
+    let settings = settings_commands::update_system_tools_settings_core(params.settings)?;
     Ok(Json(settings))
 }

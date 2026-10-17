@@ -48,7 +48,6 @@ pub mod paths;
 pub mod pet_sessions;
 pub mod pet_state_mapper;
 pub mod pets;
-#[cfg(feature = "tauri-runtime")]
 pub mod preferences;
 pub mod process;
 pub mod supervise;
@@ -1899,6 +1898,8 @@ mod tauri_app {
                 system_settings::probe_terminal_shell_path,
                 system_settings::get_system_rendering_settings,
                 system_settings::update_system_rendering_settings,
+                system_settings::get_system_tools_settings,
+                system_settings::update_system_tools_settings,
                 system_settings::get_system_autostart_settings,
                 system_settings::update_system_autostart_settings,
                 system_settings::get_system_close_behavior_settings,
